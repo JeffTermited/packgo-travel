@@ -7,11 +7,21 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
           {/* Column 1: Brand & About */}
           <div className="space-y-6">
-            <img 
-              src="/images/logo-white-bg.jpg" 
-              alt="PACK&GO Logo" 
-              className="h-24 w-auto object-contain mix-blend-screen"
-            />
+            <div className="flex items-center gap-3">
+              <img 
+                src="/images/logo-white-bg.jpg" 
+                alt="PACK&GO Logo" 
+                className="h-16 w-auto object-contain mix-blend-screen"
+              />
+              <div className="flex flex-col justify-center">
+                <span className="text-2xl font-black tracking-wider text-white leading-none">
+                  PACK&GO
+                </span>
+                <span className="text-sm font-medium text-gray-400 tracking-widest">
+                  讓旅行更美好
+                </span>
+              </div>
+            </div>
             <p className="text-gray-400 text-sm leading-relaxed">
               PACK&GO 旅行社致力於為您打造獨一無二的旅遊體驗。從客製化行程到豪華郵輪，我們將帶您探索世界的每一個角落。
             </p>

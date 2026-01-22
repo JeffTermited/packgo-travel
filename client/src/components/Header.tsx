@@ -15,14 +15,22 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 border-b border-gray-100">
-      <div className="container flex h-20 items-center justify-between">
+      <div className="container flex h-24 items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-3 group">
           <img 
             src="/images/logo-black-bag.png" 
             alt="PACK&GO Logo" 
-            className="h-20 w-auto object-contain"
+            className="h-16 w-auto object-contain"
           />
+          <div className="flex flex-col justify-center">
+            <span className="text-2xl font-black tracking-wider text-black leading-none group-hover:text-primary transition-colors">
+              PACK&GO
+            </span>
+            <span className="text-sm font-medium text-gray-600 tracking-widest group-hover:text-primary/80 transition-colors">
+              讓旅行更美好
+            </span>
+          </div>
         </Link>
 
         {/* Desktop Navigation */}
@@ -65,7 +73,7 @@ export default function Header() {
 
       {/* Mobile Menu */}
       {isMenuOpen && (
-        <div className="md:hidden absolute top-20 left-0 w-full bg-white border-b border-gray-100 shadow-lg py-4 px-4 flex flex-col gap-4 animate-in slide-in-from-top-5">
+        <div className="md:hidden absolute top-24 left-0 w-full bg-white border-b border-gray-100 shadow-lg py-4 px-4 flex flex-col gap-4 animate-in slide-in-from-top-5">
           {navItems.map((item) => (
             <a
               key={item.label}
