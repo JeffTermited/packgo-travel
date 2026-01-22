@@ -19,7 +19,7 @@ export default function Header() {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-3 group">
           <img 
-            src="/images/logo-bag-black.png" 
+            src="/images/logo-bag-black-v2.png" 
             alt="PACK&GO Logo" 
             className="h-16 w-auto object-contain"
           />
