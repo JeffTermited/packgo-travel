@@ -9,7 +9,7 @@ export default function Footer() {
           <div className="space-y-6">
             <div className="flex items-center gap-3">
               <img 
-                src="/images/logo-white-bg.jpg" 
+                src="/images/logo-bag-white.png" 
                 alt="PACK&GO Logo" 
                 className="h-16 w-auto object-contain mix-blend-screen"
               />
