@@ -75,15 +75,32 @@ export default function Header() {
         {/* Contact Info */}
         <div className="hidden md:flex items-center gap-4">
           {/* QR Code Hover */}
-          <div className="relative group/qr">
-            <img 
-              src="/images/qrcode-only.png" 
-              alt="Line QR Code" 
-              className="h-10 w-10 object-contain cursor-pointer border border-gray-200 rounded p-0.5"
-            />
-            <div className="absolute top-full right-0 mt-2 w-48 bg-white shadow-xl rounded-lg p-3 border border-gray-100 opacity-0 invisible group-hover/qr:opacity-100 group-hover/qr:visible transition-all duration-300 transform origin-top-right z-50">
-              <img src="/images/contact-qrcode.png" alt="Contact Card" className="w-full h-auto rounded" />
-              <p className="text-center text-xs text-gray-500 mt-2">掃描加入 LINE 好友</p>
+          <div className="relative group/qr flex items-center gap-2">
+            <div className="flex flex-col items-center cursor-pointer">
+              <div className="flex -space-x-2">
+                <img 
+                  src="/images/qrcode-wechat.png" 
+                  alt="WeChat QR" 
+                  className="h-8 w-8 object-contain border border-gray-200 rounded bg-white p-0.5 z-10"
+                />
+                <img 
+                  src="/images/qrcode-line.png" 
+                  alt="LINE QR" 
+                  className="h-8 w-8 object-contain border border-gray-200 rounded bg-white p-0.5"
+                />
+              </div>
+              <span className="text-[10px] text-gray-500 mt-0.5">社群聯絡</span>
+            </div>
+            
+            <div className="absolute top-full right-0 mt-2 w-64 bg-white shadow-xl rounded-lg p-4 border border-gray-100 opacity-0 invisible group-hover/qr:opacity-100 group-hover/qr:visible transition-all duration-300 transform origin-top-right z-50 flex gap-4">
+              <div className="flex-1 flex flex-col items-center">
+                <img src="/images/qrcode-wechat.png" alt="WeChat QR" className="w-full h-auto rounded border border-gray-100" />
+                <p className="text-center text-xs text-gray-600 mt-2 font-medium">WeChat</p>
+              </div>
+              <div className="flex-1 flex flex-col items-center">
+                <img src="/images/qrcode-line.png" alt="LINE QR" className="w-full h-auto rounded border border-gray-100" />
+                <p className="text-center text-xs text-gray-600 mt-2 font-medium">LINE</p>
+              </div>
             </div>
           </div>
 
