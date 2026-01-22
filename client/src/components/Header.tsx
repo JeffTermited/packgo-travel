@@ -24,10 +24,10 @@ export default function Header() {
             className="h-16 w-auto object-contain"
           />
           <div className="flex flex-col justify-center pl-1">
-            <span className="text-[28px] font-bold tracking-wide text-[#C00000] leading-none font-sans">
+            <span className="text-[28px] font-bold tracking-wide text-black leading-none font-sans">
               PACK&GO
             </span>
-            <span className="text-[15px] font-medium text-[#D05050] tracking-widest mt-1">
+            <span className="text-[15px] font-medium text-gray-600 tracking-widest mt-1">
               讓旅行更美好
             </span>
           </div>
