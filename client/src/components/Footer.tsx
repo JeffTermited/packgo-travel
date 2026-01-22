@@ -97,9 +97,7 @@ export default function Footer() {
           <p className="text-xs text-gray-500">
             &copy; {new Date().getFullYear()} PACK&GO Travel Agency. All Rights Reserved.
           </p>
-          <div className="flex items-center gap-4">
-            <img src="/images/business-card.jpg" alt="Trust Badges" className="h-8 opacity-50 grayscale hover:grayscale-0 transition-all" />
-          </div>
+
         </div>
       </div>
     </footer>
