@@ -7,12 +7,12 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navItems = [
-    { label: "國外團體", href: "#group-tours" },
-    { label: "台灣團體", href: "#taiwan-tours" },
-    { label: "機票", href: "#flights" },
-    { label: "訂房", href: "#hotels" },
-    { label: "自由行", href: "#packages" },
     { label: "客製旅遊", href: "#custom" },
+    { label: "代辦簽證", href: "#visa" },
+    { label: "包團旅遊", href: "#group-packages" },
+    { label: "機票預購", href: "#flights" },
+    { label: "機場接送", href: "#transfer" },
+    { label: "飯店預訂", href: "#hotels" },
   ];
 
   return (
@@ -74,41 +74,11 @@ export default function Header() {
 
         {/* Contact Info */}
         <div className="hidden md:flex items-center gap-4">
-          {/* QR Code Hover */}
-          <div className="relative group/qr flex items-center gap-2">
-            <div className="flex flex-col items-center cursor-pointer">
-              <div className="flex -space-x-2">
-                <img 
-                  src="/images/qrcode-wechat.png" 
-                  alt="WeChat QR" 
-                  className="h-8 w-8 object-contain border border-gray-200 rounded bg-white p-0.5 z-10"
-                />
-                <img 
-                  src="/images/qrcode-line.png" 
-                  alt="LINE QR" 
-                  className="h-8 w-8 object-contain border border-gray-200 rounded bg-white p-0.5"
-                />
-              </div>
-              <span className="text-[10px] text-gray-500 mt-0.5">社群聯絡</span>
-            </div>
-            
-            <div className="absolute top-full right-0 mt-2 w-64 bg-white shadow-xl rounded-lg p-4 border border-gray-100 opacity-0 invisible group-hover/qr:opacity-100 group-hover/qr:visible transition-all duration-300 transform origin-top-right z-50 flex gap-4">
-              <div className="flex-1 flex flex-col items-center">
-                <img src="/images/qrcode-wechat.png" alt="WeChat QR" className="w-full h-auto rounded border border-gray-100" />
-                <p className="text-center text-xs text-gray-600 mt-2 font-medium">WeChat</p>
-              </div>
-              <div className="flex-1 flex flex-col items-center">
-                <img src="/images/qrcode-line.png" alt="LINE QR" className="w-full h-auto rounded border border-gray-100" />
-                <p className="text-center text-xs text-gray-600 mt-2 font-medium">LINE</p>
-              </div>
-            </div>
-          </div>
-
           <div className="flex flex-col items-end">
-            <span className="text-[10px] text-gray-500 uppercase tracking-wider">服務專線</span>
-            <a href="tel:1-510-634-2307" className="flex items-center gap-1 text-lg font-bold text-primary hover:underline leading-none">
-              <Phone className="h-4 w-4" />
-              1 (510) 634-2307
+            <span className="text-[10px] text-gray-500 uppercase tracking-wider">會員專區</span>
+            <a href="#" className="flex items-center gap-1 text-lg font-bold text-primary hover:underline leading-none">
+              <User className="h-4 w-4" />
+              登入 / 註冊
             </a>
           </div>
         </div>
