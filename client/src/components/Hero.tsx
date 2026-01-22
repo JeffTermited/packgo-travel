@@ -40,7 +40,6 @@ export default function Hero() {
               { id: "group", label: "團體旅遊", icon: <Users className="h-4 w-4" /> },
               { id: "flight", label: "機票", icon: <Plane className="h-4 w-4" /> },
               { id: "hotel", label: "訂房", icon: <Hotel className="h-4 w-4" /> },
-              { id: "ticket", label: "票券", icon: <Ticket className="h-4 w-4" /> },
               { id: "ai-advisor", label: "AI 旅遊顧問", icon: <Sparkles className="h-4 w-4 text-primary" /> },
             ].map((tab) => (
               <button

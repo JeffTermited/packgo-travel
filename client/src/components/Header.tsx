@@ -12,7 +12,6 @@ export default function Header() {
     { label: "機票", href: "#flights" },
     { label: "訂房", href: "#hotels" },
     { label: "自由行", href: "#packages" },
-    { label: "票券", href: "#tickets" },
     { label: "客製旅遊", href: "#custom" },
   ];
 
@@ -75,8 +74,21 @@ export default function Header() {
 
         {/* Contact Info */}
         <div className="hidden md:flex items-center gap-4">
+          {/* QR Code Hover */}
+          <div className="relative group/qr">
+            <img 
+              src="/images/qrcode-only.png" 
+              alt="Line QR Code" 
+              className="h-10 w-10 object-contain cursor-pointer border border-gray-200 rounded p-0.5"
+            />
+            <div className="absolute top-full right-0 mt-2 w-48 bg-white shadow-xl rounded-lg p-3 border border-gray-100 opacity-0 invisible group-hover/qr:opacity-100 group-hover/qr:visible transition-all duration-300 transform origin-top-right z-50">
+              <img src="/images/contact-qrcode.png" alt="Contact Card" className="w-full h-auto rounded" />
+              <p className="text-center text-xs text-gray-500 mt-2">掃描加入 LINE 好友</p>
+            </div>
+          </div>
+
           <div className="flex flex-col items-end">
-            <span className="text-[10px] text-gray-500 uppercase tracking-wider">24H 服務專線</span>
+            <span className="text-[10px] text-gray-500 uppercase tracking-wider">服務專線</span>
             <a href="tel:1-510-634-2307" className="flex items-center gap-1 text-lg font-bold text-primary hover:underline leading-none">
               <Phone className="h-4 w-4" />
               1 (510) 634-2307
