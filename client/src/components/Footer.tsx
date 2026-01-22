@@ -13,11 +13,11 @@ export default function Footer() {
                 alt="PACK&GO Logo" 
                 className="h-16 w-auto object-contain mix-blend-screen"
               />
-              <div className="flex flex-col justify-center">
-                <span className="text-2xl font-black tracking-wider text-white leading-none">
+              <div className="flex flex-col justify-center pl-1">
+                <span className="text-[28px] font-bold tracking-wide text-white leading-none font-sans">
                   PACK&GO
                 </span>
-                <span className="text-sm font-medium text-gray-400 tracking-widest">
+                <span className="text-[15px] font-medium text-gray-400 tracking-widest mt-1">
                   讓旅行更美好
                 </span>
               </div>

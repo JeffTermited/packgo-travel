@@ -23,11 +23,11 @@ export default function Header() {
             alt="PACK&GO Logo" 
             className="h-16 w-auto object-contain"
           />
-          <div className="flex flex-col justify-center">
-            <span className="text-2xl font-black tracking-wider text-black leading-none group-hover:text-primary transition-colors">
+          <div className="flex flex-col justify-center pl-1">
+            <span className="text-[28px] font-bold tracking-wide text-[#C00000] leading-none font-sans">
               PACK&GO
             </span>
-            <span className="text-sm font-medium text-gray-600 tracking-widest group-hover:text-primary/80 transition-colors">
+            <span className="text-[15px] font-medium text-[#D05050] tracking-widest mt-1">
               讓旅行更美好
             </span>
           </div>
