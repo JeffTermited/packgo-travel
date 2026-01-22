@@ -21,7 +21,7 @@ export default function Header() {
           <img 
             src="/images/logo-black-bag.png" 
             alt="PACK&GO Logo" 
-            className="h-12 w-auto object-contain"
+            className="h-20 w-auto object-contain"
           />
         </Link>
 

@@ -10,7 +10,7 @@ export default function Footer() {
             <img 
               src="/images/logo-white-bg.jpg" 
               alt="PACK&GO Logo" 
-              className="h-16 w-auto object-contain mix-blend-screen"
+              className="h-24 w-auto object-contain mix-blend-screen"
             />
             <p className="text-gray-400 text-sm leading-relaxed">
               PACK&GO 旅行社致力於為您打造獨一無二的旅遊體驗。從客製化行程到豪華郵輪，我們將帶您探索世界的每一個角落。
