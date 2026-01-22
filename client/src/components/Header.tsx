@@ -17,27 +17,7 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white shadow-sm">
-      {/* Top Bar - Lion Travel Style */}
-      <div className="bg-[#F5F5F5] border-b border-gray-200 hidden md:block">
-        <div className="container flex h-9 items-center justify-end gap-6 text-xs text-gray-600">
-          <a href="#" className="hover:text-primary transition-colors">企業專區</a>
-          <a href="#" className="hover:text-primary transition-colors">同業登入</a>
-          <div className="flex items-center gap-1 cursor-pointer hover:text-primary transition-colors">
-            <Globe className="h-3 w-3" />
-            <span>繁體中文</span>
-            <ChevronDown className="h-3 w-3" />
-          </div>
-          <div className="flex items-center gap-1 cursor-pointer hover:text-primary transition-colors">
-            <span>TWD</span>
-            <ChevronDown className="h-3 w-3" />
-          </div>
-          <a href="#" className="flex items-center gap-1 hover:text-primary transition-colors font-medium">
-            <User className="h-3 w-3" />
-            會員登入
-          </a>
-          <a href="#" className="hover:text-primary transition-colors">訂單查詢</a>
-        </div>
-      </div>
+
 
       {/* Main Header */}
       <div className="container flex h-20 items-center justify-between">
