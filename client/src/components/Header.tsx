@@ -55,24 +55,24 @@ export default function Header() {
         </nav>
 
         {/* Contact Info */}
-        <div className="hidden md:flex items-center gap-4">
+        <div className="hidden md:flex items-center gap-6">
           {isAuthenticated && user?.role === "admin" && (
-            <Link href="/admin" className="flex items-center gap-1 text-sm font-medium text-gray-700 hover:text-primary transition-colors">
+            <Link href="/admin" className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:text-black hover:bg-gray-50 rounded transition-all">
               <Shield className="h-4 w-4" />
-              管理後台
+              <span>管理後台</span>
             </Link>
           )}
-          <div className="flex flex-col items-end">
-            <span className="text-[10px] text-gray-500 uppercase tracking-wider">會員專區</span>
+          <div className="flex flex-col items-end gap-1">
+            <span className="text-[11px] text-gray-500 tracking-wider">會員專區</span>
             {isAuthenticated && user ? (
-              <Link href="/profile" className="flex items-center gap-1 text-lg font-bold text-black hover:underline leading-none">
+              <Link href="/profile" className="flex items-center gap-2 text-base font-bold text-black hover:text-gray-700 transition-colors">
                 <User className="h-4 w-4" />
-                {user.name || user.email}
+                <span>{user.name || user.email}</span>
               </Link>
             ) : (
-              <Link href="/login" className="flex items-center gap-1 text-lg font-bold text-black hover:underline leading-none">
+              <Link href="/login" className="flex items-center gap-2 text-base font-bold text-black hover:text-gray-700 transition-colors">
                 <User className="h-4 w-4" />
-                登入 / 註冊
+                <span>登入 / 註冊</span>
               </Link>
             )}
           </div>
