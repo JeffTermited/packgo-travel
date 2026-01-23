@@ -126,11 +126,86 @@ export default function SearchResults() {
           </div>
         </section>
 
+        {/* Search Bar Section */}
+        <section className="bg-gray-100 py-6 border-b border-gray-200">
+          <div className="container">
+            <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-200">
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+                {/* Destination */}
+                <div className="md:col-span-3">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">出發地</label>
+                  <Select value={destination} onValueChange={setDestination}>
+                    <SelectTrigger className="h-12 rounded-lg border-gray-300">
+                      <SelectValue placeholder="不限" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">全部</SelectItem>
+                      <SelectItem value="日本">日本</SelectItem>
+                      <SelectItem value="韓國">韓國</SelectItem>
+                      <SelectItem value="歐洲">歐洲</SelectItem>
+                      <SelectItem value="美國">美國</SelectItem>
+                      <SelectItem value="東南亞">東南亞</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Keywords */}
+                <div className="md:col-span-3">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">關鍵字</label>
+                  <input 
+                    type="text" 
+                    placeholder="日本" 
+                    className="w-full h-12 px-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                  />
+                </div>
+
+                {/* Date Range */}
+                <div className="md:col-span-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">出發時間</label>
+                  <div className="flex items-center gap-2">
+                    <input 
+                      type="date" 
+                      className="flex-1 h-12 px-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                    />
+                    <span className="text-gray-500">~</span>
+                    <input 
+                      type="date" 
+                      className="flex-1 h-12 px-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                {/* Search Button */}
+                <div className="md:col-span-2">
+                  <Button 
+                    onClick={handleApplyFilters}
+                    className="w-full h-12 bg-black hover:bg-gray-800 text-white rounded-lg font-semibold"
+                  >
+                    搜尋
+                  </Button>
+                </div>
+              </div>
+
+              {/* Checkboxes */}
+              <div className="flex items-center gap-6 mt-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <Checkbox />
+                  <span className="text-sm text-gray-700">只找成行</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <Checkbox />
+                  <span className="text-sm text-gray-700">只找可報名</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <div className="container py-12">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
             {/* Enhanced Filters Sidebar */}
             <aside className="lg:col-span-1">
-              <Card className="border-2 border-black shadow-none">
+              <Card className="border-2 border-gray-300 rounded-xl shadow-none">
                 <CardContent className="p-6 space-y-6">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-bold text-black">篩選條件</h3>
@@ -151,7 +226,7 @@ export default function SearchResults() {
                       目的地
                     </label>
                     <Select value={destination} onValueChange={setDestination}>
-                      <SelectTrigger className="border-2 border-black h-10">
+                      <SelectTrigger className="border-2 border-gray-300 rounded-xl h-10">
                         <SelectValue placeholder="選擇目的地" />
                       </SelectTrigger>
                       <SelectContent>
@@ -356,7 +431,7 @@ export default function SearchResults() {
                   <div className="space-y-3">
                     <label className="text-sm font-semibold text-black">排序方式</label>
                     <Select value={sortBy} onValueChange={(value) => setSortBy(value as any)}>
-                      <SelectTrigger className="border-2 border-black h-10">
+                      <SelectTrigger className="border-2 border-gray-300 rounded-xl h-10">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -383,7 +458,7 @@ export default function SearchResults() {
             <div className="lg:col-span-3">
               {/* Selected Filters Display */}
               {(destination !== "all" || tourType.length > 0 || weekdays.length > 0 || airlines.length > 0 || hotelGrade.length > 0 || specialActivities.length > 0 || minDays !== 1 || maxDays !== 30 || minPrice !== 0 || maxPrice !== 100000) && (
-                <div className="mb-6 p-4 border-2 border-black bg-gray-50">
+                <div className="mb-6 p-4 border-2 border-gray-300 rounded-xl bg-gray-50">
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="text-sm font-semibold text-black">已選篩選條件</h3>
                     <Button 
@@ -399,7 +474,7 @@ export default function SearchResults() {
                     {destination !== "all" && (
                       <Badge 
                         variant="outline" 
-                        className="border-black bg-white text-black px-3 py-1 cursor-pointer hover:bg-black hover:text-white transition-colors"
+                        className="border-gray-300 bg-white text-black px-3 py-1 cursor-pointer hover:bg-gray-800 hover:text-white transition-colors rounded-full"
                         onClick={() => setDestination("all")}
                       >
                         目的地：{destination} ×
@@ -409,7 +484,7 @@ export default function SearchResults() {
                       <Badge 
                         key={type}
                         variant="outline" 
-                        className="border-black bg-white text-black px-3 py-1 cursor-pointer hover:bg-black hover:text-white transition-colors"
+                        className="border-gray-300 bg-white text-black px-3 py-1 cursor-pointer hover:bg-gray-800 hover:text-white transition-colors rounded-full"
                         onClick={() => setTourType(tourType.filter(t => t !== type))}
                       >
                         {type} ×
@@ -419,7 +494,7 @@ export default function SearchResults() {
                       <Badge 
                         key={day}
                         variant="outline" 
-                        className="border-black bg-white text-black px-3 py-1 cursor-pointer hover:bg-black hover:text-white transition-colors"
+                        className="border-gray-300 bg-white text-black px-3 py-1 cursor-pointer hover:bg-gray-800 hover:text-white transition-colors rounded-full"
                         onClick={() => setWeekdays(weekdays.filter(d => d !== day))}
                       >
                         星期{day} ×
@@ -429,7 +504,7 @@ export default function SearchResults() {
                       <Badge 
                         key={airline}
                         variant="outline" 
-                        className="border-black bg-white text-black px-3 py-1 cursor-pointer hover:bg-black hover:text-white transition-colors"
+                        className="border-gray-300 bg-white text-black px-3 py-1 cursor-pointer hover:bg-gray-800 hover:text-white transition-colors rounded-full"
                         onClick={() => setAirlines(airlines.filter(a => a !== airline))}
                       >
                         {airline} ×
@@ -439,7 +514,7 @@ export default function SearchResults() {
                       <Badge 
                         key={grade}
                         variant="outline" 
-                        className="border-black bg-white text-black px-3 py-1 cursor-pointer hover:bg-black hover:text-white transition-colors"
+                        className="border-gray-300 bg-white text-black px-3 py-1 cursor-pointer hover:bg-gray-800 hover:text-white transition-colors rounded-full"
                         onClick={() => setHotelGrade(hotelGrade.filter(g => g !== grade))}
                       >
                         {grade} ×
@@ -449,7 +524,7 @@ export default function SearchResults() {
                       <Badge 
                         key={activity}
                         variant="outline" 
-                        className="border-black bg-white text-black px-3 py-1 cursor-pointer hover:bg-black hover:text-white transition-colors"
+                        className="border-gray-300 bg-white text-black px-3 py-1 cursor-pointer hover:bg-gray-800 hover:text-white transition-colors rounded-full"
                         onClick={() => setSpecialActivities(specialActivities.filter(a => a !== activity))}
                       >
                         {activity} ×
@@ -458,7 +533,7 @@ export default function SearchResults() {
                     {(minDays !== 1 || maxDays !== 30) && (
                       <Badge 
                         variant="outline" 
-                        className="border-black bg-white text-black px-3 py-1 cursor-pointer hover:bg-black hover:text-white transition-colors"
+                        className="border-gray-300 bg-white text-black px-3 py-1 cursor-pointer hover:bg-gray-800 hover:text-white transition-colors rounded-full"
                         onClick={() => { setMinDays(1); setMaxDays(30); }}
                       >
                         天數：{minDays}-{maxDays}天 ×
@@ -467,7 +542,7 @@ export default function SearchResults() {
                     {(minPrice !== 0 || maxPrice !== 100000) && (
                       <Badge 
                         variant="outline" 
-                        className="border-black bg-white text-black px-3 py-1 cursor-pointer hover:bg-black hover:text-white transition-colors"
+                        className="border-gray-300 bg-white text-black px-3 py-1 cursor-pointer hover:bg-gray-800 hover:text-white transition-colors rounded-full"
                         onClick={() => { setMinPrice(0); setMaxPrice(100000); }}
                       >
                         價格：${minPrice.toLocaleString()}-${maxPrice.toLocaleString()} ×
@@ -494,7 +569,7 @@ export default function SearchResults() {
                       return (
                         <Card 
                           key={tour.id} 
-                          className="border-2 border-black shadow-none hover:shadow-lg transition-all cursor-pointer overflow-hidden"
+                          className="border-2 border-gray-300 rounded-xl shadow-none hover:shadow-lg transition-all cursor-pointer overflow-hidden"
                         >
                           <div className="flex flex-col md:flex-row">
                             {/* Image Section */}
