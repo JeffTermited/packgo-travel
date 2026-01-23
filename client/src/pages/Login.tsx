@@ -39,20 +39,18 @@ export default function Login() {
         <div className="w-full max-w-md">
           {/* Logo for mobile */}
           <div className="lg:hidden mb-8 text-center">
-            <Link href="/">
-              <a className="inline-flex items-center gap-3 text-2xl font-bold text-black">
-                <img
-                  src="/logo.png"
-                  alt="PACK&GO"
-                  className="h-10 w-auto"
-                />
-                <div className="flex flex-col items-start">
-                  <span className="text-2xl tracking-tight">PACK&GO</span>
-                  <span className="text-xs font-normal text-gray-600 tracking-wide">
-                    讓旅行更美好
-                  </span>
-                </div>
-              </a>
+            <Link href="/" className="inline-flex items-center gap-3 text-2xl font-bold text-black">
+              <img
+                src="/logo.png"
+                alt="PACK&GO"
+                className="h-10 w-auto"
+              />
+              <div className="flex flex-col items-start">
+                <span className="text-2xl tracking-tight">PACK&GO</span>
+                <span className="text-xs font-normal text-gray-600 tracking-wide">
+                  讓旅行更美好
+                </span>
+              </div>
             </Link>
           </div>
 
@@ -310,10 +308,8 @@ export default function Login() {
           </Tabs>
 
           <div className="mt-8 text-center text-sm text-gray-600">
-            <Link href="/">
-              <a className="text-black underline hover:no-underline font-medium">
-                ← 返回首頁
-              </a>
+            <Link href="/" className="text-black underline hover:no-underline font-medium">
+              ← 返回首頁
             </Link>
           </div>
         </div>
