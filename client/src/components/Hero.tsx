@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Calendar, MapPin, Search, Sparkles, Plane, Hotel, Ticket, Users } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import AIAdvisor from "./AIAdvisor";
@@ -9,6 +10,7 @@ import { DestinationAutocomplete } from "@/components/DestinationAutocomplete";
 
 export default function Hero() {
   const [activeTab, setActiveTab] = useState("group");
+  const [departure, setDeparture] = useState("all");
   const [destination, setDestination] = useState("");
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [, setLocation] = useLocation();
@@ -76,37 +78,55 @@ export default function Hero() {
           </div>
 
           {/* Tab Content */}
-          <div className="p-6 bg-white">
-            <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
-                  {/* Destination Input */}
-                  <div className="md:col-span-5">
+          <div className="p-4 bg-white">
+            <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <div className="flex flex-col md:flex-row gap-3">
+                  {/* Departure Location */}
+                  <div className="flex-shrink-0 w-full md:w-64">
+                    <label className="block text-xs font-medium text-gray-700 mb-1.5">出發地</label>
+                    <Select value={departure} onValueChange={setDeparture}>
+                      <SelectTrigger className="h-12 rounded-full border-gray-300 bg-gray-50 hover:border-gray-400 transition-colors">
+                        <SelectValue placeholder="全部" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">全部</SelectItem>
+                        <SelectItem value="台北">台北</SelectItem>
+                        <SelectItem value="台中">台中</SelectItem>
+                        <SelectItem value="台南">台南</SelectItem>
+                        <SelectItem value="高雄">高雄</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Keyword Input */}
+                  <div className="flex-1 min-w-0">
+                    <label className="block text-xs font-medium text-gray-700 mb-1.5">關鍵字</label>
                     <DestinationAutocomplete 
                       value={destination}
                       onChange={setDestination}
                       onSelect={handleSearch}
-                      placeholder="請輸入目的地、景點、關鍵字"
-                      className="[&_input]:rounded-full [&_input]:bg-gray-50 [&_input]:border-gray-200 [&_input]:focus:ring-primary [&_input]:focus:border-primary"
+                      placeholder="日本"
+                      className="[&_input]:rounded-full [&_input]:bg-gray-50 [&_input]:border-gray-200 [&_input]:focus:ring-primary [&_input]:focus:border-primary [&_input]:h-12"
                     />
                   </div>
 
                   {/* Date Input */}
-                  <div className="md:col-span-5">
+                  <div className="flex-shrink-0 w-full md:w-64">
+                    <label className="block text-xs font-medium text-gray-700 mb-1.5">出發時間</label>
                     <DateRangePicker 
                       value={dateRange}
                       onChange={setDateRange}
-                      placeholder="選擇出發日期"
+                      placeholder="選擇日期"
                       className="h-12 rounded-full"
                     />
                   </div>
 
                   {/* Search Button */}
-                  <div className="md:col-span-2">
+                  <div className="flex-shrink-0 w-full md:w-32 flex items-end">
                     <Button 
                       onClick={handleSearch}
-                      className="w-full h-12 bg-primary hover:bg-red-700 text-white rounded-full font-bold shadow-md transition-all hover:shadow-lg"
+                      className="w-full h-12 bg-black hover:bg-gray-900 text-white rounded-full font-bold shadow-md transition-all hover:shadow-lg"
                     >
-                      <Search className="h-5 w-5 mr-2" />
                       搜尋
                     </Button>
                   </div>
