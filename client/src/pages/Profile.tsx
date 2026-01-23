@@ -59,14 +59,23 @@ export default function Profile() {
               <h1 className="text-3xl font-bold text-black mb-1">會員中心</h1>
               <p className="text-gray-500">Hi, {user.name}</p>
             </div>
-            <Button 
-              onClick={handleLogout}
-              variant="outline" 
-              className="rounded-full border-2 border-black rounded-3xl hover:bg-black hover:text-white px-6"
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              登出
-            </Button>
+            <div className="flex gap-3">
+              <Button 
+                onClick={() => setLocation("/")}
+                variant="outline" 
+                className="rounded-full border-2 border-black hover:bg-black hover:text-white px-6"
+              >
+                返回首頁
+              </Button>
+              <Button 
+                onClick={handleLogout}
+                variant="outline" 
+                className="rounded-full border-2 border-black hover:bg-black hover:text-white px-6"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                登出
+              </Button>
+            </div>
           </div>
         </div>
       </div>

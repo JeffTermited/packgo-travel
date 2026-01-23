@@ -1,0 +1,96 @@
+import { z } from "zod";
+
+// Login form validation schema
+export const loginSchema = z.object({
+  email: z
+    .string()
+    .min(1, "請輸入電子郵件")
+    .email("電子郵件格式不正確"),
+  password: z
+    .string()
+    .min(1, "請輸入密碼")
+    .min(8, "密碼至少需要 8 個字元"),
+});
+
+export type LoginFormData = z.infer<typeof loginSchema>;
+
+// Register form validation schema
+export const registerSchema = z.object({
+  name: z
+    .string()
+    .min(1, "請輸入姓名")
+    .min(2, "姓名至少需要 2 個字元")
+    .max(50, "姓名不能超過 50 個字元"),
+  email: z
+    .string()
+    .min(1, "請輸入電子郵件")
+    .email("電子郵件格式不正確"),
+  password: z
+    .string()
+    .min(1, "請輸入密碼")
+    .min(8, "密碼至少需要 8 個字元")
+    .regex(/[A-Z]/, "密碼需包含至少一個大寫字母")
+    .regex(/[a-z]/, "密碼需包含至少一個小寫字母")
+    .regex(/[0-9]/, "密碼需包含至少一個數字"),
+  confirmPassword: z
+    .string()
+    .min(1, "請確認密碼"),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "密碼不一致",
+  path: ["confirmPassword"],
+});
+
+export type RegisterFormData = z.infer<typeof registerSchema>;
+
+// Forgot password form validation schema
+export const forgotPasswordSchema = z.object({
+  email: z
+    .string()
+    .min(1, "請輸入電子郵件")
+    .email("電子郵件格式不正確"),
+});
+
+export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
+
+// Reset password form validation schema
+export const resetPasswordSchema = z.object({
+  password: z
+    .string()
+    .min(1, "請輸入新密碼")
+    .min(8, "密碼至少需要 8 個字元")
+    .regex(/[A-Z]/, "密碼需包含至少一個大寫字母")
+    .regex(/[a-z]/, "密碼需包含至少一個小寫字母")
+    .regex(/[0-9]/, "密碼需包含至少一個數字"),
+  confirmPassword: z
+    .string()
+    .min(1, "請確認新密碼"),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "密碼不一致",
+  path: ["confirmPassword"],
+});
+
+export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
+
+// Password strength calculator
+export function calculatePasswordStrength(password: string): {
+  score: number;
+  label: string;
+  color: string;
+} {
+  let score = 0;
+
+  if (password.length >= 8) score++;
+  if (password.length >= 12) score++;
+  if (/[a-z]/.test(password)) score++;
+  if (/[A-Z]/.test(password)) score++;
+  if (/[0-9]/.test(password)) score++;
+  if (/[^A-Za-z0-9]/.test(password)) score++;
+
+  if (score <= 2) {
+    return { score, label: "弱", color: "bg-red-500" };
+  } else if (score <= 4) {
+    return { score, label: "中等", color: "bg-yellow-500" };
+  } else {
+    return { score, label: "強", color: "bg-green-500" };
+  }
+}
