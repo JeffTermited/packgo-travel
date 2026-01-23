@@ -25,7 +25,7 @@ export default function Destinations() {
           {destinations.map((dest) => (
             <div 
               key={dest.id} 
-              className="group relative aspect-[4/3] overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-all duration-500"
+              className="group relative aspect-[4/3] overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-all duration-500 rounded-3xl"
             >
               <img 
                 src={dest.image} 

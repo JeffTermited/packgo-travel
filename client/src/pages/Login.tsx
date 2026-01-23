@@ -59,7 +59,7 @@ export default function Login() {
             onValueChange={(v) => setActiveTab(v as "signin" | "register")}
             className="w-full"
           >
-            <TabsList className="grid w-full grid-cols-2 mb-8 h-12 bg-transparent border border-black">
+            <TabsList className="grid w-full grid-cols-2 mb-8 h-12 bg-transparent border border-black rounded-full">
               <TabsTrigger
                 value="signin"
                 className="data-[state=active]:bg-black data-[state=active]:text-white text-black font-bold tracking-wide"
@@ -95,7 +95,7 @@ export default function Login() {
                       id="email"
                       type="email"
                       placeholder="輸入您的電子郵件"
-                      className="pl-12 h-12 border-2 border-black focus:ring-2 focus:ring-black"
+                      className="pl-12 h-12 border-2 border-black rounded-3xl focus:ring-2 focus:ring-black rounded-full"
                     />
                   </div>
                 </div>
@@ -110,7 +110,7 @@ export default function Login() {
                       id="password"
                       type="password"
                       placeholder="輸入您的密碼"
-                      className="pl-12 h-12 border-2 border-black focus:ring-2 focus:ring-black"
+                      className="pl-12 h-12 border-2 border-black rounded-3xl focus:ring-2 focus:ring-black rounded-full"
                     />
                   </div>
                 </div>
@@ -119,7 +119,7 @@ export default function Login() {
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
-                      className="w-4 h-4 border-2 border-black"
+                      className="w-4 h-4 border-2 border-black rounded-3xl"
                     />
                     <span className="text-gray-700">記住我</span>
                   </label>
@@ -130,7 +130,7 @@ export default function Login() {
 
                 <Button
                   type="submit"
-                  className="w-full h-12 bg-black text-white hover:bg-gray-800 font-bold tracking-wide text-base"
+                  className="w-full h-12 bg-black text-white hover:bg-gray-800 font-bold tracking-wide text-base rounded-full"
                 >
                   SIGN IN
                 </Button>
@@ -150,7 +150,7 @@ export default function Login() {
               <div className="grid grid-cols-2 gap-4">
                 <Button
                   variant="outline"
-                  className="h-12 border-2 border-black hover:bg-black hover:text-white font-medium"
+                  className="h-12 border-2 border-black rounded-3xl hover:bg-black hover:text-white font-medium rounded-full"
                   onClick={handleManusLogin}
                 >
                   <svg
@@ -164,7 +164,7 @@ export default function Login() {
                 </Button>
                 <Button
                   variant="outline"
-                  className="h-12 border-2 border-black hover:bg-black hover:text-white font-medium"
+                  className="h-12 border-2 border-black rounded-3xl hover:bg-black hover:text-white font-medium rounded-full"
                   onClick={handleManusLogin}
                 >
                   <svg
@@ -201,7 +201,7 @@ export default function Login() {
                     id="reg-name"
                     type="text"
                     placeholder="輸入您的姓名"
-                    className="h-12 border-2 border-black focus:ring-2 focus:ring-black"
+                    className="h-12 border-2 border-black rounded-3xl focus:ring-2 focus:ring-black rounded-full"
                   />
                 </div>
 
@@ -215,7 +215,7 @@ export default function Login() {
                       id="reg-email"
                       type="email"
                       placeholder="輸入您的電子郵件"
-                      className="pl-12 h-12 border-2 border-black focus:ring-2 focus:ring-black"
+                      className="pl-12 h-12 border-2 border-black rounded-3xl focus:ring-2 focus:ring-black rounded-full"
                     />
                   </div>
                 </div>
@@ -230,7 +230,7 @@ export default function Login() {
                       id="reg-password"
                       type="password"
                       placeholder="設定您的密碼"
-                      className="pl-12 h-12 border-2 border-black focus:ring-2 focus:ring-black"
+                      className="pl-12 h-12 border-2 border-black rounded-3xl focus:ring-2 focus:ring-black rounded-full"
                     />
                   </div>
                 </div>
@@ -238,7 +238,7 @@ export default function Login() {
                 <div className="flex items-start gap-2 text-sm">
                   <input
                     type="checkbox"
-                    className="w-4 h-4 mt-1 border-2 border-black"
+                    className="w-4 h-4 mt-1 border-2 border-black rounded-3xl"
                   />
                   <span className="text-gray-700">
                     我同意{" "}
@@ -254,7 +254,7 @@ export default function Login() {
 
                 <Button
                   type="submit"
-                  className="w-full h-12 bg-black text-white hover:bg-gray-800 font-bold tracking-wide text-base"
+                  className="w-full h-12 bg-black text-white hover:bg-gray-800 font-bold tracking-wide text-base rounded-full"
                 >
                   CREATE ACCOUNT
                 </Button>
@@ -274,7 +274,7 @@ export default function Login() {
               <div className="grid grid-cols-2 gap-4">
                 <Button
                   variant="outline"
-                  className="h-12 border-2 border-black hover:bg-black hover:text-white font-medium"
+                  className="h-12 border-2 border-black rounded-3xl hover:bg-black hover:text-white font-medium rounded-full"
                   onClick={handleManusLogin}
                 >
                   <svg
@@ -288,7 +288,7 @@ export default function Login() {
                 </Button>
                 <Button
                   variant="outline"
-                  className="h-12 border-2 border-black hover:bg-black hover:text-white font-medium"
+                  className="h-12 border-2 border-black rounded-3xl hover:bg-black hover:text-white font-medium rounded-full"
                   onClick={handleManusLogin}
                 >
                   <svg

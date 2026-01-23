@@ -167,3 +167,13 @@
 - [x] 將頭像改為圓形
 - [x] 將圖示背景改為圓形
 - [x] 確保整體視覺風格統一圓潤
+
+
+### 全站圓潤設計統一
+- [x] 更新 Home 頁面所有元素為圓潤設計
+- [x] 更新 Login/Register 頁面為圓潤設計
+- [x] 更新 TourDetail 頁面為圓潤設計
+- [x] 更新 BookingFlow 頁面為圓潤設計
+- [x] 更新 BookingDetails 頁面為圓潤設計
+- [x] 更新 AdminDashboard 頁面為圓潤設計
+- [x] 更新所有共用組件（Header, Footer, etc.）為圓潤設計

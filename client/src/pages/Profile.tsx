@@ -62,7 +62,7 @@ export default function Profile() {
             <Button 
               onClick={handleLogout}
               variant="outline" 
-              className="rounded-full border-2 border-black hover:bg-black hover:text-white px-6"
+              className="rounded-full border-2 border-black rounded-3xl hover:bg-black hover:text-white px-6"
             >
               <LogOut className="h-4 w-4 mr-2" />
               登出

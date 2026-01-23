@@ -107,7 +107,7 @@ export default function TourDetail() {
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-8">
               {/* Tour Description */}
-              <Card className="border-2 border-black">
+              <Card className="border-2 border-black rounded-3xl">
                 <CardContent className="p-8">
                   <h2 className="text-2xl font-bold text-black mb-6">行程介紹</h2>
                   <div className="prose prose-lg max-w-none">
@@ -119,7 +119,7 @@ export default function TourDetail() {
               </Card>
 
               {/* Tour Highlights */}
-              <Card className="border-2 border-black">
+              <Card className="border-2 border-black rounded-3xl">
                 <CardContent className="p-8">
                   <h2 className="text-2xl font-bold text-black mb-6">行程亮點</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -141,7 +141,7 @@ export default function TourDetail() {
               </Card>
 
               {/* Tour Details */}
-              <Card className="border-2 border-black">
+              <Card className="border-2 border-black rounded-3xl">
                 <CardContent className="p-8">
                   <h2 className="text-2xl font-bold text-black mb-6">行程資訊</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -177,7 +177,7 @@ export default function TourDetail() {
 
             {/* Sidebar - Booking Card */}
             <div className="lg:col-span-1">
-              <Card className="border-2 border-black sticky top-4">
+              <Card className="border-2 border-black rounded-3xl sticky top-4">
                 <CardContent className="p-8">
                   <div className="text-center mb-6 pb-6 border-b-2 border-black">
                     <p className="text-sm text-gray-600 mb-2">每人起</p>

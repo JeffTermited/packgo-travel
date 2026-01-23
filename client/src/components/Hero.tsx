@@ -33,7 +33,7 @@ export default function Hero() {
         </div>
 
         {/* Search Console - Lion Travel Style */}
-        <div className="w-full max-w-5xl bg-white rounded-lg shadow-2xl overflow-hidden animate-in slide-in-from-bottom-10 duration-700 delay-300">
+        <div className="w-full max-w-5xl bg-white rounded-3xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-10 duration-700 delay-300">
           {/* Tabs */}
           <div className="flex w-full border-b border-gray-200 bg-gray-50">
             {[
@@ -68,7 +68,7 @@ export default function Hero() {
                     <input 
                       type="text" 
                       placeholder="請輸入目的地、景點、關鍵字" 
-                      className="w-full h-12 pl-12 pr-4 bg-gray-50 border border-gray-200 rounded text-gray-900 placeholder:text-gray-400 focus:ring-1 focus:ring-primary focus:border-primary focus:bg-white transition-all outline-none"
+                      className="w-full h-12 pl-12 pr-4 bg-gray-50 border border-gray-200 rounded-full text-gray-900 placeholder:text-gray-400 focus:ring-1 focus:ring-primary focus:border-primary focus:bg-white transition-all outline-none"
                     />
                   </div>
 
@@ -80,14 +80,14 @@ export default function Hero() {
                     <input 
                       type="text" 
                       placeholder="選擇出發日期" 
-                      className="w-full h-12 pl-12 pr-4 bg-gray-50 border border-gray-200 rounded text-gray-900 placeholder:text-gray-400 focus:ring-1 focus:ring-primary focus:border-primary focus:bg-white transition-all outline-none"
+                      className="w-full h-12 pl-12 pr-4 bg-gray-50 border border-gray-200 rounded-full text-gray-900 placeholder:text-gray-400 focus:ring-1 focus:ring-primary focus:border-primary focus:bg-white transition-all outline-none"
                     />
                   </div>
 
                   {/* Search Button */}
                   <div className="md:col-span-2">
                     <Button 
-                      className="w-full h-12 bg-primary hover:bg-red-700 text-white rounded font-bold shadow-md transition-all hover:shadow-lg"
+                      className="w-full h-12 bg-primary hover:bg-red-700 text-white rounded-full font-bold shadow-md transition-all hover:shadow-lg"
                     >
                       <Search className="h-5 w-5 mr-2" />
                       搜尋
