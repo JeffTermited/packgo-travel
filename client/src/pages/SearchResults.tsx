@@ -129,8 +129,8 @@ export default function SearchResults() {
         {/* Search Bar Section */}
         <section className="bg-gray-100 py-6 border-b border-gray-200">
           <div className="container">
-            <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-200">
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+            <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-end">
                 {/* Destination */}
                 <div className="md:col-span-3">
                   <label className="block text-sm font-medium text-gray-700 mb-2">出發地</label>
@@ -155,7 +155,7 @@ export default function SearchResults() {
                   <input 
                     type="text" 
                     placeholder="日本" 
-                    className="w-full h-12 px-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                    className="w-full h-14 px-5 rounded-xl border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all"
                   />
                 </div>
 
@@ -165,12 +165,12 @@ export default function SearchResults() {
                   <div className="flex items-center gap-2">
                     <input 
                       type="date" 
-                      className="flex-1 h-12 px-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                      className="flex-1 h-14 px-5 rounded-xl border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all"
                     />
                     <span className="text-gray-500">~</span>
                     <input 
                       type="date" 
-                      className="flex-1 h-12 px-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                      className="flex-1 h-14 px-5 rounded-xl border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all"
                     />
                   </div>
                 </div>
@@ -179,7 +179,7 @@ export default function SearchResults() {
                 <div className="md:col-span-2">
                   <Button 
                     onClick={handleApplyFilters}
-                    className="w-full h-12 bg-black hover:bg-gray-800 text-white rounded-lg font-semibold"
+                    className="w-full h-14 bg-black hover:bg-gray-800 text-white rounded-xl font-semibold text-lg transition-all shadow-md hover:shadow-lg"
                   >
                     搜尋
                   </Button>
@@ -569,12 +569,12 @@ export default function SearchResults() {
                       return (
                         <Card 
                           key={tour.id} 
-                          className="border-2 border-gray-300 rounded-xl shadow-none hover:shadow-lg transition-all cursor-pointer overflow-hidden"
+                          className="border border-gray-200 rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 cursor-pointer overflow-hidden bg-white"
                         >
                           <div className="flex flex-col md:flex-row">
                             {/* Image Section */}
                             <div 
-                              className="relative md:w-72 h-48 md:h-auto flex-shrink-0 bg-gray-100"
+                              className="relative md:w-80 h-56 md:h-64 flex-shrink-0 bg-gradient-to-br from-gray-100 to-gray-200"
                               onClick={() => setLocation(`/tours/${tour.id}`)}
                             >
                               {tour.mainImage ? (
@@ -589,17 +589,17 @@ export default function SearchResults() {
                                 </div>
                               )}
                               {/* Ranking Badge */}
-                              <div className="absolute top-3 left-3 bg-black text-white px-3 py-1 font-bold text-sm">
+                              <div className="absolute top-4 left-4 bg-black text-white px-4 py-2 font-bold text-base rounded-lg shadow-lg">
                                 {index + 1}
                               </div>
                               {/* Days Badge */}
-                              <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-1 font-semibold text-sm">
+                              <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm px-4 py-2 font-semibold text-sm rounded-lg shadow-md">
                                 {tour.duration}天
                               </div>
                             </div>
 
                             {/* Content Section */}
-                            <div className="flex-1 p-5" onClick={() => setLocation(`/tours/${tour.id}`)}>
+                            <div className="flex-1 p-6" onClick={() => setLocation(`/tours/${tour.id}`)}>
                               <div className="flex items-start justify-between mb-3">
                                 <div className="flex-1">
                                   <h3 className="font-bold text-lg text-black mb-2 line-clamp-2 hover:text-gray-700 transition-colors">
