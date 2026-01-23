@@ -14,7 +14,7 @@ export default function SearchResults() {
   const searchParams = new URLSearchParams(window.location.search);
   
   // Filter states
-  const [destination, setDestination] = useState(searchParams.get("destination") || "");
+  const [destination, setDestination] = useState(searchParams.get("destination") || "all");
   const [minDays, setMinDays] = useState(Number(searchParams.get("minDays")) || 1);
   const [maxDays, setMaxDays] = useState(Number(searchParams.get("maxDays")) || 30);
   const [minPrice, setMinPrice] = useState(Number(searchParams.get("minPrice")) || 0);
@@ -23,7 +23,7 @@ export default function SearchResults() {
 
   // Fetch tours with filters
   const { data: tours, isLoading } = trpc.tours.search.useQuery({
-    destination,
+    destination: destination === "all" ? "" : destination,
     minDays,
     maxDays,
     minPrice,
@@ -33,7 +33,7 @@ export default function SearchResults() {
 
   const handleApplyFilters = () => {
     const params = new URLSearchParams();
-    if (destination) params.set("destination", destination);
+    if (destination && destination !== "all") params.set("destination", destination);
     params.set("minDays", minDays.toString());
     params.set("maxDays", maxDays.toString());
     params.set("minPrice", minPrice.toString());
@@ -76,7 +76,7 @@ export default function SearchResults() {
                         <SelectValue placeholder="選擇目的地" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">全部</SelectItem>
+                        <SelectItem value="all">全部</SelectItem>
                         <SelectItem value="日本">日本</SelectItem>
                         <SelectItem value="韓國">韓國</SelectItem>
                         <SelectItem value="歐洲">歐洲</SelectItem>

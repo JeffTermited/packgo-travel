@@ -379,4 +379,11 @@
 ## 修正包團旅遊導航連結
 - [x] 更新 Header 中的「包團旅遊」連結，改為跳轉到 /search（團體旅遊搜尋結果頁面）
 - [x] 測試導航連結正常運作
+- [x] 儲存 checkpoint
+
+
+## 修正 SearchResults 頁面 Select.Item 錯誤
+- [x] 檢查 SearchResults.tsx 中的所有 Select.Item 元件
+- [x] 修正空字串 value 問題（改為有意義的預設值或移除該選項）
+- [x] 測試搜尋結果頁面正常運作
 - [ ] 儲存 checkpoint
