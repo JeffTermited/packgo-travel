@@ -288,9 +288,14 @@ export async function getAllBookings(filters?: {
     return [];
   }
 
-  // For now, return all bookings without filtering
-  // TODO: Implement proper filtering with drizzle-orm
-  const result = await db.select().from(bookings);
+  let query = db.select().from(bookings);
+  
+  // Apply userId filter if provided
+  if (filters?.userId) {
+    query = query.where(eq(bookings.userId, filters.userId)) as any;
+  }
+  
+  const result = await query;
   return result;
 }
 
@@ -420,9 +425,9 @@ export async function createPayment(payment: InsertPayment): Promise<Payment> {
 }
 
 /**
- * Update payment status
+ * Update payment status by Stripe Payment Intent ID
  */
-export async function updatePaymentStatus(id: number, status: string, paidAt?: Date): Promise<Payment> {
+export async function updatePaymentStatus(stripePaymentIntentId: string, status: string, paidAt?: Date): Promise<Payment> {
   const db = await getDb();
   if (!db) {
     throw new Error("Database not available");
@@ -433,9 +438,9 @@ export async function updatePaymentStatus(id: number, status: string, paidAt?: D
     updates.paidAt = paidAt;
   }
 
-  await db.update(payments).set(updates).where(eq(payments.id, id));
+  await db.update(payments).set(updates).where(eq(payments.stripePaymentIntentId, stripePaymentIntentId));
   
-  const paymentRecords = await db.select().from(payments).where(eq(payments.id, id)).limit(1);
+  const paymentRecords = await db.select().from(payments).where(eq(payments.stripePaymentIntentId, stripePaymentIntentId)).limit(1);
   if (paymentRecords.length === 0) {
     throw new Error("Failed to retrieve updated payment");
   }
@@ -454,6 +459,7 @@ export async function getAllInquiries(filters?: {
   status?: string;
   inquiryType?: string;
   assignedTo?: number;
+  userId?: number;
 }) {
   const db = await getDb();
   if (!db) {
@@ -461,9 +467,14 @@ export async function getAllInquiries(filters?: {
     return [];
   }
 
-  // For now, return all inquiries without filtering
-  // TODO: Implement proper filtering with drizzle-orm
-  const result = await db.select().from(inquiries);
+  let query = db.select().from(inquiries);
+  
+  // Apply userId filter if provided
+  if (filters?.userId) {
+    query = query.where(eq(inquiries.userId, filters.userId)) as any;
+  }
+  
+  const result = await query;
   return result;
 }
 

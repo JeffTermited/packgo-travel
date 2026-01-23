@@ -172,6 +172,8 @@ export const payments = mysqlTable("payments", {
   ]).notNull(),
   paymentType: mysqlEnum("paymentType", ["deposit", "balance", "full"]).notNull(),
   transactionId: varchar("transactionId", { length: 255 }), // External payment gateway transaction ID
+  stripePaymentIntentId: varchar("stripePaymentIntentId", { length: 255 }), // Stripe Payment Intent ID
+  stripeCheckoutSessionId: varchar("stripeCheckoutSessionId", { length: 255 }), // Stripe Checkout Session ID
   paymentStatus: mysqlEnum("paymentStatus", [
     "pending",
     "completed",

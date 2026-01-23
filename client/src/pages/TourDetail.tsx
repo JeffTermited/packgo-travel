@@ -13,7 +13,7 @@ import {
   Phone,
   Mail
 } from "lucide-react";
-import { useLocation, useRoute } from "wouter";
+import { useLocation, useRoute, Link } from "wouter";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
@@ -206,12 +206,14 @@ export default function TourDetail() {
                     </div>
                   </div>
 
-                  <Button 
-                    className="w-full bg-black hover:bg-gray-800 text-white py-6 text-lg font-bold mb-4"
-                    disabled={tour.maxParticipants ? (tour.maxParticipants - tour.currentParticipants) <= 0 : false}
-                  >
-                    {(tour.maxParticipants && (tour.maxParticipants - tour.currentParticipants) <= 0) ? '已額滿' : '立即報名'}
-                  </Button>
+                  <Link href={`/book/${tour.id}`}>
+                    <Button 
+                      className="w-full bg-black hover:bg-gray-800 text-white py-6 text-lg font-bold mb-4"
+                      disabled={tour.maxParticipants ? (tour.maxParticipants - tour.currentParticipants) <= 0 : false}
+                    >
+                      {(tour.maxParticipants && (tour.maxParticipants - tour.currentParticipants) <= 0) ? '已額滿' : '立即報名'}
+                    </Button>
+                  </Link>
 
                   <div className="space-y-3 pt-6 border-t-2 border-black">
                     <h3 className="font-bold text-black mb-4">需要協助？</h3>
