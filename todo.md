@@ -284,4 +284,13 @@
 - [ ] 移除獨立的 /inquiry-management 路由
 - [ ] 更新 Header 只顯示單一「管理後台」入口
 - [x] 測試所有 Tab 功能正常運作
+- [x] 儲存 checkpoint
+
+
+## Header 導航優化與路由清理
+- [x] 移除 App.tsx 中的 /inquiry-management 路由
+- [x] 刪除 InquiryManagement.tsx 頁面檔案
+- [x] 更新 Header.tsx 移除「諮詢管理」導航項目
+- [x] 確保 Header 只顯示單一「管理後台」入口
+- [x] 測試導航功能正常運作
 - [ ] 儲存 checkpoint

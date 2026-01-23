@@ -13,7 +13,7 @@ import BookTour from "./pages/BookTour";
 import BookingDetail from "./pages/BookingDetail";
 import QuickInquiry from "./pages/QuickInquiry";
 import CustomTourRequest from "./pages/CustomTourRequest";
-import InquiryManagement from "./pages/InquiryManagement";
+
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -28,7 +28,7 @@ function Router() {
       <Route path={"/booking/:id"} component={BookingDetail} />
       <Route path={"/inquiry"} component={QuickInquiry} />
       <Route path={"/custom-tour"} component={CustomTourRequest} />
-      <Route path={"/inquiry-management"} component={InquiryManagement} />
+
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

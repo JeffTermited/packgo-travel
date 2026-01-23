@@ -1,6 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Menu, Phone, Search, X, User, Globe, ChevronDown, Shield, MessageSquare } from "lucide-react";
+import { Menu, Phone, Search, X, User, Globe, ChevronDown, Shield } from "lucide-react";
 import { useState } from "react";
 import { Link } from "wouter";
 
@@ -74,10 +74,7 @@ export default function Header() {
                 <Shield className="h-4 w-4" />
                 <span>管理後台</span>
               </Link>
-              <Link href="/inquiry-management" className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:text-black hover:bg-gray-50 rounded-full transition-all">
-                <MessageSquare className="h-4 w-4" />
-                <span>諮詢管理</span>
-              </Link>
+
             </>
           )}
           <div className="flex flex-col items-end gap-1">
