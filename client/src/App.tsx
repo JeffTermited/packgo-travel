@@ -10,6 +10,7 @@ import Admin from "./pages/Admin";
 import Profile from "./pages/Profile";
 import TourDetail from "./pages/TourDetail";
 import BookTour from "./pages/BookTour";
+import BookingDetail from "./pages/BookingDetail";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -21,6 +22,7 @@ function Router() {
       <Route path={"/profile"} component={Profile} />
       <Route path={"/tours/:id"} component={TourDetail} />
       <Route path={"/book/:id"} component={BookTour} />
+      <Route path={"/booking/:id"} component={BookingDetail} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

@@ -133,10 +133,13 @@ export default function BookTour() {
       });
       
       toast.success("預訂成功！", {
-        description: `您的預訂編號是 #${booking.id}`,
+        description: `您的預訂編號是 #${booking.id}，正在前往付款頁面...`,
       });
       
-      navigate(`/booking/${booking.id}`);
+      // Navigate to booking detail page after a short delay
+      setTimeout(() => {
+        navigate(`/booking/${booking.id}`);
+      }, 1500);
     } catch (error: any) {
       toast.error("預訂失敗", {
         description: error.message || "請稍後再試",
