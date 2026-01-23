@@ -24,12 +24,31 @@ export default function Profile() {
     },
   });
   
+  // Avatar delete mutation
+  const deleteAvatarMutation = trpc.auth.deleteAvatar.useMutation({
+    onSuccess: () => {
+      // Refresh user data
+      utils.auth.me.invalidate();
+    },
+  });
+  
   const handleAvatarUpload = async (avatarUrl: string) => {
     try {
       await uploadAvatarMutation.mutateAsync({ avatarUrl });
     } catch (error) {
       console.error("Failed to update avatar:", error);
       alert("更新頭像失敗，請稍後再試");
+    }
+  };
+  
+  const handleAvatarDelete = async () => {
+    if (!confirm("確定要刪除頭像嗎？")) return;
+    
+    try {
+      await deleteAvatarMutation.mutateAsync();
+    } catch (error) {
+      console.error("Failed to delete avatar:", error);
+      alert("刪除頭像失敗，請稍後再試");
     }
   };
 
@@ -110,6 +129,7 @@ export default function Profile() {
                   <AvatarUpload 
                     currentAvatar={user.avatar || undefined}
                     onUploadComplete={handleAvatarUpload}
+                    onDelete={handleAvatarDelete}
                   />
                   <h3 className="text-xl font-bold text-black">{user.name}</h3>
                   <p className="text-sm text-gray-500 mt-1">{user.email}</p>

@@ -119,6 +119,19 @@ Important guidelines:
         }
         return updated;
       }),
+    
+    // Delete avatar
+    deleteAvatar: protectedProcedure
+      .mutation(async ({ ctx }) => {
+        const updated = await db.updateUserAvatar(ctx.user.id, null);
+        if (!updated) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to delete avatar",
+          });
+        }
+        return updated;
+      }),
   }),
 
   // Tour management router (admin only)

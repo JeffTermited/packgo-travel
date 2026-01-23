@@ -598,7 +598,7 @@ export async function updateUserProfile(
 // Update user avatar
 export async function updateUserAvatar(
   userId: number,
-  avatarUrl: string
+  avatarUrl: string | null
 ): Promise<any> {
   const db = await getDb();
   if (!db) {

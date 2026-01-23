@@ -7,9 +7,10 @@ import { Upload, X } from "lucide-react";
 interface AvatarUploadProps {
   currentAvatar?: string;
   onUploadComplete: (avatarUrl: string) => void;
+  onDelete?: () => void;
 }
 
-export default function AvatarUpload({ currentAvatar, onUploadComplete }: AvatarUploadProps) {
+export default function AvatarUpload({ currentAvatar, onUploadComplete, onDelete }: AvatarUploadProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
@@ -131,12 +132,23 @@ export default function AvatarUpload({ currentAvatar, onUploadComplete }: Avatar
             </div>
           )}
         </div>
-        <label
-          htmlFor="avatar-upload"
-          className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-        >
-          <Upload className="h-6 w-6 text-white" />
-        </label>
+        <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/60 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+          <label
+            htmlFor="avatar-upload"
+            className="cursor-pointer p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
+          >
+            <Upload className="h-5 w-5 text-white" />
+          </label>
+          {currentAvatar && onDelete && (
+            <button
+              onClick={onDelete}
+              className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
+              title="刪除頭像"
+            >
+              <X className="h-5 w-5 text-white" />
+            </button>
+          )}
+        </div>
         <input
           id="avatar-upload"
           type="file"
