@@ -9,13 +9,13 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navItems = [
-    { label: "客製旅遊", href: "#custom" },
-    { label: "代辦簽證", href: "#visa" },
-    { label: "包團旅遊", href: "#group-packages" },
-    { label: "機票預購", href: "#flights" },
-    { label: "機場接送", href: "#transfer" },
-    { label: "飯店預訂", href: "#hotels" },
-    { label: "聯絡我們", href: "/inquiry", isLink: true },
+    { label: "客製旅遊", href: "/custom-tours", isLink: true },
+    { label: "代辦簽證", href: "/visa-services", isLink: true },
+    { label: "包團旅遊", href: "/group-packages", isLink: true },
+    { label: "機票預購", href: "/flight-booking", isLink: true },
+    { label: "機場接送", href: "/airport-transfer", isLink: true },
+    { label: "飯店預訂", href: "/hotel-booking", isLink: true },
+    { label: "聯絡我們", href: "/contact-us", isLink: true },
   ];
 
   return (

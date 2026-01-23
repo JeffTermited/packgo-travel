@@ -13,7 +13,17 @@ import BookTour from "./pages/BookTour";
 import BookingDetail from "./pages/BookingDetail";
 import QuickInquiry from "./pages/QuickInquiry";
 import CustomTourRequest from "./pages/CustomTourRequest";
-
+import CustomTours from "./pages/CustomTours";
+import VisaServices from "./pages/VisaServices";
+import GroupPackages from "./pages/GroupPackages";
+import FlightBooking from "./pages/FlightBooking";
+import AirportTransfer from "./pages/AirportTransfer";
+import HotelBooking from "./pages/HotelBooking";
+import AboutUs from "./pages/AboutUs";
+import TermsOfService from "./pages/TermsOfService";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import FAQ from "./pages/FAQ";
+import ContactUs from "./pages/ContactUs";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -27,7 +37,18 @@ function Router() {
       <Route path={"/book/:id"} component={BookTour} />
       <Route path={"/booking/:id"} component={BookingDetail} />
       <Route path={"/inquiry"} component={QuickInquiry} />
-      <Route path={"/custom-tour"} component={CustomTourRequest} />
+      <Route path={"/custom-tour-request"} component={CustomTourRequest} />
+      <Route path={"/custom-tours"} component={CustomTours} />
+      <Route path={"/visa-services"} component={VisaServices} />
+      <Route path={"/group-packages"} component={GroupPackages} />
+      <Route path={"/flight-booking"} component={FlightBooking} />
+      <Route path={"/airport-transfer"} component={AirportTransfer} />
+      <Route path={"/hotel-booking"} component={HotelBooking} />
+      <Route path={"/about-us"} component={AboutUs} />
+      <Route path={"/terms-of-service"} component={TermsOfService} />
+      <Route path={"/privacy-policy"} component={PrivacyPolicy} />
+      <Route path={"/faq"} component={FAQ} />
+      <Route path={"/contact-us"} component={ContactUs} />
 
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}

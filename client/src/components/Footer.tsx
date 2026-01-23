@@ -1,4 +1,5 @@
 import { Facebook, Instagram, Mail, MapPin, Phone } from "lucide-react";
+import { Link } from "wouter";
 
 export default function Footer() {
   return (
@@ -39,11 +40,11 @@ export default function Footer() {
           <div>
             <h3 className="text-lg font-serif font-bold mb-6 text-white">快速連結</h3>
             <ul className="space-y-4 text-sm text-gray-400">
-              <li><a href="#" className="hover:text-primary transition-colors">關於我們</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">服務條款</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">隱私權政策</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">常見問題</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">聯絡我們</a></li>
+              <li><Link href="/about-us" className="hover:text-primary transition-colors">關於我們</Link></li>
+              <li><Link href="/terms-of-service" className="hover:text-primary transition-colors">服務條款</Link></li>
+              <li><Link href="/privacy-policy" className="hover:text-primary transition-colors">隱私權政策</Link></li>
+              <li><Link href="/faq" className="hover:text-primary transition-colors">常見問題</Link></li>
+              <li><Link href="/contact-us" className="hover:text-primary transition-colors">聯絡我們</Link></li>
             </ul>
           </div>
 
@@ -51,12 +52,12 @@ export default function Footer() {
           <div>
             <h3 className="text-lg font-serif font-bold mb-6 text-white">我們的服務</h3>
             <ul className="space-y-4 text-sm text-gray-400">
-              <li><a href="#" className="hover:text-primary transition-colors">客製旅遊 / Customized Tours</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">代辦簽證 / Visa Agency</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">包團旅遊 / Package Tours</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">機票預購 / Ticket Booking</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">機場接送 / Airport Transfer</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">飯店預訂 / Hotel Booking</a></li>
+              <li><Link href="/custom-tours" className="hover:text-primary transition-colors">客製旅遊 / Customized Tours</Link></li>
+              <li><Link href="/visa-services" className="hover:text-primary transition-colors">代辦簽證 / Visa Agency</Link></li>
+              <li><Link href="/group-packages" className="hover:text-primary transition-colors">包團旅遊 / Package Tours</Link></li>
+              <li><Link href="/flight-booking" className="hover:text-primary transition-colors">機票預購 / Ticket Booking</Link></li>
+              <li><Link href="/airport-transfer" className="hover:text-primary transition-colors">機場接送 / Airport Transfer</Link></li>
+              <li><Link href="/hotel-booking" className="hover:text-primary transition-colors">飯店預訂 / Hotel Booking</Link></li>
             </ul>
           </div>
 
