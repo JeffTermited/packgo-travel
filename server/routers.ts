@@ -5,10 +5,73 @@ import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import * as db from "./db";
+import { invokeLLM } from "./_core/llm";
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
   system: systemRouter,
+  
+  // AI Travel Advisor router
+  ai: router({
+    chat: publicProcedure
+      .input(
+        z.object({
+          message: z.string(),
+          conversationHistory: z.array(
+            z.object({
+              role: z.enum(["user", "assistant"]),
+              content: z.string(),
+            })
+          ).optional(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const { message, conversationHistory = [] } = input;
+
+        // Build conversation history for LLM
+        const messages = [
+          {
+            role: "system" as const,
+            content: `You are a professional travel advisor for PACK&GO Travel Agency. Your role is to:
+1. Help customers plan their trips and recommend destinations
+2. Answer questions about travel packages, visa requirements, and travel tips
+3. Provide personalized recommendations based on customer preferences
+4. Be friendly, professional, and helpful
+5. Always respond in Traditional Chinese (繁體中文)
+
+Important guidelines:
+- Focus on travel-related topics only
+- Provide specific, actionable advice
+- Ask clarifying questions when needed
+- Suggest PACK&GO's services when appropriate`,
+          },
+          ...conversationHistory.slice(-10).map((msg) => ({
+            role: msg.role,
+            content: msg.content,
+          })),
+          {
+            role: "user" as const,
+            content: message,
+          },
+        ];
+
+        try {
+          const response = await invokeLLM({ messages });
+          const assistantMessage = response.choices[0]?.message?.content || "抱歉，我無法處理您的請求。請稍後再試。";
+
+          return {
+            response: assistantMessage,
+          };
+        } catch (error) {
+          console.error("[AI Chat] Error:", error);
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "無法連接到 AI 服務，請稍後再試。",
+          });
+        }
+      }),
+  }),
+  
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {

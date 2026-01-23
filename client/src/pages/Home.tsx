@@ -5,12 +5,15 @@ import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import { Button } from "@/components/ui/button";
-import { Mail } from "lucide-react";
+import { Mail, MessageCircle } from "lucide-react";
+import { useState } from "react";
+import AITravelAdvisorDialog from "@/components/AITravelAdvisorDialog";
 
 export default function Home() {
   // The userAuth hooks provides authentication state
   // To implement login/logout functionality, simply call logout() or redirect to getLoginUrl()
   let { user, loading, error, isAuthenticated, logout } = useAuth();
+  const [aiDialogOpen, setAiDialogOpen] = useState(false);
 
   return (
     <div className="min-h-screen flex flex-col bg-white font-sans">
@@ -77,6 +80,21 @@ export default function Home() {
       </main>
 
       <Footer />
+
+      {/* Floating AI Advisor Button */}
+      <button
+        onClick={() => setAiDialogOpen(true)}
+        className="fixed bottom-8 right-8 w-16 h-16 bg-black hover:bg-gray-800 text-white rounded-full shadow-2xl flex items-center justify-center transition-all hover:scale-110 z-50 group"
+        aria-label="AI 旅遊顧問"
+      >
+        <MessageCircle className="h-7 w-7" />
+        <span className="absolute -top-10 right-0 bg-black text-white text-xs px-3 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+          AI 旅遊顧問
+        </span>
+      </button>
+
+      {/* AI Travel Advisor Dialog */}
+      <AITravelAdvisorDialog open={aiDialogOpen} onOpenChange={setAiDialogOpen} />
     </div>
   );
 }

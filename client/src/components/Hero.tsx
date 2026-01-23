@@ -40,7 +40,6 @@ export default function Hero() {
               { id: "group", label: "團體旅遊", icon: <Users className="h-4 w-4" /> },
               { id: "flight", label: "機票", icon: <Plane className="h-4 w-4" /> },
               { id: "hotel", label: "訂房", icon: <Hotel className="h-4 w-4" /> },
-              { id: "ai-advisor", label: "AI 旅遊顧問", icon: <Sparkles className="h-4 w-4 text-primary" /> },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -59,12 +58,7 @@ export default function Hero() {
 
           {/* Tab Content */}
           <div className="p-6 bg-white">
-            {activeTab === "ai-advisor" ? (
-              <div className="animate-in fade-in zoom-in duration-300">
-                <AIAdvisor />
-              </div>
-            ) : (
-              <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
                   {/* Destination Input */}
                   <div className="md:col-span-5 relative group">
@@ -116,8 +110,7 @@ export default function Hero() {
                     ))}
                   </div>
                 </div>
-              </div>
-            )}
+            </div>
           </div>
         </div>
       </div>
