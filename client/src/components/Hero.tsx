@@ -3,10 +3,14 @@ import { Calendar, MapPin, Search, Sparkles, Plane, Hotel, Ticket, Users } from 
 import { useState } from "react";
 import { useLocation } from "wouter";
 import AIAdvisor from "./AIAdvisor";
+import { DateRangePicker } from "@/components/DateRangePicker";
+import { DateRange } from "react-day-picker";
+import { DestinationAutocomplete } from "@/components/DestinationAutocomplete";
 
 export default function Hero() {
   const [activeTab, setActiveTab] = useState("group");
   const [destination, setDestination] = useState("");
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [, setLocation] = useLocation();
 
   const hotKeywords = ["北海道", "東京", "大阪", "歐洲", "土耳其", "郵輪", "滑雪"];
@@ -76,33 +80,23 @@ export default function Hero() {
             <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
                   {/* Destination Input */}
-                  <div className="md:col-span-5 relative group">
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors">
-                      <MapPin className="h-5 w-5" />
-                    </div>
-                    <input 
-                      type="text" 
-                      placeholder="請輸入目的地、景點、關鍵字" 
+                  <div className="md:col-span-5">
+                    <DestinationAutocomplete 
                       value={destination}
-                      onChange={(e) => setDestination(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          handleSearch();
-                        }
-                      }}
-                      className="w-full h-12 pl-12 pr-4 bg-gray-50 border border-gray-200 rounded-full text-gray-900 placeholder:text-gray-400 focus:ring-1 focus:ring-primary focus:border-primary focus:bg-white transition-all outline-none"
+                      onChange={setDestination}
+                      onSelect={handleSearch}
+                      placeholder="請輸入目的地、景點、關鍵字"
+                      className="[&_input]:rounded-full [&_input]:bg-gray-50 [&_input]:border-gray-200 [&_input]:focus:ring-primary [&_input]:focus:border-primary"
                     />
                   </div>
 
                   {/* Date Input */}
-                  <div className="md:col-span-5 relative group">
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors">
-                      <Calendar className="h-5 w-5" />
-                    </div>
-                    <input 
-                      type="text" 
-                      placeholder="選擇出發日期" 
-                      className="w-full h-12 pl-12 pr-4 bg-gray-50 border border-gray-200 rounded-full text-gray-900 placeholder:text-gray-400 focus:ring-1 focus:ring-primary focus:border-primary focus:bg-white transition-all outline-none"
+                  <div className="md:col-span-5">
+                    <DateRangePicker 
+                      value={dateRange}
+                      onChange={setDateRange}
+                      placeholder="選擇出發日期"
+                      className="h-12 rounded-full"
                     />
                   </div>
 

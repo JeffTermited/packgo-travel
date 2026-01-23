@@ -10,6 +10,9 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { trpc } from "@/lib/trpc";
 import { MapPin, Calendar, DollarSign, Heart, Star, Plane, Bus, Hotel, Utensils } from "lucide-react";
+import { DateRangePicker } from "@/components/DateRangePicker";
+import { DateRange } from "react-day-picker";
+import { DestinationAutocomplete } from "@/components/DestinationAutocomplete";
 
 export default function SearchResults() {
   const [location, setLocation] = useLocation();
@@ -17,6 +20,7 @@ export default function SearchResults() {
   
   // Filter states
   const [destination, setDestination] = useState(searchParams.get("destination") || "all");
+  const [keyword, setKeyword] = useState("");
   const [minDays, setMinDays] = useState(Number(searchParams.get("minDays")) || 1);
   const [maxDays, setMaxDays] = useState(Number(searchParams.get("maxDays")) || 30);
   const [minPrice, setMinPrice] = useState(Number(searchParams.get("minPrice")) || 0);
@@ -29,6 +33,7 @@ export default function SearchResults() {
   const [airlines, setAirlines] = useState<string[]>(searchParams.get("airlines")?.split(",").filter(Boolean) || []);
   const [hotelGrade, setHotelGrade] = useState<string[]>(searchParams.get("hotelGrade")?.split(",").filter(Boolean) || []);
   const [specialActivities, setSpecialActivities] = useState<string[]>(searchParams.get("specialActivities")?.split(",").filter(Boolean) || []);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [favorites, setFavorites] = useState<Set<number>>(new Set());
 
   // Sync filters to URL whenever they change
@@ -152,29 +157,20 @@ export default function SearchResults() {
                 {/* Keywords */}
                 <div className="flex-1 min-w-0">
                   <label className="block text-sm font-medium text-gray-700 mb-2">關鍵字</label>
-                  <input 
-                    type="text" 
-                    placeholder="日本" 
-                    className="w-full h-12 px-4 rounded-lg border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all"
+                  <DestinationAutocomplete 
+                    value={keyword}
+                    onChange={setKeyword}
+                    placeholder="日本"
                   />
                 </div>
 
                 {/* Date Range */}
                 <div className="flex-shrink-0 w-full md:w-auto">
                   <label className="block text-sm font-medium text-gray-700 mb-2">出發時間</label>
-                  <div className="flex items-center gap-3">
-                    <input 
-                      type="text"
-                      placeholder="mm/dd/yyyy"
-                      className="w-40 h-12 px-4 rounded-lg border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all text-center"
-                    />
-                    <span className="text-gray-400">~</span>
-                    <input 
-                      type="text"
-                      placeholder="mm/dd/yyyy"
-                      className="w-40 h-12 px-4 rounded-lg border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all text-center"
-                    />
-                  </div>
+                  <DateRangePicker 
+                    value={dateRange}
+                    onChange={setDateRange}
+                  />
                 </div>
 
                 {/* Search Button */}
