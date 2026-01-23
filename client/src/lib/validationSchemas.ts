@@ -94,3 +94,15 @@ export function calculatePasswordStrength(password: string): {
     return { score, label: "強", color: "bg-green-500" };
   }
 }
+
+// Profile edit schema
+export const profileEditSchema = z.object({
+  name: z.string().min(1, "姓名不能為空").max(50, "姓名最多 50 個字元"),
+  phone: z.string().optional().refine(
+    (val) => !val || /^[0-9+\-\s()]+$/.test(val),
+    "電話格式不正確"
+  ),
+  address: z.string().optional(),
+});
+
+export type ProfileEditFormData = z.infer<typeof profileEditSchema>;

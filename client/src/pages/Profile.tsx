@@ -7,14 +7,42 @@ import {
   Loader2, User, Calendar, LogOut, Heart, ShoppingBag, 
   MapPin, TrendingUp, Award, MessageSquare, ChevronRight, Package
 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import AvatarUpload from "@/components/AvatarUpload";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { profileEditSchema, type ProfileEditFormData } from "@/lib/validationSchemas";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function Profile() {
   const { user, loading, isAuthenticated, logout } = useAuth();
   const [, setLocation] = useLocation();
   const utils = trpc.useUtils();
+  const [isEditing, setIsEditing] = useState(false);
+  
+  // Form setup
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<ProfileEditFormData>({
+    resolver: zodResolver(profileEditSchema),
+    defaultValues: {
+      name: user?.name || "",
+      phone: user?.phone || "",
+      address: user?.address || "",
+    },
+  });
+  
+  // Update form when user data changes
+  useEffect(() => {
+    if (user) {
+      reset({
+        name: user.name || "",
+        phone: user.phone || "",
+        address: user.address || "",
+      });
+    }
+  }, [user, reset]);
   
   // Avatar upload mutation
   const uploadAvatarMutation = trpc.auth.uploadAvatar.useMutation({
@@ -50,6 +78,32 @@ export default function Profile() {
       console.error("Failed to delete avatar:", error);
       alert("刪除頭像失敗，請稍後再試");
     }
+  };
+  
+  // Profile update mutation
+  const updateProfileMutation = trpc.auth.updateProfile.useMutation({
+    onSuccess: () => {
+      utils.auth.me.invalidate();
+      setIsEditing(false);
+      alert("個人資料更新成功！");
+    },
+    onError: (error: any) => {
+      console.error("Failed to update profile:", error);
+      alert("更新失敗，請稍後再試");
+    },
+  });
+  
+  const onSubmit = async (data: ProfileEditFormData) => {
+    try {
+      await updateProfileMutation.mutateAsync(data);
+    } catch (error) {
+      // Error handled in mutation
+    }
+  };
+  
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    reset();
   };
 
   // Fetch user bookings
@@ -140,39 +194,112 @@ export default function Profile() {
                   )}
                 </div>
 
-                {/* Profile Info */}
-                <div className="space-y-4 border-t border-gray-200 pt-6">
-                  <div className="flex items-center gap-3 text-sm">
-                    <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
-                      <User className="h-5 w-5 text-gray-600" />
+                {/* Profile Info / Edit Form */}
+                <div className="border-t border-gray-200 pt-6">
+                  {!isEditing ? (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 text-sm">
+                        <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                          <User className="h-5 w-5 text-gray-600" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-gray-500 text-xs">會員編號</p>
+                          <p className="text-black font-medium">#{user.id}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 text-sm">
+                        <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                          <Calendar className="h-5 w-5 text-gray-600" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-gray-500 text-xs">註冊日期</p>
+                          <p className="text-black font-medium">
+                            {new Date(user.createdAt).toLocaleDateString('zh-TW')}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 text-sm">
+                        <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                          <Award className="h-5 w-5 text-gray-600" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-gray-500 text-xs">會員等級</p>
+                          <p className="text-black font-medium">
+                            {user.role === 'admin' ? 'VIP 會員' : '一般會員'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button 
+                        onClick={() => setIsEditing(true)}
+                        className="w-full mt-4 rounded-full bg-black hover:bg-gray-800 text-white"
+                      >
+                        編輯個人資料
+                      </Button>
                     </div>
-                    <div className="flex-1">
-                      <p className="text-gray-500 text-xs">會員編號</p>
-                      <p className="text-black font-medium">#{user.id}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 text-sm">
-                    <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
-                      <Calendar className="h-5 w-5 text-gray-600" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-gray-500 text-xs">註冊日期</p>
-                      <p className="text-black font-medium">
-                        {new Date(user.createdAt).toLocaleDateString('zh-TW')}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 text-sm">
-                    <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
-                      <Award className="h-5 w-5 text-gray-600" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-gray-500 text-xs">會員等級</p>
-                      <p className="text-black font-medium">
-                        {user.role === 'admin' ? 'VIP 會員' : '一般會員'}
-                      </p>
-                    </div>
-                  </div>
+                  ) : (
+                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                      <div>
+                        <Label htmlFor="name" className="text-sm font-medium text-gray-700">
+                          姓名
+                        </Label>
+                        <Input
+                          id="name"
+                          {...register("name")}
+                          className="mt-1 rounded-full border-2 border-gray-300 focus:border-black"
+                          placeholder="請輸入姓名"
+                        />
+                        {errors.name && (
+                          <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>
+                        )}
+                      </div>
+                      <div>
+                        <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
+                          電話
+                        </Label>
+                        <Input
+                          id="phone"
+                          {...register("phone")}
+                          className="mt-1 rounded-full border-2 border-gray-300 focus:border-black"
+                          placeholder="請輸入電話號碼"
+                        />
+                        {errors.phone && (
+                          <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>
+                        )}
+                      </div>
+                      <div>
+                        <Label htmlFor="address" className="text-sm font-medium text-gray-700">
+                          地址
+                        </Label>
+                        <Textarea
+                          id="address"
+                          {...register("address")}
+                          className="mt-1 rounded-2xl border-2 border-gray-300 focus:border-black"
+                          placeholder="請輸入地址"
+                          rows={3}
+                        />
+                        {errors.address && (
+                          <p className="text-red-500 text-xs mt-1">{errors.address.message}</p>
+                        )}
+                      </div>
+                      <div className="flex gap-2 mt-4">
+                        <Button 
+                          type="submit"
+                          disabled={updateProfileMutation.isPending}
+                          className="flex-1 rounded-full bg-black hover:bg-gray-800 text-white"
+                        >
+                          {updateProfileMutation.isPending ? "儲存中..." : "儲存"}
+                        </Button>
+                        <Button 
+                          type="button"
+                          onClick={handleCancelEdit}
+                          variant="outline"
+                          className="flex-1 rounded-full border-2 border-black hover:bg-black hover:text-white"
+                        >
+                          取消
+                        </Button>
+                      </div>
+                    </form>
+                  )}
                 </div>
               </CardContent>
             </Card>
