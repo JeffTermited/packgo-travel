@@ -23,13 +23,34 @@ export default function SearchResults() {
   const [maxPrice, setMaxPrice] = useState(Number(searchParams.get("maxPrice")) || 100000);
   const [sortBy, setSortBy] = useState<"popular" | "price_asc" | "price_desc" | "days_asc" | "days_desc">(searchParams.get("sortBy") as any || "popular");
   
-  // New filter states
-  const [tourType, setTourType] = useState<string[]>([]);
-  const [weekdays, setWeekdays] = useState<string[]>([]);
-  const [airlines, setAirlines] = useState<string[]>([]);
-  const [hotelGrade, setHotelGrade] = useState<string[]>([]);
-  const [specialActivities, setSpecialActivities] = useState<string[]>([]);
+  // New filter states - initialize from URL
+  const [tourType, setTourType] = useState<string[]>(searchParams.get("tourType")?.split(",").filter(Boolean) || []);
+  const [weekdays, setWeekdays] = useState<string[]>(searchParams.get("weekdays")?.split(",").filter(Boolean) || []);
+  const [airlines, setAirlines] = useState<string[]>(searchParams.get("airlines")?.split(",").filter(Boolean) || []);
+  const [hotelGrade, setHotelGrade] = useState<string[]>(searchParams.get("hotelGrade")?.split(",").filter(Boolean) || []);
+  const [specialActivities, setSpecialActivities] = useState<string[]>(searchParams.get("specialActivities")?.split(",").filter(Boolean) || []);
   const [favorites, setFavorites] = useState<Set<number>>(new Set());
+
+  // Sync filters to URL whenever they change
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (destination && destination !== "all") params.set("destination", destination);
+    if (minDays !== 1) params.set("minDays", minDays.toString());
+    if (maxDays !== 30) params.set("maxDays", maxDays.toString());
+    if (minPrice !== 0) params.set("minPrice", minPrice.toString());
+    if (maxPrice !== 100000) params.set("maxPrice", maxPrice.toString());
+    if (sortBy !== "popular") params.set("sortBy", sortBy);
+    if (tourType.length > 0) params.set("tourType", tourType.join(","));
+    if (weekdays.length > 0) params.set("weekdays", weekdays.join(","));
+    if (airlines.length > 0) params.set("airlines", airlines.join(","));
+    if (hotelGrade.length > 0) params.set("hotelGrade", hotelGrade.join(","));
+    if (specialActivities.length > 0) params.set("specialActivities", specialActivities.join(","));
+    
+    const newUrl = params.toString() ? `/search?${params.toString()}` : "/search";
+    if (window.location.pathname + window.location.search !== newUrl) {
+      window.history.replaceState({}, "", newUrl);
+    }
+  }, [destination, minDays, maxDays, minPrice, maxPrice, sortBy, tourType, weekdays, airlines, hotelGrade, specialActivities]);
 
   // Fetch tours with filters
   const { data: tours, isLoading } = trpc.tours.search.useQuery({
@@ -360,6 +381,102 @@ export default function SearchResults() {
 
             {/* Results List - Horizontal Cards */}
             <div className="lg:col-span-3">
+              {/* Selected Filters Display */}
+              {(destination !== "all" || tourType.length > 0 || weekdays.length > 0 || airlines.length > 0 || hotelGrade.length > 0 || specialActivities.length > 0 || minDays !== 1 || maxDays !== 30 || minPrice !== 0 || maxPrice !== 100000) && (
+                <div className="mb-6 p-4 border-2 border-black bg-gray-50">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-semibold text-black">已選篩選條件</h3>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={handleResetFilters}
+                      className="text-xs text-gray-600 hover:text-black h-7"
+                    >
+                      清除全部
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {destination !== "all" && (
+                      <Badge 
+                        variant="outline" 
+                        className="border-black bg-white text-black px-3 py-1 cursor-pointer hover:bg-black hover:text-white transition-colors"
+                        onClick={() => setDestination("all")}
+                      >
+                        目的地：{destination} ×
+                      </Badge>
+                    )}
+                    {tourType.map(type => (
+                      <Badge 
+                        key={type}
+                        variant="outline" 
+                        className="border-black bg-white text-black px-3 py-1 cursor-pointer hover:bg-black hover:text-white transition-colors"
+                        onClick={() => setTourType(tourType.filter(t => t !== type))}
+                      >
+                        {type} ×
+                      </Badge>
+                    ))}
+                    {weekdays.map(day => (
+                      <Badge 
+                        key={day}
+                        variant="outline" 
+                        className="border-black bg-white text-black px-3 py-1 cursor-pointer hover:bg-black hover:text-white transition-colors"
+                        onClick={() => setWeekdays(weekdays.filter(d => d !== day))}
+                      >
+                        星期{day} ×
+                      </Badge>
+                    ))}
+                    {airlines.map(airline => (
+                      <Badge 
+                        key={airline}
+                        variant="outline" 
+                        className="border-black bg-white text-black px-3 py-1 cursor-pointer hover:bg-black hover:text-white transition-colors"
+                        onClick={() => setAirlines(airlines.filter(a => a !== airline))}
+                      >
+                        {airline} ×
+                      </Badge>
+                    ))}
+                    {hotelGrade.map(grade => (
+                      <Badge 
+                        key={grade}
+                        variant="outline" 
+                        className="border-black bg-white text-black px-3 py-1 cursor-pointer hover:bg-black hover:text-white transition-colors"
+                        onClick={() => setHotelGrade(hotelGrade.filter(g => g !== grade))}
+                      >
+                        {grade} ×
+                      </Badge>
+                    ))}
+                    {specialActivities.map(activity => (
+                      <Badge 
+                        key={activity}
+                        variant="outline" 
+                        className="border-black bg-white text-black px-3 py-1 cursor-pointer hover:bg-black hover:text-white transition-colors"
+                        onClick={() => setSpecialActivities(specialActivities.filter(a => a !== activity))}
+                      >
+                        {activity} ×
+                      </Badge>
+                    ))}
+                    {(minDays !== 1 || maxDays !== 30) && (
+                      <Badge 
+                        variant="outline" 
+                        className="border-black bg-white text-black px-3 py-1 cursor-pointer hover:bg-black hover:text-white transition-colors"
+                        onClick={() => { setMinDays(1); setMaxDays(30); }}
+                      >
+                        天數：{minDays}-{maxDays}天 ×
+                      </Badge>
+                    )}
+                    {(minPrice !== 0 || maxPrice !== 100000) && (
+                      <Badge 
+                        variant="outline" 
+                        className="border-black bg-white text-black px-3 py-1 cursor-pointer hover:bg-black hover:text-white transition-colors"
+                        onClick={() => { setMinPrice(0); setMaxPrice(100000); }}
+                      >
+                        價格：${minPrice.toLocaleString()}-${maxPrice.toLocaleString()} ×
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {isLoading ? (
                 <div className="text-center py-12">
                   <p className="text-gray-500">載入中...</p>

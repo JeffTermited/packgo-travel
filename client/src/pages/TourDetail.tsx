@@ -170,6 +170,30 @@ export default function TourDetail() {
                         {tour.category === 'theme' && '主題旅遊'}
                       </p>
                     </div>
+                    {tour.airline && (
+                      <div>
+                        <h3 className="font-bold text-black mb-2">航空公司</h3>
+                        <p className="text-gray-700">{tour.airline}</p>
+                      </div>
+                    )}
+                    {tour.hotelGrade && (
+                      <div>
+                        <h3 className="font-bold text-black mb-2">飯店等級</h3>
+                        <p className="text-gray-700">{tour.hotelGrade}</p>
+                      </div>
+                    )}
+                    {tour.specialActivities && (
+                      <div className="md:col-span-2">
+                        <h3 className="font-bold text-black mb-2">特殊活動</h3>
+                        <div className="flex flex-wrap gap-2">
+                          {JSON.parse(tour.specialActivities).map((activity: string, index: number) => (
+                            <span key={index} className="px-3 py-1 border-2 border-black text-black text-sm">
+                              {activity}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
