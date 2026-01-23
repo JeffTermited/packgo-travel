@@ -177,3 +177,8 @@
 - [x] 更新 BookingDetails 頁面為圓潤設計
 - [x] 更新 AdminDashboard 頁面為圓潤設計
 - [x] 更新所有共用組件（Header, Footer, etc.）為圓潤設計
+
+
+### 修正登入頁面 TabsList 圓角設計
+- [x] 修正 TabsList 組件使兩個 Tab 都完全圓角
+- [x] 確保 TabTrigger 的圓角與整體設計一致

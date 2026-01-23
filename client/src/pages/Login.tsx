@@ -62,13 +62,13 @@ export default function Login() {
             <TabsList className="grid w-full grid-cols-2 mb-8 h-12 bg-transparent border border-black rounded-full">
               <TabsTrigger
                 value="signin"
-                className="data-[state=active]:bg-black data-[state=active]:text-white text-black font-bold tracking-wide"
+                className="data-[state=active]:bg-black data-[state=active]:text-white text-black font-bold tracking-wide rounded-full"
               >
                 Sign In
               </TabsTrigger>
               <TabsTrigger
                 value="register"
-                className="data-[state=active]:bg-black data-[state=active]:text-white text-black font-bold tracking-wide"
+                className="data-[state=active]:bg-black data-[state=active]:text-white text-black font-bold tracking-wide rounded-full"
               >
                 Register
               </TabsTrigger>
