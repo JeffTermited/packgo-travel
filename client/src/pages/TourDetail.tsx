@@ -74,7 +74,7 @@ export default function TourDetail() {
             <Button 
               variant="outline" 
               onClick={() => setLocation("/")}
-              className="mb-6 border-2 border-white text-white hover:bg-white hover:text-black"
+              className="mb-6 border-2 border-white text-white hover:bg-white hover:text-black rounded-2xl"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               返回首頁
@@ -187,7 +187,7 @@ export default function TourDetail() {
                         <h3 className="font-bold text-black mb-2">特殊活動</h3>
                         <div className="flex flex-wrap gap-2">
                           {JSON.parse(tour.specialActivities).map((activity: string, index: number) => (
-                            <span key={index} className="px-3 py-1 border-2 border-black text-black text-sm">
+                            <span key={index} className="px-3 py-1 border-2 border-black text-black text-sm rounded-full">
                               {activity}
                             </span>
                           ))}

@@ -140,7 +140,7 @@ export default function SearchResults() {
                 <div className="flex-shrink-0 w-full md:w-32">
                   <label className="block text-sm font-medium text-gray-700 mb-2">出發地</label>
                   <Select value={destination} onValueChange={setDestination}>
-                    <SelectTrigger className="h-12 rounded-lg border-2 border-gray-300">
+                    <SelectTrigger className="h-12 rounded-2xl border-22 border-gray-300">
                       <SelectValue placeholder="全部" />
                     </SelectTrigger>
                     <SelectContent>
@@ -295,7 +295,7 @@ export default function SearchResults() {
                           key={day}
                           variant={weekdays.includes(day) ? "default" : "outline"}
                           size="sm"
-                          className={`h-8 text-xs ${
+                          className={`h-8 text-xs rounded-xl ${
                             weekdays.includes(day) 
                               ? "bg-black text-white hover:bg-gray-800" 
                               : "border-gray-300 hover:border-black"
