@@ -1,12 +1,27 @@
 import { Button } from "@/components/ui/button";
 import { Calendar, MapPin, Search, Sparkles, Plane, Hotel, Ticket, Users } from "lucide-react";
 import { useState } from "react";
+import { useLocation } from "wouter";
 import AIAdvisor from "./AIAdvisor";
 
 export default function Hero() {
   const [activeTab, setActiveTab] = useState("group");
+  const [destination, setDestination] = useState("");
+  const [, setLocation] = useLocation();
 
   const hotKeywords = ["北海道", "東京", "大阪", "歐洲", "土耳其", "郵輪", "滑雪"];
+
+  const handleSearch = () => {
+    if (destination.trim()) {
+      setLocation(`/search?destination=${encodeURIComponent(destination.trim())}`);
+    } else {
+      setLocation("/search");
+    }
+  };
+
+  const handleKeywordClick = (keyword: string) => {
+    setLocation(`/search?destination=${encodeURIComponent(keyword)}`);
+  };
 
   return (
     <section className="relative w-full h-[600px] md:h-[700px] flex items-center justify-center overflow-hidden">
@@ -68,6 +83,13 @@ export default function Hero() {
                     <input 
                       type="text" 
                       placeholder="請輸入目的地、景點、關鍵字" 
+                      value={destination}
+                      onChange={(e) => setDestination(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          handleSearch();
+                        }
+                      }}
                       className="w-full h-12 pl-12 pr-4 bg-gray-50 border border-gray-200 rounded-full text-gray-900 placeholder:text-gray-400 focus:ring-1 focus:ring-primary focus:border-primary focus:bg-white transition-all outline-none"
                     />
                   </div>
@@ -87,6 +109,7 @@ export default function Hero() {
                   {/* Search Button */}
                   <div className="md:col-span-2">
                     <Button 
+                      onClick={handleSearch}
                       className="w-full h-12 bg-primary hover:bg-red-700 text-white rounded-full font-bold shadow-md transition-all hover:shadow-lg"
                     >
                       <Search className="h-5 w-5 mr-2" />
@@ -100,13 +123,13 @@ export default function Hero() {
                   <span className="font-medium text-primary">熱門搜尋：</span>
                   <div className="flex flex-wrap gap-2">
                     {hotKeywords.map((keyword) => (
-                      <a 
+                      <button 
                         key={keyword} 
-                        href="#" 
+                        onClick={() => handleKeywordClick(keyword)}
                         className="hover:text-primary hover:underline transition-colors"
                       >
                         {keyword}
-                      </a>
+                      </button>
                     ))}
                   </div>
                 </div>
