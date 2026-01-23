@@ -56,6 +56,9 @@ export const tours = mysqlTable("tours", {
   highlights: text("highlights"), // JSON string of highlights array
   includes: text("includes"),     // JSON string of what's included
   excludes: text("excludes"),     // JSON string of what's excluded
+  airline: varchar("airline", { length: 100 }), // Airline company
+  hotelGrade: varchar("hotelGrade", { length: 50 }), // Hotel grade (e.g., 五星級, 四星級)
+  specialActivities: text("specialActivities"), // JSON string of special activities array
   createdBy: int("createdBy").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

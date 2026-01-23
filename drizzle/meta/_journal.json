@@ -43,6 +43,13 @@
       "when": 1769154265115,
       "tag": "0005_slippery_robin_chapel",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1769201993709,
+      "tag": "0006_lively_randall_flagg",
+      "breakpoints": true
     }
   ]
 }

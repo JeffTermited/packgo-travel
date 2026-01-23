@@ -26,6 +26,9 @@ export default function SearchResults() {
   // New filter states
   const [tourType, setTourType] = useState<string[]>([]);
   const [weekdays, setWeekdays] = useState<string[]>([]);
+  const [airlines, setAirlines] = useState<string[]>([]);
+  const [hotelGrade, setHotelGrade] = useState<string[]>([]);
+  const [specialActivities, setSpecialActivities] = useState<string[]>([]);
   const [favorites, setFavorites] = useState<Set<number>>(new Set());
 
   // Fetch tours with filters
@@ -35,6 +38,9 @@ export default function SearchResults() {
     maxDays,
     minPrice,
     maxPrice,
+    airlines: airlines.length > 0 ? airlines : undefined,
+    hotelGrades: hotelGrade.length > 0 ? hotelGrade : undefined,
+    specialActivities: specialActivities.length > 0 ? specialActivities : undefined,
     sortBy,
   });
 
@@ -58,6 +64,9 @@ export default function SearchResults() {
     setSortBy("popular");
     setTourType([]);
     setWeekdays([]);
+    setAirlines([]);
+    setHotelGrade([]);
+    setSpecialActivities([]);
     setLocation("/search");
   };
 
@@ -209,6 +218,90 @@ export default function SearchResults() {
                         >
                           {day}
                         </Button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Airlines Filter */}
+                  <div className="space-y-3">
+                    <label className="text-sm font-semibold text-black flex items-center gap-2">
+                      <Plane className="h-4 w-4" />
+                      航空公司
+                    </label>
+                    <div className="space-y-2">
+                      {["中華航空", "長榮航空", "星宇航空", "國泰航空", "日本航空", "全日空"].map((airline) => (
+                        <div key={airline} className="flex items-center space-x-2">
+                          <Checkbox 
+                            id={airline}
+                            checked={airlines.includes(airline)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setAirlines([...airlines, airline]);
+                              } else {
+                                setAirlines(airlines.filter(a => a !== airline));
+                              }
+                            }}
+                          />
+                          <label htmlFor={airline} className="text-sm text-gray-700 cursor-pointer">
+                            {airline}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Hotel Grade Filter */}
+                  <div className="space-y-3">
+                    <label className="text-sm font-semibold text-black flex items-center gap-2">
+                      <Hotel className="h-4 w-4" />
+                      飯店等級
+                    </label>
+                    <div className="space-y-2">
+                      {["五星級", "四星級", "三星級", "精品飯店", "溫泉飯店"].map((grade) => (
+                        <div key={grade} className="flex items-center space-x-2">
+                          <Checkbox 
+                            id={grade}
+                            checked={hotelGrade.includes(grade)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setHotelGrade([...hotelGrade, grade]);
+                              } else {
+                                setHotelGrade(hotelGrade.filter(g => g !== grade));
+                              }
+                            }}
+                          />
+                          <label htmlFor={grade} className="text-sm text-gray-700 cursor-pointer">
+                            {grade}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Special Activities Filter */}
+                  <div className="space-y-3">
+                    <label className="text-sm font-semibold text-black flex items-center gap-2">
+                      <Star className="h-4 w-4" />
+                      特殊活動
+                    </label>
+                    <div className="space-y-2">
+                      {["賞櫻", "賞楓", "滑雪", "溫泉", "美食之旅", "文化體驗", "購物行程"].map((activity) => (
+                        <div key={activity} className="flex items-center space-x-2">
+                          <Checkbox 
+                            id={activity}
+                            checked={specialActivities.includes(activity)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setSpecialActivities([...specialActivities, activity]);
+                              } else {
+                                setSpecialActivities(specialActivities.filter(a => a !== activity));
+                              }
+                            }}
+                          />
+                          <label htmlFor={activity} className="text-sm text-gray-700 cursor-pointer">
+                            {activity}
+                          </label>
+                        </div>
                       ))}
                     </div>
                   </div>

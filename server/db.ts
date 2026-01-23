@@ -1,4 +1,4 @@
-import { eq, and, gte, lte, desc } from "drizzle-orm";
+import { eq, and, gte, lte, desc, inArray } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { 
   InsertUser, users, 
@@ -686,6 +686,9 @@ export async function searchTours(filters: {
   maxDays?: number;
   minPrice?: number;
   maxPrice?: number;
+  airlines?: string[];
+  hotelGrades?: string[];
+  specialActivities?: string[];
   sortBy?: string;
 }): Promise<Tour[]> {
   const db = await getDb();
@@ -716,20 +719,48 @@ export async function searchTours(filters: {
     conditions.push(lte(tours.price, filters.maxPrice));
   }
 
+  if (filters.airlines && filters.airlines.length > 0) {
+    conditions.push(inArray(tours.airline, filters.airlines));
+  }
+
+  if (filters.hotelGrades && filters.hotelGrades.length > 0) {
+    conditions.push(inArray(tours.hotelGrade, filters.hotelGrades));
+  }
+
+  // Note: specialActivities is stored as JSON string, so we need to filter in memory
+  // For now, we'll fetch all matching tours and filter in memory
+
   // Build query with conditions
   let query = db.select().from(tours).where(and(...conditions)).$dynamic();
 
   // Apply sorting
+  let results: Tour[];
   if (filters.sortBy === "price_asc") {
-    return await query.orderBy(tours.price);
+    results = await query.orderBy(tours.price);
   } else if (filters.sortBy === "price_desc") {
-    return await query.orderBy(desc(tours.price));
+    results = await query.orderBy(desc(tours.price));
   } else if (filters.sortBy === "days_asc") {
-    return await query.orderBy(tours.duration);
+    results = await query.orderBy(tours.duration);
   } else if (filters.sortBy === "days_desc") {
-    return await query.orderBy(desc(tours.duration));
+    results = await query.orderBy(desc(tours.duration));
   } else {
     // Default: sort by featured and then by createdAt
-    return await query.orderBy(desc(tours.featured), desc(tours.createdAt));
+    results = await query.orderBy(desc(tours.featured), desc(tours.createdAt));
   }
+
+  // Filter by special activities if specified (in-memory filtering for JSON field)
+  if (filters.specialActivities && filters.specialActivities.length > 0) {
+    results = results.filter(tour => {
+      if (!tour.specialActivities) return false;
+      try {
+        const activities = JSON.parse(tour.specialActivities);
+        if (!Array.isArray(activities)) return false;
+        return filters.specialActivities!.some(activity => activities.includes(activity));
+      } catch {
+        return false;
+      }
+    });
+  }
+
+  return results;
 }

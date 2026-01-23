@@ -174,6 +174,9 @@ Important guidelines:
           maxDays: z.number().optional(),
           minPrice: z.number().optional(),
           maxPrice: z.number().optional(),
+          airlines: z.array(z.string()).optional(),
+          hotelGrades: z.array(z.string()).optional(),
+          specialActivities: z.array(z.string()).optional(),
           sortBy: z.enum(["popular", "price_asc", "price_desc", "days_asc", "days_desc"]).optional(),
         })
       )
