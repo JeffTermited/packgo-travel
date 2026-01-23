@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { trpc } from "@/lib/trpc";
-import { MapPin, Calendar, DollarSign, Heart, Star, Plane, Bus, Hotel, Utensils } from "lucide-react";
+import { MapPin, Calendar, DollarSign, Heart, Star, Plane, Bus, Hotel, Utensils, ChevronDown, ChevronUp } from "lucide-react";
 import { DateRangePicker } from "@/components/DateRangePicker";
 import { DateRange } from "react-day-picker";
 import { DestinationAutocomplete } from "@/components/DestinationAutocomplete";
@@ -35,6 +35,16 @@ export default function SearchResults() {
   const [specialActivities, setSpecialActivities] = useState<string[]>(searchParams.get("specialActivities")?.split(",").filter(Boolean) || []);
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [favorites, setFavorites] = useState<Set<number>>(new Set());
+  
+  // Collapsible states for filter sections
+  const [isDestinationOpen, setIsDestinationOpen] = useState(true);
+  const [isTourTypeOpen, setIsTourTypeOpen] = useState(true);
+  const [isDaysOpen, setIsDaysOpen] = useState(true);
+  const [isWeekdayOpen, setIsWeekdayOpen] = useState(true);
+  const [isAirlinesOpen, setIsAirlinesOpen] = useState(true);
+  const [isHotelGradeOpen, setIsHotelGradeOpen] = useState(true);
+  const [isActivitiesOpen, setIsActivitiesOpen] = useState(true);
+  const [isPriceOpen, setIsPriceOpen] = useState(true);
 
   // Sync filters to URL whenever they change
   useEffect(() => {
@@ -217,29 +227,44 @@ export default function SearchResults() {
 
                   {/* Destination Filter */}
                   <div className="space-y-3">
-                    <label className="text-sm font-semibold text-black flex items-center gap-2">
-                      <MapPin className="h-4 w-4" />
-                      目的地
-                    </label>
-                    <Select value={destination} onValueChange={setDestination}>
-                      <SelectTrigger className="border-0 bg-white rounded-2xl h-12 shadow-sm">
-                        <SelectValue placeholder="選擇目的地" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">全部</SelectItem>
-                        <SelectItem value="日本">日本</SelectItem>
-                        <SelectItem value="韓國">韓國</SelectItem>
-                        <SelectItem value="歐洲">歐洲</SelectItem>
-                        <SelectItem value="美國">美國</SelectItem>
-                        <SelectItem value="東南亞">東南亞</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <button 
+                      onClick={() => setIsDestinationOpen(!isDestinationOpen)}
+                      className="w-full text-sm font-semibold text-black flex items-center justify-between hover:text-gray-700 transition-colors"
+                    >
+                      <div className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4" />
+                        目的地
+                      </div>
+                      {isDestinationOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                    </button>
+                    {isDestinationOpen && (
+                      <Select value={destination} onValueChange={setDestination}>
+                        <SelectTrigger className="border-0 bg-white rounded-2xl h-12 shadow-sm">
+                          <SelectValue placeholder="選擇目的地" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">全部</SelectItem>
+                          <SelectItem value="日本">日本</SelectItem>
+                          <SelectItem value="韓國">韓國</SelectItem>
+                          <SelectItem value="歐洲">歐洲</SelectItem>
+                          <SelectItem value="美國">美國</SelectItem>
+                          <SelectItem value="東南亞">東南亞</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
                   </div>
 
                   {/* Tour Type Filter */}
                   <div className="space-y-3">
-                    <label className="text-sm font-semibold text-black">旅遊型態</label>
-                    <div className="grid grid-cols-2 gap-2">
+                    <button 
+                      onClick={() => setIsTourTypeOpen(!isTourTypeOpen)}
+                      className="w-full text-sm font-semibold text-black flex items-center justify-between hover:text-gray-700 transition-colors"
+                    >
+                      旅遊型態
+                      {isTourTypeOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                    </button>
+                    {isTourTypeOpen && (
+                      <div className="grid grid-cols-2 gap-2">
                       {["團體旅遊", "自由行", "客製包團"].map((type) => (
                         <div key={type} className="flex items-center space-x-2">
                           <Checkbox 
@@ -258,15 +283,23 @@ export default function SearchResults() {
                           </label>
                         </div>
                       ))}
-                    </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Days Filter */}
                   <div className="space-y-3">
-                    <label className="text-sm font-semibold text-black flex items-center gap-2">
-                      <Calendar className="h-4 w-4" />
-                      旅遊天數
-                    </label>
+                    <button 
+                      onClick={() => setIsDaysOpen(!isDaysOpen)}
+                      className="w-full text-sm font-semibold text-black flex items-center justify-between hover:text-gray-700 transition-colors"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4" />
+                        旅遊天數
+                      </div>
+                      {isDaysOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                    </button>
+                    {isDaysOpen && (
                     <div className="space-y-2">
                       <div className="flex justify-between text-xs text-gray-600">
                         <span>{minDays} 天</span>
@@ -283,12 +316,20 @@ export default function SearchResults() {
                         }}
                         className="py-2"
                       />
-                    </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Weekday Filter */}
                   <div className="space-y-3">
-                    <label className="text-sm font-semibold text-black">出發星期</label>
+                    <button 
+                      onClick={() => setIsWeekdayOpen(!isWeekdayOpen)}
+                      className="w-full text-sm font-semibold text-black flex items-center justify-between hover:text-gray-700 transition-colors"
+                    >
+                      出發星期
+                      {isWeekdayOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                    </button>
+                    {isWeekdayOpen && (
                     <div className="grid grid-cols-4 gap-2">
                       {["日", "一", "二", "三", "四", "五", "六"].map((day, index) => (
                         <Button
@@ -311,15 +352,23 @@ export default function SearchResults() {
                           {day}
                         </Button>
                       ))}
-                    </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Airlines Filter */}
                   <div className="space-y-3">
-                    <label className="text-sm font-semibold text-black flex items-center gap-2">
-                      <Plane className="h-4 w-4" />
-                      航空公司
-                    </label>
+                    <button 
+                      onClick={() => setIsAirlinesOpen(!isAirlinesOpen)}
+                      className="w-full text-sm font-semibold text-black flex items-center justify-between hover:text-gray-700 transition-colors"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Plane className="h-4 w-4" />
+                        航空公司
+                      </div>
+                      {isAirlinesOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                    </button>
+                    {isAirlinesOpen && (
                     <div className="grid grid-cols-2 gap-2">
                       {["中華航空", "長榮航空", "星宇航空", "國泰航空", "日本航空", "全日空"].map((airline) => (
                         <div key={airline} className="flex items-center space-x-2">
@@ -339,15 +388,23 @@ export default function SearchResults() {
                           </label>
                         </div>
                       ))}
-                    </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Hotel Grade Filter */}
                   <div className="space-y-3">
-                    <label className="text-sm font-semibold text-black flex items-center gap-2">
-                      <Hotel className="h-4 w-4" />
-                      飯店等級
-                    </label>
+                    <button 
+                      onClick={() => setIsHotelGradeOpen(!isHotelGradeOpen)}
+                      className="w-full text-sm font-semibold text-black flex items-center justify-between hover:text-gray-700 transition-colors"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Hotel className="h-4 w-4" />
+                        飯店等級
+                      </div>
+                      {isHotelGradeOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                    </button>
+                    {isHotelGradeOpen && (
                     <div className="grid grid-cols-2 gap-2">
                       {["五星級", "四星級", "三星級", "精品飯店", "溫泉飯店"].map((grade) => (
                         <div key={grade} className="flex items-center space-x-2">
@@ -367,15 +424,23 @@ export default function SearchResults() {
                           </label>
                         </div>
                       ))}
-                    </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Special Activities Filter */}
                   <div className="space-y-3">
-                    <label className="text-sm font-semibold text-black flex items-center gap-2">
-                      <Star className="h-4 w-4" />
-                      特殊活動
-                    </label>
+                    <button 
+                      onClick={() => setIsActivitiesOpen(!isActivitiesOpen)}
+                      className="w-full text-sm font-semibold text-black flex items-center justify-between hover:text-gray-700 transition-colors"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Star className="h-4 w-4" />
+                        特殊活動
+                      </div>
+                      {isActivitiesOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                    </button>
+                    {isActivitiesOpen && (
                     <div className="grid grid-cols-2 gap-2">
                       {["賞櫻", "賞楓", "滑雪", "溫泉", "美食之旅", "文化體驗", "購物行程"].map((activity) => (
                         <div key={activity} className="flex items-center space-x-2">
@@ -395,32 +460,41 @@ export default function SearchResults() {
                           </label>
                         </div>
                       ))}
-                    </div>
+                      </div>
+                    )}
                   </div>
 
-                  {/* Price Filter */}
+                  {/* Price Range Filter */}
                   <div className="space-y-3">
-                    <label className="text-sm font-semibold text-black flex items-center gap-2">
-                      <DollarSign className="h-4 w-4" />
-                      價格區間
-                    </label>
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-xs text-gray-600">
-                        <span>NT$ {minPrice.toLocaleString()}</span>
-                        <span>NT$ {maxPrice.toLocaleString()}</span>
+                    <button 
+                      onClick={() => setIsPriceOpen(!isPriceOpen)}
+                      className="w-full text-sm font-semibold text-black flex items-center justify-between hover:text-gray-700 transition-colors"
+                    >
+                      <div className="flex items-center gap-2">
+                        <DollarSign className="h-4 w-4" />
+                        價格區間
                       </div>
-                      <Slider
-                        min={0}
-                        max={100000}
-                        step={5000}
-                        value={[minPrice, maxPrice]}
-                        onValueChange={([min, max]) => {
-                          setMinPrice(min);
-                          setMaxPrice(max);
-                        }}
-                        className="py-2"
-                      />
-                    </div>
+                      {isPriceOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                    </button>
+                    {isPriceOpen && (
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-xs text-gray-600">
+                          <span>NT$ {minPrice.toLocaleString()}</span>
+                          <span>NT$ {maxPrice.toLocaleString()}</span>
+                        </div>
+                        <Slider
+                          min={0}
+                          max={100000}
+                          step={5000}
+                          value={[minPrice, maxPrice]}
+                          onValueChange={([min, max]) => {
+                            setMinPrice(min);
+                            setMaxPrice(max);
+                          }}
+                          className="py-2"
+                        />
+                      </div>
+                    )}
                   </div>
 
                   {/* Sort By */}
