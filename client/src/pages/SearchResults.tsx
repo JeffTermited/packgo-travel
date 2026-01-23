@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { trpc } from "@/lib/trpc";
-import { MapPin, Calendar, DollarSign, Users } from "lucide-react";
+import { MapPin, Calendar, DollarSign, Heart, Star, Plane, Bus, Hotel, Utensils } from "lucide-react";
 
 export default function SearchResults() {
   const [location, setLocation] = useLocation();
@@ -20,6 +22,11 @@ export default function SearchResults() {
   const [minPrice, setMinPrice] = useState(Number(searchParams.get("minPrice")) || 0);
   const [maxPrice, setMaxPrice] = useState(Number(searchParams.get("maxPrice")) || 100000);
   const [sortBy, setSortBy] = useState<"popular" | "price_asc" | "price_desc" | "days_asc" | "days_desc">(searchParams.get("sortBy") as any || "popular");
+  
+  // New filter states
+  const [tourType, setTourType] = useState<string[]>([]);
+  const [weekdays, setWeekdays] = useState<string[]>([]);
+  const [favorites, setFavorites] = useState<Set<number>>(new Set());
 
   // Fetch tours with filters
   const { data: tours, isLoading } = trpc.tours.search.useQuery({
@@ -42,6 +49,40 @@ export default function SearchResults() {
     setLocation(`/search?${params.toString()}`);
   };
 
+  const handleResetFilters = () => {
+    setDestination("all");
+    setMinDays(1);
+    setMaxDays(30);
+    setMinPrice(0);
+    setMaxPrice(100000);
+    setSortBy("popular");
+    setTourType([]);
+    setWeekdays([]);
+    setLocation("/search");
+  };
+
+  const toggleFavorite = (tourId: number) => {
+    setFavorites(prev => {
+      const newFavorites = new Set(prev);
+      if (newFavorites.has(tourId)) {
+        newFavorites.delete(tourId);
+      } else {
+        newFavorites.add(tourId);
+      }
+      return newFavorites;
+    });
+  };
+
+  const getTourTags = (tour: any) => {
+    const tags = [];
+    if (tour.price && tour.price < 20000) tags.push({ label: "限時優惠", icon: Star });
+    if (tour.duration >= 7) tags.push({ label: "深度旅遊", icon: Calendar });
+    if (tour.price && tour.price > 50000) tags.push({ label: "精緻行程", icon: Hotel });
+    tags.push({ label: "航空", icon: Plane });
+    tags.push({ label: "巴士", icon: Bus });
+    return tags;
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-white">
       <Header />
@@ -57,22 +98,30 @@ export default function SearchResults() {
 
         <div className="container py-12">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            {/* Filters Sidebar */}
+            {/* Enhanced Filters Sidebar */}
             <aside className="lg:col-span-1">
-              <Card className="border-2 border-black rounded-none shadow-none">
-                <CardContent className="p-6 space-y-8">
-                  <div>
-                    <h3 className="text-lg font-bold mb-4 text-black">篩選條件</h3>
+              <Card className="border-2 border-black shadow-none">
+                <CardContent className="p-6 space-y-6">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-bold text-black">篩選條件</h3>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={handleResetFilters}
+                      className="text-sm text-gray-600 hover:text-black"
+                    >
+                      重設
+                    </Button>
                   </div>
 
                   {/* Destination Filter */}
                   <div className="space-y-3">
-                    <label className="text-sm font-medium text-black flex items-center gap-2">
+                    <label className="text-sm font-semibold text-black flex items-center gap-2">
                       <MapPin className="h-4 w-4" />
                       目的地
                     </label>
                     <Select value={destination} onValueChange={setDestination}>
-                      <SelectTrigger className="border-2 border-black rounded-none h-12">
+                      <SelectTrigger className="border-2 border-black h-10">
                         <SelectValue placeholder="選擇目的地" />
                       </SelectTrigger>
                       <SelectContent>
@@ -86,49 +135,114 @@ export default function SearchResults() {
                     </Select>
                   </div>
 
+                  {/* Tour Type Filter */}
+                  <div className="space-y-3">
+                    <label className="text-sm font-semibold text-black">旅遊型態</label>
+                    <div className="space-y-2">
+                      {["團體旅遊", "自由行", "客製包團"].map((type) => (
+                        <div key={type} className="flex items-center space-x-2">
+                          <Checkbox 
+                            id={type}
+                            checked={tourType.includes(type)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setTourType([...tourType, type]);
+                              } else {
+                                setTourType(tourType.filter(t => t !== type));
+                              }
+                            }}
+                          />
+                          <label htmlFor={type} className="text-sm text-gray-700 cursor-pointer">
+                            {type}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
                   {/* Days Filter */}
                   <div className="space-y-3">
-                    <label className="text-sm font-medium text-black flex items-center gap-2">
+                    <label className="text-sm font-semibold text-black flex items-center gap-2">
                       <Calendar className="h-4 w-4" />
-                      旅遊天數：{minDays} - {maxDays} 天
+                      旅遊天數
                     </label>
-                    <Slider
-                      min={1}
-                      max={30}
-                      step={1}
-                      value={[minDays, maxDays]}
-                      onValueChange={([min, max]) => {
-                        setMinDays(min);
-                        setMaxDays(max);
-                      }}
-                      className="py-4"
-                    />
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-xs text-gray-600">
+                        <span>{minDays} 天</span>
+                        <span>{maxDays} 天</span>
+                      </div>
+                      <Slider
+                        min={1}
+                        max={30}
+                        step={1}
+                        value={[minDays, maxDays]}
+                        onValueChange={([min, max]) => {
+                          setMinDays(min);
+                          setMaxDays(max);
+                        }}
+                        className="py-2"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Weekday Filter */}
+                  <div className="space-y-3">
+                    <label className="text-sm font-semibold text-black">出發星期</label>
+                    <div className="grid grid-cols-4 gap-2">
+                      {["日", "一", "二", "三", "四", "五", "六"].map((day, index) => (
+                        <Button
+                          key={day}
+                          variant={weekdays.includes(day) ? "default" : "outline"}
+                          size="sm"
+                          className={`h-8 text-xs ${
+                            weekdays.includes(day) 
+                              ? "bg-black text-white hover:bg-gray-800" 
+                              : "border-gray-300 hover:border-black"
+                          }`}
+                          onClick={() => {
+                            if (weekdays.includes(day)) {
+                              setWeekdays(weekdays.filter(d => d !== day));
+                            } else {
+                              setWeekdays([...weekdays, day]);
+                            }
+                          }}
+                        >
+                          {day}
+                        </Button>
+                      ))}
+                    </div>
                   </div>
 
                   {/* Price Filter */}
                   <div className="space-y-3">
-                    <label className="text-sm font-medium text-black flex items-center gap-2">
+                    <label className="text-sm font-semibold text-black flex items-center gap-2">
                       <DollarSign className="h-4 w-4" />
-                      價格區間：NT$ {minPrice.toLocaleString()} - NT$ {maxPrice.toLocaleString()}
+                      價格區間
                     </label>
-                    <Slider
-                      min={0}
-                      max={100000}
-                      step={5000}
-                      value={[minPrice, maxPrice]}
-                      onValueChange={([min, max]) => {
-                        setMinPrice(min);
-                        setMaxPrice(max);
-                      }}
-                      className="py-4"
-                    />
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-xs text-gray-600">
+                        <span>NT$ {minPrice.toLocaleString()}</span>
+                        <span>NT$ {maxPrice.toLocaleString()}</span>
+                      </div>
+                      <Slider
+                        min={0}
+                        max={100000}
+                        step={5000}
+                        value={[minPrice, maxPrice]}
+                        onValueChange={([min, max]) => {
+                          setMinPrice(min);
+                          setMaxPrice(max);
+                        }}
+                        className="py-2"
+                      />
+                    </div>
                   </div>
 
                   {/* Sort By */}
                   <div className="space-y-3">
-                    <label className="text-sm font-medium text-black">排序方式</label>
+                    <label className="text-sm font-semibold text-black">排序方式</label>
                     <Select value={sortBy} onValueChange={(value) => setSortBy(value as any)}>
-                      <SelectTrigger className="border-2 border-black rounded-none h-12">
+                      <SelectTrigger className="border-2 border-black h-10">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -143,7 +257,7 @@ export default function SearchResults() {
 
                   <Button 
                     onClick={handleApplyFilters}
-                    className="w-full bg-black hover:bg-gray-800 text-white rounded-none h-12 font-bold"
+                    className="w-full bg-black hover:bg-gray-800 text-white h-11 font-semibold"
                   >
                     套用篩選
                   </Button>
@@ -151,7 +265,7 @@ export default function SearchResults() {
               </Card>
             </aside>
 
-            {/* Results Grid */}
+            {/* Results List - Horizontal Cards */}
             <div className="lg:col-span-3">
               {isLoading ? (
                 <div className="text-center py-12">
@@ -159,53 +273,139 @@ export default function SearchResults() {
                 </div>
               ) : tours && tours.length > 0 ? (
                 <>
-                  <div className="mb-6">
-                    <p className="text-gray-600">找到 {tours.length} 個行程</p>
+                  <div className="mb-6 flex items-center justify-between">
+                    <p className="text-gray-600">找到 <span className="font-semibold text-black">{tours.length}</span> 個行程</p>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {tours.map((tour: any) => (
-                      <Card 
-                        key={tour.id} 
-                        className="border-2 border-black rounded-none shadow-none hover:shadow-lg transition-shadow cursor-pointer"
-                        onClick={() => setLocation(`/tours/${tour.id}`)}
-                      >
-                        <div className="aspect-[4/3] overflow-hidden bg-gray-100">
-                          {tour.mainImage ? (
-                            <img 
-                              src={tour.mainImage} 
-                              alt={tour.title}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-gray-400">
-                              <MapPin className="h-12 w-12" />
+                  <div className="space-y-4">
+                    {tours.map((tour: any, index: number) => {
+                      const tags = getTourTags(tour);
+                      const isFavorite = favorites.has(tour.id);
+                      
+                      return (
+                        <Card 
+                          key={tour.id} 
+                          className="border-2 border-black shadow-none hover:shadow-lg transition-all cursor-pointer overflow-hidden"
+                        >
+                          <div className="flex flex-col md:flex-row">
+                            {/* Image Section */}
+                            <div 
+                              className="relative md:w-72 h-48 md:h-auto flex-shrink-0 bg-gray-100"
+                              onClick={() => setLocation(`/tours/${tour.id}`)}
+                            >
+                              {tour.mainImage ? (
+                                <img 
+                                  src={tour.mainImage} 
+                                  alt={tour.title}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                  <MapPin className="h-12 w-12" />
+                                </div>
+                              )}
+                              {/* Ranking Badge */}
+                              <div className="absolute top-3 left-3 bg-black text-white px-3 py-1 font-bold text-sm">
+                                {index + 1}
+                              </div>
+                              {/* Days Badge */}
+                              <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-1 font-semibold text-sm">
+                                {tour.duration}天
+                              </div>
                             </div>
-                          )}
-                        </div>
-                        <CardContent className="p-4 space-y-3">
-                          <h3 className="font-bold text-lg text-black line-clamp-2">{tour.title}</h3>
-                          <p className="text-sm text-gray-600 line-clamp-2">{tour.description}</p>
-                          <div className="flex items-center gap-4 text-sm text-gray-600">
-                            <span className="flex items-center gap-1">
-                              <Calendar className="h-4 w-4" />
-                              {tour.duration} 天
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <MapPin className="h-4 w-4" />
-                              {tour.destination}
-                            </span>
+
+                            {/* Content Section */}
+                            <div className="flex-1 p-5" onClick={() => setLocation(`/tours/${tour.id}`)}>
+                              <div className="flex items-start justify-between mb-3">
+                                <div className="flex-1">
+                                  <h3 className="font-bold text-lg text-black mb-2 line-clamp-2 hover:text-gray-700 transition-colors">
+                                    {tour.title}
+                                  </h3>
+                                  <p className="text-sm text-gray-600 line-clamp-2 mb-3">
+                                    {tour.description}
+                                  </p>
+                                </div>
+                                {/* Favorite Button */}
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="ml-2 flex-shrink-0"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleFavorite(tour.id);
+                                  }}
+                                >
+                                  <Heart 
+                                    className={`h-5 w-5 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-400'}`}
+                                  />
+                                </Button>
+                              </div>
+
+                              {/* Tags */}
+                              <div className="flex flex-wrap gap-2 mb-4">
+                                {tags.map((tag, idx) => {
+                                  const Icon = tag.icon;
+                                  return (
+                                    <Badge 
+                                      key={idx} 
+                                      variant="secondary" 
+                                      className="bg-gray-100 text-gray-700 hover:bg-gray-200 text-xs font-normal px-2 py-1"
+                                    >
+                                      <Icon className="h-3 w-3 mr-1" />
+                                      {tag.label}
+                                    </Badge>
+                                  );
+                                })}
+                              </div>
+
+                              {/* Info Row */}
+                              <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
+                                <span className="flex items-center gap-1">
+                                  <MapPin className="h-4 w-4" />
+                                  出發地點：台北
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <Calendar className="h-4 w-4" />
+                                  {tour.destination}
+                                </span>
+                              </div>
+
+                              {/* Departure Dates */}
+                              <div className="flex flex-wrap gap-2 mb-4">
+                                <Badge variant="outline" className="border-black text-black bg-gray-100">
+                                  01/25 (六) 熱銷中
+                                </Badge>
+                                <Badge variant="outline" className="border-gray-400 text-gray-700 bg-gray-50">
+                                  02/08 (六) 最後名額
+                                </Badge>
+                                <Badge variant="outline" className="border-gray-300 text-gray-600">
+                                  02/15 (六) 可報名
+                                </Badge>
+                              </div>
+
+                              {/* Price and Action */}
+                              <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+                                <div>
+                                  <div className="text-xs text-gray-500 mb-1">起</div>
+                                  <span className="text-3xl font-bold text-black">
+                                    {tour.price?.toLocaleString()}
+                                  </span>
+                                  <span className="text-sm text-gray-600 ml-1">元起</span>
+                                </div>
+                                <Button 
+                                  className="bg-black hover:bg-gray-800 text-white px-6 h-10 font-semibold"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setLocation(`/tours/${tour.id}`);
+                                  }}
+                                >
+                                  查看詳情
+                                </Button>
+                              </div>
+                            </div>
                           </div>
-                          <div className="flex items-center justify-between pt-3 border-t border-gray-200">
-                            <span className="text-2xl font-bold text-black">
-                              NT$ {tour.price?.toLocaleString()}
-                            </span>
-                            <Button className="bg-black hover:bg-gray-800 text-white rounded-none">
-                              查看詳情
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
+                        </Card>
+                      );
+                    })}
                   </div>
                 </>
               ) : (
