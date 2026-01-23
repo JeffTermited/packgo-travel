@@ -2,7 +2,7 @@ import { Facebook, Instagram, Mail, MapPin, Phone } from "lucide-react";
 
 export default function Footer() {
   return (
-    <footer className="bg-[#1A1A1A] text-white pt-16 pb-8">
+    <footer className="bg-black text-white pt-16 pb-8">
       <div className="container">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
           {/* Column 1: Brand & About */}
@@ -65,16 +65,16 @@ export default function Footer() {
             <h3 className="text-lg font-serif font-bold mb-6 text-white">聯絡資訊</h3>
             <ul className="space-y-4 text-sm text-gray-400">
               <li className="flex items-start gap-3">
-                <MapPin className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                <MapPin className="h-5 w-5 text-white shrink-0 mt-0.5" />
                 <span>39055 Cedar Blvd #126<br />Newark CA 94560</span>
               </li>
               <li className="flex items-center gap-3">
-                <Phone className="h-5 w-5 text-primary shrink-0" />
-                <a href="tel:1-510-634-2307" className="hover:text-white transition-colors">+1 (510) 634-2307</a>
+                <Phone className="h-5 w-5 text-white shrink-0" />
+                <a href="tel:1-510-634-2307" className="hover:text-gray-300 transition-colors">+1 (510) 634-2307</a>
               </li>
               <li className="flex items-center gap-3">
-                <Mail className="h-5 w-5 text-primary shrink-0" />
-                <a href="mailto:Jeffhsieh09@gmail.com" className="hover:text-white transition-colors">Jeffhsieh09@gmail.com</a>
+                <Mail className="h-5 w-5 text-white shrink-0" />
+                <a href="mailto:Jeffhsieh09@gmail.com" className="hover:text-gray-300 transition-colors">Jeffhsieh09@gmail.com</a>
               </li>
               <li className="flex items-start gap-3 mt-2">
                 <div className="flex gap-3">

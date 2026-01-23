@@ -65,10 +65,10 @@ export default function Header() {
           <div className="flex flex-col items-end">
             <span className="text-[10px] text-gray-500 uppercase tracking-wider">會員專區</span>
             {isAuthenticated && user ? (
-              <div className="flex items-center gap-1 text-lg font-bold text-black leading-none">
+              <Link href="/profile" className="flex items-center gap-1 text-lg font-bold text-black hover:underline leading-none">
                 <User className="h-4 w-4" />
                 {user.name || user.email}
-              </div>
+              </Link>
             ) : (
               <Link href="/login" className="flex items-center gap-1 text-lg font-bold text-black hover:underline leading-none">
                 <User className="h-4 w-4" />
@@ -103,10 +103,10 @@ export default function Header() {
           <div className="flex items-center justify-between pt-2 border-t border-gray-100 mt-2">
             <div className="flex items-center gap-4 text-sm">
               {isAuthenticated && user ? (
-                <div className="flex items-center gap-1 text-black font-medium">
+                <Link href="/profile" className="flex items-center gap-1 text-black font-medium">
                   <User className="h-4 w-4" />
                   {user.name || user.email}
-                </div>
+                </Link>
               ) : (
                 <Link href="/login" className="flex items-center gap-1 text-gray-600">
                   <User className="h-4 w-4" />
