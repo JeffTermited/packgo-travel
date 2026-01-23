@@ -82,7 +82,7 @@ export default function Hero() {
             <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <div className="flex flex-col md:flex-row gap-3">
                   {/* Departure Location */}
-                  <div className="flex-shrink-0 w-full md:flex-1">
+                  <div className="flex-shrink-0 w-full md:w-72">
                     <label className="block text-xs font-medium text-gray-700 mb-1.5">出發地</label>
                     <Select value={departure} onValueChange={setDeparture}>
                       <SelectTrigger className="h-12 rounded-full border-gray-300 bg-gray-50 hover:border-gray-400 transition-colors">
@@ -99,7 +99,7 @@ export default function Hero() {
                   </div>
 
                   {/* Keyword Input */}
-                  <div className="flex-shrink-0 w-full md:flex-1">
+                  <div className="flex-shrink-0 w-full md:w-72">
                     <label className="block text-xs font-medium text-gray-700 mb-1.5">關鍵字</label>
                     <DestinationAutocomplete 
                       value={destination}
@@ -109,7 +109,7 @@ export default function Hero() {
                       className="[&_input]:rounded-full [&_input]:bg-gray-50 [&_input]:border-gray-200 [&_input]:focus:ring-primary [&_input]:focus:border-primary [&_input]:h-12"
                     />
                   </div>                  {/* Date Range Picker */}
-                  <div className="flex-shrink-0 w-full md:flex-1">                <label className="block text-xs font-medium text-gray-700 mb-1.5">出發時間</label>
+                  <div className="flex-shrink-0 w-full md:w-72">                <label className="block text-xs font-medium text-gray-700 mb-1.5">出發時間</label>
                     <DateRangePicker 
                       value={dateRange}
                       onChange={setDateRange}

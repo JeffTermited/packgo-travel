@@ -172,7 +172,7 @@ export default function SearchResults() {
             <div className="bg-gray-100 p-4 rounded-2xl shadow-sm">
               <div className="flex flex-col md:flex-row items-start md:items-end gap-3">
                 {/* Destination */}
-                <div className="flex-shrink-0 w-full md:flex-1">
+                <div className="flex-shrink-0 w-full md:w-72">
                   <label className="block text-sm font-medium text-gray-800 mb-1.5">出發地</label>
                   <Select value={destination} onValueChange={setDestination}>
                     <SelectTrigger className="h-12 rounded-2xl border border-gray-300 bg-white hover:border-gray-400 transition-colors">
@@ -190,7 +190,7 @@ export default function SearchResults() {
                 </div>
 
                 {/* Keywords */}
-                <div className="flex-shrink-0 w-full md:flex-1">
+                <div className="flex-shrink-0 w-full md:w-72">
                   <label className="block text-sm font-medium text-gray-800 mb-1.5">關鍵字</label>
                   <DestinationAutocomplete 
                     value={keyword}
@@ -199,8 +199,8 @@ export default function SearchResults() {
                   />
                 </div>
 
-                {/* Date Range */}
-                <div className="flex-shrink-0 w-full md:flex-1">
+                  {/* Date Range */}
+                <div className="flex-shrink-0 w-full md:w-72">
                   <label className="block text-sm font-medium text-gray-800 mb-1.5">出發時間</label>
                   <DateRangePicker 
                     value={dateRange}
