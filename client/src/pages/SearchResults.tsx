@@ -35,6 +35,7 @@ export default function SearchResults() {
   const [specialActivities, setSpecialActivities] = useState<string[]>(searchParams.get("specialActivities")?.split(",").filter(Boolean) || []);
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [favorites, setFavorites] = useState<Set<number>>(new Set());
+  const [searchMode, setSearchMode] = useState<"keyword" | "destination">("keyword");
   
   // Collapsible states for filter sections
   const [isDestinationOpen, setIsDestinationOpen] = useState(true);
@@ -144,6 +145,30 @@ export default function SearchResults() {
         {/* Search Bar Section */}
         <section className="bg-white py-8 border-b border-gray-200">
           <div className="container">
+            {/* Search Mode Tabs */}
+            <div className="flex gap-2 mb-4">
+              <button
+                onClick={() => setSearchMode("keyword")}
+                className={`px-6 py-2 rounded-t-xl font-medium transition-colors ${
+                  searchMode === "keyword"
+                    ? "bg-primary text-white"
+                    : "bg-white text-gray-700 hover:bg-gray-50"
+                }`}
+              >
+                關鍵字搜尋
+              </button>
+              <button
+                onClick={() => setSearchMode("destination")}
+                className={`px-6 py-2 rounded-t-xl font-medium transition-colors ${
+                  searchMode === "destination"
+                    ? "bg-primary text-white"
+                    : "bg-white text-gray-700 hover:bg-gray-50"
+                }`}
+              >
+                目的地搜尋
+              </button>
+            </div>
+
             <div className="bg-gray-100 p-6 rounded-2xl shadow-sm">
               <div className="flex flex-col md:flex-row items-start md:items-end gap-3">
                 {/* Destination */}
