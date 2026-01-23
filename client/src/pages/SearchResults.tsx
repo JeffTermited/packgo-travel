@@ -130,13 +130,13 @@ export default function SearchResults() {
         <section className="bg-gray-100 py-6 border-b border-gray-200">
           <div className="container">
             <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-end">
+              <div className="flex flex-col md:flex-row items-start md:items-end gap-4">
                 {/* Destination */}
-                <div className="md:col-span-3">
+                <div className="flex-shrink-0 w-full md:w-32">
                   <label className="block text-sm font-medium text-gray-700 mb-2">出發地</label>
                   <Select value={destination} onValueChange={setDestination}>
-                    <SelectTrigger className="h-12 rounded-lg border-gray-300">
-                      <SelectValue placeholder="不限" />
+                    <SelectTrigger className="h-12 rounded-lg border-2 border-gray-300">
+                      <SelectValue placeholder="全部" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">全部</SelectItem>
@@ -150,40 +150,40 @@ export default function SearchResults() {
                 </div>
 
                 {/* Keywords */}
-                <div className="md:col-span-3">
+                <div className="flex-1 min-w-0">
                   <label className="block text-sm font-medium text-gray-700 mb-2">關鍵字</label>
                   <input 
                     type="text" 
                     placeholder="日本" 
-                    className="w-full h-14 px-5 rounded-xl border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all"
+                    className="w-full h-12 px-4 rounded-lg border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all"
                   />
                 </div>
 
                 {/* Date Range */}
-                <div className="md:col-span-4">
+                <div className="flex-shrink-0 w-full md:w-auto">
                   <label className="block text-sm font-medium text-gray-700 mb-2">出發時間</label>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     <input 
-                      type="date" 
-                      className="flex-1 h-14 px-5 rounded-xl border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all"
+                      type="text"
+                      placeholder="mm/dd/yyyy"
+                      className="w-40 h-12 px-4 rounded-lg border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all text-center"
                     />
-                    <span className="text-gray-500">~</span>
+                    <span className="text-gray-400">~</span>
                     <input 
-                      type="date" 
-                      className="flex-1 h-14 px-5 rounded-xl border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all"
+                      type="text"
+                      placeholder="mm/dd/yyyy"
+                      className="w-40 h-12 px-4 rounded-lg border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all text-center"
                     />
                   </div>
                 </div>
 
                 {/* Search Button */}
-                <div className="md:col-span-2">
-                  <Button 
-                    onClick={handleApplyFilters}
-                    className="w-full h-14 bg-black hover:bg-gray-800 text-white rounded-xl font-semibold text-lg transition-all shadow-md hover:shadow-lg"
-                  >
-                    搜尋
-                  </Button>
-                </div>
+                <Button 
+                  onClick={handleApplyFilters}
+                  className="flex-shrink-0 w-full md:w-32 h-12 bg-black hover:bg-gray-800 text-white rounded-lg font-semibold transition-all"
+                >
+                  搜尋
+                </Button>
               </div>
 
               {/* Checkboxes */}
