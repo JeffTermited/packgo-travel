@@ -20,7 +20,7 @@ export default function Login() {
       <div className="hidden lg:flex lg:w-1/2 relative bg-black">
         <div className="absolute inset-0 bg-gradient-to-br from-black/60 to-black/20 z-10" />
         <img
-          src="https://images.unsplash.com/photo-1502602898657-3e91760cbb34?q=80&w=2073"
+          src="https://images.unsplash.com/photo-1502602898657-3e91760cbb34?q=80&w=2073&auto=format&fit=crop"
           alt="Travel"
           className="w-full h-full object-cover grayscale"
         />

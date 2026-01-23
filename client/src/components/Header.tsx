@@ -64,10 +64,17 @@ export default function Header() {
           )}
           <div className="flex flex-col items-end">
             <span className="text-[10px] text-gray-500 uppercase tracking-wider">會員專區</span>
-            <Link href="/login" className="flex items-center gap-1 text-lg font-bold text-primary hover:underline leading-none">
-              <User className="h-4 w-4" />
-              登入 / 註冊
-            </Link>
+            {isAuthenticated && user ? (
+              <div className="flex items-center gap-1 text-lg font-bold text-black leading-none">
+                <User className="h-4 w-4" />
+                {user.name || user.email}
+              </div>
+            ) : (
+              <Link href="/login" className="flex items-center gap-1 text-lg font-bold text-black hover:underline leading-none">
+                <User className="h-4 w-4" />
+                登入 / 註冊
+              </Link>
+            )}
           </div>
         </div>
 
@@ -95,10 +102,17 @@ export default function Header() {
           ))}
           <div className="flex items-center justify-between pt-2 border-t border-gray-100 mt-2">
             <div className="flex items-center gap-4 text-sm">
-              <Link href="/login" className="flex items-center gap-1 text-gray-600">
-                <User className="h-4 w-4" />
-                會員登入
-              </Link>
+              {isAuthenticated && user ? (
+                <div className="flex items-center gap-1 text-black font-medium">
+                  <User className="h-4 w-4" />
+                  {user.name || user.email}
+                </div>
+              ) : (
+                <Link href="/login" className="flex items-center gap-1 text-gray-600">
+                  <User className="h-4 w-4" />
+                  會員登入
+                </Link>
+              )}
             </div>
             <a href="tel:1-510-634-2307" className="flex items-center gap-1 text-sm font-bold text-primary">
               <Phone className="h-4 w-4" />

@@ -46,42 +46,42 @@
 }
 
 :root {
-  /* Sakura Red & Slate Black Palette */
-  --primary: oklch(0.52 0.22 26.5); /* #D32F2F Deep Red */
-  --primary-foreground: oklch(0.98 0 0); /* White */
+  /* Pure Black & White Minimalist Palette */
+  --primary: oklch(0 0 0); /* Pure Black */
+  --primary-foreground: oklch(1 0 0); /* Pure White */
   
-  --background: oklch(0.99 0 0); /* #F8F9FA Off-White */
-  --foreground: oklch(0.2 0 0); /* #1A1A1A Soft Black */
+  --background: oklch(1 0 0); /* Pure White */
+  --foreground: oklch(0 0 0); /* Pure Black */
   
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2 0 0);
+  --card-foreground: oklch(0 0 0);
   
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.2 0 0);
+  --popover-foreground: oklch(0 0 0);
   
-  --secondary: oklch(0.96 0 0);
-  --secondary-foreground: oklch(0.2 0 0);
+  --secondary: oklch(0.95 0 0); /* Light Gray */
+  --secondary-foreground: oklch(0 0 0);
   
-  --muted: oklch(0.96 0 0);
-  --muted-foreground: oklch(0.55 0 0);
+  --muted: oklch(0.95 0 0);
+  --muted-foreground: oklch(0.45 0 0); /* Dark Gray */
   
-  --accent: oklch(0.92 0.05 10); /* #FFCDD2 Pale Pink */
-  --accent-foreground: oklch(0.3 0.1 26.5);
+  --accent: oklch(0.9 0 0); /* Light Gray */
+  --accent-foreground: oklch(0 0 0);
   
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0 0 0); /* Black for destructive */
+  --destructive-foreground: oklch(1 0 0);
   
-  --border: oklch(0.92 0 0);
-  --input: oklch(0.92 0 0);
-  --ring: oklch(0.52 0.22 26.5);
+  --border: oklch(0 0 0); /* Black borders */
+  --input: oklch(0.9 0 0); /* Light Gray */
+  --ring: oklch(0 0 0); /* Black focus ring */
   
   --radius: 0rem; /* Square corners as per design */
   
-  --chart-1: var(--primary);
-  --chart-2: oklch(0.6 0.15 26.5);
-  --chart-3: oklch(0.7 0.1 26.5);
-  --chart-4: oklch(0.8 0.05 26.5);
-  --chart-5: oklch(0.9 0.02 26.5);
+  --chart-1: oklch(0 0 0); /* Black */
+  --chart-2: oklch(0.25 0 0); /* Dark Gray */
+  --chart-3: oklch(0.5 0 0); /* Medium Gray */
+  --chart-4: oklch(0.75 0 0); /* Light Gray */
+  --chart-5: oklch(0.9 0 0); /* Very Light Gray */
   
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.235 0.015 65);
