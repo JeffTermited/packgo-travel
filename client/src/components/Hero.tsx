@@ -80,46 +80,50 @@ export default function Hero() {
           {/* Tab Content */}
           <div className="p-4 bg-white">
             <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <div className="flex flex-col md:flex-row gap-3">
+                {/* Use flexbox with equal basis for equal widths */}
+                <div className="flex flex-col md:flex-row gap-4 items-end">
                   {/* Departure Location */}
-                  <div className="flex-shrink-0 w-full md:w-72">
+                  <div className="w-full" style={{ flex: '1 1 0', minWidth: 0 }}>
                     <label className="block text-xs font-medium text-gray-700 mb-1.5">出發地</label>
-                    <Select value={departure} onValueChange={setDeparture}>
-                      <SelectTrigger className="h-12 rounded-full border-gray-300 bg-gray-50 hover:border-gray-400 transition-colors">
-                        <SelectValue placeholder="全部" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">全部</SelectItem>
-                        <SelectItem value="台北">台北</SelectItem>
-                        <SelectItem value="台中">台中</SelectItem>
-                        <SelectItem value="台南">台南</SelectItem>
-                        <SelectItem value="高雄">高雄</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <select 
+                      value={departure} 
+                      onChange={(e) => setDeparture(e.target.value)}
+                      className="w-full h-12 rounded-full border border-gray-300 bg-gray-50 hover:border-gray-400 transition-colors px-4 text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                      style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center', backgroundSize: '20px' }}
+                    >
+                      <option value="all">全部</option>
+                      <option value="台北">台北</option>
+                      <option value="台中">台中</option>
+                      <option value="台南">台南</option>
+                      <option value="高雄">高雄</option>
+                    </select>
                   </div>
 
                   {/* Keyword Input */}
-                  <div className="flex-shrink-0 w-full md:w-72">
+                  <div className="w-full" style={{ flex: '1 1 0', minWidth: 0 }}>
                     <label className="block text-xs font-medium text-gray-700 mb-1.5">關鍵字</label>
                     <DestinationAutocomplete 
                       value={destination}
                       onChange={setDestination}
                       onSelect={handleSearch}
                       placeholder="日本"
-                      className="[&_input]:rounded-full [&_input]:bg-gray-50 [&_input]:border-gray-200 [&_input]:focus:ring-primary [&_input]:focus:border-primary [&_input]:h-12"
+                      className="w-full [&_input]:rounded-full [&_input]:bg-gray-50 [&_input]:border-gray-200 [&_input]:focus:ring-primary [&_input]:focus:border-primary [&_input]:h-12 [&_input]:w-full"
                     />
-                  </div>                  {/* Date Range Picker */}
-                  <div className="flex-shrink-0 w-full md:w-72">                <label className="block text-xs font-medium text-gray-700 mb-1.5">出發時間</label>
+                  </div>
+
+                  {/* Date Range Picker */}
+                  <div className="w-full" style={{ flex: '1 1 0', minWidth: 0 }}>
+                    <label className="block text-xs font-medium text-gray-700 mb-1.5">出發時間</label>
                     <DateRangePicker 
                       value={dateRange}
                       onChange={setDateRange}
                       placeholder="選擇日期"
-                      className="h-12 rounded-full"
+                      className="h-12 rounded-full w-full"
                     />
                   </div>
 
                   {/* Search Button */}
-                  <div className="flex-shrink-0 w-full md:w-32 flex items-end">
+                  <div className="w-full md:w-32 flex-shrink-0">
                     <Button 
                       onClick={handleSearch}
                       className="w-full h-12 bg-black hover:bg-gray-900 text-white rounded-full font-bold shadow-md transition-all hover:shadow-lg"

@@ -192,4 +192,32 @@
   .text-shadow-lg {
     text-shadow: 0 4px 8px rgba(0,0,0,0.6);
   }
+  
+  /* Search bar equal width grid */
+  .search-bar-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    align-items: end;
+  }
+  
+  @media (min-width: 768px) {
+    .search-bar-grid {
+      grid-template-columns: 1fr 1fr 1fr auto;
+    }
+    
+    .search-bar-grid > * {
+      min-width: 0;
+    }
+  }
+  
+  /* Force Select component to be full width */
+  [data-slot="select"] {
+    display: block !important;
+    width: 100% !important;
+  }
+  
+  [data-slot="select-trigger"] {
+    width: 100% !important;
+  }
 }

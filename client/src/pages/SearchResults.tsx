@@ -170,51 +170,56 @@ export default function SearchResults() {
             </div>
 
             <div className="bg-gray-100 p-4 rounded-2xl shadow-sm">
-              <div className="flex flex-col md:flex-row items-start md:items-end gap-3">
+              {/* Use flexbox with equal basis for equal widths */}
+              <div className="flex flex-col md:flex-row gap-4 items-end">
                 {/* Destination */}
-                <div className="flex-shrink-0 w-full md:w-72">
+                <div className="w-full" style={{ flex: '1 1 0', minWidth: 0 }}>
                   <label className="block text-sm font-medium text-gray-800 mb-1.5">出發地</label>
-                  <Select value={destination} onValueChange={setDestination}>
-                    <SelectTrigger className="h-12 rounded-2xl border border-gray-300 bg-white hover:border-gray-400 transition-colors">
-                      <SelectValue placeholder="全部" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">全部</SelectItem>
-                      <SelectItem value="日本">日本</SelectItem>
-                      <SelectItem value="韓國">韓國</SelectItem>
-                      <SelectItem value="歐洲">歐洲</SelectItem>
-                      <SelectItem value="美國">美國</SelectItem>
-                      <SelectItem value="東南亞">東南亞</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <select 
+                    value={destination} 
+                    onChange={(e) => setDestination(e.target.value)}
+                    className="w-full h-12 rounded-2xl border border-gray-300 bg-white hover:border-gray-400 transition-colors px-4 text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                    style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center', backgroundSize: '20px' }}
+                  >
+                    <option value="all">全部</option>
+                    <option value="日本">日本</option>
+                    <option value="韓國">韓國</option>
+                    <option value="歐洲">歐洲</option>
+                    <option value="美國">美國</option>
+                    <option value="東南亞">東南亞</option>
+                  </select>
                 </div>
 
                 {/* Keywords */}
-                <div className="flex-shrink-0 w-full md:w-72">
+                <div className="w-full" style={{ flex: '1 1 0', minWidth: 0 }}>
                   <label className="block text-sm font-medium text-gray-800 mb-1.5">關鍵字</label>
                   <DestinationAutocomplete 
                     value={keyword}
                     onChange={setKeyword}
                     placeholder="日本"
+                    className="w-full [&_input]:w-full"
                   />
                 </div>
 
-                  {/* Date Range */}
-                <div className="flex-shrink-0 w-full md:w-72">
+                {/* Date Range */}
+                <div className="w-full" style={{ flex: '1 1 0', minWidth: 0 }}>
                   <label className="block text-sm font-medium text-gray-800 mb-1.5">出發時間</label>
                   <DateRangePicker 
                     value={dateRange}
                     onChange={setDateRange}
+                    className="w-full"
                   />
                 </div>
 
                 {/* Search Button */}
-                <Button 
-                  onClick={handleApplyFilters}
-                  className="flex-shrink-0 w-full md:w-36 h-12 bg-black hover:bg-gray-900 text-white rounded-2xl font-semibold transition-all mt-auto"
-                >
-                  搜尋
-                </Button>
+                <div className="w-full md:w-32 flex-shrink-0">
+                  <Button 
+                    onClick={handleApplyFilters}
+                    className="w-full h-12 bg-black hover:bg-gray-900 text-white rounded-2xl font-semibold transition-all"
+                  >
+                    搜尋
+                  </Button>
+                </div>
               </div>
 
               {/* Checkboxes */}
