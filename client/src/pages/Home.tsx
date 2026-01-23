@@ -4,6 +4,7 @@ import FeaturedTours from "@/components/FeaturedTours";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
+import NewsletterSection from "@/components/NewsletterSection";
 import { Button } from "@/components/ui/button";
 import { Mail, MessageCircle } from "lucide-react";
 import { useState } from "react";
@@ -25,7 +26,10 @@ export default function Home() {
         <FeaturedTours />
         
         {/* Newsletter Section */}
-        <section className="bg-black py-16 border-b border-gray-800">
+        <NewsletterSection />
+
+        {/* Trustpilot Section - Removed old newsletter code */}
+        <section className="hidden bg-black py-16 border-b border-gray-800">
           <div className="container">
             <div className="flex flex-col md:flex-row items-center justify-between gap-8">
               <div className="text-white md:w-1/2">

@@ -250,3 +250,18 @@ export const inquiryMessages = mysqlTable("inquiryMessages", {
 
 export type InquiryMessage = typeof inquiryMessages.$inferSelect;
 export type InsertInquiryMessage = typeof inquiryMessages.$inferInsert;
+
+/**
+ * Newsletter subscribers table.
+ * Stores email addresses of users who subscribed to the newsletter.
+ */
+export const newsletterSubscribers = mysqlTable("newsletterSubscribers", {
+  id: int("id").autoincrement().primaryKey(),
+  email: varchar("email", { length: 320 }).notNull().unique(),
+  status: mysqlEnum("status", ["active", "unsubscribed"]).default("active").notNull(),
+  subscribedAt: timestamp("subscribedAt").defaultNow().notNull(),
+  unsubscribedAt: timestamp("unsubscribedAt"),
+});
+
+export type NewsletterSubscriber = typeof newsletterSubscribers.$inferSelect;
+export type InsertNewsletterSubscriber = typeof newsletterSubscribers.$inferInsert;

@@ -1,15 +1,22 @@
 import { ArrowRight } from "lucide-react";
+import { useLocation } from "wouter";
 
 const destinations = [
-  { id: 1, name: "歐洲", image: "/images/dest-europe.jpg", label: "Europe" },
-  { id: 2, name: "中國 & 亞洲", image: "/images/dest-asia.jpg", label: "China & Asia" },
-  { id: 3, name: "南美洲", image: "/images/dest-southamerica.jpg", label: "South America" },
-  { id: 4, name: "以色列 & 約旦", image: "/images/dest-israel.jpg", label: "Israel & Jordan" },
-  { id: 5, name: "埃及 & 非洲", image: "/images/dest-africa.jpg", label: "Egypt & Africa" },
-  { id: 6, name: "郵輪之旅", image: "/images/dest-cruise.jpg", label: "Cruises" },
+  { id: 1, name: "歐洲", image: "/images/dest-europe.jpg", label: "Europe", region: "europe" },
+  { id: 2, name: "中國 & 亞洲", image: "/images/dest-asia.jpg", label: "China & Asia", region: "asia" },
+  { id: 3, name: "南美洲", image: "/images/dest-southamerica.jpg", label: "South America", region: "south-america" },
+  { id: 4, name: "以色列 & 約旦", image: "/images/dest-israel.jpg", label: "Israel & Jordan", region: "middle-east" },
+  { id: 5, name: "埃及 & 非洲", image: "/images/dest-africa.jpg", label: "Egypt & Africa", region: "africa" },
+  { id: 6, name: "郵輪之旅", image: "/images/dest-cruise.jpg", label: "Cruises", region: "cruise" },
 ];
 
 export default function Destinations() {
+  const [, setLocation] = useLocation();
+
+  const handleDestinationClick = (region: string) => {
+    setLocation(`/tours?region=${region}`);
+  };
+
   return (
     <section id="destinations" className="py-20 bg-gray-50">
       <div className="container">
@@ -25,6 +32,7 @@ export default function Destinations() {
           {destinations.map((dest) => (
             <div 
               key={dest.id} 
+              onClick={() => handleDestinationClick(dest.region)}
               className="group relative aspect-[4/3] overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-all duration-500 rounded-3xl"
             >
               <img 

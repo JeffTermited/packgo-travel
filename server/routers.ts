@@ -839,6 +839,55 @@ Important guidelines:
         return await db.updateInquiry(id, updates);
       }),
   }),
+
+  // Newsletter subscription router
+  newsletter: router({
+    // Subscribe to newsletter
+    subscribe: publicProcedure
+      .input(
+        z.object({
+          email: z.string().email("Invalid email address"),
+        })
+      )
+      .mutation(async ({ input }) => {
+        try {
+          const subscriber = await db.createNewsletterSubscriber({
+            email: input.email,
+          });
+          return { success: true, message: "訂閱成功！感謝您的訂閱" };
+        } catch (error: any) {
+          // Check if email already exists
+          if (error.code === "ER_DUP_ENTRY" || error.message?.includes("Duplicate entry")) {
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "此電子郵件已經訂閱過",
+            });
+          }
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "訂閱失敗，請稍後再試",
+          });
+        }
+      }),
+
+    // Get all subscribers (admin only)
+    getAll: adminProcedure
+      .query(async () => {
+        return await db.getAllNewsletterSubscribers();
+      }),
+
+    // Unsubscribe from newsletter
+    unsubscribe: publicProcedure
+      .input(
+        z.object({
+          email: z.string().email(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        await db.unsubscribeNewsletter(input.email);
+        return { success: true, message: "已成功取消訂閱" };
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

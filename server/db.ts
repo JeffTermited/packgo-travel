@@ -1,4 +1,4 @@
-import { eq, and, gte, lte } from "drizzle-orm";
+import { eq, and, gte, lte, desc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { 
   InsertUser, users, 
@@ -8,7 +8,8 @@ import {
   bookingParticipants, InsertBookingParticipant, BookingParticipant,
   payments, InsertPayment, Payment,
   inquiries, InsertInquiry, Inquiry,
-  inquiryMessages, InsertInquiryMessage, InquiryMessage
+  inquiryMessages, InsertInquiryMessage, InquiryMessage,
+  newsletterSubscribers, InsertNewsletterSubscriber, NewsletterSubscriber
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -618,4 +619,61 @@ export async function updateUserAvatar(
     .limit(1);
 
   return updated;
+}
+
+
+// ============================================================================
+// Newsletter Subscribers
+// ============================================================================
+
+// Create newsletter subscriber
+export async function createNewsletterSubscriber(
+  data: InsertNewsletterSubscriber
+): Promise<NewsletterSubscriber> {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  const [result] = await db
+    .insert(newsletterSubscribers)
+    .values(data);
+
+  const [subscriber] = await db
+    .select()
+    .from(newsletterSubscribers)
+    .where(eq(newsletterSubscribers.id, Number(result.insertId)))
+    .limit(1);
+
+  return subscriber;
+}
+
+// Get all newsletter subscribers
+export async function getAllNewsletterSubscribers(): Promise<NewsletterSubscriber[]> {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  return await db
+    .select()
+    .from(newsletterSubscribers)
+    .where(eq(newsletterSubscribers.status, "active"))
+    .orderBy(desc(newsletterSubscribers.subscribedAt));
+}
+
+// Unsubscribe from newsletter
+export async function unsubscribeNewsletter(email: string): Promise<void> {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  await db
+    .update(newsletterSubscribers)
+    .set({
+      status: "unsubscribed",
+      unsubscribedAt: new Date(),
+    })
+    .where(eq(newsletterSubscribers.email, email));
 }
