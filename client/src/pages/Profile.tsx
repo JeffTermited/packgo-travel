@@ -62,7 +62,7 @@ export default function Profile() {
             <Button 
               onClick={handleLogout}
               variant="outline" 
-              className="border-2 border-black hover:bg-black hover:text-white"
+              className="rounded-full border-2 border-black hover:bg-black hover:text-white px-6"
             >
               <LogOut className="h-4 w-4 mr-2" />
               登出
@@ -75,17 +75,17 @@ export default function Profile() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left Sidebar - Profile Card */}
           <div className="lg:col-span-3">
-            <Card className="border border-gray-200 bg-white shadow-sm">
+            <Card className="rounded-3xl border border-gray-200 bg-white shadow-sm">
               <CardContent className="p-6">
                 {/* Avatar */}
                 <div className="flex flex-col items-center text-center mb-6">
-                  <div className="h-24 w-24 bg-black text-white flex items-center justify-center text-3xl font-bold mb-4">
+                  <div className="h-24 w-24 rounded-full bg-black text-white flex items-center justify-center text-3xl font-bold mb-4">
                     {user.name?.charAt(0).toUpperCase() || 'U'}
                   </div>
                   <h3 className="text-xl font-bold text-black">{user.name}</h3>
                   <p className="text-sm text-gray-500 mt-1">{user.email}</p>
                   {user.role === 'admin' && (
-                    <div className="mt-3 px-3 py-1 bg-black text-white text-xs font-bold">
+                    <div className="mt-3 px-4 py-1 bg-black text-white text-xs font-bold rounded-full">
                       管理員
                     </div>
                   )}
@@ -94,14 +94,18 @@ export default function Profile() {
                 {/* Profile Info */}
                 <div className="space-y-4 border-t border-gray-200 pt-6">
                   <div className="flex items-center gap-3 text-sm">
-                    <User className="h-4 w-4 text-gray-400" />
+                    <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                      <User className="h-5 w-5 text-gray-600" />
+                    </div>
                     <div className="flex-1">
                       <p className="text-gray-500 text-xs">會員編號</p>
                       <p className="text-black font-medium">#{user.id}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 text-sm">
-                    <Calendar className="h-4 w-4 text-gray-400" />
+                    <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                      <Calendar className="h-5 w-5 text-gray-600" />
+                    </div>
                     <div className="flex-1">
                       <p className="text-gray-500 text-xs">註冊日期</p>
                       <p className="text-black font-medium">
@@ -110,7 +114,9 @@ export default function Profile() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3 text-sm">
-                    <Award className="h-4 w-4 text-gray-400" />
+                    <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                      <Award className="h-5 w-5 text-gray-600" />
+                    </div>
                     <div className="flex-1">
                       <p className="text-gray-500 text-xs">會員等級</p>
                       <p className="text-black font-medium">
@@ -127,7 +133,7 @@ export default function Profile() {
           <div className="lg:col-span-9 space-y-6">
             {/* Statistics Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card className="border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow">
+              <Card className="rounded-3xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">
                     <div>
@@ -135,14 +141,14 @@ export default function Profile() {
                       <p className="text-3xl font-bold text-black">{completedTrips}</p>
                       <p className="text-xs text-gray-400 mt-2">次旅程</p>
                     </div>
-                    <div className="h-12 w-12 bg-gray-100 flex items-center justify-center">
-                      <MapPin className="h-6 w-6 text-black" />
+                    <div className="h-14 w-14 rounded-full bg-gray-100 flex items-center justify-center">
+                      <MapPin className="h-7 w-7 text-black" />
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow">
+              <Card className="rounded-3xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">
                     <div>
@@ -150,14 +156,14 @@ export default function Profile() {
                       <p className="text-3xl font-bold text-black">{upcomingTrips}</p>
                       <p className="text-xs text-gray-400 mt-2">個行程</p>
                     </div>
-                    <div className="h-12 w-12 bg-gray-100 flex items-center justify-center">
-                      <Package className="h-6 w-6 text-black" />
+                    <div className="h-14 w-14 rounded-full bg-gray-100 flex items-center justify-center">
+                      <Package className="h-7 w-7 text-black" />
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow">
+              <Card className="rounded-3xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">
                     <div>
@@ -165,8 +171,8 @@ export default function Profile() {
                       <p className="text-3xl font-bold text-black">${totalSpent.toLocaleString()}</p>
                       <p className="text-xs text-gray-400 mt-2">總金額</p>
                     </div>
-                    <div className="h-12 w-12 bg-gray-100 flex items-center justify-center">
-                      <TrendingUp className="h-6 w-6 text-black" />
+                    <div className="h-14 w-14 rounded-full bg-gray-100 flex items-center justify-center">
+                      <TrendingUp className="h-7 w-7 text-black" />
                     </div>
                   </div>
                 </CardContent>
@@ -174,7 +180,7 @@ export default function Profile() {
             </div>
 
             {/* Quick Actions */}
-            <Card className="border border-gray-200 bg-white shadow-sm">
+            <Card className="rounded-3xl border border-gray-200 bg-white shadow-sm">
               <CardHeader className="border-b border-gray-200">
                 <CardTitle className="text-lg text-black">快速操作</CardTitle>
               </CardHeader>
@@ -182,11 +188,11 @@ export default function Profile() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <button
                     onClick={() => setLocation("/profile")}
-                    className="flex items-center justify-between p-4 border border-gray-200 hover:border-black hover:bg-gray-50 transition-all group"
+                    className="flex items-center justify-between p-4 rounded-2xl border border-gray-200 hover:border-black hover:bg-gray-50 transition-all group"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 bg-gray-100 flex items-center justify-center">
-                        <ShoppingBag className="h-5 w-5 text-black" />
+                      <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center">
+                        <ShoppingBag className="h-6 w-6 text-black" />
                       </div>
                       <span className="font-medium text-black">我的預訂</span>
                     </div>
@@ -195,11 +201,11 @@ export default function Profile() {
 
                   <button
                     onClick={() => setLocation("/profile")}
-                    className="flex items-center justify-between p-4 border border-gray-200 hover:border-black hover:bg-gray-50 transition-all group"
+                    className="flex items-center justify-between p-4 rounded-2xl border border-gray-200 hover:border-black hover:bg-gray-50 transition-all group"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 bg-gray-100 flex items-center justify-center">
-                        <Heart className="h-5 w-5 text-black" />
+                      <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center">
+                        <Heart className="h-6 w-6 text-black" />
                       </div>
                       <span className="font-medium text-black">收藏行程</span>
                     </div>
@@ -208,11 +214,11 @@ export default function Profile() {
 
                   <button
                     onClick={() => setLocation("/profile")}
-                    className="flex items-center justify-between p-4 border border-gray-200 hover:border-black hover:bg-gray-50 transition-all group"
+                    className="flex items-center justify-between p-4 rounded-2xl border border-gray-200 hover:border-black hover:bg-gray-50 transition-all group"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 bg-gray-100 flex items-center justify-center">
-                        <MessageSquare className="h-5 w-5 text-black" />
+                      <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center">
+                        <MessageSquare className="h-6 w-6 text-black" />
                       </div>
                       <span className="font-medium text-black">聯絡客服</span>
                     </div>
@@ -223,7 +229,7 @@ export default function Profile() {
             </Card>
 
             {/* Recent Bookings */}
-            <Card className="border border-gray-200 bg-white shadow-sm">
+            <Card className="rounded-3xl border border-gray-200 bg-white shadow-sm">
               <CardHeader className="border-b border-gray-200">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg text-black">最近預訂</CardTitle>
@@ -231,7 +237,7 @@ export default function Profile() {
                     <Button 
                       variant="outline" 
                       size="sm"
-                      className="border border-gray-300 hover:border-black hover:bg-gray-50"
+                      className="rounded-full border border-gray-300 hover:border-black hover:bg-gray-50"
                       onClick={() => setLocation("/profile")}
                     >
                       查看全部
@@ -245,11 +251,11 @@ export default function Profile() {
                     {bookings.slice(0, 3).map((booking: any) => (
                       <div 
                         key={booking.id}
-                        className="flex items-center justify-between p-4 border border-gray-200 hover:border-black hover:bg-gray-50 transition-all cursor-pointer"
+                        className="flex items-center justify-between p-4 rounded-2xl border border-gray-200 hover:border-black hover:bg-gray-50 transition-all cursor-pointer"
                         onClick={() => setLocation(`/booking/${booking.id}`)}
                       >
                         <div className="flex items-center gap-4">
-                          <div className="h-12 w-12 bg-gray-100 flex items-center justify-center">
+                          <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center">
                             <ShoppingBag className="h-6 w-6 text-black" />
                           </div>
                           <div>
@@ -275,13 +281,13 @@ export default function Profile() {
                   </div>
                 ) : (
                   <div className="text-center py-16">
-                    <div className="h-16 w-16 bg-gray-100 flex items-center justify-center mx-auto mb-4">
-                      <ShoppingBag className="h-8 w-8 text-gray-400" />
+                    <div className="h-20 w-20 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+                      <ShoppingBag className="h-10 w-10 text-gray-400" />
                     </div>
                     <p className="text-gray-600 font-medium mb-2">目前沒有預訂記錄</p>
                     <p className="text-sm text-gray-500 mb-6">開始探索精彩的旅遊行程吧！</p>
                     <Button 
-                      className="bg-black text-white hover:bg-gray-800"
+                      className="rounded-full bg-black text-white hover:bg-gray-800 px-8"
                       onClick={() => setLocation("/")}
                     >
                       瀏覽行程
@@ -292,19 +298,19 @@ export default function Profile() {
             </Card>
 
             {/* Favorites */}
-            <Card className="border border-gray-200 bg-white shadow-sm">
+            <Card className="rounded-3xl border border-gray-200 bg-white shadow-sm">
               <CardHeader className="border-b border-gray-200">
                 <CardTitle className="text-lg text-black">收藏的行程</CardTitle>
               </CardHeader>
               <CardContent className="p-6">
                 <div className="text-center py-16">
-                  <div className="h-16 w-16 bg-gray-100 flex items-center justify-center mx-auto mb-4">
-                    <Heart className="h-8 w-8 text-gray-400" />
+                  <div className="h-20 w-20 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+                    <Heart className="h-10 w-10 text-gray-400" />
                   </div>
                   <p className="text-gray-600 font-medium mb-2">尚未收藏任何行程</p>
                   <p className="text-sm text-gray-500 mb-6">瀏覽行程並加入收藏，方便日後查看</p>
                   <Button 
-                    className="bg-black text-white hover:bg-gray-800"
+                    className="rounded-full bg-black text-white hover:bg-gray-800 px-8"
                     onClick={() => setLocation("/")}
                   >
                     探索行程
