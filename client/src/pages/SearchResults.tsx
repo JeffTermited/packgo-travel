@@ -134,11 +134,11 @@ export default function SearchResults() {
         {/* Search Bar Section */}
         <section className="bg-white py-8 border-b border-gray-200">
           <div className="container">
-            <div className="bg-gray-100 p-8 rounded-2xl shadow-sm">
-              <div className="flex flex-col md:flex-row items-start md:items-end gap-4">
+            <div className="bg-gray-100 p-6 rounded-2xl shadow-sm">
+              <div className="flex flex-col md:flex-row items-start md:items-end gap-3">
                 {/* Destination */}
                 <div className="flex-shrink-0 w-full md:w-48">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">出發地</label>
+                  <label className="block text-sm font-medium text-gray-800 mb-1.5">出發地</label>
                   <Select value={destination} onValueChange={setDestination}>
                     <SelectTrigger className="h-12 rounded-2xl border border-gray-300 bg-white hover:border-gray-400 transition-colors">
                       <SelectValue placeholder="全部" />
@@ -156,7 +156,7 @@ export default function SearchResults() {
 
                 {/* Keywords */}
                 <div className="flex-1 min-w-0">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">關鍵字</label>
+                  <label className="block text-sm font-medium text-gray-800 mb-1.5">關鍵字</label>
                   <DestinationAutocomplete 
                     value={keyword}
                     onChange={setKeyword}
@@ -166,7 +166,7 @@ export default function SearchResults() {
 
                 {/* Date Range */}
                 <div className="flex-shrink-0 w-full md:w-80">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">出發時間</label>
+                  <label className="block text-sm font-medium text-gray-800 mb-1.5">出發時間</label>
                   <DateRangePicker 
                     value={dateRange}
                     onChange={setDateRange}
@@ -183,7 +183,7 @@ export default function SearchResults() {
               </div>
 
               {/* Checkboxes */}
-              <div className="flex items-center gap-6 mt-6">
+              <div className="flex items-center gap-6 mt-5">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <Checkbox />
                   <span className="text-sm text-gray-700">只找成行</span>
@@ -201,8 +201,8 @@ export default function SearchResults() {
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
             {/* Enhanced Filters Sidebar */}
             <aside className="lg:col-span-1">
-              <Card className="border-0 rounded-3xl shadow-lg bg-gray-50">
-                <CardContent className="p-8 space-y-8">
+              <Card className="border-0 rounded-3xl shadow-lg bg-white">
+                <CardContent className="p-6 space-y-6">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-bold text-black">篩選條件</h3>
                     <Button 
@@ -239,7 +239,7 @@ export default function SearchResults() {
                   {/* Tour Type Filter */}
                   <div className="space-y-3">
                     <label className="text-sm font-semibold text-black">旅遊型態</label>
-                    <div className="space-y-2">
+                    <div className="grid grid-cols-2 gap-2">
                       {["團體旅遊", "自由行", "客製包團"].map((type) => (
                         <div key={type} className="flex items-center space-x-2">
                           <Checkbox 
@@ -320,7 +320,7 @@ export default function SearchResults() {
                       <Plane className="h-4 w-4" />
                       航空公司
                     </label>
-                    <div className="space-y-2">
+                    <div className="grid grid-cols-2 gap-2">
                       {["中華航空", "長榮航空", "星宇航空", "國泰航空", "日本航空", "全日空"].map((airline) => (
                         <div key={airline} className="flex items-center space-x-2">
                           <Checkbox 
@@ -348,7 +348,7 @@ export default function SearchResults() {
                       <Hotel className="h-4 w-4" />
                       飯店等級
                     </label>
-                    <div className="space-y-2">
+                    <div className="grid grid-cols-2 gap-2">
                       {["五星級", "四星級", "三星級", "精品飯店", "溫泉飯店"].map((grade) => (
                         <div key={grade} className="flex items-center space-x-2">
                           <Checkbox 
@@ -376,7 +376,7 @@ export default function SearchResults() {
                       <Star className="h-4 w-4" />
                       特殊活動
                     </label>
-                    <div className="space-y-2">
+                    <div className="grid grid-cols-2 gap-2">
                       {["賞櫻", "賞楓", "滑雪", "溫泉", "美食之旅", "文化體驗", "購物行程"].map((activity) => (
                         <div key={activity} className="flex items-center space-x-2">
                           <Checkbox 
