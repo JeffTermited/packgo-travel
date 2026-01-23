@@ -24,12 +24,14 @@ import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import FAQ from "./pages/FAQ";
 import ContactUs from "./pages/ContactUs";
+import SearchResults from "./pages/SearchResults";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
       <Route path={"/"} component={Home} />
+      <Route path={"/search"} component={SearchResults} />
       <Route path={"/login"} component={Login} />
       <Route path={"/admin"} component={Admin} />
       <Route path={"/profile"} component={Profile} />

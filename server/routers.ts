@@ -165,6 +165,22 @@ Important guidelines:
         return tour;
       }),
 
+    // Search tours with filters (public)
+    search: publicProcedure
+      .input(
+        z.object({
+          destination: z.string().optional(),
+          minDays: z.number().optional(),
+          maxDays: z.number().optional(),
+          minPrice: z.number().optional(),
+          maxPrice: z.number().optional(),
+          sortBy: z.enum(["popular", "price_asc", "price_desc", "days_asc", "days_desc"]).optional(),
+        })
+      )
+      .query(async ({ input }) => {
+        return await db.searchTours(input);
+      }),
+
     // Create new tour (admin only)
     create: protectedProcedure
       .input(

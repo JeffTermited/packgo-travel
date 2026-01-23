@@ -677,3 +677,59 @@ export async function unsubscribeNewsletter(email: string): Promise<void> {
     })
     .where(eq(newsletterSubscribers.email, email));
 }
+
+
+// Search tours with filters
+export async function searchTours(filters: {
+  destination?: string;
+  minDays?: number;
+  maxDays?: number;
+  minPrice?: number;
+  maxPrice?: number;
+  sortBy?: string;
+}): Promise<Tour[]> {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  // Build filter conditions
+  const conditions = [eq(tours.status, "active")];
+
+  if (filters.destination) {
+    conditions.push(eq(tours.destination, filters.destination));
+  }
+
+  if (filters.minDays !== undefined) {
+    conditions.push(gte(tours.duration, filters.minDays));
+  }
+
+  if (filters.maxDays !== undefined) {
+    conditions.push(lte(tours.duration, filters.maxDays));
+  }
+
+  if (filters.minPrice !== undefined) {
+    conditions.push(gte(tours.price, filters.minPrice));
+  }
+
+  if (filters.maxPrice !== undefined) {
+    conditions.push(lte(tours.price, filters.maxPrice));
+  }
+
+  // Build query with conditions
+  let query = db.select().from(tours).where(and(...conditions)).$dynamic();
+
+  // Apply sorting
+  if (filters.sortBy === "price_asc") {
+    return await query.orderBy(tours.price);
+  } else if (filters.sortBy === "price_desc") {
+    return await query.orderBy(desc(tours.price));
+  } else if (filters.sortBy === "days_asc") {
+    return await query.orderBy(tours.duration);
+  } else if (filters.sortBy === "days_desc") {
+    return await query.orderBy(desc(tours.duration));
+  } else {
+    // Default: sort by featured and then by createdAt
+    return await query.orderBy(desc(tours.featured), desc(tours.createdAt));
+  }
+}
