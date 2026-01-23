@@ -11,7 +11,7 @@ export default function Header() {
   const navItems = [
     { label: "客製旅遊", href: "/custom-tours", isLink: true },
     { label: "代辦簽證", href: "/visa-services", isLink: true },
-    { label: "包團旅遊", href: "/group-packages", isLink: true },
+    { label: "包團旅遊", href: "/search", isLink: true },
     { label: "機票預購", href: "/flight-booking", isLink: true },
     { label: "機場接送", href: "/airport-transfer", isLink: true },
     { label: "飯店預訂", href: "/hotel-booking", isLink: true },
