@@ -106,3 +106,31 @@ export const profileEditSchema = z.object({
 });
 
 export type ProfileEditFormData = z.infer<typeof profileEditSchema>;
+
+
+// Quick inquiry form validation schema
+export const quickInquirySchema = z.object({
+  customerName: z.string().min(1, "請輸入姓名").max(100, "姓名最多 100 個字元"),
+  customerEmail: z.string().min(1, "請輸入電子郵件").email("電子郵件格式不正確"),
+  customerPhone: z.string().optional(),
+  subject: z.string().min(1, "請輸入諮詢主旨").max(255, "主旨最多 255 個字元"),
+  message: z.string().min(10, "諮詢內容至少需要 10 個字元").max(2000, "諮詢內容最多 2000 個字元"),
+});
+
+export type QuickInquiryFormData = z.infer<typeof quickInquirySchema>;
+
+// Custom tour request form validation schema
+export const customTourSchema = z.object({
+  customerName: z.string().min(1, "請輸入姓名").max(100, "姓名最多 100 個字元"),
+  customerEmail: z.string().min(1, "請輸入電子郵件").email("電子郵件格式不正確"),
+  customerPhone: z.string().optional(),
+  subject: z.string().min(1, "請輸入主旨").max(255, "主旨最多 255 個字元"),
+  message: z.string().min(10, "需求描述至少需要 10 個字元").max(2000, "需求描述最多 2000 個字元"),
+  destination: z.string().min(1, "請輸入目的地").max(255, "目的地最多 255 個字元"),
+  numberOfDays: z.number().min(1, "天數至少為 1 天").max(365, "天數最多為 365 天"),
+  numberOfPeople: z.number().min(1, "人數至少為 1 人").max(100, "人數最多為 100 人"),
+  budget: z.number().min(0, "預算不能為負數").optional(),
+  preferredDepartureDate: z.date().optional(),
+});
+
+export type CustomTourFormData = z.infer<typeof customTourSchema>;

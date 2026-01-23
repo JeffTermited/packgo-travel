@@ -11,6 +11,7 @@ import Profile from "./pages/Profile";
 import TourDetail from "./pages/TourDetail";
 import BookTour from "./pages/BookTour";
 import BookingDetail from "./pages/BookingDetail";
+import QuickInquiry from "./pages/QuickInquiry";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -23,6 +24,7 @@ function Router() {
       <Route path={"/tours/:id"} component={TourDetail} />
       <Route path={"/book/:id"} component={BookTour} />
       <Route path={"/booking/:id"} component={BookingDetail} />
+      <Route path={"/inquiry"} component={QuickInquiry} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
