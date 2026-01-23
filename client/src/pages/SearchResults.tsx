@@ -169,10 +169,10 @@ export default function SearchResults() {
               </button>
             </div>
 
-            <div className="bg-gray-100 p-6 rounded-2xl shadow-sm">
+            <div className="bg-gray-100 p-4 rounded-2xl shadow-sm">
               <div className="flex flex-col md:flex-row items-start md:items-end gap-3">
                 {/* Destination */}
-                <div className="flex-shrink-0 w-full md:w-64">
+                <div className="flex-shrink-0 w-full md:w-80">
                   <label className="block text-sm font-medium text-gray-800 mb-1.5">出發地</label>
                   <Select value={destination} onValueChange={setDestination}>
                     <SelectTrigger className="h-12 rounded-2xl border border-gray-300 bg-white hover:border-gray-400 transition-colors">
