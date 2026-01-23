@@ -25,4 +25,38 @@ export const users = mysqlTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
-// TODO: Add your tables here
+/**
+ * Tours table for managing travel packages.
+ * Stores all tour information including destinations, pricing, and availability.
+ */
+export const tours = mysqlTable("tours", {
+  id: int("id").autoincrement().primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  destination: varchar("destination", { length: 255 }).notNull(),
+  description: text("description").notNull(),
+  duration: int("duration").notNull(), // in days
+  price: int("price").notNull(), // in TWD
+  imageUrl: varchar("imageUrl", { length: 512 }),
+  category: mysqlEnum("category", [
+    "group",      // 團體旅遊
+    "custom",     // 客製旅遊
+    "package",    // 包團旅遊
+    "cruise",     // 郵輪旅遊
+    "theme"       // 主題旅遊
+  ]).default("group").notNull(),
+  status: mysqlEnum("status", ["active", "inactive", "soldout"]).default("active").notNull(),
+  featured: int("featured").default(0).notNull(), // 0 = not featured, 1 = featured
+  startDate: timestamp("startDate"),
+  endDate: timestamp("endDate"),
+  maxParticipants: int("maxParticipants"),
+  currentParticipants: int("currentParticipants").default(0).notNull(),
+  highlights: text("highlights"), // JSON string of highlights array
+  includes: text("includes"),     // JSON string of what's included
+  excludes: text("excludes"),     // JSON string of what's excluded
+  createdBy: int("createdBy").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Tour = typeof tours.$inferSelect;
+export type InsertTour = typeof tours.$inferInsert;

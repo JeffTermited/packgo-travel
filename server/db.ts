@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { InsertUser, users, tours, InsertTour, Tour } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -89,4 +89,91 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+// ============================================
+// Tour Management Functions
+// ============================================
+
+/**
+ * Get all tours with optional filtering
+ */
+export async function getAllTours(filters?: {
+  category?: string;
+  status?: string;
+  featured?: boolean;
+}) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get tours: database not available");
+    return [];
+  }
+
+  // For now, return all tours without filtering
+  // TODO: Implement proper filtering with drizzle-orm
+  const result = await db.select().from(tours);
+  return result;
+}
+
+/**
+ * Get a single tour by ID
+ */
+export async function getTourById(id: number): Promise<Tour | undefined> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get tour: database not available");
+    return undefined;
+  }
+
+  const result = await db.select().from(tours).where(eq(tours.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+/**
+ * Create a new tour
+ */
+export async function createTour(tour: InsertTour): Promise<Tour> {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  const result = await db.insert(tours).values(tour);
+  const insertId = Number(result[0].insertId);
+  
+  const newTour = await getTourById(insertId);
+  if (!newTour) {
+    throw new Error("Failed to retrieve created tour");
+  }
+  
+  return newTour;
+}
+
+/**
+ * Update an existing tour
+ */
+export async function updateTour(id: number, updates: Partial<InsertTour>): Promise<Tour> {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  await db.update(tours).set(updates).where(eq(tours.id, id));
+  
+  const updatedTour = await getTourById(id);
+  if (!updatedTour) {
+    throw new Error("Failed to retrieve updated tour");
+  }
+  
+  return updatedTour;
+}
+
+/**
+ * Delete a tour
+ */
+export async function deleteTour(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  await db.delete(tours).where(eq(tours.id, id));
+}

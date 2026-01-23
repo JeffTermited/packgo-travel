@@ -1,0 +1,23 @@
+CREATE TABLE `tours` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`title` varchar(255) NOT NULL,
+	`destination` varchar(255) NOT NULL,
+	`description` text NOT NULL,
+	`duration` int NOT NULL,
+	`price` int NOT NULL,
+	`imageUrl` varchar(512),
+	`category` enum('group','custom','package','cruise','theme') NOT NULL DEFAULT 'group',
+	`status` enum('active','inactive','soldout') NOT NULL DEFAULT 'active',
+	`featured` int NOT NULL DEFAULT 0,
+	`startDate` timestamp,
+	`endDate` timestamp,
+	`maxParticipants` int,
+	`currentParticipants` int NOT NULL DEFAULT 0,
+	`highlights` text,
+	`includes` text,
+	`excludes` text,
+	`createdBy` int NOT NULL,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `tours_id` PRIMARY KEY(`id`)
+);

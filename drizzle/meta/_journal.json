@@ -8,6 +8,13 @@
       "when": 1769126625835,
       "tag": "0000_sudden_big_bertha",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1769127046286,
+      "tag": "0001_productive_nighthawk",
+      "breakpoints": true
     }
   ]
 }
