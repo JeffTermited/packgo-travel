@@ -9,10 +9,29 @@ import {
 } from "lucide-react";
 import { useEffect } from "react";
 import { useLocation } from "wouter";
+import AvatarUpload from "@/components/AvatarUpload";
 
 export default function Profile() {
   const { user, loading, isAuthenticated, logout } = useAuth();
   const [, setLocation] = useLocation();
+  const utils = trpc.useUtils();
+  
+  // Avatar upload mutation
+  const uploadAvatarMutation = trpc.auth.uploadAvatar.useMutation({
+    onSuccess: () => {
+      // Refresh user data
+      utils.auth.me.invalidate();
+    },
+  });
+  
+  const handleAvatarUpload = async (avatarUrl: string) => {
+    try {
+      await uploadAvatarMutation.mutateAsync({ avatarUrl });
+    } catch (error) {
+      console.error("Failed to update avatar:", error);
+      alert("更新頭像失敗，請稍後再試");
+    }
+  };
 
   // Fetch user bookings
   const { data: bookings = [] } = trpc.bookings.list.useQuery(undefined, {
@@ -88,9 +107,10 @@ export default function Profile() {
               <CardContent className="p-6">
                 {/* Avatar */}
                 <div className="flex flex-col items-center text-center mb-6">
-                  <div className="h-24 w-24 rounded-full bg-black text-white flex items-center justify-center text-3xl font-bold mb-4">
-                    {user.name?.charAt(0).toUpperCase() || 'U'}
-                  </div>
+                  <AvatarUpload 
+                    currentAvatar={user.avatar || undefined}
+                    onUploadComplete={handleAvatarUpload}
+                  />
                   <h3 className="text-xl font-bold text-black">{user.name}</h3>
                   <p className="text-sm text-gray-500 mt-1">{user.email}</p>
                   {user.role === 'admin' && (

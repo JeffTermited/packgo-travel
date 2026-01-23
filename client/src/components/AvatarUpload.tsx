@@ -127,8 +127,7 @@ export default function AvatarUpload({ currentAvatar, onUploadComplete }: Avatar
             <img src={currentAvatar} alt="Avatar" className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-black text-white text-3xl font-bold">
-              {/* Placeholder */}
-              <Upload className="h-8 w-8" />
+              <Upload className="h-8 w-8 text-white" />
             </div>
           )}
         </div>
