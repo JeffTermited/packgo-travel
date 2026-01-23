@@ -47,7 +47,7 @@ export function DateRangePicker({
         <Button
           variant="outline"
           className={cn(
-            "w-full h-14 px-5 justify-start text-left font-normal rounded-xl border-2 border-gray-300 hover:bg-gray-50 transition-all",
+            "w-full h-12 px-4 justify-start text-left font-normal rounded-2xl border border-gray-300 bg-white hover:border-gray-400 transition-all",
             !value && "text-gray-500",
             className
           )}

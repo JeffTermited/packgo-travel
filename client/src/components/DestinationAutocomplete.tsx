@@ -81,7 +81,7 @@ export function DestinationAutocomplete({
             }
           }}
           placeholder={placeholder}
-          className="w-full h-12 pl-12 pr-4 rounded-lg border-2 border-gray-300 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all"
+          className="w-full h-12 pl-12 pr-4 rounded-2xl border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-gray-400 hover:border-gray-400 transition-all"
         />
       </div>
 

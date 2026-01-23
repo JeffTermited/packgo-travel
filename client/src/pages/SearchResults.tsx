@@ -132,15 +132,15 @@ export default function SearchResults() {
         </section>
 
         {/* Search Bar Section */}
-        <section className="bg-gray-100 py-6 border-b border-gray-200">
+        <section className="bg-white py-8 border-b border-gray-200">
           <div className="container">
-            <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
+            <div className="bg-gray-100 p-8 rounded-2xl shadow-sm">
               <div className="flex flex-col md:flex-row items-start md:items-end gap-4">
                 {/* Destination */}
-                <div className="flex-shrink-0 w-full md:w-32">
+                <div className="flex-shrink-0 w-full md:w-48">
                   <label className="block text-sm font-medium text-gray-700 mb-2">出發地</label>
                   <Select value={destination} onValueChange={setDestination}>
-                    <SelectTrigger className="h-12 rounded-2xl border-22 border-gray-300">
+                    <SelectTrigger className="h-12 rounded-2xl border border-gray-300 bg-white hover:border-gray-400 transition-colors">
                       <SelectValue placeholder="全部" />
                     </SelectTrigger>
                     <SelectContent>
@@ -165,7 +165,7 @@ export default function SearchResults() {
                 </div>
 
                 {/* Date Range */}
-                <div className="flex-shrink-0 w-full md:w-auto">
+                <div className="flex-shrink-0 w-full md:w-80">
                   <label className="block text-sm font-medium text-gray-700 mb-2">出發時間</label>
                   <DateRangePicker 
                     value={dateRange}
@@ -176,14 +176,14 @@ export default function SearchResults() {
                 {/* Search Button */}
                 <Button 
                   onClick={handleApplyFilters}
-                  className="flex-shrink-0 w-full md:w-32 h-12 bg-black hover:bg-gray-800 text-white rounded-lg font-semibold transition-all"
+                  className="flex-shrink-0 w-full md:w-36 h-12 bg-black hover:bg-gray-900 text-white rounded-2xl font-semibold transition-all mt-auto"
                 >
                   搜尋
                 </Button>
               </div>
 
               {/* Checkboxes */}
-              <div className="flex items-center gap-6 mt-4">
+              <div className="flex items-center gap-6 mt-6">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <Checkbox />
                   <span className="text-sm text-gray-700">只找成行</span>
@@ -201,8 +201,8 @@ export default function SearchResults() {
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
             {/* Enhanced Filters Sidebar */}
             <aside className="lg:col-span-1">
-              <Card className="border-2 border-gray-300 rounded-xl shadow-none">
-                <CardContent className="p-6 space-y-6">
+              <Card className="border-0 rounded-3xl shadow-lg bg-gray-50">
+                <CardContent className="p-8 space-y-8">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-bold text-black">篩選條件</h3>
                     <Button 
@@ -222,7 +222,7 @@ export default function SearchResults() {
                       目的地
                     </label>
                     <Select value={destination} onValueChange={setDestination}>
-                      <SelectTrigger className="border-2 border-gray-300 rounded-xl h-10">
+                      <SelectTrigger className="border-0 bg-white rounded-2xl h-12 shadow-sm">
                         <SelectValue placeholder="選擇目的地" />
                       </SelectTrigger>
                       <SelectContent>
@@ -427,7 +427,7 @@ export default function SearchResults() {
                   <div className="space-y-3">
                     <label className="text-sm font-semibold text-black">排序方式</label>
                     <Select value={sortBy} onValueChange={(value) => setSortBy(value as any)}>
-                      <SelectTrigger className="border-2 border-gray-300 rounded-xl h-10">
+                      <SelectTrigger className="border-0 bg-white rounded-2xl h-12 shadow-sm">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -454,7 +454,7 @@ export default function SearchResults() {
             <div className="lg:col-span-3">
               {/* Selected Filters Display */}
               {(destination !== "all" || tourType.length > 0 || weekdays.length > 0 || airlines.length > 0 || hotelGrade.length > 0 || specialActivities.length > 0 || minDays !== 1 || maxDays !== 30 || minPrice !== 0 || maxPrice !== 100000) && (
-                <div className="mb-6 p-4 border-2 border-gray-300 rounded-xl bg-gray-50">
+                  <div className="mb-6 p-5 border-0 rounded-3xl bg-gray-50 shadow-sm">
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="text-sm font-semibold text-black">已選篩選條件</h3>
                     <Button 
@@ -565,7 +565,7 @@ export default function SearchResults() {
                       return (
                         <Card 
                           key={tour.id} 
-                          className="border border-gray-200 rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 cursor-pointer overflow-hidden bg-white"
+                          className="border-0 rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer overflow-hidden bg-white"
                         >
                           <div className="flex flex-col md:flex-row">
                             {/* Image Section */}
