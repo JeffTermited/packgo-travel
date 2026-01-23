@@ -81,6 +81,44 @@ Important guidelines:
         success: true,
       } as const;
     }),
+    
+    // Update user profile
+    updateProfile: protectedProcedure
+      .input(
+        z.object({
+          name: z.string().min(2).max(50).optional(),
+          phone: z.string().max(20).optional(),
+          address: z.string().optional(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const updated = await db.updateUserProfile(ctx.user.id, input);
+        if (!updated) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to update profile",
+          });
+        }
+        return updated;
+      }),
+    
+    // Upload avatar
+    uploadAvatar: protectedProcedure
+      .input(
+        z.object({
+          avatarUrl: z.string().url(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const updated = await db.updateUserAvatar(ctx.user.id, input.avatarUrl);
+        if (!updated) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to upload avatar",
+          });
+        }
+        return updated;
+      }),
   }),
 
   // Tour management router (admin only)

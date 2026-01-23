@@ -564,3 +564,58 @@ export async function createInquiryMessage(message: InsertInquiryMessage): Promi
   
   return messages[0];
 }
+
+// Update user profile (name, phone, address)
+export async function updateUserProfile(
+  userId: number,
+  data: { name?: string; phone?: string; address?: string }
+): Promise<any> {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  const updateData: any = {};
+  if (data.name !== undefined) updateData.name = data.name;
+  if (data.phone !== undefined) updateData.phone = data.phone;
+  if (data.address !== undefined) updateData.address = data.address;
+
+  await db
+    .update(users)
+    .set(updateData)
+    .where(eq(users.id, userId));
+
+  // Return updated user
+  const [updated] = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+
+  return updated;
+}
+
+// Update user avatar
+export async function updateUserAvatar(
+  userId: number,
+  avatarUrl: string
+): Promise<any> {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  await db
+    .update(users)
+    .set({ avatar: avatarUrl })
+    .where(eq(users.id, userId));
+
+  // Return updated user
+  const [updated] = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+
+  return updated;
+}
