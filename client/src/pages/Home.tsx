@@ -1,3 +1,4 @@
+import { useAuth } from "@/_core/hooks/useAuth";
 import Destinations from "@/components/Destinations";
 import FeaturedTours from "@/components/FeaturedTours";
 import Footer from "@/components/Footer";
@@ -7,6 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Mail } from "lucide-react";
 
 export default function Home() {
+  // The userAuth hooks provides authentication state
+  // To implement login/logout functionality, simply call logout() or redirect to getLoginUrl()
+  let { user, loading, error, isAuthenticated, logout } = useAuth();
+
   return (
     <div className="min-h-screen flex flex-col bg-white font-sans">
       <Header />
@@ -22,7 +27,7 @@ export default function Home() {
             <div className="flex flex-col md:flex-row items-center justify-between gap-8">
               <div className="text-white md:w-1/2">
                 <h3 className="text-2xl font-serif font-bold mb-2">訂閱時事通訊</h3>
-                <p className="text-gray-400">訂閱我們的電子報，獲取最新的旅遊資訊及優惠活動</p>
+                <p className="text-gray-400">訂閱我們的電子報,獲取最新的旅遊資訊及優惠活動</p>
               </div>
               <div className="w-full md:w-1/2 flex gap-0">
                 <div className="relative flex-grow">
