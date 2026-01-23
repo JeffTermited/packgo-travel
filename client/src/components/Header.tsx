@@ -1,6 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Menu, Phone, Search, X, User, Globe, ChevronDown, Shield } from "lucide-react";
+import { Menu, Phone, Search, X, User, Globe, ChevronDown, Shield, MessageSquare } from "lucide-react";
 import { useState } from "react";
 import { Link } from "wouter";
 
@@ -15,6 +15,7 @@ export default function Header() {
     { label: "機票預購", href: "#flights" },
     { label: "機場接送", href: "#transfer" },
     { label: "飯店預訂", href: "#hotels" },
+    { label: "聯絡我們", href: "/inquiry", isLink: true },
   ];
 
   return (
@@ -42,25 +43,42 @@ export default function Header() {
 
         {/* Desktop Navigation */}
         <nav className="hidden lg:flex items-center gap-6 xl:gap-8">
-          {navItems.map((item) => (
-            <a
-              key={item.label}
-              href={item.href}
-              className="text-[15px] font-medium text-gray-700 hover:text-primary transition-colors relative group py-2"
-            >
-              {item.label}
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
-            </a>
-          ))}
+          {navItems.map((item) =>
+            item.isLink ? (
+              <Link
+                key={item.label}
+                href={item.href}
+                className="text-[15px] font-medium text-gray-700 hover:text-primary transition-colors relative group py-2"
+              >
+                {item.label}
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
+              </Link>
+            ) : (
+              <a
+                key={item.label}
+                href={item.href}
+                className="text-[15px] font-medium text-gray-700 hover:text-primary transition-colors relative group py-2"
+              >
+                {item.label}
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
+              </a>
+            )
+          )}
         </nav>
 
         {/* Contact Info */}
         <div className="hidden md:flex items-center gap-6">
           {isAuthenticated && user?.role === "admin" && (
-            <Link href="/admin" className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:text-black hover:bg-gray-50 rounded-full transition-all">
-              <Shield className="h-4 w-4" />
-              <span>管理後台</span>
-            </Link>
+            <>
+              <Link href="/admin" className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:text-black hover:bg-gray-50 rounded-full transition-all">
+                <Shield className="h-4 w-4" />
+                <span>管理後台</span>
+              </Link>
+              <Link href="/inquiry-management" className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:text-black hover:bg-gray-50 rounded-full transition-all">
+                <MessageSquare className="h-4 w-4" />
+                <span>諮詢管理</span>
+              </Link>
+            </>
           )}
           <div className="flex flex-col items-end gap-1">
             <span className="text-[11px] text-gray-500 tracking-wider">會員專區</span>
@@ -90,16 +108,27 @@ export default function Header() {
       {/* Mobile Menu */}
       {isMenuOpen && (
         <div className="lg:hidden absolute top-full left-0 w-full bg-white border-b border-gray-100 shadow-lg py-4 px-4 flex flex-col gap-4 animate-in slide-in-from-top-5">
-          {navItems.map((item) => (
-            <a
-              key={item.label}
-              href={item.href}
-              className="text-base font-medium text-gray-800 py-2 border-b border-gray-50"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              {item.label}
-            </a>
-          ))}
+          {navItems.map((item) =>
+            item.isLink ? (
+              <Link
+                key={item.label}
+                href={item.href}
+                className="text-base font-medium text-gray-800 py-2 border-b border-gray-50"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {item.label}
+              </Link>
+            ) : (
+              <a
+                key={item.label}
+                href={item.href}
+                className="text-base font-medium text-gray-800 py-2 border-b border-gray-50"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {item.label}
+              </a>
+            )
+          )}
           <div className="flex items-center justify-between pt-2 border-t border-gray-100 mt-2">
             <div className="flex items-center gap-4 text-sm">
               {isAuthenticated && user ? (

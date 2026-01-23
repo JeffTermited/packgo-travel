@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
-import { Edit, Plus, Trash2, LogOut } from "lucide-react";
+import { Edit, Plus, Trash2, LogOut, Home } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
@@ -207,8 +207,17 @@ export default function Admin() {
             <Button
               variant="outline"
               size="sm"
+              onClick={() => setLocation("/")}
+              className="border-black hover:bg-black hover:text-white rounded-full"
+            >
+              <Home className="h-4 w-4 mr-2" />
+              返回首頁
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={handleLogout}
-              className="border-black hover:bg-black hover:text-white"
+              className="border-black hover:bg-black hover:text-white rounded-full"
             >
               <LogOut className="h-4 w-4 mr-2" />
               登出
