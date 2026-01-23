@@ -293,4 +293,17 @@
 - [x] 更新 Header.tsx 移除「諮詢管理」導航項目
 - [x] 確保 Header 只顯示單一「管理後台」入口
 - [x] 測試導航功能正常運作
+- [x] 儲存 checkpoint
+
+
+## 管理後台功能完善
+- [x] 實作預訂管理 API（查詢所有預訂、查詢單一預訂、更新預訂狀態）
+- [x] 實作管理員權限檢查（adminProcedure）
+- [x] 在所有管理後台 API 加入 adminProcedure 保護
+- [x] 實作儀表板統計數據 API（今日預訂、本月營收、待處理諮詢、行程總數）
+- [x] 更新 DashboardTab 連接真實統計數據
+- [x] 更新 BookingsTab 連接預訂管理 API
+- [x] 測試管理員權限檢查功能
+- [x] 測試儀表板數據顯示
+- [x] 測試預訂管理功能
 - [ ] 儲存 checkpoint

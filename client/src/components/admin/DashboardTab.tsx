@@ -2,45 +2,50 @@ import { trpc } from "@/lib/trpc";
 import { Users, Plane, ShoppingCart, MessageSquare, DollarSign, TrendingUp } from "lucide-react";
 
 export default function DashboardTab() {
-  const { data: tours } = trpc.tours.list.useQuery();
-  const { data: inquiries } = trpc.inquiries.list.useQuery();
+  const { data: statsData, isLoading } = trpc.admin.getStats.useQuery();
 
-  // Calculate statistics
-  const totalTours = tours?.length || 0;
-  const activeTours = tours?.filter(t => t.status === 'active').length || 0;
-  const totalInquiries = inquiries?.length || 0;
-  const newInquiries = inquiries?.filter(i => i.status === 'new').length || 0;
+  // Format currency
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('zh-TW', {
+      style: 'currency',
+      currency: 'TWD',
+      minimumFractionDigits: 0,
+    }).format(amount);
+  };
 
   const stats = [
     {
       title: "今日預訂",
-      value: "0",
+      value: isLoading ? "..." : statsData?.todayBookings.toString() || "0",
       icon: ShoppingCart,
       change: "+0%",
       changeType: "positive" as const,
     },
     {
       title: "本月營收",
-      value: "$0",
+      value: isLoading ? "..." : formatCurrency(statsData?.thisMonthRevenue || 0),
       icon: DollarSign,
-      change: "+0%",
-      changeType: "positive" as const,
+      change: isLoading ? "..." : `${statsData?.revenueGrowth.toFixed(1)}%`,
+      changeType: (statsData?.revenueGrowth || 0) >= 0 ? "positive" as const : "negative" as const,
     },
     {
       title: "待處理諮詢",
-      value: newInquiries.toString(),
+      value: isLoading ? "..." : statsData?.pendingInquiries.toString() || "0",
       icon: MessageSquare,
-      change: `共 ${totalInquiries} 筆`,
+      change: isLoading ? "..." : `共 ${statsData?.totalInquiries || 0} 筆`,
       changeType: "neutral" as const,
     },
     {
       title: "行程總數",
-      value: totalTours.toString(),
+      value: isLoading ? "..." : statsData?.totalTours.toString() || "0",
       icon: Plane,
-      change: `${activeTours} 個上架中`,
+      change: isLoading ? "..." : `${statsData?.activeTours || 0} 個上架中`,
       changeType: "neutral" as const,
     },
   ];
+
+  const newInquiries = statsData?.pendingInquiries || 0;
+  const activeTours = statsData?.activeTours || 0;
 
   return (
     <div className="space-y-8">

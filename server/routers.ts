@@ -1,7 +1,7 @@
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
+import { publicProcedure, protectedProcedure, adminProcedure, router } from "./_core/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import * as db from "./db";
@@ -625,6 +625,72 @@ Important guidelines:
           url: session.url,
         };
       }),
+  }),
+
+  // Admin dashboard router
+  admin: router({
+    // Get dashboard statistics (admin only)
+    getStats: adminProcedure.query(async () => {
+      const [bookings, tours, inquiries] = await Promise.all([
+        db.getAllBookings(),
+        db.getAllTours(),
+        db.getAllInquiries(),
+      ]);
+
+      // Calculate today's bookings
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const todayBookings = bookings.filter(
+        (b) => new Date(b.createdAt).getTime() >= today.getTime()
+      );
+
+      // Calculate this month's revenue
+      const thisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      const thisMonthBookings = bookings.filter(
+        (b) => new Date(b.createdAt).getTime() >= thisMonth.getTime()
+      );
+      const thisMonthRevenue = thisMonthBookings.reduce(
+        (sum, b) => sum + (b.totalPrice || 0),
+        0
+      );
+
+      // Calculate last month's revenue for comparison
+      const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      const lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0);
+      const lastMonthBookings = bookings.filter((b) => {
+        const createdAt = new Date(b.createdAt).getTime();
+        return createdAt >= lastMonth.getTime() && createdAt <= lastMonthEnd.getTime();
+      });
+      const lastMonthRevenue = lastMonthBookings.reduce(
+        (sum, b) => sum + (b.totalPrice || 0),
+        0
+      );
+
+      // Calculate revenue growth percentage
+      const revenueGrowth =
+        lastMonthRevenue > 0
+          ? ((thisMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100
+          : 0;
+
+      // Count pending inquiries
+      const pendingInquiries = inquiries.filter(
+        (i) => i.status === "new" || i.status === "in_progress"
+      );
+
+      // Count active tours
+      const activeTours = tours.filter((t) => t.status === "active");
+
+      return {
+        todayBookings: todayBookings.length,
+        todayBookingsGrowth: 0, // Can be calculated if needed
+        thisMonthRevenue,
+        revenueGrowth,
+        pendingInquiries: pendingInquiries.length,
+        totalInquiries: inquiries.length,
+        totalTours: tours.length,
+        activeTours: activeTours.length,
+      };
+    }),
   }),
 
   // Inquiries router
