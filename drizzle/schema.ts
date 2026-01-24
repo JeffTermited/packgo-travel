@@ -31,15 +31,89 @@ export type InsertUser = typeof users.$inferInsert;
 /**
  * Tours table for managing travel packages.
  * Stores all tour information including destinations, pricing, and availability.
+ * Enhanced with detailed location, flight, and accommodation information.
  */
 export const tours = mysqlTable("tours", {
   id: int("id").autoincrement().primaryKey(),
+  
+  // Basic Information
   title: varchar("title", { length: 255 }).notNull(),
-  destination: varchar("destination", { length: 255 }).notNull(),
+  productCode: varchar("productCode", { length: 50 }), // 產品代碼 (e.g., 26JO217BRC-T)
   description: text("description").notNull(),
+  
+  // Location Information - Departure
+  departureCountry: varchar("departureCountry", { length: 100 }).default("台灣"), // 出發國家
+  departureCity: varchar("departureCity", { length: 100 }).default("桃園"), // 出發城市
+  departureAirportCode: varchar("departureAirportCode", { length: 10 }), // 出發機場代碼 (e.g., TPE)
+  departureAirportName: varchar("departureAirportName", { length: 100 }), // 出發機場名稱
+  
+  // Location Information - Destination
+  destinationCountry: varchar("destinationCountry", { length: 100 }).notNull(), // 目的地國家
+  destinationCity: varchar("destinationCity", { length: 100 }).notNull(), // 目的地城市
+  destinationRegion: varchar("destinationRegion", { length: 100 }), // 目的地區域 (e.g., 那霸)
+  destinationAirportCode: varchar("destinationAirportCode", { length: 10 }), // 目的地機場代碼 (e.g., OKA)
+  destinationAirportName: varchar("destinationAirportName", { length: 100 }), // 目的地機場名稱
+  destination: varchar("destination", { length: 255 }).notNull(), // Legacy field for compatibility
+  
+  // Duration & Pricing
   duration: int("duration").notNull(), // in days
+  nights: int("nights"), // number of nights
   price: int("price").notNull(), // in TWD
-  imageUrl: varchar("imageUrl", { length: 512 }),
+  priceUnit: varchar("priceUnit", { length: 20 }).default("人/起"), // 價格單位
+  
+  // Flight Information - Outbound
+  outboundAirline: varchar("outboundAirline", { length: 100 }), // 去程航空公司
+  outboundFlightNo: varchar("outboundFlightNo", { length: 20 }), // 去程航班號
+  outboundDepartureTime: varchar("outboundDepartureTime", { length: 10 }), // 去程出發時間 (e.g., 06:55)
+  outboundArrivalTime: varchar("outboundArrivalTime", { length: 10 }), // 去程抵達時間 (e.g., 09:15)
+  outboundFlightDuration: varchar("outboundFlightDuration", { length: 20 }), // 去程飛行時間 (e.g., 1h20m)
+  
+  // Flight Information - Inbound
+  inboundAirline: varchar("inboundAirline", { length: 100 }), // 回程航空公司
+  inboundFlightNo: varchar("inboundFlightNo", { length: 20 }), // 回程航班號
+  inboundDepartureTime: varchar("inboundDepartureTime", { length: 10 }), // 回程出發時間
+  inboundArrivalTime: varchar("inboundArrivalTime", { length: 10 }), // 回程抵達時間
+  inboundFlightDuration: varchar("inboundFlightDuration", { length: 20 }), // 回程飛行時間
+  
+  // Accommodation Information
+  hotelName: varchar("hotelName", { length: 255 }), // 酒店名稱
+  hotelGrade: varchar("hotelGrade", { length: 50 }), // 酒店等級 (e.g., 五星級, 四星級)
+  hotelNights: int("hotelNights"), // 住宿晚數
+  hotelLocation: varchar("hotelLocation", { length: 255 }), // 酒店位置
+  hotelDescription: text("hotelDescription"), // 酒店介紹
+  hotelFacilities: text("hotelFacilities"), // JSON array of facilities
+  hotelRoomType: varchar("hotelRoomType", { length: 100 }), // 房型
+  hotelRoomSize: varchar("hotelRoomSize", { length: 50 }), // 房間大小 (e.g., 30-35平方米)
+  hotelCheckIn: varchar("hotelCheckIn", { length: 10 }), // 入住時間 (e.g., 15:00)
+  hotelCheckOut: varchar("hotelCheckOut", { length: 10 }), // 退房時間 (e.g., 11:00)
+  hotelSpecialOffers: text("hotelSpecialOffers"), // JSON array of special offers
+  hotelImages: text("hotelImages"), // JSON array of image URLs
+  hotelWebsite: varchar("hotelWebsite", { length: 512 }), // 酒店官網
+  
+  // Destination Description
+  destinationDescription: text("destinationDescription"), // 目的地介紹
+  
+  // Attractions & Sights
+  attractions: text("attractions"), // JSON array of attractions with name, description, image
+  
+  // Daily Itinerary
+  dailyItinerary: text("dailyItinerary"), // JSON array of daily activities
+  
+  // Pricing Details
+  includes: text("includes"), // JSON array of what's included
+  excludes: text("excludes"), // JSON array of what's excluded
+  optionalTours: text("optionalTours"), // JSON array of optional tours with price
+  
+  // Tags & Features
+  tags: text("tags"), // JSON array of tags (e.g., 特色住宿, 獨家企劃)
+  highlights: text("highlights"), // JSON array of highlights
+  promotionText: varchar("promotionText", { length: 255 }), // 促銷文字 (e.g., 過年大促銷)
+  
+  // Images
+  imageUrl: varchar("imageUrl", { length: 512 }), // Main image
+  galleryImages: text("galleryImages"), // JSON array of gallery image URLs
+  
+  // Category & Status
   category: mysqlEnum("category", [
     "group",      // 團體旅遊
     "custom",     // 客製旅遊
@@ -49,16 +123,29 @@ export const tours = mysqlTable("tours", {
   ]).default("group").notNull(),
   status: mysqlEnum("status", ["active", "inactive", "soldout"]).default("active").notNull(),
   featured: int("featured").default(0).notNull(), // 0 = not featured, 1 = featured
+  
+  // Availability
   startDate: timestamp("startDate"),
   endDate: timestamp("endDate"),
   maxParticipants: int("maxParticipants"),
   currentParticipants: int("currentParticipants").default(0).notNull(),
-  highlights: text("highlights"), // JSON string of highlights array
-  includes: text("includes"),     // JSON string of what's included
-  excludes: text("excludes"),     // JSON string of what's excluded
-  airline: varchar("airline", { length: 100 }), // Airline company
-  hotelGrade: varchar("hotelGrade", { length: 50 }), // Hotel grade (e.g., 五星級, 四星級)
+  availableSeats: int("availableSeats"), // 可賣席次
+  
+  // Notes & Reminders
+  specialReminders: text("specialReminders"), // 行程特殊提醒
+  notes: text("notes"), // 行程備註
+  safetyGuidelines: text("safetyGuidelines"), // 安全守則
+  flightRules: text("flightRules"), // 團體航班規定事項
+  
+  // Legacy fields for compatibility
+  airline: varchar("airline", { length: 100 }), // Airline company (legacy)
   specialActivities: text("specialActivities"), // JSON string of special activities array
+  
+  // Source information (for auto-generated tours)
+  sourceUrl: varchar("sourceUrl", { length: 1024 }), // 來源網址
+  isAutoGenerated: int("isAutoGenerated").default(0), // 是否為自動生成
+  
+  // Metadata
   createdBy: int("createdBy").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
