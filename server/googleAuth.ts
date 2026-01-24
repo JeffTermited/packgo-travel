@@ -2,7 +2,7 @@ import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import type { Express } from 'express';
 import * as auth from './auth';
-import { sdk } from './_core/sdk';
+import { createToken } from './jwt';
 import { getSessionCookieOptions } from './_core/cookies';
 import { COOKIE_NAME } from '@shared/const';
 
@@ -71,15 +71,17 @@ export function initializeGoogleAuth(app: Express) {
           return res.redirect('/login?error=no_user');
         }
 
-        // Create session token
-        const sessionToken = await sdk.createSessionToken(user.id.toString(), {
-          name: user.name || user.email,
-          expiresInMs: 365 * 24 * 60 * 60 * 1000, // 1 year
+        // Create JWT token
+        const token = createToken({
+          userId: user.id,
+          email: user.email,
+          name: user.name || undefined,
+          role: user.role,
         });
 
         // Set cookie
         const cookieOptions = getSessionCookieOptions(req);
-        res.cookie(COOKIE_NAME, sessionToken, {
+        res.cookie(COOKIE_NAME, token, {
           ...cookieOptions,
           maxAge: 365 * 24 * 60 * 60 * 1000,
         });

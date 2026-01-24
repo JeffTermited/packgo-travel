@@ -9,7 +9,7 @@ import { invokeLLM } from "./_core/llm";
 import { extractTourInfoWithManus } from "./manusApi";
 import { sendBookingConfirmationEmail } from "./email";
 import * as auth from "./auth";
-import { sdk } from "./_core/sdk";
+import { createToken } from "./jwt";
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -34,15 +34,17 @@ export const appRouter = router({
           // Auto login after registration
           const user = await auth.authenticateUser(input.email, input.password);
           
-          // Create session token
-          const sessionToken = await sdk.createSessionToken(user.id.toString(), {
-            name: user.name || user.email,
-            expiresInMs: 365 * 24 * 60 * 60 * 1000, // 1 year
+          // Create JWT token
+          const token = createToken({
+            userId: user.id,
+            email: user.email,
+            name: user.name || undefined,
+            role: user.role,
           });
           
           // Set cookie
           const cookieOptions = getSessionCookieOptions(ctx.req);
-          ctx.res.cookie(COOKIE_NAME, sessionToken, { 
+          ctx.res.cookie(COOKIE_NAME, token, { 
             ...cookieOptions, 
             maxAge: 365 * 24 * 60 * 60 * 1000 
           });
@@ -66,15 +68,17 @@ export const appRouter = router({
         try {
           const user = await auth.authenticateUser(input.email, input.password);
           
-          // Create session token
-          const sessionToken = await sdk.createSessionToken(user.id.toString(), {
-            name: user.name || user.email,
-            expiresInMs: 365 * 24 * 60 * 60 * 1000, // 1 year
+          // Create JWT token
+          const token = createToken({
+            userId: user.id,
+            email: user.email,
+            name: user.name || undefined,
+            role: user.role,
           });
           
           // Set cookie
           const cookieOptions = getSessionCookieOptions(ctx.req);
-          ctx.res.cookie(COOKIE_NAME, sessionToken, { 
+          ctx.res.cookie(COOKIE_NAME, token, { 
             ...cookieOptions, 
             maxAge: 365 * 24 * 60 * 60 * 1000 
           });

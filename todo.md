@@ -858,3 +858,33 @@
 - [x] 移除 Manus OAuth 相關程式碼
 - [x] 測試完整認證流程
 - [ ] 儲存 checkpoint
+
+
+## 修正 Google OAuth 403 錯誤
+- [ ] 檢查 Google OAuth callback URL 設定
+- [ ] 更新 Google Cloud Console 授權重新導向 URI
+- [ ] 測試 Google 登入功能
+- [ ] 確認 admin 帳號轉換成功
+
+## 實作郵件服務整合
+- [ ] 選擇郵件服務提供商（SendGrid / AWS SES / Resend）
+- [ ] 設定 SMTP 憑證
+- [ ] 實作密碼重設郵件發送功能
+- [ ] 測試郵件發送
+
+## 優化登入體驗
+- [ ] 新增「記住我」功能
+- [ ] 優化社交登入按鈕樣式
+- [ ] 考慮加入 Facebook/Apple 登入選項（可選）
+- [ ] 儲存 checkpoint
+
+## 登入頁面改進
+- [x] 新增「返回首頁」按鈕或連結
+
+
+## 修正 Header 顯示已登入使用者資訊
+- [ ] 檢查 Header 元件是否正確使用 useAuth hook
+- [ ] 確認登入後 Header 顯示使用者名稱/頭像
+- [ ] 測試登出功能
+- [ ] 確認 Google ID 已成功綁定到現有帳號
+- [ ] 儲存 checkpoint

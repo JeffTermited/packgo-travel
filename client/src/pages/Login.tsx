@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Mail, Lock, AlertCircle } from "lucide-react";
+import { Mail, Lock, AlertCircle, ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
@@ -116,7 +116,16 @@ export default function Login() {
       </div>
 
       {/* Right Side - Login Form */}
-      <div className="flex-1 flex items-center justify-center px-8 py-12 bg-white">
+      <div className="flex-1 flex items-center justify-center px-8 py-12 bg-white relative">
+        {/* Back to Home Button */}
+        <Link
+          href="/"
+          className="absolute top-8 left-8 flex items-center gap-2 text-gray-600 hover:text-black transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          <span className="font-medium">返回首頁</span>
+        </Link>
+
         <div className="w-full max-w-md">
           {/* Logo for mobile */}
           <div className="lg:hidden mb-8 text-center">
