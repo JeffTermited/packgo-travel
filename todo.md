@@ -672,3 +672,12 @@
 - [x] 點擊時顯示「即將推出」提示
 - [x] 測試鎖住功能
 - [x] 儲存 checkpoint
+
+
+## 修正出發地 autofill 下拉選單顯示問題
+- [x] 檢查 DepartureAutocomplete 元件的下拉選單高度限制
+- [x] 移除 Hero.tsx 中搜尋卡片容器的 overflow-hidden 屬性
+- [x] 增加下拉選單的 z-index 到 9999
+- [x] 確保所有符合條件的城市都能顯示（例如輸入「台」時應顯示台北、台中、台南、台東）
+- [x] 測試修正後的 autofill 功能
+- [x] 儲存 checkpoint

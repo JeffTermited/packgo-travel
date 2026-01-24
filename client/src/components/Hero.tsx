@@ -65,7 +65,7 @@ export default function Hero() {
         </div>
 
         {/* Search Console - Lion Travel Style */}
-        <div className="w-full max-w-5xl bg-white rounded-3xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-10 duration-700 delay-300">
+        <div className="w-full max-w-5xl bg-white rounded-3xl shadow-2xl animate-in slide-in-from-bottom-10 duration-700 delay-300">
           {/* Tabs */}
           <div className="flex w-full border-b border-gray-200 bg-gray-50">
             {[
