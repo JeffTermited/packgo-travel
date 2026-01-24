@@ -25,6 +25,8 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import FAQ from "./pages/FAQ";
 import ContactUs from "./pages/ContactUs";
 import SearchResults from "./pages/SearchResults";
+import PaymentSuccess from "./pages/PaymentSuccess";
+import PaymentFailure from "./pages/PaymentFailure";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -37,7 +39,9 @@ function Router() {
       <Route path={"/profile"} component={Profile} />
       <Route path={"/tours/:id"} component={TourDetail} />
       <Route path={"/book/:id"} component={BookTour} />
-      <Route path={"/booking/:id"} component={BookingDetail} />
+      <Route path={"/bookings/:id"} component={BookingDetail} />
+      <Route path={"/payment/success"} component={PaymentSuccess} />
+      <Route path={"/payment/failure"} component={PaymentFailure} />
       <Route path={"/inquiry"} component={QuickInquiry} />
       <Route path={"/custom-tour-request"} component={CustomTourRequest} />
       <Route path={"/custom-tours"} component={CustomTours} />

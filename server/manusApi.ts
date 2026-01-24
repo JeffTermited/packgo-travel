@@ -120,7 +120,7 @@ export async function getManusTask(taskId: string): Promise<GetTaskResponse> {
  */
 export async function waitForManusTask(
   taskId: string,
-  maxWaitTime: number = 5 * 60 * 1000,
+  maxWaitTime: number = 10 * 60 * 1000,
   pollInterval: number = 5000
 ): Promise<GetTaskResponse> {
   const startTime = Date.now();
