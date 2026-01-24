@@ -7,6 +7,7 @@ import { z } from "zod";
 import * as db from "./db";
 import { invokeLLM } from "./_core/llm";
 import { extractTourInfoWithManus } from "./manusApi";
+import { sendBookingConfirmationEmail } from "./email";
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -179,10 +180,32 @@ Important guidelines:
           hotelGrades: z.array(z.string()).optional(),
           specialActivities: z.array(z.string()).optional(),
           sortBy: z.enum(["popular", "price_asc", "price_desc", "days_asc", "days_desc"]).optional(),
+          page: z.number().min(1).default(1),
+          pageSize: z.number().min(1).max(100).default(12),
         })
       )
       .query(async ({ input }) => {
-        return await db.searchTours(input);
+        const { page, pageSize, ...filters } = input;
+        const offset = (page - 1) * pageSize;
+        
+        // Get total count for pagination
+        const allTours = await db.searchTours(filters);
+        const total = allTours.length;
+        const totalPages = Math.ceil(total / pageSize);
+        
+        // Get paginated results
+        const tours = allTours.slice(offset, offset + pageSize);
+        
+        return {
+          tours,
+          pagination: {
+            page,
+            pageSize,
+            total,
+            totalPages,
+            hasMore: page < totalPages,
+          },
+        };
       }),
 
     // Create new tour (admin only)
@@ -923,6 +946,31 @@ ${textContent}
         await db.updateDeparture(input.departureId, {
           bookedSlots: departure.bookedSlots + totalPeople,
         });
+
+        // Get tour details for email
+        const tour = await db.getTourById(input.tourId);
+        if (tour) {
+          // Send booking confirmation email
+          try {
+            await sendBookingConfirmationEmail({
+              customerName: booking.customerName,
+              customerEmail: booking.customerEmail,
+              bookingId: booking.id,
+              tourTitle: tour.title,
+              departureDate: departure.departureDate.toLocaleDateString('zh-TW'),
+              returnDate: departure.returnDate.toLocaleDateString('zh-TW'),
+              numberOfAdults: booking.numberOfAdults,
+              numberOfChildren: booking.numberOfChildrenWithBed + booking.numberOfChildrenNoBed,
+              numberOfInfants: booking.numberOfInfants,
+              totalPrice: booking.totalPrice,
+              depositAmount: booking.depositAmount,
+              remainingAmount: booking.remainingAmount,
+            });
+          } catch (error) {
+            console.error('[Email] Failed to send booking confirmation:', error);
+            // Don't fail the booking if email fails
+          }
+        }
 
         return booking;
       }),

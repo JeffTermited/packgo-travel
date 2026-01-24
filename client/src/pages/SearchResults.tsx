@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment } from "react";
 import { useLocation } from "wouter";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -38,6 +38,8 @@ export default function SearchResults() {
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [favorites, setFavorites] = useState<Set<number>>(new Set());
   const [searchMode, setSearchMode] = useState<"keyword" | "destination">("keyword");
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 12;
   
   // Collapsible states for filter sections
   const [isDestinationOpen, setIsDestinationOpen] = useState(true);
@@ -70,8 +72,8 @@ export default function SearchResults() {
     }
   }, [destination, minDays, maxDays, minPrice, maxPrice, sortBy, tourType, weekdays, airlines, hotelGrade, specialActivities]);
 
-  // Fetch tours with filters
-  const { data: tours, isLoading } = trpc.tours.search.useQuery({
+  // Fetch tours with filters and pagination
+  const { data, isLoading } = trpc.tours.search.useQuery({
     destination: destination === "all" ? "" : destination,
     minDays,
     maxDays,
@@ -81,7 +83,12 @@ export default function SearchResults() {
     hotelGrades: hotelGrade.length > 0 ? hotelGrade : undefined,
     specialActivities: specialActivities.length > 0 ? specialActivities : undefined,
     sortBy,
+    page: currentPage,
+    pageSize,
   });
+  
+  const tours = data?.tours || [];
+  const pagination = data?.pagination;
 
   const handleApplyFilters = () => {
     const params = new URLSearchParams();
@@ -789,6 +796,53 @@ export default function SearchResults() {
                       );
                     })}
                   </div>
+                  
+                  {/* Pagination */}
+                  {pagination && pagination.totalPages > 1 && (
+                    <div className="flex items-center justify-center gap-2 mt-8">
+                      <Button
+                        variant="outline"
+                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                      >
+                        上一頁
+                      </Button>
+                      
+                      <div className="flex items-center gap-2">
+                        {Array.from({ length: pagination.totalPages }, (_, i) => i + 1)
+                          .filter(page => {
+                            // Show first page, last page, current page, and pages around current
+                            return page === 1 || 
+                                   page === pagination.totalPages || 
+                                   Math.abs(page - currentPage) <= 2;
+                          })
+                          .map((page, idx, arr) => {
+                            // Add ellipsis if there's a gap
+                            const showEllipsisBefore = idx > 0 && page - arr[idx - 1] > 1;
+                            return (
+                              <Fragment key={page}>
+                                {showEllipsisBefore && <span className="px-2">…</span>}
+                                <Button
+                                  variant={currentPage === page ? "default" : "outline"}
+                                  className={currentPage === page ? "bg-black text-white" : ""}
+                                  onClick={() => setCurrentPage(page)}
+                                >
+                                  {page}
+                                </Button>
+                              </Fragment>
+                            );
+                          })}
+                      </div>
+                      
+                      <Button
+                        variant="outline"
+                        onClick={() => setCurrentPage(p => Math.min(pagination.totalPages, p + 1))}
+                        disabled={currentPage === pagination.totalPages}
+                      >
+                        下一頁
+                      </Button>
+                    </div>
+                  )}
                 </>
               ) : (
                 <div className="text-center py-12">

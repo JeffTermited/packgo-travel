@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import Stripe from "stripe";
 import { ENV } from "./env";
 import * as db from "../db";
+import { sendPaymentSuccessEmail } from "../email";
 
 const stripe = new Stripe(ENV.stripeSecretKey, {
   apiVersion: "2025-12-15.clover",
@@ -121,6 +122,25 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
   });
 
   console.log(`[Stripe Webhook] Booking ${bookingId} payment status updated to ${newPaymentStatus}`);
+
+  // Send payment success email
+  try {
+    const tour = await db.getTourById(booking.tourId);
+    if (tour) {
+      await sendPaymentSuccessEmail({
+        customerName: booking.customerName,
+        customerEmail: booking.customerEmail,
+        bookingId: booking.id,
+        tourTitle: tour.title,
+        paymentAmount: amount,
+        paymentType: paymentType || "full",
+      });
+      console.log(`[Stripe Webhook] Payment success email sent to ${booking.customerEmail}`);
+    }
+  } catch (error) {
+    console.error('[Stripe Webhook] Failed to send payment success email:', error);
+    // Don't fail the webhook if email fails
+  }
 }
 
 async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent) {

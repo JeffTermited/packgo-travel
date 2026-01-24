@@ -716,7 +716,7 @@
 - [ ] 新增前端載入狀態提示（顯示預估時間）
 - [ ] 新增錯誤處理與重試機制
 - [x] 測試修復後的自動生成功能
-- [ ] 儲存 checkpoint
+- [x] 儲存 checkpoint
 
 ## 高優先級待辦事項（來自 antigravity 分析）
 - [x] 實作付款成功頁面（/payment/success）
@@ -724,4 +724,75 @@
 - [ ] 實作訂單確認郵件通知
 - [ ] 實作搜尋結果分頁功能
 - [x] 實作出發日期管理 UI（前端）
+- [ ] 儲存 checkpoint
+
+
+## 高優先級待辦事項（antigravity 分析）
+- [x] 訂單確認郵件通知
+  - [x] 整合郵件服務（使用 Manus 內建通知 API）
+  - [x] 設計郵件模板（訂單確認、付款成功）
+  - [x] 實作自動發送邏輯（Stripe Webhook 觸發）
+  - [x] 測試郵件發送功能
+- [x] 搜尋結果分頁功能
+  - [x] 後端 API 新增分頁參數（page, pageSize）
+  - [x] 前端實作分頁 UI 組件
+  - [x] 更新搜尋結果頁面整合分頁
+  - [x] 測試分頁功能
+- [ ] 忘記密碼功能
+  - [ ] 設計密碼重設流程（發送重設連結）
+  - [ ] 實作後端 API（生成重設 token、驗證 token、更新密碼）
+  - [ ] 實作前端頁面（忘記密碼表單、重設密碼頁面）
+  - [ ] 測試完整流程
+- [ ] 儲存 checkpoint
+
+## 中優先級待辦事項（antigravity 分析）
+- [ ] 服務頁面內容完善
+  - [ ] 代辦簽證服務詳細說明
+  - [ ] 包團旅遊服務詳細說明
+  - [ ] 客製旅遊規劃流程說明
+  - [ ] 新增服務價格參考
+- [ ] 行程詳情頁面增強
+  - [ ] 每日行程展示優化（時間軸設計）
+  - [ ] 相關推薦行程區塊
+  - [ ] 行程圖片輪播優化
+  - [ ] 新增行程評價區塊
+- [ ] 會員中心功能擴充
+  - [ ] 收藏行程功能（前後端）
+  - [ ] 歷史訂單查詢頁面
+  - [ ] 個人資料編輯增強
+  - [ ] 會員等級顯示
+- [ ] 儲存 checkpoint
+
+
+## 移除 Manus OAuth 並實作傳統登入系統
+- [ ] 更新資料庫結構
+  - [ ] 新增 password 欄位（加密儲存）
+  - [ ] 新增 resetPasswordToken 欄位
+  - [ ] 新增 resetPasswordExpires 欄位
+  - [ ] 移除 openId 欄位相關依賴
+- [ ] 實作後端認證 API
+  - [ ] 安裝 bcrypt 套件
+  - [ ] 實作註冊 API（email + password）
+  - [ ] 實作登入 API（email + password，返回 JWT token）
+  - [ ] 實作忘記密碼 API（發送重設連結）
+  - [ ] 實作重設密碼 API（驗證 token 並更新密碼）
+  - [ ] 更新 auth middleware 使用 JWT 而非 Manus OAuth
+- [ ] 移除 Manus OAuth 相關程式碼
+  - [ ] 移除 server/_core/oauth.ts
+  - [ ] 移除 OAuth callback route
+  - [ ] 更新 server/_core/context.ts 使用 JWT 驗證
+  - [ ] 移除前端 OAuth 相關環境變數
+- [ ] 實作前端認證頁面
+  - [ ] 建立登入頁面（/login）
+  - [ ] 建立註冊頁面（/register）
+  - [ ] 建立忘記密碼頁面（/forgot-password）
+  - [ ] 建立重設密碼頁面（/reset-password/:token）
+  - [ ] 更新 Header 移除 OAuth 登入按鈕
+  - [ ] 更新 useAuth hook 使用新的認證 API
+- [ ] 測試新的認證系統
+  - [ ] 測試註冊流程
+  - [ ] 測試登入流程
+  - [ ] 測試忘記密碼流程
+  - [ ] 測試重設密碼流程
+  - [ ] 測試登出功能
 - [ ] 儲存 checkpoint
