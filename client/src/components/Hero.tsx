@@ -1,11 +1,13 @@
 import { Button } from "@/components/ui/button";
-import { Calendar, MapPin, Search, Sparkles, Plane, Hotel, Ticket, Users } from "lucide-react";
+import { Calendar, MapPin, Search, Sparkles, Plane, Hotel, Ticket, Users, Lock } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import AIAdvisor from "./AIAdvisor";
 import { DateRangePicker } from "@/components/DateRangePicker";
 import { DateRange } from "react-day-picker";
 import { DestinationAutocomplete } from "@/components/DestinationAutocomplete";
+import { DepartureAutocomplete } from "@/components/DepartureAutocomplete";
+import { toast } from "sonner";
 
 export default function Hero() {
   const [activeTab, setActiveTab] = useState("group");
@@ -31,6 +33,10 @@ export default function Hero() {
 
   const handleKeywordClick = (keyword: string) => {
     setLocation(`/search?destination=${encodeURIComponent(keyword)}`);
+  };
+
+  const handleLockedTabClick = (tabName: string) => {
+    toast.info(`${tabName}功能即將推出，敬請期待！`);
   };
 
 
@@ -63,21 +69,30 @@ export default function Hero() {
           {/* Tabs */}
           <div className="flex w-full border-b border-gray-200 bg-gray-50">
             {[
-              { id: "group", label: "團體旅遊", icon: <Users className="h-4 w-4" /> },
-              { id: "flight", label: "機票", icon: <Plane className="h-4 w-4" /> },
-              { id: "hotel", label: "訂房", icon: <Hotel className="h-4 w-4" /> },
+              { id: "group", label: "團體旅遊", icon: <Users className="h-4 w-4" />, locked: false },
+              { id: "flight", label: "機票", icon: <Plane className="h-4 w-4" />, locked: true },
+              { id: "hotel", label: "訂房", icon: <Hotel className="h-4 w-4" />, locked: true },
             ].map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => {
+                  if (tab.locked) {
+                    handleLockedTabClick(tab.label);
+                  } else {
+                    setActiveTab(tab.id);
+                  }
+                }}
                 className={`flex-1 py-4 px-2 text-base font-medium transition-all relative flex items-center justify-center gap-2 ${
-                  activeTab === tab.id 
-                    ? "text-primary bg-white border-t-2 border-t-primary" 
-                    : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                  tab.locked 
+                    ? "text-gray-400 cursor-not-allowed bg-gray-100" 
+                    : activeTab === tab.id 
+                      ? "text-primary bg-white border-t-2 border-t-primary" 
+                      : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
                 }`}
               >
                 {tab.icon}
                 {tab.label}
+                {tab.locked && <Lock className="h-3 w-3 ml-1" />}
               </button>
             ))}
           </div>
@@ -87,19 +102,15 @@ export default function Hero() {
             <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
                 {/* Use flexbox with equal basis for equal widths */}
                 <div className="flex flex-col md:flex-row gap-4 items-end">
-                  {/* Departure Location - Changed to Input */}
+                  {/* Departure Location - Changed to Autocomplete */}
                   <div className="w-full" style={{ flex: '1 1 0', minWidth: 0 }}>
                     <label className="block text-xs font-medium text-gray-700 mb-1.5">出發地</label>
-                    <div className="relative">
-                      <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                      <input 
-                        type="text"
-                        value={departure}
-                        onChange={(e) => setDeparture(e.target.value)}
-                        placeholder="輸入出發地"
-                        className="w-full h-12 rounded-full border border-gray-300 bg-gray-50 hover:border-gray-400 transition-colors pl-11 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                      />
-                    </div>
+                    <DepartureAutocomplete 
+                      value={departure}
+                      onChange={setDeparture}
+                      placeholder="輸入出發地"
+                      className="w-full [&_input]:rounded-full [&_input]:bg-gray-50 [&_input]:border-gray-200 [&_input]:focus:ring-primary [&_input]:focus:border-primary [&_input]:h-12 [&_input]:w-full"
+                    />
                   </div>
 
                   {/* Keyword Input */}

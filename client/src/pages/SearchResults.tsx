@@ -13,6 +13,7 @@ import { MapPin, Calendar, DollarSign, Heart, Star, Plane, Bus, Hotel, Utensils,
 import { DateRangePicker } from "@/components/DateRangePicker";
 import { DateRange } from "react-day-picker";
 import { DestinationAutocomplete } from "@/components/DestinationAutocomplete";
+import { DepartureAutocomplete } from "@/components/DepartureAutocomplete";
 
 export default function SearchResults() {
   const [location, setLocation] = useLocation();
@@ -173,19 +174,15 @@ export default function SearchResults() {
             <div className="bg-gray-100 p-4 rounded-2xl shadow-sm">
               {/* Use flexbox with equal basis for equal widths */}
               <div className="flex flex-col md:flex-row gap-4 items-end">
-                {/* Departure Location - Changed to Input */}
+                {/* Departure Location - Changed to Autocomplete */}
                 <div className="w-full" style={{ flex: '1 1 0', minWidth: 0 }}>
                   <label className="block text-sm font-medium text-gray-800 mb-1.5">出發地</label>
-                  <div className="relative">
-                    <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                    <input 
-                      type="text"
-                      value={departure}
-                      onChange={(e) => setDeparture(e.target.value)}
-                      placeholder="輸入出發地"
-                      className="w-full h-12 rounded-2xl border border-gray-300 bg-white hover:border-gray-400 transition-colors pl-11 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                    />
-                  </div>
+                  <DepartureAutocomplete 
+                    value={departure}
+                    onChange={setDeparture}
+                    placeholder="輸入出發地"
+                    className="w-full [&_input]:w-full"
+                  />
                 </div>
 
                 {/* Keywords */}
@@ -220,54 +217,7 @@ export default function SearchResults() {
                 </div>
               </div>
 
-              {/* Quick Options Row */}
-              <div className="flex flex-col md:flex-row gap-4 mt-3">
-                {/* Departure Quick Options */}
-                <div className="flex items-center gap-2 text-sm" style={{ flex: '1 1 0', minWidth: 0 }}>
-                  <span className="text-gray-500 whitespace-nowrap">快選：</span>
-                  <div className="flex flex-wrap gap-1.5">
-                    {["台北", "台中", "台南", "高雄", "桃園"].map((option) => (
-                      <button 
-                        key={option} 
-                        onClick={() => setDeparture(option)}
-                        className={`px-2.5 py-1 rounded-full text-xs transition-all ${
-                          departure === option 
-                            ? "bg-primary text-white" 
-                            : "bg-white text-gray-600 hover:bg-gray-200 border border-gray-200"
-                        }`}
-                      >
-                        {option}
-                      </button>
-                    ))}
-                  </div>
-                </div>
 
-                {/* Keyword Quick Options */}
-                <div className="flex items-center gap-2 text-sm" style={{ flex: '1 1 0', minWidth: 0 }}>
-                  <span className="text-gray-500 whitespace-nowrap">熱門：</span>
-                  <div className="flex flex-wrap gap-1.5">
-                    {["北海道", "東京", "大阪", "歐洲", "土耳其"].map((kw) => (
-                      <button 
-                        key={kw} 
-                        onClick={() => setKeyword(kw)}
-                        className={`px-2.5 py-1 rounded-full text-xs transition-all ${
-                          keyword === kw 
-                            ? "bg-primary text-white" 
-                            : "bg-white text-gray-600 hover:bg-gray-200 border border-gray-200"
-                        }`}
-                      >
-                        {kw}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Empty space for date picker alignment */}
-                <div className="hidden md:block" style={{ flex: '1 1 0', minWidth: 0 }}></div>
-                
-                {/* Empty space for button alignment */}
-                <div className="hidden md:block w-32 flex-shrink-0"></div>
-              </div>
 
               {/* Checkboxes */}
               <div className="flex items-center gap-6 mt-4">

@@ -643,3 +643,32 @@
 - [x] 移除首頁搜尋欄中關鍵字欄位下方的「熱門」標籤（北海道、東京、大阪、歐洲、土耳其）
 - [x] 測試移除後的搜尋欄設計
 - [x] 儲存 checkpoint
+
+
+## 出發地欄位 autofill 功能
+- [ ] 建立 DepartureAutocomplete 組件，提供台灣主要城市選項
+- [ ] 在 Hero.tsx 中使用 DepartureAutocomplete 組件
+- [ ] 在 SearchResults.tsx 中使用 DepartureAutocomplete 組件
+- [ ] 測試 autofill 功能
+- [ ] 儲存 checkpoint
+
+
+## 鎖住機票和訂房標籤
+- [ ] 在 Hero.tsx 中鎖住機票和訂房標籤
+- [ ] 點擊時顯示「即將推出」提示
+- [ ] 測試鎖住功能
+- [ ] 儲存 checkpoint
+
+
+## 出發地欄位 autofill 功能
+- [x] 建立 DepartureAutocomplete 元件，提供台灣主要城市選項
+- [x] 在 Hero.tsx 中使用 DepartureAutocomplete 元件
+- [x] 在 SearchResults.tsx 中使用 DepartureAutocomplete 元件
+- [x] 測試 autofill 功能
+- [x] 儲存 checkpoint
+
+## 鎖住機票和訂房標籤
+- [x] 在 Hero.tsx 中鎖住機票和訂房標籤
+- [x] 點擊時顯示「即將推出」提示
+- [x] 測試鎖住功能
+- [x] 儲存 checkpoint
