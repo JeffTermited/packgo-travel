@@ -6,6 +6,8 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import Admin from "./pages/Admin";
 import Profile from "./pages/Profile";
 import TourDetail from "./pages/TourDetail";
@@ -35,6 +37,8 @@ function Router() {
       <Route path={"/"} component={Home} />
       <Route path={"/search"} component={SearchResults} />
       <Route path={"/login"} component={Login} />
+      <Route path={"/forgot-password"} component={ForgotPassword} />
+      <Route path={"/reset-password"} component={ResetPassword} />
       <Route path={"/admin"} component={Admin} />
       <Route path={"/profile"} component={Profile} />
       <Route path={"/tours/:id"} component={TourDetail} />

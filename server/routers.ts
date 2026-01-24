@@ -8,10 +8,183 @@ import * as db from "./db";
 import { invokeLLM } from "./_core/llm";
 import { extractTourInfoWithManus } from "./manusApi";
 import { sendBookingConfirmationEmail } from "./email";
+import * as auth from "./auth";
+import { sdk } from "./_core/sdk";
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
   system: systemRouter,
+  
+  // Authentication router (Email/Password + Google OAuth)
+  auth: router({
+    // Get current user
+    me: publicProcedure.query(opts => opts.ctx.user),
+    
+    // Register with email/password
+    register: publicProcedure
+      .input(z.object({
+        email: z.string().email(),
+        password: z.string().min(8),
+        name: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        try {
+          await auth.createUser(input.email, input.password, input.name);
+          
+          // Auto login after registration
+          const user = await auth.authenticateUser(input.email, input.password);
+          
+          // Create session token
+          const sessionToken = await sdk.createSessionToken(user.id.toString(), {
+            name: user.name || user.email,
+            expiresInMs: 365 * 24 * 60 * 60 * 1000, // 1 year
+          });
+          
+          // Set cookie
+          const cookieOptions = getSessionCookieOptions(ctx.req);
+          ctx.res.cookie(COOKIE_NAME, sessionToken, { 
+            ...cookieOptions, 
+            maxAge: 365 * 24 * 60 * 60 * 1000 
+          });
+          
+          return { success: true, user: { id: user.id, email: user.email, name: user.name } };
+        } catch (error: any) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: error.message || 'Registration failed',
+          });
+        }
+      }),
+    
+    // Login with email/password
+    login: publicProcedure
+      .input(z.object({
+        email: z.string().email(),
+        password: z.string(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        try {
+          const user = await auth.authenticateUser(input.email, input.password);
+          
+          // Create session token
+          const sessionToken = await sdk.createSessionToken(user.id.toString(), {
+            name: user.name || user.email,
+            expiresInMs: 365 * 24 * 60 * 60 * 1000, // 1 year
+          });
+          
+          // Set cookie
+          const cookieOptions = getSessionCookieOptions(ctx.req);
+          ctx.res.cookie(COOKIE_NAME, sessionToken, { 
+            ...cookieOptions, 
+            maxAge: 365 * 24 * 60 * 60 * 1000 
+          });
+          
+          return { success: true, user: { id: user.id, email: user.email, name: user.name } };
+        } catch (error: any) {
+          throw new TRPCError({
+            code: 'UNAUTHORIZED',
+            message: error.message || 'Login failed',
+          });
+        }
+      }),
+    
+    // Request password reset
+    requestPasswordReset: publicProcedure
+      .input(z.object({
+        email: z.string().email(),
+      }))
+      .mutation(async ({ input }) => {
+        try {
+          const result = await auth.requestPasswordReset(input.email);
+          // TODO: Send reset email with token
+          // For now, return token in response (in production, send via email)
+          return result;
+        } catch (error: any) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: error.message || 'Password reset request failed',
+          });
+        }
+      }),
+    
+    // Reset password with token
+    resetPassword: publicProcedure
+      .input(z.object({
+        token: z.string(),
+        newPassword: z.string().min(8),
+      }))
+      .mutation(async ({ input }) => {
+        try {
+          await auth.resetPassword(input.token, input.newPassword);
+          return { success: true };
+        } catch (error: any) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: error.message || 'Password reset failed',
+          });
+        }
+      }),
+    
+    // Logout
+    logout: publicProcedure.mutation(({ ctx }) => {
+      const cookieOptions = getSessionCookieOptions(ctx.req);
+      ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
+      return {
+        success: true,
+      } as const;
+    }),
+    
+    // Update user profile
+    updateProfile: protectedProcedure
+      .input(
+        z.object({
+          name: z.string().min(2).max(50).optional(),
+          phone: z.string().max(20).optional(),
+          address: z.string().optional(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const updated = await db.updateUserProfile(ctx.user.id, input);
+        if (!updated) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to update profile",
+          });
+        }
+        return updated;
+      }),
+    
+    // Upload avatar
+    uploadAvatar: protectedProcedure
+      .input(
+        z.object({
+          avatarUrl: z.string().url(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const updated = await db.updateUserAvatar(ctx.user.id, input.avatarUrl);
+        if (!updated) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to upload avatar",
+          });
+        }
+        return updated;
+      }),
+    
+    // Delete avatar
+    deleteAvatar: protectedProcedure
+      .mutation(async ({ ctx }) => {
+        const updated = await db.updateUserAvatar(ctx.user.id, null);
+        if (!updated) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to delete avatar",
+          });
+        }
+        return updated;
+      }),
+  }),
   
   // AI Travel Advisor router
   ai: router({
@@ -71,68 +244,6 @@ Important guidelines:
             message: "無法連接到 AI 服務，請稍後再試。",
           });
         }
-      }),
-  }),
-  
-  auth: router({
-    me: publicProcedure.query(opts => opts.ctx.user),
-    logout: publicProcedure.mutation(({ ctx }) => {
-      const cookieOptions = getSessionCookieOptions(ctx.req);
-      ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
-      return {
-        success: true,
-      } as const;
-    }),
-    
-    // Update user profile
-    updateProfile: protectedProcedure
-      .input(
-        z.object({
-          name: z.string().min(2).max(50).optional(),
-          phone: z.string().max(20).optional(),
-          address: z.string().optional(),
-        })
-      )
-      .mutation(async ({ ctx, input }) => {
-        const updated = await db.updateUserProfile(ctx.user.id, input);
-        if (!updated) {
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Failed to update profile",
-          });
-        }
-        return updated;
-      }),
-    
-    // Upload avatar
-    uploadAvatar: protectedProcedure
-      .input(
-        z.object({
-          avatarUrl: z.string().url(),
-        })
-      )
-      .mutation(async ({ ctx, input }) => {
-        const updated = await db.updateUserAvatar(ctx.user.id, input.avatarUrl);
-        if (!updated) {
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Failed to upload avatar",
-          });
-        }
-        return updated;
-      }),
-    
-    // Delete avatar
-    deleteAvatar: protectedProcedure
-      .mutation(async ({ ctx }) => {
-        const updated = await db.updateUserAvatar(ctx.user.id, null);
-        if (!updated) {
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Failed to delete avatar",
-          });
-        }
-        return updated;
       }),
   }),
 

@@ -11,10 +11,18 @@ export const users = mysqlTable("users", {
    * Use this for relations between tables.
    */
   id: int("id").autoincrement().primaryKey(),
-  /** Manus OAuth identifier (openId) returned from the OAuth callback. Unique per user. */
-  openId: varchar("openId", { length: 64 }).notNull().unique(),
+  /** Manus OAuth identifier (openId) returned from the OAuth callback. Unique per user. Now optional for traditional auth. */
+  openId: varchar("openId", { length: 64 }).unique(),
+  /** Google OAuth identifier. Unique per user. */
+  googleId: varchar("googleId", { length: 255 }).unique(),
+  /** Password hash for traditional auth (bcrypt) */
+  password: varchar("password", { length: 255 }),
+  /** Token for password reset */
+  resetPasswordToken: varchar("resetPasswordToken", { length: 255 }),
+  /** Expiration time for password reset token */
+  resetPasswordExpires: timestamp("resetPasswordExpires"),
   name: text("name"),
-  email: varchar("email", { length: 320 }),
+  email: varchar("email", { length: 320 }).notNull().unique(),
   phone: varchar("phone", { length: 20 }),
   address: text("address"),
   avatar: varchar("avatar", { length: 512 }),

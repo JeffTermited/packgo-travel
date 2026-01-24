@@ -57,6 +57,20 @@
       "when": 1769214956253,
       "tag": "0007_slimy_captain_flint",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1769282331219,
+      "tag": "0008_same_karen_page",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "5",
+      "when": 1769284710125,
+      "tag": "0009_aberrant_rogue",
+      "breakpoints": true
     }
   ]
 }

@@ -29,8 +29,8 @@ export async function getDb() {
 }
 
 export async function upsertUser(user: InsertUser): Promise<void> {
-  if (!user.openId) {
-    throw new Error("User openId is required for upsert");
+  if (!user.openId && !user.email) {
+    throw new Error("User openId or email is required for upsert");
   }
 
   const db = await getDb();
@@ -41,11 +41,12 @@ export async function upsertUser(user: InsertUser): Promise<void> {
 
   try {
     const values: InsertUser = {
-      openId: user.openId,
+      openId: user.openId ?? null,
+      email: user.email,
     };
     const updateSet: Record<string, unknown> = {};
 
-    const textFields = ["name", "email", "loginMethod"] as const;
+    const textFields = ["name", "loginMethod"] as const;
     type TextField = (typeof textFields)[number];
 
     const assignNullable = (field: TextField) => {
@@ -57,6 +58,12 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     };
 
     textFields.forEach(assignNullable);
+    
+    // Email is already set in values, update if provided
+    if (user.email && user.email !== values.email) {
+      values.email = user.email;
+      updateSet.email = user.email;
+    }
 
     if (user.lastSignedIn !== undefined) {
       values.lastSignedIn = user.lastSignedIn;
@@ -97,6 +104,143 @@ export async function getUserByOpenId(openId: string) {
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
 
   return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getUserByEmail(email: string) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get user: database not available");
+    return undefined;
+  }
+
+  const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
+
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getUserByGoogleId(googleId: string) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get user: database not available");
+    return undefined;
+  }
+
+  const result = await db.select().from(users).where(eq(users.googleId, googleId)).limit(1);
+
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getUserByResetToken(token: string) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get user: database not available");
+    return undefined;
+  }
+
+  const result = await db.select().from(users).where(eq(users.resetPasswordToken, token)).limit(1);
+
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function createUserWithPassword(data: { email: string; password: string; name: string }) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  const result = await db.insert(users).values({
+    email: data.email,
+    password: data.password,
+    name: data.name,
+    loginMethod: 'email',
+    role: 'user',
+  });
+
+  // Get the created user
+  const user = await getUserByEmail(data.email);
+  if (!user) {
+    throw new Error("Failed to create user");
+  }
+
+  return user;
+}
+
+export async function createUserWithGoogle(data: { googleId: string; email: string; name: string }) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  const result = await db.insert(users).values({
+    googleId: data.googleId,
+    email: data.email,
+    name: data.name,
+    loginMethod: 'google',
+    role: 'user',
+  });
+
+  // Get the created user
+  const user = await getUserByGoogleId(data.googleId);
+  if (!user) {
+    throw new Error("Failed to create user");
+  }
+
+  return user;
+}
+
+export async function linkGoogleAccount(userId: number, googleId: string) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  await db.update(users).set({ googleId }).where(eq(users.id, userId));
+  
+  // Return updated user
+  const result = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function setPasswordResetToken(userId: number, token: string, expires: Date) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  await db.update(users).set({
+    resetPasswordToken: token,
+    resetPasswordExpires: expires,
+  }).where(eq(users.id, userId));
+}
+
+export async function updatePassword(userId: number, hashedPassword: string) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  await db.update(users).set({ password: hashedPassword }).where(eq(users.id, userId));
+}
+
+export async function clearPasswordResetToken(userId: number) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  await db.update(users).set({
+    resetPasswordToken: null,
+    resetPasswordExpires: null,
+  }).where(eq(users.id, userId));
+}
+
+export async function deleteUser(userId: number) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  await db.delete(users).where(eq(users.id, userId));
 }
 
 // ============================================

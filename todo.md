@@ -724,7 +724,7 @@
 - [ ] 實作訂單確認郵件通知
 - [ ] 實作搜尋結果分頁功能
 - [x] 實作出發日期管理 UI（前端）
-- [ ] 儲存 checkpoint
+- [x] 儲存 checkpoint
 
 
 ## 高優先級待辦事項（antigravity 分析）
@@ -765,11 +765,11 @@
 
 
 ## 移除 Manus OAuth 並實作傳統登入系統
-- [ ] 更新資料庫結構
-  - [ ] 新增 password 欄位（加密儲存）
-  - [ ] 新增 resetPasswordToken 欄位
-  - [ ] 新增 resetPasswordExpires 欄位
-  - [ ] 移除 openId 欄位相關依賴
+- [x] 更新資料庫結構
+  - [x] 新增 password 欄位（加密儲存）
+  - [x] 新增 resetPasswordToken 欄位
+  - [x] 新增 resetPasswordExpires 欄位
+  - [x] 將 openId 改為可選，email 改為必填且唯一
 - [ ] 實作後端認證 API
   - [ ] 安裝 bcrypt 套件
   - [ ] 實作註冊 API（email + password）
@@ -795,4 +795,66 @@
   - [ ] 測試忘記密碼流程
   - [ ] 測試重設密碼流程
   - [ ] 測試登出功能
+- [ ] 儲存 checkpoint
+
+
+## 實作 Google OAuth + Email/Password 雙軌登入系統
+- [ ] 更新資料庫結構
+  - [ ] 新增 password 欄位（bcrypt 加密）
+  - [ ] 新增 googleId 欄位（儲存 Google OAuth ID）
+  - [ ] 新增 resetPasswordToken 和 resetPasswordExpires 欄位
+  - [ ] 將 openId 改為可選，email 改為必填且唯一
+  - [ ] 執行資料庫遷移
+- [ ] 安裝必要套件
+  - [ ] 安裝 bcrypt 或 bcryptjs
+  - [ ] 安裝 passport 和 passport-google-oauth20
+  - [ ] 安裝 jsonwebtoken（JWT）
+  - [ ] 安裝 nodemailer（發送重設密碼郵件）
+- [ ] 實作後端認證 API
+  - [ ] 實作 Email/Password 註冊 API
+  - [ ] 實作 Email/Password 登入 API
+  - [ ] 實作 Google OAuth 登入流程
+  - [ ] 實作忘記密碼 API（發送重設連結）
+  - [ ] 實作重設密碼 API
+  - [ ] 更新 JWT token 生成與驗證邏輯
+  - [ ] 更新 auth middleware 支援雙軌登入
+- [ ] 實作前端登入註冊頁面
+  - [ ] 建立統一登入頁面（支援 Email/Password 和 Google OAuth）
+  - [ ] 建立註冊頁面
+  - [ ] 建立忘記密碼頁面
+  - [ ] 建立重設密碼頁面
+  - [ ] 整合 Google OAuth 按鈕
+  - [ ] 更新 useAuth hook
+- [ ] 移除 Manus OAuth 相關程式碼
+  - [ ] 移除 server/_core/oauth.ts 中的 Manus OAuth 邏輯
+  - [ ] 移除 OAuth callback route
+  - [ ] 移除前端 Manus OAuth 相關環境變數引用
+  - [ ] 清理不再使用的程式碼
+- [ ] 測試完整認證流程
+  - [ ] 測試 Email/Password 註冊與登入
+  - [ ] 測試 Google OAuth 登入
+  - [ ] 測試忘記密碼與重設密碼
+  - [ ] 測試登出功能
+  - [ ] 測試 JWT token 過期處理
+- [ ] 儲存 checkpoint
+
+
+## 實作 Google OAuth + Email/Password 雙軌登入系統
+- [x] 更新資料庫 schema（新增 googleId, password, resetPasswordToken, resetPasswordExpires）
+- [x] 安裝必要套件（bcryptjs, passport, passport-google-oauth20, etc.）
+- [x] 建立 server/auth.ts 認證邏輯
+- [x] 建立 server/db.ts 資料庫輔助函數
+- [x] 實作 Email/Password 註冊 API
+- [x] 實作 Email/Password 登入 API
+- [x] 實作忘記密碼 API
+- [x] 實作重設密碼 API
+- [x] 實作 Google OAuth 策略
+- [x] 建立 Google OAuth callback route
+- [x] 更新 server/_core/index.ts 整合 Google Auth
+- [x] 建立前端登入頁面（Login.tsx）
+- [x] 建立前端註冊表單
+- [x] 建立忘記密碼頁面（ForgotPassword.tsx）
+- [x] 建立重設密碼頁面（ResetPassword.tsx）
+- [x] 移除 Manus OAuth 相關程式碼
+- [x] 測試完整認證流程
 - [ ] 儲存 checkpoint
