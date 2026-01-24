@@ -28,14 +28,25 @@ export async function createUser(email: string, password: string, name?: string)
   return user;
 }
 
+// Login security constants
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
+
 /**
  * Authenticate user with email and password
+ * Implements login attempt tracking and account lockout
  */
 export async function authenticateUser(email: string, password: string) {
   const user = await db.getUserByEmail(email);
   
   if (!user) {
     throw new Error('電子郵件或密碼錯誤');
+  }
+
+  // Check if account is locked
+  if (user.lockoutUntil && new Date(user.lockoutUntil) > new Date()) {
+    const remainingMinutes = Math.ceil((new Date(user.lockoutUntil).getTime() - Date.now()) / 60000);
+    throw new Error(`帳號已被鎖定，請在 ${remainingMinutes} 分鐘後再試`);
   }
 
   if (!user.password) {
@@ -45,7 +56,25 @@ export async function authenticateUser(email: string, password: string) {
   const isValidPassword = await bcrypt.compare(password, user.password);
   
   if (!isValidPassword) {
-    throw new Error('電子郵件或密碼錯誤');
+    // Increment login attempts
+    const newAttempts = (user.loginAttempts || 0) + 1;
+    
+    if (newAttempts >= MAX_LOGIN_ATTEMPTS) {
+      // Lock account for 15 minutes
+      const lockoutUntil = new Date(Date.now() + LOCKOUT_DURATION_MS);
+      await db.lockUserAccount(user.id, lockoutUntil);
+      throw new Error(`登入失敗次數過多，帳號已被鎖定 15 分鐘`);
+    } else {
+      // Update login attempts
+      await db.incrementLoginAttempts(user.id, newAttempts);
+      const remainingAttempts = MAX_LOGIN_ATTEMPTS - newAttempts;
+      throw new Error(`電子郵件或密碼錯誤（還剩 ${remainingAttempts} 次嘗試機會）`);
+    }
+  }
+
+  // Reset login attempts on successful login
+  if (user.loginAttempts && user.loginAttempts > 0) {
+    await db.resetLoginAttempts(user.id);
   }
 
   return user;

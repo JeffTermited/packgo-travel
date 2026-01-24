@@ -71,6 +71,13 @@
       "when": 1769284710125,
       "tag": "0009_aberrant_rogue",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1769297308709,
+      "tag": "0010_concerned_black_bolt",
+      "breakpoints": true
     }
   ]
 }

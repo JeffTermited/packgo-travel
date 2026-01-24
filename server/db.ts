@@ -246,6 +246,50 @@ export async function clearPasswordResetToken(userId: number) {
   }).where(eq(users.id, userId));
 }
 
+/**
+ * Increment login attempts for a user
+ */
+export async function incrementLoginAttempts(userId: number, attempts: number) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  await db.update(users).set({
+    loginAttempts: attempts,
+  }).where(eq(users.id, userId));
+}
+
+/**
+ * Lock user account until specified time
+ */
+export async function lockUserAccount(userId: number, lockoutUntil: Date) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  await db.update(users).set({
+    loginAttempts: 0, // Reset attempts when locking
+    lockoutUntil,
+  }).where(eq(users.id, userId));
+}
+
+/**
+ * Reset login attempts for a user (on successful login)
+ */
+export async function resetLoginAttempts(userId: number) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  await db.update(users).set({
+    loginAttempts: 0,
+    lockoutUntil: null,
+  }).where(eq(users.id, userId));
+}
+
 export async function deleteUser(userId: number) {
   const db = await getDb();
   if (!db) {

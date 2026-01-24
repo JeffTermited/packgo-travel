@@ -28,6 +28,11 @@ export const users = mysqlTable("users", {
   avatar: varchar("avatar", { length: 512 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
   role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
+  
+  /** Login security fields */
+  loginAttempts: int("loginAttempts").default(0).notNull(), // Number of failed login attempts
+  lockoutUntil: timestamp("lockoutUntil"), // Account locked until this time
+  
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
