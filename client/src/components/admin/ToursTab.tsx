@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -42,7 +43,9 @@ export default function ToursTab() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isBatchDeleteDialogOpen, setIsBatchDeleteDialogOpen] = useState(false);
   const [selectedTourId, setSelectedTourId] = useState<number | null>(null);
+  const [selectedTourIds, setSelectedTourIds] = useState<number[]>([]);
   const [formData, setFormData] = useState<TourFormData>({
     title: "",
     destination: "",
@@ -95,6 +98,18 @@ export default function ToursTab() {
     },
     onError: (error) => {
       toast.error(`刪除失敗：${error.message}`);
+    },
+  });
+
+  const batchDeleteToursMutation = trpc.tours.batchDelete.useMutation({
+    onSuccess: (data) => {
+      utils.tours.list.invalidate();
+      setIsBatchDeleteDialogOpen(false);
+      setSelectedTourIds([]);
+      toast.success(`已成功刪除 ${data.deletedCount} 個行程`);
+    },
+    onError: (error) => {
+      toast.error(`批量刪除失敗：${error.message}`);
     },
   });
 
@@ -163,6 +178,37 @@ export default function ToursTab() {
     }
   };
 
+  const handleSelectTour = (tourId: number, checked: boolean) => {
+    if (checked) {
+      setSelectedTourIds([...selectedTourIds, tourId]);
+    } else {
+      setSelectedTourIds(selectedTourIds.filter((id) => id !== tourId));
+    }
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked && tours) {
+      setSelectedTourIds(tours.map((tour) => tour.id));
+    } else {
+      setSelectedTourIds([]);
+    }
+  };
+
+  const handleBatchDelete = () => {
+    if (selectedTourIds.length > 0) {
+      setIsBatchDeleteDialogOpen(true);
+    }
+  };
+
+  const confirmBatchDelete = () => {
+    if (selectedTourIds.length > 0) {
+      batchDeleteToursMutation.mutate({ ids: selectedTourIds });
+    }
+  };
+
+  const isAllSelected = tours && tours.length > 0 && selectedTourIds.length === tours.length;
+  const isSomeSelected = selectedTourIds.length > 0 && selectedTourIds.length < (tours?.length || 0);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -171,16 +217,28 @@ export default function ToursTab() {
           <h2 className="text-2xl font-bold text-gray-900">行程管理</h2>
           <p className="text-sm text-gray-600 mt-1">共 {tours?.length || 0} 個行程</p>
         </div>
-        <Button
-          onClick={() => {
-            resetForm();
-            setIsCreateDialogOpen(true);
-          }}
-          className="bg-black text-white hover:bg-gray-800 rounded-full"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          新增行程
-        </Button>
+        <div className="flex items-center gap-3">
+          {selectedTourIds.length > 0 && (
+            <Button
+              onClick={handleBatchDelete}
+              variant="outline"
+              className="border-red-300 text-red-600 hover:bg-red-50 rounded-full"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              刪除已選 ({selectedTourIds.length})
+            </Button>
+          )}
+          <Button
+            onClick={() => {
+              resetForm();
+              setIsCreateDialogOpen(true);
+            }}
+            className="bg-black text-white hover:bg-gray-800 rounded-full"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            新增行程
+          </Button>
+        </div>
       </div>
 
       {/* Tours Table */}
@@ -195,6 +253,14 @@ export default function ToursTab() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
+                  <th className="px-4 py-3 text-left">
+                    <Checkbox
+                      checked={isAllSelected}
+                      onCheckedChange={handleSelectAll}
+                      className="data-[state=indeterminate]:bg-gray-400"
+                      data-state={isSomeSelected ? "indeterminate" : isAllSelected ? "checked" : "unchecked"}
+                    />
+                  </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     ID
                   </th>
@@ -223,7 +289,13 @@ export default function ToursTab() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {tours.map((tour) => (
-                  <tr key={tour.id} className="hover:bg-gray-50">
+                  <tr key={tour.id} className={`hover:bg-gray-50 ${selectedTourIds.includes(tour.id) ? 'bg-blue-50' : ''}`}>
+                    <td className="px-4 py-4">
+                      <Checkbox
+                        checked={selectedTourIds.includes(tour.id)}
+                        onCheckedChange={(checked) => handleSelectTour(tour.id, checked as boolean)}
+                      />
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {tour.id}
                     </td>
@@ -364,6 +436,34 @@ export default function ToursTab() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Batch Delete Confirmation Dialog */}
+      <Dialog open={isBatchDeleteDialogOpen} onOpenChange={setIsBatchDeleteDialogOpen}>
+        <DialogContent className="rounded-3xl">
+          <DialogHeader>
+            <DialogTitle>確認批量刪除</DialogTitle>
+            <DialogDescription>
+              您確定要刪除選取的 {selectedTourIds.length} 個行程嗎？此操作無法復原。
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsBatchDeleteDialogOpen(false)}
+              className="rounded-full"
+            >
+              取消
+            </Button>
+            <Button
+              onClick={confirmBatchDelete}
+              disabled={batchDeleteToursMutation.isPending}
+              className="bg-red-600 text-white hover:bg-red-700 rounded-full"
+            >
+              {batchDeleteToursMutation.isPending ? "刪除中..." : `刪除 ${selectedTourIds.length} 個行程`}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -400,130 +500,94 @@ function TourForm({
             onChange={(e) =>
               setFormData({ ...formData, destination: e.target.value })
             }
-            placeholder="例：日本東京"
+            placeholder="例：日本"
             className="rounded-full"
           />
         </div>
-
         <div className="grid gap-2">
           <Label htmlFor="duration">天數 *</Label>
           <Input
             id="duration"
             type="number"
-            min="1"
+            min={1}
             value={formData.duration}
             onChange={(e) =>
-              setFormData({ ...formData, duration: parseInt(e.target.value) })
+              setFormData({ ...formData, duration: parseInt(e.target.value) || 1 })
             }
             className="rounded-full"
           />
         </div>
-      </div>
-
-      <div className="grid gap-2">
-        <Label htmlFor="description">行程描述 *</Label>
-        <Textarea
-          id="description"
-          value={formData.description}
-          onChange={(e) =>
-            setFormData({ ...formData, description: e.target.value })
-          }
-          placeholder="詳細描述行程內容..."
-          rows={4}
-          className="rounded-2xl"
-        />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="grid gap-2">
-          <Label htmlFor="price">價格 (TWD) *</Label>
+          <Label htmlFor="price">價格 (NT$) *</Label>
           <Input
             id="price"
             type="number"
-            min="0"
+            min={0}
             value={formData.price}
             onChange={(e) =>
-              setFormData({ ...formData, price: parseInt(e.target.value) })
+              setFormData({ ...formData, price: parseInt(e.target.value) || 0 })
             }
             className="rounded-full"
           />
         </div>
-
         <div className="grid gap-2">
-          <Label htmlFor="maxParticipants">最大人數</Label>
+          <Label htmlFor="maxParticipants">人數上限</Label>
           <Input
             id="maxParticipants"
             type="number"
-            min="1"
+            min={1}
             value={formData.maxParticipants || ""}
             onChange={(e) =>
               setFormData({
                 ...formData,
-                maxParticipants: e.target.value
-                  ? parseInt(e.target.value)
-                  : undefined,
+                maxParticipants: e.target.value ? parseInt(e.target.value) : undefined,
               })
             }
+            placeholder="不限"
             className="rounded-full"
           />
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 gap-4">
         <div className="grid gap-2">
           <Label htmlFor="category">分類 *</Label>
           <Select
             value={formData.category}
-            onValueChange={(value: any) =>
+            onValueChange={(value: TourFormData["category"]) =>
               setFormData({ ...formData, category: value })
             }
           >
             <SelectTrigger className="rounded-full">
-              <SelectValue />
+              <SelectValue placeholder="選擇分類" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="group">團體旅遊</SelectItem>
-              <SelectItem value="custom">客製旅遊</SelectItem>
-              <SelectItem value="package">包團旅遊</SelectItem>
+              <SelectItem value="custom">客製化行程</SelectItem>
+              <SelectItem value="package">自由行套裝</SelectItem>
               <SelectItem value="cruise">郵輪旅遊</SelectItem>
               <SelectItem value="theme">主題旅遊</SelectItem>
             </SelectContent>
           </Select>
         </div>
-
         <div className="grid gap-2">
           <Label htmlFor="status">狀態 *</Label>
           <Select
             value={formData.status}
-            onValueChange={(value: any) =>
+            onValueChange={(value: TourFormData["status"]) =>
               setFormData({ ...formData, status: value })
             }
           >
             <SelectTrigger className="rounded-full">
-              <SelectValue />
+              <SelectValue placeholder="選擇狀態" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="active">上架中</SelectItem>
               <SelectItem value="inactive">已下架</SelectItem>
               <SelectItem value="soldout">已售完</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="grid gap-2">
-          <Label htmlFor="featured">精選</Label>
-          <Select
-            value={formData.featured.toString()}
-            onValueChange={(value) =>
-              setFormData({ ...formData, featured: parseInt(value) })
-            }
-          >
-            <SelectTrigger className="rounded-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="0">否</SelectItem>
-              <SelectItem value="1">是</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -543,6 +607,20 @@ function TourForm({
       </div>
 
       <div className="grid gap-2">
+        <Label htmlFor="description">行程描述 *</Label>
+        <Textarea
+          id="description"
+          value={formData.description}
+          onChange={(e) =>
+            setFormData({ ...formData, description: e.target.value })
+          }
+          placeholder="請輸入行程描述..."
+          rows={3}
+          className="rounded-2xl"
+        />
+      </div>
+
+      <div className="grid gap-2">
         <Label htmlFor="highlights">行程亮點</Label>
         <Textarea
           id="highlights"
@@ -550,56 +628,72 @@ function TourForm({
           onChange={(e) =>
             setFormData({ ...formData, highlights: e.target.value })
           }
-          placeholder="每行一個亮點"
+          placeholder="每行一個亮點..."
           rows={3}
           className="rounded-2xl"
         />
       </div>
 
-      <div className="grid gap-2">
-        <Label htmlFor="includes">費用包含</Label>
-        <Textarea
-          id="includes"
-          value={formData.includes}
-          onChange={(e) =>
-            setFormData({ ...formData, includes: e.target.value })
-          }
-          placeholder="每行一個項目"
-          rows={3}
-          className="rounded-2xl"
-        />
+      <div className="grid grid-cols-2 gap-4">
+        <div className="grid gap-2">
+          <Label htmlFor="includes">費用包含</Label>
+          <Textarea
+            id="includes"
+            value={formData.includes}
+            onChange={(e) =>
+              setFormData({ ...formData, includes: e.target.value })
+            }
+            placeholder="每行一項..."
+            rows={3}
+            className="rounded-2xl"
+          />
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="excludes">費用不含</Label>
+          <Textarea
+            id="excludes"
+            value={formData.excludes}
+            onChange={(e) =>
+              setFormData({ ...formData, excludes: e.target.value })
+            }
+            placeholder="每行一項..."
+            rows={3}
+            className="rounded-2xl"
+          />
+        </div>
       </div>
 
-      <div className="grid gap-2">
-        <Label htmlFor="excludes">費用不含</Label>
-        <Textarea
-          id="excludes"
-          value={formData.excludes}
+      <div className="flex items-center gap-2">
+        <input
+          type="checkbox"
+          id="featured"
+          checked={formData.featured === 1}
           onChange={(e) =>
-            setFormData({ ...formData, excludes: e.target.value })
+            setFormData({ ...formData, featured: e.target.checked ? 1 : 0 })
           }
-          placeholder="每行一個項目"
-          rows={3}
-          className="rounded-2xl"
+          className="h-4 w-4 rounded border-gray-300"
         />
+        <Label htmlFor="featured" className="cursor-pointer">
+          設為精選行程
+        </Label>
       </div>
     </div>
   );
 }
 
 // Helper functions
-function getCategoryLabel(category: string): string {
+function getCategoryLabel(category: string) {
   const labels: Record<string, string> = {
     group: "團體旅遊",
-    custom: "客製旅遊",
-    package: "包團旅遊",
+    custom: "客製化行程",
+    package: "自由行套裝",
     cruise: "郵輪旅遊",
     theme: "主題旅遊",
   };
   return labels[category] || category;
 }
 
-function getStatusLabel(status: string): string {
+function getStatusLabel(status: string) {
   const labels: Record<string, string> = {
     active: "上架中",
     inactive: "已下架",

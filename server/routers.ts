@@ -276,6 +276,23 @@ Important guidelines:
 
         return { success: true };
       }),
+
+    // Batch delete tours (admin only)
+    batchDelete: protectedProcedure
+      .input(z.object({ ids: z.array(z.number()).min(1) }))
+      .mutation(async ({ ctx, input }) => {
+        // Check if user is admin
+        if (ctx.user.role !== "admin") {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Only admins can delete tours",
+          });
+        }
+
+        await db.batchDeleteTours(input.ids);
+
+        return { success: true, deletedCount: input.ids.length };
+      }),
   }),
 
   // Tour departures router

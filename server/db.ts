@@ -188,6 +188,20 @@ export async function deleteTour(id: number): Promise<void> {
   await db.delete(tours).where(eq(tours.id, id));
 }
 
+/**
+ * Batch delete multiple tours
+ */
+export async function batchDeleteTours(ids: number[]): Promise<void> {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  if (ids.length === 0) return;
+
+  await db.delete(tours).where(inArray(tours.id, ids));
+}
+
 // ============================================
 // Tour Departure Management Functions
 // ============================================

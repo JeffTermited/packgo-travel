@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { Calendar, MapPin, Search, Sparkles, Plane, Hotel, Ticket, Users } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import AIAdvisor from "./AIAdvisor";
@@ -10,24 +9,30 @@ import { DestinationAutocomplete } from "@/components/DestinationAutocomplete";
 
 export default function Hero() {
   const [activeTab, setActiveTab] = useState("group");
-  const [departure, setDeparture] = useState("all");
+  const [departure, setDeparture] = useState("");
   const [destination, setDestination] = useState("");
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [, setLocation] = useLocation();
 
+  // Hot keywords for destinations
   const hotKeywords = ["北海道", "東京", "大阪", "歐洲", "土耳其", "郵輪", "滑雪"];
 
   const handleSearch = () => {
+    const params = new URLSearchParams();
     if (destination.trim()) {
-      setLocation(`/search?destination=${encodeURIComponent(destination.trim())}`);
-    } else {
-      setLocation("/search");
+      params.set("destination", destination.trim());
     }
+    if (departure.trim()) {
+      params.set("departure", departure.trim());
+    }
+    const queryString = params.toString();
+    setLocation(`/search${queryString ? `?${queryString}` : ""}`);
   };
 
   const handleKeywordClick = (keyword: string) => {
     setLocation(`/search?destination=${encodeURIComponent(keyword)}`);
   };
+
 
   return (
     <section className="relative w-full h-[600px] md:h-[700px] flex items-center justify-center overflow-hidden">
@@ -82,21 +87,19 @@ export default function Hero() {
             <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
                 {/* Use flexbox with equal basis for equal widths */}
                 <div className="flex flex-col md:flex-row gap-4 items-end">
-                  {/* Departure Location */}
+                  {/* Departure Location - Changed to Input */}
                   <div className="w-full" style={{ flex: '1 1 0', minWidth: 0 }}>
                     <label className="block text-xs font-medium text-gray-700 mb-1.5">出發地</label>
-                    <select 
-                      value={departure} 
-                      onChange={(e) => setDeparture(e.target.value)}
-                      className="w-full h-12 rounded-full border border-gray-300 bg-gray-50 hover:border-gray-400 transition-colors px-4 text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                      style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center', backgroundSize: '20px' }}
-                    >
-                      <option value="all">全部</option>
-                      <option value="台北">台北</option>
-                      <option value="台中">台中</option>
-                      <option value="台南">台南</option>
-                      <option value="高雄">高雄</option>
-                    </select>
+                    <div className="relative">
+                      <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <input 
+                        type="text"
+                        value={departure}
+                        onChange={(e) => setDeparture(e.target.value)}
+                        placeholder="輸入出發地"
+                        className="w-full h-12 rounded-full border border-gray-300 bg-gray-50 hover:border-gray-400 transition-colors pl-11 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                      />
+                    </div>
                   </div>
 
                   {/* Keyword Input */}
@@ -106,7 +109,7 @@ export default function Hero() {
                       value={destination}
                       onChange={setDestination}
                       onSelect={handleSearch}
-                      placeholder="日本"
+                      placeholder="輸入目的地"
                       className="w-full [&_input]:rounded-full [&_input]:bg-gray-50 [&_input]:border-gray-200 [&_input]:focus:ring-primary [&_input]:focus:border-primary [&_input]:h-12 [&_input]:w-full"
                     />
                   </div>
@@ -133,21 +136,24 @@ export default function Hero() {
                   </div>
                 </div>
 
-                {/* Hot Keywords */}
-                <div className="flex items-center gap-2 text-sm text-gray-500 mt-2">
-                  <span className="font-medium text-primary">熱門搜尋：</span>
-                  <div className="flex flex-wrap gap-2">
-                    {hotKeywords.map((keyword) => (
-                      <button 
-                        key={keyword} 
-                        onClick={() => handleKeywordClick(keyword)}
-                        className="hover:text-primary hover:underline transition-colors"
-                      >
-                        {keyword}
-                      </button>
-                    ))}
+
+                {/* Hot Keywords - Only show for group tours */}
+                {activeTab === "group" && (
+                  <div className="flex items-center gap-2 text-sm text-gray-500 mt-2 pt-2 border-t border-gray-100">
+                    <span className="font-medium text-primary">熱門搜尋：</span>
+                    <div className="flex flex-wrap gap-2">
+                      {hotKeywords.map((keyword) => (
+                        <button 
+                          key={keyword} 
+                          onClick={() => handleKeywordClick(keyword)}
+                          className="hover:text-primary hover:underline transition-colors"
+                        >
+                          {keyword}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
             </div>
           </div>
         </div>
