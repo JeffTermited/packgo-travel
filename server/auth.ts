@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import * as db from './db';
+import { sendPasswordResetEmail } from './emailService';
 
 const SALT_ROUNDS = 10;
 
@@ -68,9 +69,20 @@ export async function requestPasswordReset(email: string) {
   // Store token in database
   await db.setPasswordResetToken(user.id, resetToken, resetTokenExpires);
 
+  // Send password reset email
+  try {
+    const emailSent = await sendPasswordResetEmail(email, resetToken, user.name || undefined);
+    if (emailSent) {
+      console.log('[Auth] Password reset email sent successfully to:', email);
+    } else {
+      console.error('[Auth] Failed to send password reset email to:', email);
+    }
+  } catch (error) {
+    console.error('[Auth] Error sending password reset email:', error);
+  }
+
   return { 
     success: true, 
-    token: resetToken, // In production, send this via email instead of returning it
     message: '如果該電子郵件已註冊，您將收到重設密碼的連結'
   };
 }

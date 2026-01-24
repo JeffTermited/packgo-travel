@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import type { StringValue } from 'ms';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this-in-production';
 const JWT_EXPIRES_IN = '365d'; // 1 year
@@ -12,10 +13,12 @@ export interface JWTPayload {
 
 /**
  * Create a JWT token for a user session
+ * @param payload - User data to encode in the token
+ * @param expiresIn - Token expiry time (e.g., '7d', '30d', '1h'). Defaults to 365 days.
  */
-export function createToken(payload: JWTPayload): string {
+export function createToken(payload: JWTPayload, expiresIn?: StringValue): string {
   return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: JWT_EXPIRES_IN,
+    expiresIn: expiresIn || JWT_EXPIRES_IN,
   });
 }
 

@@ -16,6 +16,7 @@ export default function Login() {
   // Sign in form state
   const [signInEmail, setSignInEmail] = useState("");
   const [signInPassword, setSignInPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
 
   // Register form state
   const [registerName, setRegisterName] = useState("");
@@ -59,7 +60,7 @@ export default function Login() {
       toast.error("請填寫所有欄位");
       return;
     }
-    loginMutation.mutate({ email: signInEmail, password: signInPassword });
+    loginMutation.mutate({ email: signInEmail, password: signInPassword, rememberMe });
   };
 
   const handleRegister = (e: React.FormEvent) => {
@@ -212,6 +213,18 @@ export default function Login() {
                 </div>
 
                 <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="rememberMe"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                      className="w-4 h-4 rounded border-2 border-black text-black focus:ring-2 focus:ring-black cursor-pointer"
+                    />
+                    <Label htmlFor="rememberMe" className="text-black font-medium cursor-pointer">
+                      記住我 (30天)
+                    </Label>
+                  </div>
                   <Link href="/forgot-password" className="text-black hover:underline font-medium">
                     忘記密碼？
                   </Link>

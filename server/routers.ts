@@ -63,24 +63,34 @@ export const appRouter = router({
       .input(z.object({
         email: z.string().email(),
         password: z.string(),
+        rememberMe: z.boolean().optional().default(false),
       }))
       .mutation(async ({ input, ctx }) => {
         try {
           const user = await auth.authenticateUser(input.email, input.password);
           
-          // Create JWT token
-          const token = createToken({
-            userId: user.id,
-            email: user.email,
-            name: user.name || undefined,
-            role: user.role,
-          });
+          // Determine token expiry based on rememberMe option
+          // rememberMe: true -> 30 days, false -> 7 days
+          const maxAge = input.rememberMe 
+            ? 30 * 24 * 60 * 60 * 1000  // 30 days
+            : 7 * 24 * 60 * 60 * 1000;  // 7 days
+          
+          // Create JWT token with expiry
+          const token = createToken(
+            {
+              userId: user.id,
+              email: user.email,
+              name: user.name || undefined,
+              role: user.role,
+            },
+            input.rememberMe ? '30d' : '7d'
+          );
           
           // Set cookie
           const cookieOptions = getSessionCookieOptions(ctx.req);
           ctx.res.cookie(COOKIE_NAME, token, { 
             ...cookieOptions, 
-            maxAge: 365 * 24 * 60 * 60 * 1000 
+            maxAge 
           });
           
           return { success: true, user: { id: user.id, email: user.email, name: user.name } };
