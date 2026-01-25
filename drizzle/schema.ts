@@ -106,8 +106,6 @@ export const tours = mysqlTable("tours", {
   // Destination Description
   destinationDescription: text("destinationDescription"), // 目的地介紹
   
-  // Attractions & Sights
-  attractions: text("attractions"), // JSON array of attractions with name, description, image
   
   // Daily Itinerary
   dailyItinerary: text("dailyItinerary"), // JSON array of daily activities
@@ -140,6 +138,13 @@ export const tours = mysqlTable("tours", {
   
   // Poetic Content (elegant descriptions for different sections)
   poeticContent: text("poeticContent"), // JSON object: {intro, accommodation, dining, experience, closing}
+  poeticSubtitle: text("poeticSubtitle"), // Poetic subtitle (e.g., "越獅境踏野原魂，追遷徙逐天地心")
+  
+  // Detailed Content Blocks (for sipincollection.com style)
+  attractions: text("attractions"), // JSON array: [{name, description (100-200 words), image, imageAlt}]
+  hotels: text("hotels"), // JSON array: [{name, stars, description (100-150 words), image, imageAlt}]
+  meals: text("meals"), // JSON array: [{name, description, image, imageAlt}]
+  flights: text("flights"), // JSON object: {airline, outbound: {time, duration}, inbound: {time, duration}, features: []}
   
   // Category & Status
   category: mysqlEnum("category", [

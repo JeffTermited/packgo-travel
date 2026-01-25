@@ -14,6 +14,11 @@ export interface ContentAnalyzerResult {
     highlights: any[];
     keyFeatures: any[];
     poeticContent: any;
+    poeticSubtitle: string; // 詩意副標題
+    attractions: any[]; // 景點詳細介紹
+    hotels: any[]; // 飯店詳細介紹
+    meals: any[]; // 餐食介紹
+    flights: any; // 航班資訊
     originalityScore: number; // 0-100
   };
   error?: string;
@@ -68,6 +73,11 @@ export class ContentAnalyzerAgent {
           highlights,
           keyFeatures,
           poeticContent,
+          poeticSubtitle: "", // TODO: 將由 PoeticAgent 生成
+          attractions: [], // TODO: 將由 AttractionAgent 生成
+          hotels: [], // TODO: 將由 HotelAgent 生成
+          meals: [], // TODO: 將由 MealAgent 生成
+          flights: {}, // TODO: 將由 FlightAgent 生成
           originalityScore,
         },
       };

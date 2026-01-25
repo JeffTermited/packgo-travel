@@ -1288,3 +1288,36 @@
 - [x] 在行程詳情頁面顯示這兩個欄位（僅 admin 可見）
 - [x] 實作原創性評分顏色標示（90+ 綠色、70-89 黃色、60-69 橙色、<60 紅色）
 - [x] 測試並儲存 checkpoint
+
+
+## 重新設計行程詳情頁面（參考 sipincollection.com）（2026-01-25）
+- [ ] 瀏覽並分析 sipincollection.com 的設計
+- [ ] 記錄設計特點（Hero、導航、排版、配色、互動）
+- [ ] 重新設計 TourDetail 頁面的 Hero Section
+- [ ] 重新設計行程內容區塊（日程、亮點、包含項目）
+- [ ] 重新設計預訂區塊（價格、日期、CTA）
+- [ ] 確保符合黑白配色和極簡風格
+- [ ] 測試並儲存 checkpoint
+
+
+## AI Agent 生成詳細行程內容（參考 sipincollection.com）（2026-01-25）
+- [x] 更新資料庫 schema 新增景點 (attractions) 和飯店 (hotels) 欄位
+- [x] 分析 sipincollection.com 的設計特點
+- [x] 記錄完整的架構流程說明
+- [ ] 建立 AttractionAgent 生成景點介紹（100-200 字 + 圖片）
+- [ ] 建立 HotelAgent 生成飯店介紹（星級 + 特色 + 體驗 + 圖片）
+- [ ] 建立 MealAgent 生成餐食介紹（名稱 + 描述 + 圖片）
+- [ ] 建立 FlightAgent 生成航班資訊（航空公司 + 時間 + 特色）
+- [ ] 建立 PoeticAgent 生成詩意副標題和文案
+- [ ] 更新 Master Agent 協調所有 Agent
+- [ ] 更新 TourDetail 頁面使用交錯式左右分欄佈局
+- [ ] 更新 TourDetail 頁面新增直式標題
+- [ ] 更新 TourDetail 頁面使用不同背景顏色區分區塊
+- [ ] 測試並儲存 checkpoint
+
+
+## 行程下載功能（2026-01-25）
+- [ ] 實作行程下載為 PDF 功能（包含完整行程資訊、景點介紹、飯店資訊、航班資訊）
+- [ ] 在行程詳情頁面新增「行程下載」按鈕
+- [ ] PDF 格式參考 sipincollection.com 的設計（包含大量圖片）
+- [ ] 測試並儲存 checkpoint
