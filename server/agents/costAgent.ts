@@ -1,0 +1,224 @@
+/**
+ * Cost Agent
+ * 生成費用說明
+ */
+
+import { invokeLLM } from "../_core/llm";
+import { COST_SKILL } from "./skillLibrary";
+
+export interface CostAgentResult {
+  success: boolean;
+  data?: {
+    included: string[]; // 團費包含項目
+    excluded: string[]; // 團費不包含項目
+    additionalCosts: string[]; // 額外費用提醒
+    notes: string; // 費用說明備註
+  };
+  error?: string;
+}
+
+/**
+ * Cost Agent
+ * 使用 COST_SKILL 生成費用說明
+ */
+export class CostAgent {
+  /**
+   * Execute cost explanation generation
+   */
+  async execute(
+    rawData: any
+  ): Promise<CostAgentResult> {
+    console.log("[CostAgent] Starting cost explanation generation...");
+    
+    try {
+      // Validate input data
+      if (!rawData || !rawData.pricing) {
+        console.warn("[CostAgent] Insufficient pricing data, returning null");
+        return {
+          success: true,
+          data: {
+            included: [],
+            excluded: [],
+            additionalCosts: [],
+            notes: "",
+          },
+        };
+      }
+      
+      const costExplanation = await this.generateCostExplanation(rawData.pricing);
+      
+      if (!costExplanation) {
+        return {
+          success: true,
+          data: {
+            included: [],
+            excluded: [],
+            additionalCosts: [],
+            notes: "",
+          },
+        };
+      }
+      
+      console.log("[CostAgent] Cost explanation generated successfully");
+      
+      return {
+        success: true,
+        data: costExplanation,
+      };
+    } catch (error) {
+      console.error("[CostAgent] Error:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
+    }
+  }
+  
+  /**
+   * Generate cost explanation with retry mechanism
+   */
+  private async generateCostExplanation(
+    pricingData: any,
+    retryCount: number = 0
+  ): Promise<{
+    included: string[];
+    excluded: string[];
+    additionalCosts: string[];
+    notes: string;
+  } | null> {
+    const MAX_RETRIES = 2;
+    
+    try {
+      const prompt = `請根據以下資料生成費用說明：
+
+原始資料：
+${JSON.stringify(pricingData, null, 2)}
+
+請以 JSON 格式回傳，包含以下欄位：
+{
+  "included": [
+    "來回經濟艙機票",
+    "4晚5星級飯店住宿（雙人房）",
+    "每日早餐及行程中標註的午晚餐",
+    "行程中所列景點門票",
+    "全程遊覽車交通",
+    "專業中文導遊服務",
+    "旅遊責任保險"
+  ],
+  "excluded": [
+    "護照及簽證費用",
+    "個人旅遊平安保險（建議自行投保）",
+    "導遊、司機小費（建議每人每天 USD 10）",
+    "行李超重費用",
+    "個人消費（飲料、紀念品、洗衣等）",
+    "行程中未標註的餐食",
+    "因天氣、罷工等不可抗力因素產生的額外費用"
+  ],
+  "additionalCosts": [
+    "單人房差價：每人加收 NTD 8,000",
+    "簽證費用：約 NTD 1,200（代辦服務另計）",
+    "建議攜帶現金：每人約 USD 300-500（用於小費、個人消費）",
+    "建議小費：導遊每人每天 USD 5、司機每人每天 USD 5"
+  ],
+  "notes": "以上報價以雙人房為基準，單人報名需補單人房差價。機票及飯店價格可能因淡旺季而有所調整，實際價格以報名時確認為準。"
+}
+
+注意：
+1. 費用說明總字數必須控制在 200-300 字之間
+2. 包含項目不超過 100 字
+3. 不包含項目不超過 100 字
+4. 額外費用提醒不超過 100 字
+5. 如果資料不足，請回傳 null`;
+
+      const response = await invokeLLM({
+        messages: [
+          { role: "system", content: COST_SKILL },
+          { role: "user", content: prompt },
+        ],
+      });
+      
+      const content = response.choices[0].message.content;
+      
+      // Handle content type (string or array)
+      const contentStr = typeof content === 'string' ? content : JSON.stringify(content);
+      
+      if (!contentStr || contentStr.trim().toLowerCase() === "null") {
+        console.warn("[CostAgent] Insufficient data, returning null");
+        return null;
+      }
+      
+      // Parse JSON response
+      const costExplanation = JSON.parse(contentStr);
+      
+      // Validate word count (total should be 200-300 characters)
+      const totalWords = this.calculateTotalWords(costExplanation);
+      
+      if (totalWords < 200 || totalWords > 300) {
+        console.warn(`[CostAgent] Cost explanation word count (${totalWords}) out of range, retrying...`);
+        
+        if (retryCount < MAX_RETRIES) {
+          return this.generateCostExplanation(pricingData, retryCount + 1);
+        } else {
+          console.warn(`[CostAgent] Cost explanation word count still out of range after ${MAX_RETRIES} retries, using truncation`);
+          return this.truncateCostExplanation(costExplanation, 300);
+        }
+      }
+      
+      return costExplanation;
+    } catch (error) {
+      console.error("[CostAgent] Error generating cost explanation:", error);
+      
+      if (retryCount < MAX_RETRIES) {
+        console.log(`[CostAgent] Retrying cost explanation generation (${retryCount + 1}/${MAX_RETRIES})...`);
+        return this.generateCostExplanation(pricingData, retryCount + 1);
+      }
+      
+      return null;
+    }
+  }
+  
+  /**
+   * Calculate total word count of cost explanation
+   */
+  private calculateTotalWords(costExplanation: any): number {
+    let total = 0;
+    
+    // Included items
+    costExplanation.included.forEach((item: string) => {
+      total += item.length;
+    });
+    
+    // Excluded items
+    costExplanation.excluded.forEach((item: string) => {
+      total += item.length;
+    });
+    
+    // Additional costs
+    costExplanation.additionalCosts.forEach((item: string) => {
+      total += item.length;
+    });
+    
+    // Notes
+    total += costExplanation.notes.length;
+    
+    return total;
+  }
+  
+  /**
+   * Truncate cost explanation to fit word count limit
+   */
+  private truncateCostExplanation(costExplanation: any, maxWords: number): any {
+    // Simple truncation strategy: truncate notes
+    const currentWords = this.calculateTotalWords(costExplanation);
+    
+    if (currentWords <= maxWords) {
+      return costExplanation;
+    }
+    
+    const excessWords = currentWords - maxWords;
+    
+    costExplanation.notes = costExplanation.notes.slice(0, costExplanation.notes.length - excessWords) + "...";
+    
+    return costExplanation;
+  }
+}

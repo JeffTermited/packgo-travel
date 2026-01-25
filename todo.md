@@ -1782,3 +1782,45 @@
 
 ## 📝 AI 系統優化開發報告（2026-01-26）
 - [x] 撰寫完整的開發報告（AI_SYSTEM_OPTIMIZATION_REPORT.md）
+
+
+## 🎨 補充專門 Agent 和重新設計 TourDetail 頁面（2026-01-26）
+
+### 檢查當前 Agent 架構
+- [ ] 檢查 MasterAgent 的行程生成流程
+- [ ] 確認是否有處理「行程特色」、「每日行程」、「費用說明」、「注意事項」的 Agent
+- [ ] 列出缺失的 Agent
+
+### 創建缺失的專門 Agent
+- [x] 創建 ItineraryAgent（每日行程詳細規劃）- 使用 ITINERARY_SKILL
+- [x] 創建 CostAgent（費用說明）- 使用 COST_SKILL
+- [x] 創建 NoticeAgent（注意事項）- 使用 NOTICE_SKILL
+- [x] 在 skillLibrary.ts 中加入 ITINERARY_SKILL、COST_SKILL 和 NOTICE_SKILL
+
+### 在 MasterAgent 中整合新的 Agent
+- [ ] 在 MasterAgent 中調用 ItineraryAgent
+- [ ] 在 MasterAgent 中調用 CostAgent
+- [ ] 在 MasterAgent 中調用 NoticeAgent
+- [ ] 更新資料庫 schema（如需要）
+
+### 重新設計 TourDetail 頁面的視覺風格
+- [ ] 參考 sipincollection.com 的風格（明亮、圖片豐富、Zigzag 佈局）
+- [ ] 改變配色（根據目的地調整，而非固定的深色背景）
+- [ ] 實作大量圖片與文字交錯分佈（像 PDF 那樣）
+- [ ] 實作 Zigzag 佈局（圖文交錯）
+- [ ] 加入詩意的文案
+- [ ] 保留當前的功能（行程特色、每日行程、費用說明、注意事項）
+- [ ] 測試響應式設計（手機版、平板版、桌面版）
+
+
+### 在 MasterAgent 中整合新的 Agent
+- [x] 在 MasterAgent 中調用 ItineraryAgent
+- [x] 在 MasterAgent 中調用 CostAgent
+- [x] 在 MasterAgent 中調用 NoticeAgent
+- [x] 更新 MasterAgentResult 介面（加入 itineraryDetailed, costExplanation, noticeDetailed 欄位）
+
+### 更新資料庫 Schema
+- [x] 在 tours 表格中加入 itineraryDetailed 欄位
+- [x] 在 tours 表格中加入 costExplanation 欄位
+- [x] 在 tours 表格中加入 noticeDetailed 欄位
+- [x] 執行 pnpm db:push 同步資料庫

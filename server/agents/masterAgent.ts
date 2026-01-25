@@ -8,6 +8,9 @@ import { ContentAnalyzerAgent } from "./contentAnalyzerAgent";
 import { ImagePromptAgent } from "./imagePromptAgent";
 import { ImageGenerationAgent } from "./imageGenerationAgent";
 import { ColorThemeAgent } from "./colorThemeAgent";
+import { ItineraryAgent } from "./itineraryAgent";
+import { CostAgent } from "./costAgent";
+import { NoticeAgent } from "./noticeAgent";
 
 export interface MasterAgentResult {
   success: boolean;
@@ -47,6 +50,15 @@ export interface MasterAgentResult {
     // Poetic content
     poeticContent: string; // JSON string
     
+    // Detailed Itinerary (詳細每日行程)
+    itineraryDetailed: string; // JSON string
+    
+    // Cost Explanation (費用說明)
+    costExplanation: string; // JSON string
+    
+    // Detailed Notice (詳細注意事項)
+    noticeDetailed: string; // JSON string
+    
     // Metadata
     originalityScore: number;
     sourceUrl: string;
@@ -68,6 +80,9 @@ export class MasterAgent {
   private imagePromptAgent: ImagePromptAgent;
   private imageGenerationAgent: ImageGenerationAgent;
   private colorThemeAgent: ColorThemeAgent;
+  private itineraryAgent: ItineraryAgent;
+  private costAgent: CostAgent;
+  private noticeAgent: NoticeAgent;
   
   constructor() {
     this.webScraperAgent = new WebScraperAgent();
@@ -75,6 +90,9 @@ export class MasterAgent {
     this.imagePromptAgent = new ImagePromptAgent();
     this.imageGenerationAgent = new ImageGenerationAgent();
     this.colorThemeAgent = new ColorThemeAgent();
+    this.itineraryAgent = new ItineraryAgent();
+    this.costAgent = new CostAgent();
+    this.noticeAgent = new NoticeAgent();
   }
   
   /**
@@ -208,6 +226,44 @@ export class MasterAgent {
         imageAlt: featureImages[index]?.alt || feature.imageAlt,
       }));
       
+      // Step 6: Generate itinerary, cost, and notice (90% - 95%)
+      onProgress?.("generating_details", 90);
+      
+      let itineraryData = "[]";
+      let costData = "{}";
+      let noticeData = "{}";
+      
+      try {
+        // Generate itinerary
+        const itineraryResult = await this.itineraryAgent.execute(rawData);
+        if (itineraryResult.success && itineraryResult.data) {
+          itineraryData = JSON.stringify(itineraryResult.data.dailyItineraries);
+          console.log("[MasterAgent] Itinerary generated successfully");
+        } else {
+          console.warn("[MasterAgent] Itinerary generation failed:", itineraryResult.error);
+        }
+        
+        // Generate cost explanation
+        const costResult = await this.costAgent.execute(rawData);
+        if (costResult.success && costResult.data) {
+          costData = JSON.stringify(costResult.data);
+          console.log("[MasterAgent] Cost explanation generated successfully");
+        } else {
+          console.warn("[MasterAgent] Cost generation failed:", costResult.error);
+        }
+        
+        // Generate notice
+        const noticeResult = await this.noticeAgent.execute(rawData);
+        if (noticeResult.success && noticeResult.data) {
+          noticeData = JSON.stringify(noticeResult.data);
+          console.log("[MasterAgent] Notice generated successfully");
+        } else {
+          console.warn("[MasterAgent] Notice generation failed:", noticeResult.error);
+        }
+      } catch (detailsError) {
+        console.error("[MasterAgent] Details generation error (non-blocking):", detailsError);
+      }
+      
       const finalData = {
         // Basic info
         title: analyzedContent.title,
@@ -244,12 +300,21 @@ export class MasterAgent {
         // Poetic content
         poeticContent: JSON.stringify(analyzedContent.poeticContent),
         
+        // Detailed Itinerary (詳細每日行程)
+        itineraryDetailed: itineraryData,
+        
+        // Cost Explanation (費用說明)
+        costExplanation: costData,
+        
+        // Detailed Notice (詳細注意事項)
+        noticeDetailed: noticeData,
+        
         // Metadata
         originalityScore: analyzedContent.originalityScore,
         sourceUrl: url, // Store the original source URL
       };
       
-      console.log("[MasterAgent] Tour generation completed successfully");
+      console.log("[MasterAgent] Tour generation completed successfully");;
       
       return {
         success: true,
