@@ -495,6 +495,65 @@ Important guidelines:
         return { success: true, deletedCount: input.ids.length };
       }),
 
+    // Generate tour from URL with async processing (admin only)
+    generateFromUrl: protectedProcedure
+      .input(z.object({ url: z.string().url() }))
+      .mutation(async ({ ctx, input }) => {
+        // Check if user is admin
+        if (ctx.user.role !== "admin") {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Only admins can generate tours",
+          });
+        }
+
+        // Check rate limit
+        const { checkTourGenerationRateLimit } = await import("./rateLimit");
+        const rateLimit = await checkTourGenerationRateLimit(ctx.user.id);
+        
+        if (!rateLimit.allowed) {
+          const resetDate = new Date(rateLimit.resetAt);
+          throw new TRPCError({
+            code: "TOO_MANY_REQUESTS",
+            message: `請求過於頻繁，請於 ${resetDate.toLocaleTimeString("zh-TW")} 之後再試`,
+          });
+        }
+
+        const { addTourGenerationJob } = await import("./queue");
+        const { randomBytes } = await import("crypto");
+        
+        // Generate unique request ID
+        const requestId = `tour-${Date.now()}-${randomBytes(4).toString("hex")}`;
+        
+        // Add job to queue
+        const job = await addTourGenerationJob({
+          url: input.url,
+          userId: ctx.user.id,
+          requestId,
+        });
+        
+        return {
+          success: true,
+          jobId: job.id as string,
+          message: "行程生成任務已加入佇列",
+        };
+      }),
+    
+    // Get tour generation job status
+    getGenerationStatus: protectedProcedure
+      .input(z.object({ jobId: z.string() }))
+      .query(async ({ input }) => {
+        const { getTourGenerationJobStatus } = await import("./queue");
+        return await getTourGenerationJobStatus(input.jobId);
+      }),
+    
+    // Get all generation jobs for current user
+    getMyGenerationJobs: protectedProcedure
+      .query(async ({ ctx }) => {
+        const { getUserTourGenerationJobs } = await import("./queue");
+        return await getUserTourGenerationJobs(ctx.user.id);
+      }),
+
     // Auto-generate tour from URL (admin only) - Fast version with auto-save
     autoGenerate: protectedProcedure
       .input(z.object({ 

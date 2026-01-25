@@ -124,7 +124,22 @@ export const tours = mysqlTable("tours", {
   
   // Images
   imageUrl: varchar("imageUrl", { length: 512 }), // Main image
-  galleryImages: text("galleryImages"), // JSON array of gallery image URLs
+  galleryImages: text("galleryImages"), // JSON array of gallery image URLs with metadata
+  
+  // === New Fields for Luxury Design ===
+  // Hero Section
+  heroImage: varchar("heroImage", { length: 512 }), // Full-screen hero background image
+  heroImageAlt: varchar("heroImageAlt", { length: 255 }), // Hero image alt text for SEO
+  heroSubtitle: text("heroSubtitle"), // Hero subtitle - tour highlights summary
+  
+  // Color Theme
+  colorTheme: text("colorTheme"), // JSON format: {primary, secondary, accent, text, textLight, background, backgroundDark}
+  
+  // Key Features (for vertical text layout)
+  keyFeatures: text("keyFeatures"), // JSON array of key features with poetic phrases
+  
+  // Poetic Content (elegant descriptions for different sections)
+  poeticContent: text("poeticContent"), // JSON object: {intro, accommodation, dining, experience, closing}
   
   // Category & Status
   category: mysqlEnum("category", [

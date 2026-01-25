@@ -11,6 +11,7 @@ import { serveStatic, setupVite } from "./vite";
 import { handleStripeWebhook } from "./stripeWebhook";
 import { avatarUploadRouter } from "../avatarUpload";
 import { initializeGoogleAuth } from "../googleAuth";
+import "../worker"; // Initialize BullMQ worker
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
