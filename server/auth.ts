@@ -120,6 +120,11 @@ export async function requestPasswordReset(email: string) {
  * Reset password with token
  */
 export async function resetPassword(token: string, newPassword: string) {
+  // Validate password length
+  if (newPassword.length < 8) {
+    throw new Error('密碼至少需要 8 個字元');
+  }
+
   const user = await db.getUserByResetToken(token);
   
   if (!user) {
