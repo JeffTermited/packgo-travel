@@ -1279,3 +1279,12 @@
 - [x] 更新 tourGenerator 傳遞這些欄位
 - [x] 建立驗證報告生成功能（Markdown 格式）
 - [x] 測試並儲存 checkpoint
+
+
+## Admin 後台顯示來源 URL 和原創性評分（2026-01-25）
+- [x] 檢查現有 Admin 後台結構
+- [x] 更新 tRPC API 返回 sourceUrl 和 originalityScore
+- [x] 在行程列表頁面顯示這兩個欄位（僅 admin 可見）
+- [x] 在行程詳情頁面顯示這兩個欄位（僅 admin 可見）
+- [x] 實作原創性評分顏色標示（90+ 綠色、70-89 黃色、60-69 橙色、<60 紅色）
+- [x] 測試並儲存 checkpoint

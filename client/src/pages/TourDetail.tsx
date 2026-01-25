@@ -24,10 +24,13 @@ import {
   ExternalLink
 } from "lucide-react";
 import { useLocation, useRoute, Link } from "wouter";
+import { useAuth } from "@/_core/hooks/useAuth";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 export default function TourDetail() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
   const [, params] = useRoute("/tours/:id");
   const [, setLocation] = useLocation();
   const tourId = params?.id ? parseInt(params.id) : undefined;
@@ -156,6 +159,52 @@ export default function TourDetail() {
 
         {/* Main Content */}
         <div className="container py-8">
+          {/* Admin Info Card */}
+          {isAdmin && (tour.sourceUrl || tour.originalityScore) && (
+            <Card className="border-0 shadow-lg mb-6 bg-blue-50">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <Shield className="h-5 w-5 text-blue-600" />
+                  <h3 className="text-lg font-bold text-blue-900">管理員資訊</h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {tour.sourceUrl && (
+                    <div>
+                      <div className="text-sm font-medium text-blue-700 mb-2">來源 URL</div>
+                      <a
+                        href={tour.sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                        <span className="truncate">{tour.sourceUrl}</span>
+                      </a>
+                    </div>
+                  )}
+                  {tour.originalityScore && (
+                    <div>
+                      <div className="text-sm font-medium text-blue-700 mb-2">原創性評分</div>
+                      <span
+                        className={`inline-flex px-4 py-2 text-sm font-semibold rounded-full ${
+                          Number(tour.originalityScore) >= 90
+                            ? "bg-green-100 text-green-800"
+                            : Number(tour.originalityScore) >= 70
+                              ? "bg-yellow-100 text-yellow-800"
+                              : Number(tour.originalityScore) >= 60
+                                ? "bg-orange-100 text-orange-800"
+                                : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {Number(tour.originalityScore).toFixed(1)} / 100
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Left Column - Main Content */}
             <div className="lg:col-span-2 space-y-6">

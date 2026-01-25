@@ -1,3 +1,4 @@
+import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -20,7 +21,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
 import DeparturesManagement from "./DeparturesManagement";
-import { Calendar, Edit, Eye, EyeOff, Loader2, Plus, Search, Sparkles, Star, Trash2 } from "lucide-react";
+import { Calendar, Edit, Eye, EyeOff, ExternalLink, Loader2, Plus, Search, Sparkles, Star, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -43,6 +44,8 @@ type TourFormData = {
 };
 
 export default function ToursTab() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -582,6 +585,16 @@ export default function ToursTab() {
                   <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700">
                     狀態
                   </th>
+                  {isAdmin && (
+                    <>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 min-w-[150px]">
+                        來源 URL
+                      </th>
+                      <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700">
+                        原創性評分
+                      </th>
+                    </>
+                  )}
                   <th className="px-6 py-4 text-right text-sm font-semibold text-gray-700 min-w-[280px]">
                     操作
                   </th>
@@ -625,6 +638,47 @@ export default function ToursTab() {
                         {getStatusLabel(tour.status)}
                       </span>
                     </td>
+                    {isAdmin && (
+                      <>
+                        <td className="px-6 py-5 text-sm text-gray-700">
+                          {tour.sourceUrl ? (
+                            <a
+                              href={tour.sourceUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline"
+                              title="查看來源網頁"
+                            >
+                              <ExternalLink className="h-3.5 w-3.5" />
+                              <span className="truncate max-w-[120px]">
+                                {new URL(tour.sourceUrl).hostname}
+                              </span>
+                            </a>
+                          ) : (
+                            <span className="text-gray-400">無</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-5 whitespace-nowrap text-center">
+                          {tour.originalityScore ? (
+                            <span
+                              className={`inline-flex px-3 py-1.5 text-xs font-semibold rounded-full ${
+                                Number(tour.originalityScore) >= 90
+                                  ? "bg-green-100 text-green-800"
+                                  : Number(tour.originalityScore) >= 70
+                                    ? "bg-yellow-100 text-yellow-800"
+                                    : Number(tour.originalityScore) >= 60
+                                      ? "bg-orange-100 text-orange-800"
+                                      : "bg-red-100 text-red-800"
+                              }`}
+                            >
+                              {Number(tour.originalityScore).toFixed(1)}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400">無</span>
+                          )}
+                        </td>
+                      </>
+                    )}
                     <td className="px-6 py-5 whitespace-nowrap text-right">
                       <div className="flex items-center justify-end gap-1">
                         {/* 快速切換上架/下架 */}
