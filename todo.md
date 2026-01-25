@@ -939,6 +939,8 @@
 ## Google 登入 Cookie 問題診斷與修復
 - [x] 診斷 Cookie 未設定的根本原因（開發環境端口衝突、Cookie 名稱為 app_session_id）
 - [x] 添加詳細調試日誌到 Google OAuth callback
-- [ ] 在生產環境測試 Google 登入功能
+- [x] 嘗試清理殭屍進程（端口 3000 被殭屍進程佔用，無法釋放）
+- [x] 修改伺服器啟動邏輯使用 SO_REUSEADDR（部分緩解問題）
+- [ ] 在生產環境測試 Google 登入功能（推薦）
 - [ ] 驗證 Cookie 正確設定（app_session_id）
 - [ ] 確認用戶資訊正確顯示在 Header

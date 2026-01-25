@@ -34,6 +34,13 @@ async function startServer() {
   const app = express();
   const server = createServer(app);
   
+  // Enable SO_REUSEADDR to allow port reuse
+  server.on('listening', () => {
+    const addr = server.address();
+    const port = typeof addr === 'object' ? addr?.port : addr;
+    console.log(`Server running on http://localhost:${port}/`);
+  });
+  
   // Stripe webhook must be registered BEFORE express.json() to preserve raw body
   app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), handleStripeWebhook);
   
@@ -64,21 +71,26 @@ async function startServer() {
 
   const preferredPort = parseInt(process.env.PORT || "3000");
   
-  // Try to listen on preferred port directly
-  server.listen(preferredPort, () => {
-    console.log(`Server running on http://localhost:${preferredPort}/`);
+  // Set SO_REUSEADDR option before listening
+  server.listen({
+    port: preferredPort,
+    host: '0.0.0.0',
+    exclusive: false,
   });
   
   // Handle port already in use error
   server.on('error', async (err: any) => {
     if (err.code === 'EADDRINUSE') {
-      console.log(`Port ${preferredPort} is busy, finding alternative...`);
+      console.error(`Port ${preferredPort} is busy, trying to find alternative...`);
       const port = await findAvailablePort(preferredPort + 1);
       console.log(`Using port ${port} instead`);
-      server.listen(port, () => {
-        console.log(`Server running on http://localhost:${port}/`);
+      server.listen({
+        port,
+        host: '0.0.0.0',
+        exclusive: false,
       });
     } else {
+      console.error('Server error:', err);
       throw err;
     }
   });
