@@ -25,20 +25,26 @@ export function initializeGoogleAuth(app: Express) {
       },
       async (accessToken, refreshToken, profile, done) => {
         try {
+          console.log('[Google OAuth] Strategy callback triggered');
           // Extract user info from Google profile
           const googleId = profile.id;
           const email = profile.emails?.[0]?.value;
           const name = profile.displayName;
+          console.log('[Google OAuth] Profile data:', { googleId, email, name });
 
           if (!email) {
+            console.error('[Google OAuth] No email in profile');
             return done(new Error('No email found in Google profile'));
           }
 
           // Create or get user
+          console.log('[Google OAuth] Creating or getting user...');
           const user = await auth.createOrGetGoogleUser(googleId, email, name);
+          console.log('[Google OAuth] User created/retrieved:', user ? `${user.email} (ID: ${user.id})` : 'null');
 
           return done(null, user);
         } catch (error) {
+          console.error('[Google OAuth] Strategy error:', error);
           return done(error);
         }
       }
@@ -65,9 +71,12 @@ export function initializeGoogleAuth(app: Express) {
     }),
     async (req, res) => {
       try {
+        console.log('[Google OAuth] Callback triggered');
         const user = req.user as any;
+        console.log('[Google OAuth] User from passport:', user ? `${user.email} (ID: ${user.id})` : 'null');
 
         if (!user) {
+          console.error('[Google OAuth] No user found in request');
           return res.redirect('/login?error=no_user');
         }
 
@@ -78,15 +87,20 @@ export function initializeGoogleAuth(app: Express) {
           name: user.name || undefined,
           role: user.role,
         });
+        console.log('[Google OAuth] JWT token created, length:', token.length);
 
         // Set cookie
         const cookieOptions = getSessionCookieOptions(req);
+        console.log('[Google OAuth] Cookie options:', JSON.stringify(cookieOptions));
+        
         res.cookie(COOKIE_NAME, token, {
           ...cookieOptions,
           maxAge: 365 * 24 * 60 * 60 * 1000,
         });
+        console.log('[Google OAuth] Cookie set with name:', COOKIE_NAME);
 
         // Redirect to home page
+        console.log('[Google OAuth] Redirecting to home page');
         res.redirect('/');
       } catch (error) {
         console.error('[Google Auth] Callback error:', error);

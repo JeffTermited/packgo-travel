@@ -63,14 +63,24 @@ async function startServer() {
   }
 
   const preferredPort = parseInt(process.env.PORT || "3000");
-  const port = await findAvailablePort(preferredPort);
-
-  if (port !== preferredPort) {
-    console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
-  }
-
-  server.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}/`);
+  
+  // Try to listen on preferred port directly
+  server.listen(preferredPort, () => {
+    console.log(`Server running on http://localhost:${preferredPort}/`);
+  });
+  
+  // Handle port already in use error
+  server.on('error', async (err: any) => {
+    if (err.code === 'EADDRINUSE') {
+      console.log(`Port ${preferredPort} is busy, finding alternative...`);
+      const port = await findAvailablePort(preferredPort + 1);
+      console.log(`Using port ${port} instead`);
+      server.listen(port, () => {
+        console.log(`Server running on http://localhost:${port}/`);
+      });
+    } else {
+      throw err;
+    }
   });
 }
 

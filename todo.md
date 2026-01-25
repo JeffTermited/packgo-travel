@@ -923,6 +923,22 @@
 ## Header 登入狀態顯示修復
 - [x] 診斷 Header 元件登入狀態檢查邏輯
 - [x] 修復 Cookie 設定（sameSite: lax）
-- [ ] 測試登入後會員名稱顯示
+- [ ] 測試登入後會員名稱顯示（需要重新部署後測試）
 - [ ] 測試登出功能
-- [ ] 儲存 checkpoint
+- [x] 儲存 checkpoint
+
+
+## 刪除並重新創建測試帳號
+- [x] 刪除 jeffhsieh09@gmail.com 帳號
+- [ ] 重新部署最新版本
+- [ ] 使用 Google 登入創建新帳號
+- [ ] 驗證會員名稱正確顯示
+- [ ] 測試登出功能
+
+
+## Google 登入 Cookie 問題診斷與修復
+- [x] 診斷 Cookie 未設定的根本原因（開發環境端口衝突、Cookie 名稱為 app_session_id）
+- [x] 添加詳細調試日誌到 Google OAuth callback
+- [ ] 在生產環境測試 Google 登入功能
+- [ ] 驗證 Cookie 正確設定（app_session_id）
+- [ ] 確認用戶資訊正確顯示在 Header
