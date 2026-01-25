@@ -568,9 +568,9 @@ export default function ToursTab() {
         ) : filteredTours.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
+              <thead className="bg-gray-50 border-b-2 border-gray-200">
                 <tr>
-                  <th className="px-4 py-3 text-left">
+                  <th className="px-6 py-4 text-left w-12">
                     <Checkbox
                       checked={isAllSelected}
                       onCheckedChange={handleSelectAll}
@@ -578,60 +578,60 @@ export default function ToursTab() {
                       data-state={isSomeSelected ? "indeterminate" : isAllSelected ? "checked" : "unchecked"}
                     />
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
                     ID
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 min-w-[200px]">
                     標題
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
                     目的地
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700">
                     天數
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-right text-sm font-semibold text-gray-700">
                     價格
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
                     分類
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700">
                     狀態
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-right text-sm font-semibold text-gray-700 min-w-[280px]">
                     操作
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredTours.map((tour) => (
-                  <tr key={tour.id} className={`hover:bg-gray-50 ${selectedTourIds.includes(tour.id) ? 'bg-blue-50' : ''}`}>
-                    <td className="px-4 py-4">
+                  <tr key={tour.id} className={`hover:bg-gray-50 transition-colors ${selectedTourIds.includes(tour.id) ? 'bg-blue-50' : ''}`}>
+                    <td className="px-6 py-5">
                       <Checkbox
                         checked={selectedTourIds.includes(tour.id)}
                         onCheckedChange={(checked) => handleSelectTour(tour.id, checked as boolean)}
                       />
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-5 whitespace-nowrap text-sm text-gray-600 font-mono">
                       {tour.id}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">{tour.title}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-5 text-sm text-gray-900 font-medium">{tour.title}</td>
+                    <td className="px-6 py-5 whitespace-nowrap text-sm text-gray-700">
                       {tour.destination}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-5 whitespace-nowrap text-sm text-gray-700 text-center">
                       {tour.duration} 天
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-5 whitespace-nowrap text-sm text-gray-900 font-semibold text-right">
                       NT$ {tour.price.toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-5 whitespace-nowrap text-sm text-gray-700">
                       {getCategoryLabel(tour.category)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-6 py-5 whitespace-nowrap text-center">
                       <span
-                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                        className={`inline-flex px-3 py-1.5 text-xs font-semibold rounded-full ${
                           tour.status === "active"
                             ? "bg-green-100 text-green-800"
                             : tour.status === "soldout"
@@ -642,67 +642,72 @@ export default function ToursTab() {
                         {getStatusLabel(tour.status)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      {/* 快速切換上架/下架 */}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          toggleStatusMutation.mutate({
-                            id: tour.id,
-                            status: tour.status === "active" ? "inactive" : "active",
-                          });
-                        }}
-                        className={`mr-1 rounded-full ${tour.status === "active" ? "text-green-600 hover:text-green-700" : "text-gray-400 hover:text-gray-600"}`}
-                        title={tour.status === "active" ? "點擊下架" : "點擊上架"}
-                        disabled={toggleStatusMutation.isPending}
-                      >
-                        {tour.status === "active" ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                      </Button>
-                      {/* 快速切換熱門 */}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          toggleFeaturedMutation.mutate({
-                            id: tour.id,
-                            featured: tour.featured === 1 ? 0 : 1,
-                          });
-                        }}
-                        className={`mr-1 rounded-full ${tour.featured === 1 ? "text-yellow-500 hover:text-yellow-600" : "text-gray-400 hover:text-gray-600"}`}
-                        title={tour.featured === 1 ? "取消熱門" : "設為熱門"}
-                        disabled={toggleFeaturedMutation.isPending}
-                      >
-                        <Star className={`h-4 w-4 ${tour.featured === 1 ? "fill-current" : ""}`} />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedTourForDepartures({id: tour.id, title: tour.title});
-                          setIsDeparturesDialogOpen(true);
-                        }}
-                        className="mr-1 rounded-full"
-                        title="管理出發日期"
-                      >
-                        <Calendar className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleEdit(tour.id)}
-                        className="mr-1 rounded-full"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDelete(tour.id)}
-                        className="text-red-600 hover:text-red-700 rounded-full"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                    <td className="px-6 py-5 whitespace-nowrap text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        {/* 快速切換上架/下架 */}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            toggleStatusMutation.mutate({
+                              id: tour.id,
+                              status: tour.status === "active" ? "inactive" : "active",
+                            });
+                          }}
+                          className={`h-9 w-9 p-0 rounded-full transition-colors ${tour.status === "active" ? "text-green-600 hover:bg-green-50 hover:text-green-700" : "text-gray-400 hover:bg-gray-100 hover:text-gray-600"}`}
+                          title={tour.status === "active" ? "點擊下架" : "點擊上架"}
+                          disabled={toggleStatusMutation.isPending}
+                        >
+                          {tour.status === "active" ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                        </Button>
+                        {/* 快速切換熱門 */}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            toggleFeaturedMutation.mutate({
+                              id: tour.id,
+                              featured: tour.featured === 1 ? 0 : 1,
+                            });
+                          }}
+                          className={`h-9 w-9 p-0 rounded-full transition-colors ${tour.featured === 1 ? "text-yellow-500 hover:bg-yellow-50 hover:text-yellow-600" : "text-gray-400 hover:bg-gray-100 hover:text-gray-600"}`}
+                          title={tour.featured === 1 ? "取消熱門" : "設為熱門"}
+                          disabled={toggleFeaturedMutation.isPending}
+                        >
+                          <Star className={`h-4 w-4 ${tour.featured === 1 ? "fill-current" : ""}`} />
+                        </Button>
+                        <div className="w-px h-6 bg-gray-200 mx-1"></div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedTourForDepartures({id: tour.id, title: tour.title});
+                            setIsDeparturesDialogOpen(true);
+                          }}
+                          className="h-9 w-9 p-0 rounded-full hover:bg-gray-100 transition-colors"
+                          title="管理出發日期"
+                        >
+                          <Calendar className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEdit(tour.id)}
+                          className="h-9 w-9 p-0 rounded-full hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                          title="編輯行程"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDelete(tour.id)}
+                          className="h-9 w-9 p-0 rounded-full text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors"
+                          title="刪除行程"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -1125,205 +1130,271 @@ function TourForm({
   setFormData: React.Dispatch<React.SetStateAction<TourFormData>>;
 }) {
   return (
-    <div className="grid gap-4 py-4">
-      <div className="grid gap-2">
-        <Label htmlFor="title">行程標題 *</Label>
-        <Input
-          id="title"
-          value={formData.title}
-          onChange={(e) =>
-            setFormData({ ...formData, title: e.target.value })
-          }
-          placeholder="例：東京賞櫻 5 日遊"
-          className="rounded-full"
-        />
+    <div className="grid gap-6 py-4">
+      {/* 基本資訊區塊 */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
+          <div className="h-1.5 w-1.5 rounded-full bg-black"></div>
+          <h3 className="text-sm font-semibold text-gray-900">基本資訊</h3>
+        </div>
+        
+        <div className="grid gap-4">
+          <div className="grid gap-2">
+            <Label htmlFor="title" className="text-sm font-medium text-gray-700">
+              行程標題 <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="title"
+              value={formData.title}
+              onChange={(e) =>
+                setFormData({ ...formData, title: e.target.value })
+              }
+              placeholder="例：東京賞櫻 5 日遊"
+              className="rounded-full"
+            />
+          </div>
+
+          <div className="grid grid-cols-3 gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="destination" className="text-sm font-medium text-gray-700">
+                目的地 <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="destination"
+                value={formData.destination}
+                onChange={(e) =>
+                  setFormData({ ...formData, destination: e.target.value })
+                }
+                placeholder="例：日本東京"
+                className="rounded-full"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="duration" className="text-sm font-medium text-gray-700">
+                天數 <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="duration"
+                type="number"
+                min={1}
+                value={formData.duration}
+                onChange={(e) =>
+                  setFormData({ ...formData, duration: parseInt(e.target.value) || 1 })
+                }
+                placeholder="5"
+                className="rounded-full"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="maxParticipants" className="text-sm font-medium text-gray-700">
+                人數上限
+              </Label>
+              <Input
+                id="maxParticipants"
+                type="number"
+                min={1}
+                value={formData.maxParticipants || ""}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    maxParticipants: e.target.value ? parseInt(e.target.value) : undefined,
+                  })
+                }
+                placeholder="不限"
+                className="rounded-full"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="price" className="text-sm font-medium text-gray-700">
+                價格 (NT$) <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="price"
+                type="number"
+                min={0}
+                value={formData.price}
+                onChange={(e) =>
+                  setFormData({ ...formData, price: parseInt(e.target.value) || 0 })
+                }
+                placeholder="35000"
+                className="rounded-full"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="category" className="text-sm font-medium text-gray-700">
+                分類 <span className="text-red-500">*</span>
+              </Label>
+              <Select
+                value={formData.category}
+                onValueChange={(value: TourFormData["category"]) =>
+                  setFormData({ ...formData, category: value })
+                }
+              >
+                <SelectTrigger className="rounded-full">
+                  <SelectValue placeholder="選擇分類" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="group">團體旅遊</SelectItem>
+                  <SelectItem value="custom">客製化行程</SelectItem>
+                  <SelectItem value="package">自由行套裝</SelectItem>
+                  <SelectItem value="cruise">郵輪旅遊</SelectItem>
+                  <SelectItem value="theme">主題旅遊</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="status" className="text-sm font-medium text-gray-700">
+                狀態 <span className="text-red-500">*</span>
+              </Label>
+              <Select
+                value={formData.status}
+                onValueChange={(value: TourFormData["status"]) =>
+                  setFormData({ ...formData, status: value })
+                }
+              >
+                <SelectTrigger className="rounded-full">
+                  <SelectValue placeholder="選擇狀態" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">上架中</SelectItem>
+                  <SelectItem value="inactive">已下架</SelectItem>
+                  <SelectItem value="soldout">已售完</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="imageUrl" className="text-sm font-medium text-gray-700">
+              圖片網址
+            </Label>
+            <Input
+              id="imageUrl"
+              value={formData.imageUrl}
+              onChange={(e) =>
+                setFormData({ ...formData, imageUrl: e.target.value })
+              }
+              placeholder="https://example.com/image.jpg"
+              className="rounded-full"
+            />
+            <p className="text-xs text-gray-500">建議尺寸：1200x800px，支援 JPG/PNG 格式</p>
+          </div>
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="grid gap-2">
-          <Label htmlFor="destination">目的地 *</Label>
-          <Input
-            id="destination"
-            value={formData.destination}
+      {/* 詳細描述區塊 */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
+          <div className="h-1.5 w-1.5 rounded-full bg-black"></div>
+          <h3 className="text-sm font-semibold text-gray-900">詳細描述</h3>
+        </div>
+
+        <div className="grid gap-4">
+          <div className="grid gap-2">
+            <Label htmlFor="description" className="text-sm font-medium text-gray-700">
+              行程描述 <span className="text-red-500">*</span>
+            </Label>
+            <Textarea
+              id="description"
+              value={formData.description}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
+              placeholder="請輸入行程的整體描述，包含主要特色和適合對象..."
+              rows={4}
+              className="rounded-2xl resize-none"
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="highlights" className="text-sm font-medium text-gray-700">
+              行程亮點
+            </Label>
+            <Textarea
+              id="highlights"
+              value={formData.highlights}
+              onChange={(e) =>
+                setFormData({ ...formData, highlights: e.target.value })
+              }
+              placeholder="每行一個亮點，例：\n- 參觀東京鐵塔\n- 體驗清水寺和服\n- 品嚐正宗懷石料理"
+              rows={4}
+              className="rounded-2xl resize-none"
+            />
+            <p className="text-xs text-gray-500">建議使用條列式格式，每行一個亮點</p>
+          </div>
+        </div>
+      </div>
+
+      {/* 費用說明區塊 */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
+          <div className="h-1.5 w-1.5 rounded-full bg-black"></div>
+          <h3 className="text-sm font-semibold text-gray-900">費用說明</h3>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="grid gap-2">
+            <Label htmlFor="includes" className="text-sm font-medium text-gray-700">
+              費用包含
+            </Label>
+            <Textarea
+              id="includes"
+              value={formData.includes}
+              onChange={(e) =>
+                setFormData({ ...formData, includes: e.target.value })
+              }
+              placeholder="每行一項，例：\n- 來回經濟艙機票\n- 4 晚住宿（雙人房）\n- 每日早餐"
+              rows={4}
+              className="rounded-2xl resize-none"
+            />
+            <p className="text-xs text-gray-500">列出包含在團費內的服務項目</p>
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="excludes" className="text-sm font-medium text-gray-700">
+              費用不含
+            </Label>
+            <Textarea
+              id="excludes"
+              value={formData.excludes}
+              onChange={(e) =>
+                setFormData({ ...formData, excludes: e.target.value })
+              }
+              placeholder="每行一項，例：\n- 簽證費用\n- 個人旅遊保險\n- 導遊小費"
+              rows={4}
+              className="rounded-2xl resize-none"
+            />
+            <p className="text-xs text-gray-500">列出不包含在團費內的項目</p>
+          </div>
+        </div>
+      </div>
+
+      {/* 其他設定區塊 */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
+          <div className="h-1.5 w-1.5 rounded-full bg-black"></div>
+          <h3 className="text-sm font-semibold text-gray-900">其他設定</h3>
+        </div>
+
+        <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-2xl">
+          <input
+            type="checkbox"
+            id="featured"
+            checked={formData.featured === 1}
             onChange={(e) =>
-              setFormData({ ...formData, destination: e.target.value })
+              setFormData({ ...formData, featured: e.target.checked ? 1 : 0 })
             }
-            placeholder="例：日本"
-            className="rounded-full"
+            className="h-5 w-5 rounded border-gray-300 text-yellow-500 focus:ring-yellow-500"
           />
+          <div>
+            <Label htmlFor="featured" className="cursor-pointer text-sm font-medium text-gray-900">
+              設為精選行程
+            </Label>
+            <p className="text-xs text-gray-500 mt-0.5">精選行程將顯示在首頁和熱門推薦區域</p>
+          </div>
         </div>
-        <div className="grid gap-2">
-          <Label htmlFor="duration">天數 *</Label>
-          <Input
-            id="duration"
-            type="number"
-            min={1}
-            value={formData.duration}
-            onChange={(e) =>
-              setFormData({ ...formData, duration: parseInt(e.target.value) || 1 })
-            }
-            className="rounded-full"
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="grid gap-2">
-          <Label htmlFor="price">價格 (NT$) *</Label>
-          <Input
-            id="price"
-            type="number"
-            min={0}
-            value={formData.price}
-            onChange={(e) =>
-              setFormData({ ...formData, price: parseInt(e.target.value) || 0 })
-            }
-            className="rounded-full"
-          />
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor="maxParticipants">人數上限</Label>
-          <Input
-            id="maxParticipants"
-            type="number"
-            min={1}
-            value={formData.maxParticipants || ""}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                maxParticipants: e.target.value ? parseInt(e.target.value) : undefined,
-              })
-            }
-            placeholder="不限"
-            className="rounded-full"
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="grid gap-2">
-          <Label htmlFor="category">分類 *</Label>
-          <Select
-            value={formData.category}
-            onValueChange={(value: TourFormData["category"]) =>
-              setFormData({ ...formData, category: value })
-            }
-          >
-            <SelectTrigger className="rounded-full">
-              <SelectValue placeholder="選擇分類" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="group">團體旅遊</SelectItem>
-              <SelectItem value="custom">客製化行程</SelectItem>
-              <SelectItem value="package">自由行套裝</SelectItem>
-              <SelectItem value="cruise">郵輪旅遊</SelectItem>
-              <SelectItem value="theme">主題旅遊</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor="status">狀態 *</Label>
-          <Select
-            value={formData.status}
-            onValueChange={(value: TourFormData["status"]) =>
-              setFormData({ ...formData, status: value })
-            }
-          >
-            <SelectTrigger className="rounded-full">
-              <SelectValue placeholder="選擇狀態" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="active">上架中</SelectItem>
-              <SelectItem value="inactive">已下架</SelectItem>
-              <SelectItem value="soldout">已售完</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <div className="grid gap-2">
-        <Label htmlFor="imageUrl">圖片網址</Label>
-        <Input
-          id="imageUrl"
-          value={formData.imageUrl}
-          onChange={(e) =>
-            setFormData({ ...formData, imageUrl: e.target.value })
-          }
-          placeholder="https://example.com/image.jpg"
-          className="rounded-full"
-        />
-      </div>
-
-      <div className="grid gap-2">
-        <Label htmlFor="description">行程描述 *</Label>
-        <Textarea
-          id="description"
-          value={formData.description}
-          onChange={(e) =>
-            setFormData({ ...formData, description: e.target.value })
-          }
-          placeholder="請輸入行程描述..."
-          rows={3}
-          className="rounded-2xl"
-        />
-      </div>
-
-      <div className="grid gap-2">
-        <Label htmlFor="highlights">行程亮點</Label>
-        <Textarea
-          id="highlights"
-          value={formData.highlights}
-          onChange={(e) =>
-            setFormData({ ...formData, highlights: e.target.value })
-          }
-          placeholder="每行一個亮點..."
-          rows={3}
-          className="rounded-2xl"
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="grid gap-2">
-          <Label htmlFor="includes">費用包含</Label>
-          <Textarea
-            id="includes"
-            value={formData.includes}
-            onChange={(e) =>
-              setFormData({ ...formData, includes: e.target.value })
-            }
-            placeholder="每行一項..."
-            rows={3}
-            className="rounded-2xl"
-          />
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor="excludes">費用不含</Label>
-          <Textarea
-            id="excludes"
-            value={formData.excludes}
-            onChange={(e) =>
-              setFormData({ ...formData, excludes: e.target.value })
-            }
-            placeholder="每行一項..."
-            rows={3}
-            className="rounded-2xl"
-          />
-        </div>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <input
-          type="checkbox"
-          id="featured"
-          checked={formData.featured === 1}
-          onChange={(e) =>
-            setFormData({ ...formData, featured: e.target.checked ? 1 : 0 })
-          }
-          className="h-4 w-4 rounded border-gray-300"
-        />
-        <Label htmlFor="featured" className="cursor-pointer">
-          設為精選行程
-        </Label>
       </div>
     </div>
   );
