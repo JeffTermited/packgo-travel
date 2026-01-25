@@ -1,0 +1,1 @@
+ALTER TABLE `tours` ADD `warningFlags` text;

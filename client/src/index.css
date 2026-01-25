@@ -220,4 +220,18 @@
   [data-slot="select-trigger"] {
     width: 100% !important;
   }
+  
+  /* Vertical Title RWD (Sipincollection Style) */
+  /* ⚠️ Tech Lead 審查意見：直式標題的 Mobile RWD */
+  /* 手機版：強制橫排，防止破版 */
+  .vertical-title {
+    writing-mode: horizontal-tb;
+  }
+  
+  /* 桌面版：啟用直排 */
+  @media (min-width: 1024px) {
+    .vertical-title {
+      writing-mode: vertical-rl;
+    }
+  }
 }

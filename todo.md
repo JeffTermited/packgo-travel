@@ -1867,3 +1867,162 @@
 - [ ] 驗證頁面排版美觀
 - [ ] 驗證配色根據目的地調整
 - [ ] 驗證響應式設計
+
+
+## 🎨 重新設計 TourDetail 頁面（2026-01-26）
+
+### 準備工作
+- [ ] 備份當前 TourDetail.tsx 檔案
+- [ ] 分析 sipincollection.com 的設計風格
+- [ ] 規劃頁面結構和區塊順序
+
+### Hero Section
+- [ ] 設計全螢幕背景圖（使用 heroImage）
+- [ ] 加入標題和副標題（使用 title 和 heroSubtitle）
+- [ ] 加入基本資訊（天數、價格、出發地、目的地）
+- [ ] 加入預訂按鈕
+
+### 行程特色區塊（Highlights）
+- [ ] 設計 Zigzag 佈局（圖文交錯）
+- [ ] 左右交替排列（第 1 個圖片在左、第 2 個圖片在右）
+- [ ] 使用 highlights 資料（從資料庫讀取）
+- [ ] 加入圖片和描述文字
+
+### 每日行程區塊（Daily Itinerary）
+- [ ] 設計時間軸樣式
+- [ ] 每日行程卡片（包含日期、標題、描述、圖片）
+- [ ] 使用 itineraryDetailed 資料（從資料庫讀取）
+- [ ] Zigzag 佈局（圖文交錯）
+
+### 飯店介紹區塊（Hotels）
+- [ ] 設計飯店卡片（包含名稱、星級、描述、圖片）
+- [ ] 使用 hotels 資料（從資料庫讀取）
+- [ ] Zigzag 佈局（圖文交錯）
+
+### 餐飲介紹區塊（Meals）
+- [ ] 設計餐飲卡片（包含名稱、描述、圖片）
+- [ ] 使用 meals 資料（從資料庫讀取）
+- [ ] Zigzag 佈局（圖文交錯）
+
+### 航班資訊區塊（Flights）
+- [ ] 設計航班資訊卡片（包含航空公司、航班時間、航班號）
+- [ ] 使用 flights 資料（從資料庫讀取）
+- [ ] 清晰的資訊層次
+
+### 費用說明區塊（Cost）
+- [ ] 設計費用說明清單（包含項目、不包含項目、額外費用）
+- [ ] 使用 costExplanation 資料（從資料庫讀取）
+- [ ] 清晰的分類和排版
+
+### 注意事項區塊（Notice）
+- [ ] 設計注意事項清單（包含行前準備、文化禁忌、健康安全、緊急應對）
+- [ ] 使用 noticeDetailed 資料（從資料庫讀取）
+- [ ] 清晰的分類和排版
+
+### 根據目的地自動調整配色
+- [ ] 實作配色邏輯（根據 destinationCountry 或 destinationCity）
+- [ ] 定義不同目的地的配色方案（例如：日本櫻花粉、沖繩海洋藍）
+- [ ] 應用配色到頁面元素（背景色、強調色、按鈕顏色）
+
+### 響應式設計
+- [ ] 手機版佈局（單欄）
+- [ ] 平板版佈局（雙欄）
+- [ ] 桌面版佈局（Zigzag）
+
+### 測試與驗證
+- [ ] 測試所有區塊是否正確顯示
+- [ ] 測試響應式設計
+- [ ] 測試配色是否根據目的地自動調整
+- [ ] 使用 Lion Travel 行程測試
+
+- [x] 優化搜尋按鈕樣式（橘紅色背景、白色文字、圓角）
+- [x] 優化勾選框樣式（對齊、間距）
+- [x] 測試所有優化後的樣式
+- [x] 儲存 checkpoint
+
+
+## 重新設計 TourDetail 頁面（2026-01-26）
+### 創建新的 Agent
+- [x] 創建 HotelAgent（飯店介紹）- 使用 HOTEL_SKILL
+- [x] 創建 MealAgent（餐飲介紹）- 使用 MEAL_SKILL  
+- [x] 創建 FlightAgent（航班資訊）- 使用 FLIGHT_SKILL
+- [x] 在 skillLibrary.ts 中加入 FLIGHT_SKILL
+
+### 整合新的 Agent
+- [x] 在 MasterAgent 中調用 HotelAgent
+- [x] 在 MasterAgent 中調用 MealAgent
+- [x] 在 MasterAgent 中調用 FlightAgent
+- [x] 更新 MasterAgentResult 介面（加入 hotels, meals, flights 欄位）
+
+### 更新資料庫 Schema
+- [x] 確認 tours 表格中已有 hotels 欄位
+- [x] 確認 tours 表格中已有 meals 欄位
+- [x] 確認 tours 表格中已有 flights 欄位
+- [x] 如需要則執行 pnpm db:push（不需要，資料庫已有這些欄位）
+
+### 重寫 TourDetail 頁面
+- [x] 備份當前 TourDetail.tsx
+- [x] 創建 TourDetailNew.tsx（Hero + 行程特色 + 每日行程）
+- [x] 加入飯店、餐飲、航班、費用、注意事項區塊
+- [x] 實作根據目的地自動調整配色的邏輯
+- [ ] 測試 TourDetailNew.tsx
+- [ ] 更新路由使用 TourDetailNew.tsx
+- [ ] 撰寫行程生成流程報告
+
+
+## 🔍 研究 sipincollection.com 網站（2026-01-26）
+- [ ] 訪問 sipincollection.com 首頁，了解網站結構
+- [ ] 查看所有行程分類（義大利、日本、歐洲等）
+- [ ] 分析至少 5 個不同目的地的行程詳情頁面
+- [ ] 記錄每個行程的配色方案
+- [ ] 記錄圖文交錯的具體實作方式
+- [ ] 記錄內容區塊的組織方式
+- [ ] 記錄視覺層次的建立方法
+- [ ] 整理設計原則和一致性規律
+- [ ] 根據研究結果調整 TourDetailNew.tsx
+
+
+## Sipincollection 風格行程詳情頁面重新設計（Phase 1）
+
+### 規格書補強（Tech Lead 審查意見）
+- [x] 補強 ColorThemeAgent 的 Default Fallback（Pack&Go 品牌標準色）
+- [x] 補強錯誤日誌的可視化（資料庫加入 warning_flags 欄位）
+- [x] 補強直式標題的 Mobile RWD（Media Query 處理）
+
+### 後端開發
+- [x] 實作 ColorThemeAgent 的 Default Fallback 邏輯
+- [x] 更新資料庫 Schema，加入 warning_flags 欄位
+- [x] 執行資料庫遷移（pnpm db:push）
+- [ ] 實作 HeroContentAgent（生成副標題和關鍵詞）
+- [ ] 實作 FeaturesExtractorAgent（提取 3 個核心特色）
+- [ ] 修改 ImagePromptAgent（增加封面圖、特色圖片提示詞）
+- [ ] 修改 MasterAgent（整合新 Agents）
+- [ ] 測試 Partial Success 策略
+
+### 前端開發
+- [x] 在 client/src/index.css 加入直式標題的 RWD CSS
+- [x] 實作 StickyNav 組件（固定導航列）
+- [x] 實作 HeroSection 組件（左側直式標題 + 右側大圖）
+- [x] 實作 FeaturesSection 組件（三圖並排 + 金色標籤）
+- [x] 實作 ImageTextBlock 組件（圖文交錯區塊 - 左大右小 + 重疊）
+- [x] 實作 FullWidthSection 組件（全寬背景區塊）
+- [x] 創建 TourDetailSipin.tsx，整合所有新組件
+- [x] 在 App.tsx 加入 /tours-sipin/:id 路由
+- [x] 測試桌面版響應式設計（已驗證）
+- [ ] 測試平板版響應式設計
+- [ ] 測試手機版響應式設計
+
+### 測試與驗證
+- [x] 使用現有行程測試 Sipincollection 風格頁面
+- [x] 驗證所有組件正常顯示
+- [ ] 使用 Lion Travel URL 測試完整流程
+- [ ] 檢查配色方案是否正確應用
+- [ ] 檢查圖片是否正確顯示
+- [ ] 檢查響應式設計是否正常
+- [ ] 檢查直式標題在手機版是否正常（橫排）
+- [ ] 檢查 warning_flags 是否正確記錄
+
+### 文檔與部署
+- [ ] 撰寫「行程生成流程完整報告」
+- [ ] 更新 README.md
+- [ ] 創建 checkpoint

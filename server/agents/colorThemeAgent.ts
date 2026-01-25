@@ -177,17 +177,22 @@ export class ColorThemeAgent {
   }
   
   /**
-   * Get default theme
+   * Get default theme (Pack&Go Brand Colors)
+   * ⚠️ Tech Lead 審查意見：
+   * 當使用者輸入「冰島」或「南極」等未定義地點時，系統不應崩潰或變全白。
+   * 務必在 getDestinationColors 中加入 Default 配色方案（Pack&Go 品牌標準色），
+   * 當查無地點時自動降級使用。
    */
   private getDefaultTheme(): ColorTheme {
+    // Pack&Go 品牌標準色（用於未知目的地）
     return {
-      primary: "#4A90E2", // Blue
-      secondary: "#7FB3D5", // Light blue
-      accent: "#F39C12", // Orange
-      text: "#2C3E50", // Dark blue-gray
-      textLight: "#7F8C8D", // Gray
-      background: "#F8F9FA", // Light gray
-      backgroundDark: "#E9ECEF", // Medium gray
+      primary: "#1A1A1A",   // 深灰黑（專業、穩重）
+      secondary: "#F5F5F5", // 淺灰白（乾淨、現代）
+      accent: "#E63946",    // 紅色（活力、冒險）
+      text: "#2C3E50",      // 深藍灰（文字）
+      textLight: "#7F8C8D", // 灰色（次要文字）
+      background: "#F8F9FA", // 淺灰色（背景）
+      backgroundDark: "#E9ECEF", // 中灰色（深色背景）
     };
   }
 }

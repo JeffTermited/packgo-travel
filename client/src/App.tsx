@@ -11,6 +11,7 @@ import ResetPassword from "./pages/ResetPassword";
 import Admin from "./pages/Admin";
 import Profile from "./pages/Profile";
 import TourDetail from "./pages/TourDetail";
+import TourDetailSipin from "./pages/TourDetailSipin";
 import BookTour from "./pages/BookTour";
 import BookingDetail from "./pages/BookingDetail";
 import QuickInquiry from "./pages/QuickInquiry";
@@ -42,6 +43,7 @@ function Router() {
       <Route path={"/admin"} component={Admin} />
       <Route path={"/profile"} component={Profile} />
       <Route path={"/tours/:id"} component={TourDetail} />
+      <Route path={"/tours-sipin/:id"} component={TourDetailSipin} />
       <Route path={"/book/:id"} component={BookTour} />
       <Route path={"/bookings/:id"} component={BookingDetail} />
       <Route path={"/payment/success"} component={PaymentSuccess} />
