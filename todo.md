@@ -1418,3 +1418,38 @@
 - [ ] 實作行程下載為 PDF 功能
 - [ ] 設計 PDF 模板（參考 sipincollection.com）
 - [ ] 新增下載按鈕和測試
+
+
+---
+
+## 明天待辦事項（修訂版，2026-01-26）
+
+### 🔴 Critical Fix（必須優先處理）
+- [ ] 移除 DesignLearningAgent 的 Runtime 依賴（改為離線工具）
+- [ ] 從 Master Agent 中移除 DesignLearningAgent 的調用
+- [ ] 使用 Hardcoded 設計規範（server/defaultDesignGuideline.ts）
+
+### 🟡 高優先級（核心功能）
+- [ ] 優化所有 Agent 的 Prompt 加入字數強限制
+  - PoeticAgent：12-16 字
+  - AttractionAgent：100-120 字
+  - HotelAgent：80-100 字
+  - ContentAnalyzerAgent：標題 20-30 字，描述 100-120 字
+- [ ] 加入 Fallback 機制（資料不足時回傳 null）
+- [ ] 實作 Master Agent 的 Partial Success 機制
+
+### 🟢 中優先級（前端實作）
+- [ ] 實作防禦性 CSS 排版
+  - 圖片：object-fit: cover + 固定長寬比
+  - 文字：line-clamp 截斷
+  - 手機版：橫排 + 單欄
+- [ ] 實作 CSS @media print 支援（取代 Puppeteer）
+
+### 🔵 低優先級（如果時間允許）
+- [ ] 建立專門的 Agent（Attraction、Hotel、Meal、Flight）
+- [ ] 重新設計行程詳情頁面（參考 sipincollection.com）
+- [ ] 實作行程下載功能（使用 CSS @media print）
+
+**預計時間：** 7-9 小時（核心）+ 5-7 小時（可選）
+
+**參考文件：** `/home/ubuntu/packgo-travel/TOMORROW_TODO_REVISED.md`
