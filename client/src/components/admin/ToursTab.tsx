@@ -474,145 +474,70 @@ export default function ToursTab() {
         </div>
       </div>
 
-      {/* Filters - 統一篩選區塊 */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
-        {/* 第一行：搜尋框和排序 */}
-        <div className="flex items-center gap-4 pb-4 border-b border-gray-100">
-          <div className="relative flex-1">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+      {/* 簡潔篩選區塊 */}
+      <div className="flex flex-col gap-4">
+        {/* 搜尋和排序 */}
+        <div className="flex items-center gap-4">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
               type="text"
-              placeholder="搜尋行程名稱、目的地..."
+              placeholder="搜尋行程..."
               value={searchKeyword}
               onChange={(e) => setSearchKeyword(e.target.value)}
-              className="pl-11 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+              className="pl-10 h-10 bg-white border-gray-200"
             />
           </div>
-          <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
-            <span className="text-sm text-gray-500">排序</span>
-            <Select value={sortBy} onValueChange={(value: typeof sortBy) => setSortBy(value)}>
-              <SelectTrigger className="w-44 h-11 rounded-xl bg-gray-50 border-gray-200">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="default">預設排序</SelectItem>
-                <SelectItem value="price-asc">價格：低 → 高</SelectItem>
-                <SelectItem value="price-desc">價格：高 → 低</SelectItem>
-                <SelectItem value="duration-asc">天數：短 → 長</SelectItem>
-                <SelectItem value="duration-desc">天數：長 → 短</SelectItem>
-                <SelectItem value="date-desc">最新建立</SelectItem>
-                <SelectItem value="date-asc">最舊建立</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        {/* 第二行：篩選標籤 */}
-        <div className="flex items-center gap-6 pt-4">
-          {/* 上架狀態篩選 */}
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-700">上架狀態</span>
-            <div className="flex items-center bg-gray-100 rounded-lg p-1">
-              <button
-                onClick={() => setStatusFilter("all")}
-                className={`px-3 py-1.5 text-sm rounded-md transition-all ${
-                  statusFilter === "all"
-                    ? "bg-white text-gray-900 shadow-sm font-medium"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
-              >
-                全部
-              </button>
-              <button
-                onClick={() => setStatusFilter("active")}
-                className={`px-3 py-1.5 text-sm rounded-md transition-all ${
-                  statusFilter === "active"
-                    ? "bg-white text-green-700 shadow-sm font-medium"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
-              >
-                已上架
-              </button>
-              <button
-                onClick={() => setStatusFilter("inactive")}
-                className={`px-3 py-1.5 text-sm rounded-md transition-all ${
-                  statusFilter === "inactive"
-                    ? "bg-white text-gray-700 shadow-sm font-medium"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
-              >
-                未上架
-              </button>
-            </div>
-          </div>
-
-          {/* 分隔線 */}
-          <div className="h-6 w-px bg-gray-200"></div>
-
-          {/* 熱門狀態篩選 */}
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-700">熱門狀態</span>
-            <div className="flex items-center bg-gray-100 rounded-lg p-1">
-              <button
-                onClick={() => setFeaturedFilter("all")}
-                className={`px-3 py-1.5 text-sm rounded-md transition-all ${
-                  featuredFilter === "all"
-                    ? "bg-white text-gray-900 shadow-sm font-medium"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
-              >
-                全部
-              </button>
-              <button
-                onClick={() => setFeaturedFilter("featured")}
-                className={`px-3 py-1.5 text-sm rounded-md transition-all flex items-center gap-1 ${
-                  featuredFilter === "featured"
-                    ? "bg-white text-yellow-600 shadow-sm font-medium"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
-              >
-                <Star className="h-3.5 w-3.5" />
-                熱門
-              </button>
-              <button
-                onClick={() => setFeaturedFilter("normal")}
-                className={`px-3 py-1.5 text-sm rounded-md transition-all ${
-                  featuredFilter === "normal"
-                    ? "bg-white text-gray-700 shadow-sm font-medium"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
-              >
-                普通
-              </button>
-            </div>
-          </div>
-
-          {/* 清除篩選按鈕 */}
+          <Select value={sortBy} onValueChange={(value: typeof sortBy) => setSortBy(value)}>
+            <SelectTrigger className="w-36 h-10 bg-white border-gray-200">
+              <SelectValue placeholder="排序" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="default">預設</SelectItem>
+              <SelectItem value="price-asc">價格低→高</SelectItem>
+              <SelectItem value="price-desc">價格高→低</SelectItem>
+              <SelectItem value="duration-asc">天數短→長</SelectItem>
+              <SelectItem value="duration-desc">天數長→短</SelectItem>
+              <SelectItem value="date-desc">最新</SelectItem>
+              <SelectItem value="date-asc">最舊</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={statusFilter} onValueChange={(value: "all" | "active" | "inactive") => setStatusFilter(value)}>
+            <SelectTrigger className="w-28 h-10 bg-white border-gray-200">
+              <SelectValue placeholder="狀態" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">全部</SelectItem>
+              <SelectItem value="active">已上架</SelectItem>
+              <SelectItem value="inactive">未上架</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={featuredFilter} onValueChange={(value: "all" | "featured" | "normal") => setFeaturedFilter(value)}>
+            <SelectTrigger className="w-28 h-10 bg-white border-gray-200">
+              <SelectValue placeholder="熱門" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">全部</SelectItem>
+              <SelectItem value="featured">熱門</SelectItem>
+              <SelectItem value="normal">普通</SelectItem>
+            </SelectContent>
+          </Select>
           {(statusFilter !== "all" || featuredFilter !== "all" || searchKeyword.trim() || sortBy !== "default") && (
-            <>
-              <div className="h-6 w-px bg-gray-200"></div>
-              <button
-                onClick={() => {
-                  setStatusFilter("all");
-                  setFeaturedFilter("all");
-                  setSearchKeyword("");
-                  setSortBy("default");
-                }}
-                className="text-sm text-gray-500 hover:text-red-600 transition-colors flex items-center gap-1"
-              >
-                <span>×</span>
-                清除篩選
-              </button>
-            </>
+            <button
+              onClick={() => {
+                setStatusFilter("all");
+                setFeaturedFilter("all");
+                setSearchKeyword("");
+                setSortBy("default");
+              }}
+              className="text-sm text-gray-500 hover:text-gray-700"
+            >
+              清除
+            </button>
           )}
-
-          {/* 篩選結果計數 */}
-          <div className="ml-auto text-sm text-gray-500">
-            {statusFilter !== "all" || featuredFilter !== "all" || searchKeyword.trim() || sortBy !== "default"
-              ? <span>篩選結果：<span className="font-semibold text-gray-900">{filteredTours.length}</span> / {tours?.length || 0} 筆</span>
-              : <span>共 <span className="font-semibold text-gray-900">{tours?.length || 0}</span> 筆行程</span>
-            }
-          </div>
+          <span className="ml-auto text-sm text-gray-500">
+            共 {filteredTours.length} 筆
+          </span>
         </div>
       </div>
 
