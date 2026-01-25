@@ -20,7 +20,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
 import DeparturesManagement from "./DeparturesManagement";
-import { Calendar, Edit, Eye, EyeOff, Loader2, Plus, Sparkles, Star, Trash2 } from "lucide-react";
+import { Calendar, Edit, Eye, EyeOff, Loader2, Plus, Search, Sparkles, Star, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -58,6 +58,8 @@ export default function ToursTab() {
   const [selectedTourIds, setSelectedTourIds] = useState<number[]>([]);
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
   const [featuredFilter, setFeaturedFilter] = useState<"all" | "featured" | "normal">("all");
+  const [searchKeyword, setSearchKeyword] = useState<string>("");
+  const [sortBy, setSortBy] = useState<"default" | "price-asc" | "price-desc" | "duration-asc" | "duration-desc" | "date-asc" | "date-desc">("default");
   const [formData, setFormData] = useState<TourFormData>({
     title: "",
     destination: "",
@@ -379,16 +381,53 @@ export default function ToursTab() {
     }
   };
 
-  // 篩選後的行程列表
-  const filteredTours = tours?.filter((tour) => {
-    // 上架狀態篩選
-    if (statusFilter === "active" && tour.status !== "active") return false;
-    if (statusFilter === "inactive" && tour.status !== "inactive") return false;
-    // 熱門狀態篩選
-    if (featuredFilter === "featured" && tour.featured !== 1) return false;
-    if (featuredFilter === "normal" && tour.featured !== 0) return false;
-    return true;
-  }) || [];
+  // 篩選、搜尋和排序後的行程列表
+  const filteredAndSortedTours = (() => {
+    // 第一步：篩選
+    let result = tours?.filter((tour) => {
+      // 上架狀態篩選
+      if (statusFilter === "active" && tour.status !== "active") return false;
+      if (statusFilter === "inactive" && tour.status !== "inactive") return false;
+      // 熱門狀態篩選
+      if (featuredFilter === "featured" && tour.featured !== 1) return false;
+      if (featuredFilter === "normal" && tour.featured !== 0) return false;
+      // 關鍵字搜尋（行程名稱或目的地）
+      if (searchKeyword.trim()) {
+        const keyword = searchKeyword.toLowerCase();
+        const matchTitle = tour.title.toLowerCase().includes(keyword);
+        const matchDestination = tour.destination.toLowerCase().includes(keyword);
+        if (!matchTitle && !matchDestination) return false;
+      }
+      return true;
+    }) || [];
+
+    // 第二步：排序
+    if (sortBy !== "default") {
+      result = [...result].sort((a, b) => {
+        switch (sortBy) {
+          case "price-asc":
+            return a.price - b.price;
+          case "price-desc":
+            return b.price - a.price;
+          case "duration-asc":
+            return a.duration - b.duration;
+          case "duration-desc":
+            return b.duration - a.duration;
+          case "date-asc":
+            return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          case "date-desc":
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          default:
+            return 0;
+        }
+      });
+    }
+
+    return result;
+  })();
+
+  // 為了相容性，保留 filteredTours 別名
+  const filteredTours = filteredAndSortedTours;
 
   const isAllSelected = filteredTours.length > 0 && selectedTourIds.length === filteredTours.length;
   const isSomeSelected = selectedTourIds.length > 0 && selectedTourIds.length < filteredTours.length;
@@ -400,7 +439,7 @@ export default function ToursTab() {
         <div>
           <h2 className="text-2xl font-bold text-gray-900">行程管理</h2>
           <p className="text-sm text-gray-600 mt-1">
-            {statusFilter !== "all" || featuredFilter !== "all" 
+            {statusFilter !== "all" || featuredFilter !== "all" || searchKeyword.trim() || sortBy !== "default"
               ? `篩選結果：${filteredTours.length} / ${tours?.length || 0} 個行程`
               : `共 ${tours?.length || 0} 個行程`
             }
@@ -441,47 +480,82 @@ export default function ToursTab() {
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="flex items-center gap-4 bg-gray-50 p-4 rounded-2xl">
-        <div className="flex items-center gap-2">
-          <Label className="text-sm font-medium text-gray-700 whitespace-nowrap">上架狀態：</Label>
-          <Select value={statusFilter} onValueChange={(value: "all" | "active" | "inactive") => setStatusFilter(value)}>
-            <SelectTrigger className="w-32 rounded-full bg-white">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">全部</SelectItem>
-              <SelectItem value="active">已上架</SelectItem>
-              <SelectItem value="inactive">未上架</SelectItem>
-            </SelectContent>
-          </Select>
+           {/* Filters */}
+      <div className="space-y-4">
+        {/* 搜尋框 */}
+        <div className="flex items-center gap-4">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              type="text"
+              placeholder="搜尋行程名稱或目的地..."
+              value={searchKeyword}
+              onChange={(e) => setSearchKeyword(e.target.value)}
+              className="pl-10 rounded-full bg-white"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <Label className="text-sm font-medium text-gray-700 whitespace-nowrap">排序方式：</Label>
+            <Select value={sortBy} onValueChange={(value: typeof sortBy) => setSortBy(value)}>
+              <SelectTrigger className="w-40 rounded-full bg-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="default">預設排序</SelectItem>
+                <SelectItem value="price-asc">價格：低到高</SelectItem>
+                <SelectItem value="price-desc">價格：高到低</SelectItem>
+                <SelectItem value="duration-asc">天數：短到長</SelectItem>
+                <SelectItem value="duration-desc">天數：長到短</SelectItem>
+                <SelectItem value="date-desc">建立日期：新到舊</SelectItem>
+                <SelectItem value="date-asc">建立日期：舊到新</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Label className="text-sm font-medium text-gray-700 whitespace-nowrap">熱門狀態：</Label>
-          <Select value={featuredFilter} onValueChange={(value: "all" | "featured" | "normal") => setFeaturedFilter(value)}>
-            <SelectTrigger className="w-32 rounded-full bg-white">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">全部</SelectItem>
-              <SelectItem value="featured">熱門</SelectItem>
-              <SelectItem value="normal">非熱門</SelectItem>
-            </SelectContent>
-          </Select>
+
+        {/* 篩選器 */}
+        <div className="flex items-center gap-4 bg-gray-50 p-4 rounded-2xl">
+          <div className="flex items-center gap-2">
+            <Label className="text-sm font-medium text-gray-700 whitespace-nowrap">上架狀態：</Label>
+            <Select value={statusFilter} onValueChange={(value: "all" | "active" | "inactive") => setStatusFilter(value)}>
+              <SelectTrigger className="w-32 rounded-full bg-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">全部</SelectItem>
+                <SelectItem value="active">已上架</SelectItem>
+                <SelectItem value="inactive">未上架</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center gap-2">
+            <Label className="text-sm font-medium text-gray-700 whitespace-nowrap">熱門狀態：</Label>
+            <Select value={featuredFilter} onValueChange={(value: "all" | "featured" | "normal") => setFeaturedFilter(value)}>
+              <SelectTrigger className="w-32 rounded-full bg-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">全部</SelectItem>
+                <SelectItem value="featured">熱門</SelectItem>
+                <SelectItem value="normal">非熱門</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          {(statusFilter !== "all" || featuredFilter !== "all" || searchKeyword.trim() || sortBy !== "default") && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setStatusFilter("all");
+                setFeaturedFilter("all");
+                setSearchKeyword("");
+                setSortBy("default");
+              }}
+              className="text-gray-500 hover:text-gray-700 rounded-full">
+              清除所有篩選
+            </Button>
+          )}
         </div>
-        {(statusFilter !== "all" || featuredFilter !== "all") && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              setStatusFilter("all");
-              setFeaturedFilter("all");
-            }}
-            className="text-gray-500 hover:text-gray-700 rounded-full"
-          >
-            清除篩選
-          </Button>
-        )}
       </div>
 
       {/* Tours Table */}
