@@ -3,10 +3,12 @@ import {
   TourGenerationJobData,
   TourGenerationResult,
 } from "./queue";
+import { MasterAgent } from "./agents/masterAgent";
+import { createTour } from "./db";
 
 /**
  * Internal tour generation function called by worker
- * This will be expanded with multi-agent system in next phase
+ * Uses multi-agent system to generate tour from URL
  * 
  * @param url - Source URL to scrape
  * @param userId - User ID who requested the generation
@@ -17,21 +19,81 @@ export async function generateTourFromUrlInternal(
   userId: number,
   job: Job<TourGenerationJobData, TourGenerationResult>
 ): Promise<TourGenerationResult> {
+  console.log("[TourGenerator] Starting tour generation...");
+  console.log("[TourGenerator] URL:", url);
+  console.log("[TourGenerator] User ID:", userId);
+  
   try {
-    // TODO: Implement multi-agent system
-    // 1. Web Scraper Agent
-    // 2. Content Analyzer Agent (with copyright cleansing)
-    // 3. Image Prompt Agent (with LLM optimization)
-    // 4. Image Generation Agent (Manus API + Unsplash fallback)
-    // 5. Color Theme Agent
+    // Create Master Agent
+    const masterAgent = new MasterAgent();
     
-    // For now, return a placeholder
+    // Execute tour generation with progress tracking
+    const result = await masterAgent.execute(url, userId, (step, percentage) => {
+      // Update job progress
+      job.updateProgress({
+        step,
+        percentage,
+        message: `Processing: ${step}`,
+      });
+    });
+    
+    if (!result.success || !result.data) {
+      throw new Error(result.error || "Tour generation failed");
+    }
+    
+    const tourData = result.data;
+    
+    // Save to database
+    await job.updateProgress({
+      step: "saving",
+      percentage: 95,
+      message: "Saving tour to database...",
+    });
+    
+    const tour = await createTour({
+      title: tourData.title,
+      description: tourData.description,
+      productCode: tourData.productCode,
+      destinationCountry: tourData.destinationCountry,
+      destinationCity: tourData.destinationCity,
+      departureCity: tourData.departureCity,
+      duration: tourData.days,
+      nights: tourData.nights,
+      price: tourData.price,
+      destination: tourData.destinationCity || tourData.destinationCountry, // Legacy field for compatibility
+      tags: JSON.stringify(tourData.tags),
+      
+      // New fields
+      heroImage: tourData.heroImage,
+      heroImageAlt: tourData.heroImageAlt,
+      heroSubtitle: tourData.heroSubtitle,
+      colorTheme: tourData.colorTheme,
+      keyFeatures: tourData.keyFeatures,
+      poeticContent: tourData.poeticContent,
+      
+      // Additional fields (use defaults for now)
+      status: "active",
+      featured: 0, // 0 = false, 1 = true
+      promotionText: "",
+      
+      // Metadata
+      createdBy: userId,
+    });
+    
+    console.log("[TourGenerator] Tour saved to database with ID:", tour.id);
+    
+    await job.updateProgress({
+      step: "completed",
+      percentage: 100,
+      message: "Tour generation completed!",
+    });
+    
     return {
-      success: false,
-      error: "Multi-agent system not yet implemented",
+      success: true,
+      tourId: tour.id,
     };
   } catch (error) {
-    console.error("Tour generation error:", error);
+    console.error("[TourGenerator] Error:", error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",

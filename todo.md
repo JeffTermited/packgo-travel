@@ -1198,3 +1198,33 @@
 - [ ] 實作進階編輯介面（分頁、即時預覽）
 - [ ] 實作 upgradeToAIImages mutation（可選升級）
 - [ ] 整合測試與優化
+
+
+## AI 自動生成行程系統 - 階段二：多代理系統（2026-01-25）
+- [x] 建立 Web Scraper Agent（server/agents/webScraperAgent.ts）
+  - 快速提取行程資訊
+  - 錯誤處理和重試機制
+- [x] 建立 Content Analyzer Agent（server/agents/contentAnalyzerAgent.ts）
+  - 內容分析和結構化
+  - 版權清洗（LLM 主動改寫）
+  - 原創性驗證
+- [x] 建立 Image Prompt Agent（server/agents/imagePromptAgent.ts）
+  - LLM 優化圖片提示詞
+  - 根據目的地和行程主題生成提示詞
+  - 整合全域 Style Guide
+- [x] 建立 Image Generation Agent（server/agents/imageGenerationAgent.ts）
+  - Manus API 生成 Hero 圖片
+  - Unsplash API 生成亮點圖片（fallback）
+  - 圖片上傳至 S3
+  - 風格一致性驗證
+- [x] 建立 Color Theme Agent（server/agents/colorThemeAgent.ts）
+  - 根據目的地生成配色主題
+  - 預設配色方案
+- [x] 建立 Master Agent（server/agents/masterAgent.ts）
+  - 協調所有 Agent
+  - 錯誤處理和回滾
+  - 進度追蹤
+- [x] 建立全域 Style Guide 配置（server/styleGuide.ts）
+- [x] 整合所有 Agent 到 tourGenerator.ts
+- [x] 測試完整生成流程
+- [x] 儲存 checkpoint
