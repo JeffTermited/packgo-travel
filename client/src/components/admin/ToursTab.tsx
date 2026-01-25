@@ -149,7 +149,21 @@ export default function ToursTab() {
       }
     },
     onError: (error) => {
-      toast.error(`自動生成失敗：${error.message}`);
+      console.error("[AutoGenerate] Error:", error);
+      // 檢查是否是超時錯誤
+      if (error.message?.includes("aborted") || error.message?.includes("timeout")) {
+        toast.error("提取超時，請稍後再試", {
+          description: "提取過程可能需要 30-60 秒，請稍候",
+          duration: 5000,
+        });
+      } else if (error.message?.includes("JSON")) {
+        toast.error("提取失敗：回應格式錯誤", {
+          description: "請確認網址正確並重試",
+          duration: 5000,
+        });
+      } else {
+        toast.error(`自動生成失敗：${error.message}`);
+      }
     },
   });
 

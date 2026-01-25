@@ -75,6 +75,8 @@ export async function fetchWebPage(url: string): Promise<ScrapedContent> {
  */
 export async function extractTourInfoWithLLM(content: ScrapedContent, sourceUrl: string): Promise<any> {
   console.log("[WebScraper] Extracting tour info with LLM...");
+  console.log("[WebScraper] Content text length:", content.text.length);
+  console.log("[WebScraper] Content title:", content.title);
   
   // 限制文字長度以加快處理速度
   const textContent = content.text.substring(0, 30000);
@@ -179,29 +181,46 @@ ${textContent}
 4. 請確保 JSON 格式正確，可以被解析
 5. 如果找不到某項資訊，請留空或使用合理的預設值`;
 
-  const llmResponse = await invokeLLM({
-    messages: [
-      {
-        role: "system" as const,
-        content: "你是一個資深旅遊編輯，專門從網頁內容中提取結構化的旅遊行程資訊。你需要重新撰寫標題和描述，使其更具吸引力。請只回傳 JSON 格式的資料，不要包含其他文字。",
-      },
-      {
-        role: "user" as const,
-        content: extractionPrompt,
-      },
-    ],
-    response_format: { type: "json_object" },
-  });
+  let llmResponse;
+  try {
+    console.log("[WebScraper] Calling LLM API...");
+    llmResponse = await invokeLLM({
+      messages: [
+        {
+          role: "system" as const,
+          content: "你是一個資深旅遊編輯，專門從網頁內容中提取結構化的旅遊行程資訊。你需要重新撰寫標題和描述，使其更具吸引力。請只回傳 JSON 格式的資料，不要包含其他文字。",
+        },
+        {
+          role: "user" as const,
+          content: extractionPrompt,
+        },
+      ],
+      response_format: { type: "json_object" },
+    });
+    console.log("[WebScraper] LLM API response received");
+  } catch (llmError: any) {
+    console.error("[WebScraper] LLM API call failed:", llmError.message);
+    throw new Error(`LLM API 呼叫失敗: ${llmError.message}`);
+  }
 
   const responseContent = llmResponse.choices[0]?.message?.content;
   if (!responseContent) {
-    throw new Error("LLM did not return any content");
+    console.error("[WebScraper] LLM response:", JSON.stringify(llmResponse, null, 2));
+    throw new Error("LLM 未返回任何內容");
   }
 
-  console.log("[WebScraper] LLM extraction completed");
+  console.log("[WebScraper] LLM extraction completed, response type:", typeof responseContent);
+  console.log("[WebScraper] Response preview:", typeof responseContent === "string" ? responseContent.substring(0, 200) : "non-string");
   
   // Parse JSON response
-  const extractedData = JSON.parse(typeof responseContent === "string" ? responseContent : JSON.stringify(responseContent));
+  let extractedData;
+  try {
+    extractedData = JSON.parse(typeof responseContent === "string" ? responseContent : JSON.stringify(responseContent));
+  } catch (parseError: any) {
+    console.error("[WebScraper] JSON parse error:", parseError.message);
+    console.error("[WebScraper] Raw response:", responseContent);
+    throw new Error(`JSON 解析失敗: ${parseError.message}`);
+  }
   
   // Add first image from scraped content if no imageUrl found
   if (!extractedData.imageUrl && content.images.length > 0) {
