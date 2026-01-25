@@ -918,3 +918,11 @@
 - [x] 測試 token 驗證功能
 - [x] 測試密碼更新功能
 - [ ] 儲存 checkpoint
+
+
+## Header 登入狀態顯示修復
+- [x] 診斷 Header 元件登入狀態檢查邏輯
+- [x] 修復 Cookie 設定（sameSite: lax）
+- [ ] 測試登入後會員名稱顯示
+- [ ] 測試登出功能
+- [ ] 儲存 checkpoint
