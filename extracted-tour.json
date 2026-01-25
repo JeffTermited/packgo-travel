@@ -1,0 +1,156 @@
+{
+  "basicInfo": {
+    "title": "【柬埔寨雙城奇遇】金邊吳哥五日奢華之旅：入住柬式五星、探秘大小吳哥、女皇宮與雙SPA饗宴（含稅無購物）",
+    "productCode": "26SK207CIT-T",
+    "description": "深度探索柬埔寨的歷史與文化精髓！本行程帶您一次暢遊首都金邊的現代脈動與世界遺產吳哥窟的千年遺跡。特別安排入住當地頂級柬式五星酒店，提供最舒適的休憩體驗。行程涵蓋吳哥城、吳哥窟、精緻的女皇宮等必訪景點，並貼心贈送雙次舒壓按摩，讓您在探險之餘徹底放鬆身心。全程含稅且保證無購物壓力，享受純粹、高品質的雙城假期！",
+    "promotionText": "省遊專案，含稅無購物，頂級五星住宿",
+    "tags": [
+      "柬埔寨雙城遊",
+      "世界遺產",
+      "五星住宿",
+      "無購物",
+      "雙按摩"
+    ]
+  },
+  "location": {
+    "departureCountry": "台灣",
+    "departureCity": "",
+    "departureAirportCode": "",
+    "departureAirportName": "",
+    "destinationCountry": "柬埔寨",
+    "destinationCity": "金邊, 吳哥窟",
+    "destinationRegion": "東南亞",
+    "destinationAirportCode": "",
+    "destinationAirportName": "",
+    "destinationDescription": "柬埔寨，一個充滿神秘色彩的古老國度，以宏偉的吳哥窟聞名於世。首都金邊展現了現代與傳統交織的魅力，而暹粒（吳哥窟所在地）則是探尋高棉帝國輝煌歷史的起點。這裡不僅有令人震撼的石雕藝術和宗教建築，還有淳樸友善的人民和獨特的熱帶風情，是文化愛好者和歷史探險家的夢想之地。"
+  },
+  "duration": {
+    "days": 5,
+    "nights": 4
+  },
+  "pricing": {
+    "price": null,
+    "priceUnit": "人/起",
+    "availableSeats": null
+  },
+  "flight": {
+    "outbound": {
+      "airline": "",
+      "flightNo": "",
+      "departureTime": "",
+      "arrivalTime": "",
+      "duration": ""
+    },
+    "inbound": {
+      "airline": "",
+      "flightNo": "",
+      "departureTime": "",
+      "arrivalTime": "",
+      "duration": ""
+    }
+  },
+  "accommodation": {
+    "hotelName": "柬式五星酒店",
+    "hotelGrade": "五星級",
+    "hotelNights": 4,
+    "hotelLocation": "金邊及吳哥窟",
+    "hotelDescription": "精選當地最具特色的柬式風格五星級酒店，提供高品質的服務與舒適的住宿環境，讓旅客在旅途中能充分休息，享受異國情調。",
+    "hotelFacilities": [
+      "泳池",
+      "餐廳",
+      "SPA"
+    ],
+    "hotelRoomType": "",
+    "hotelCheckIn": "",
+    "hotelCheckOut": ""
+  },
+  "attractions": [
+    {
+      "name": "大小吳哥城 (吳哥窟)",
+      "description": "世界七大奇景之一，高棉帝國的宗教中心與建築藝術的巔峰代表。"
+    },
+    {
+      "name": "女皇宮 (Banteay Srei)",
+      "description": "以精緻的紅色砂岩雕刻聞名，被譽為『吳哥藝術之鑽』。"
+    },
+    {
+      "name": "金邊",
+      "description": "柬埔寨首都，體驗城市文化與歷史遺跡的交匯點。"
+    }
+  ],
+  "dailyItinerary": [
+    {
+      "day": 1,
+      "title": "啟程：抵達金邊，入住五星酒店",
+      "activities": [
+        "搭機飛往金邊",
+        "專車接送至柬式五星酒店辦理入住",
+        "自由活動或享用酒店設施"
+      ]
+    },
+    {
+      "day": 2,
+      "title": "金邊觀光與前往吳哥窟",
+      "activities": [
+        "金邊市區觀光（如：皇宮、獨立紀念碑）",
+        "搭乘交通工具前往暹粒（吳哥窟所在地）",
+        "晚餐後享受首次舒壓按摩"
+      ]
+    },
+    {
+      "day": 3,
+      "title": "吳哥奇蹟：大吳哥城與塔普倫寺",
+      "activities": [
+        "參觀大吳哥城：巴戎廟（微笑高棉）、巴本宮殿",
+        "探訪塔普倫寺（古墓奇兵拍攝地）",
+        "吳哥窟日落觀賞"
+      ]
+    },
+    {
+      "day": 4,
+      "title": "藝術之鑽：小吳哥窟與女皇宮",
+      "activities": [
+        "參觀小吳哥窟（吳哥寺）",
+        "前往女皇宮，欣賞精緻雕刻",
+        "第二次舒壓按摩體驗",
+        "享用特色晚餐"
+      ]
+    },
+    {
+      "day": 5,
+      "title": "悠閒時光與返程",
+      "activities": [
+        "享用早餐，自由活動或參觀當地市集",
+        "前往機場，搭機返回出發地"
+      ]
+    }
+  ],
+  "pricingDetails": {
+    "includes": [
+      "來回機票及機場稅",
+      "行程表列之交通、食宿、景點門票",
+      "柬式五星酒店住宿",
+      "兩次舒壓按摩"
+    ],
+    "excludes": [
+      "個人消費及自費活動",
+      "導遊與司機小費",
+      "簽證費用（若有）"
+    ],
+    "optionalTours": []
+  },
+  "highlights": [
+    "雙城深度遊：金邊與吳哥窟一次滿足",
+    "保證無購物行程，旅遊品質高",
+    "全程入住柬式五星級酒店",
+    "包含大小吳哥城、女皇宮等世界級景點",
+    "贈送雙次專業舒壓按摩"
+  ],
+  "notes": {
+    "specialReminders": "此為省遊專案，請務必確認航班時間與集合地點。行程不含小費，請預留支付給當地導遊與司機。",
+    "notes": "行程內容可能因當地交通、天氣或不可抗力因素略作調整，以當地導遊安排為準。",
+    "safetyGuidelines": "請注意防曬與補充水分，貴重物品請隨身攜帶。"
+  },
+  "departureDate": "",
+  "imageUrl": ""
+}

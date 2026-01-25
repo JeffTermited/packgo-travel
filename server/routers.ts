@@ -7,6 +7,7 @@ import { z } from "zod";
 import * as db from "./db";
 import { invokeLLM } from "./_core/llm";
 import { extractTourInfoWithManus } from "./manusApi";
+import { quickExtractTourInfo } from "./webScraper";
 import { sendBookingConfirmationEmail } from "./email";
 import * as auth from "./auth";
 import { createToken } from "./jwt";
@@ -494,9 +495,12 @@ Important guidelines:
         return { success: true, deletedCount: input.ids.length };
       }),
 
-    // Auto-generate tour from URL (admin only) - Enhanced version with detailed extraction
+    // Auto-generate tour from URL (admin only) - Fast version with auto-save
     autoGenerate: protectedProcedure
-      .input(z.object({ url: z.string().url() }))
+      .input(z.object({ 
+        url: z.string().url(),
+        autoSave: z.boolean().default(true), // 預設自動儲存
+      }))
       .mutation(async ({ ctx, input }) => {
         // Check if user is admin
         if (ctx.user.role !== "admin") {
@@ -506,189 +510,15 @@ Important guidelines:
           });
         }
 
+        const startTime = Date.now();
+        console.log("[AutoGenerate] Starting fast extraction from URL:", input.url);
+
         try {
-          // Step 1: Use Manus API to browse and extract tour information
-          console.log("[AutoGenerate] Using Manus API to extract tour info from URL:", input.url);
+          // 使用快速提取方式（fetch + LLM），約 30 秒
+          const extractedData = await quickExtractTourInfo(input.url);
           
-          let llmContent: string;
-          
-          // Check if MANUS_API_KEY is configured
-          if (process.env.MANUS_API_KEY) {
-            // Use Manus Browser Operator
-            console.log("[AutoGenerate] MANUS_API_KEY found, using Manus Browser Operator");
-            llmContent = await extractTourInfoWithManus(input.url);
-          } else {
-            // Fallback to fetch + LLM approach
-            console.log("[AutoGenerate] MANUS_API_KEY not found, using fallback fetch + LLM approach");
-            const response = await fetch(input.url, {
-              headers: {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-                "Accept-Language": "zh-TW,zh;q=0.9,en-US;q=0.8,en;q=0.7",
-              },
-            });
-
-            if (!response.ok) {
-              throw new Error(`Failed to fetch URL: ${response.status} ${response.statusText}`);
-            }
-
-            const htmlContent = await response.text();
-            console.log("[AutoGenerate] HTML content length:", htmlContent.length);
-
-            // Extract text content from HTML
-            const textContent = htmlContent
-              .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
-              .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
-              .replace(/<[^>]+>/g, " ")
-              .replace(/\s+/g, " ")
-              .trim()
-              .substring(0, 25000);
-
-            console.log("[AutoGenerate] Extracted text length:", textContent.length);
-
-            // Use LLM to extract tour information
-            const extractionPrompt = `你是一個資深旅遊編輯，專門從網頁內容中提取完整的旅遊行程資訊。請從以下網頁內容中提取所有旅遊行程資訊，並以 JSON 格式回傳。
-
-網頁內容：
-${textContent}
-
-請提取以下資訊並以 JSON 格式回傳（如果找不到某項資訊，請使用合理的預設值或留空）：
-{
-  "basicInfo": {
-    "title": "行程標題（請重新撰寫一個吸引人的行銷標題）",
-    "productCode": "產品代碼",
-    "description": "行程描述（100-200字的精彩行程亮點介紹）",
-    "promotionText": "促銷文字（如：過年大促銷、限時優惠等）",
-    "tags": ["標籤，如：特色住宿、獨家企劃、刷卡好康"]
-  },
-  "location": {
-    "departureCountry": "出發國家（預設台灣）",
-    "departureCity": "出發城市（如：桃園、台北、高雄）",
-    "departureAirportCode": "出發機場代碼（如：TPE）",
-    "departureAirportName": "出發機場名稱",
-    "destinationCountry": "目的地國家",
-    "destinationCity": "目的地城市",
-    "destinationRegion": "目的地區域（如：那霸、大阪、東京）",
-    "destinationAirportCode": "目的地機場代碼",
-    "destinationAirportName": "目的地機場名稱",
-    "destinationDescription": "目的地介紹（100-200字）"
-  },
-  "duration": {
-    "days": 天數,
-    "nights": 晚數
-  },
-  "pricing": {
-    "price": 價格（數字，新台幣）,
-    "priceUnit": "人/起",
-    "availableSeats": 可賣席次（數字）
-  },
-  "flight": {
-    "outbound": {
-      "airline": "去程航空公司",
-      "flightNo": "去程航班號",
-      "departureTime": "去程出發時間（如：06:55）",
-      "arrivalTime": "去程抵達時間（如：09:15）",
-      "duration": "去程飛行時間（如：1h20m）"
-    },
-    "inbound": {
-      "airline": "回程航空公司",
-      "flightNo": "回程航班號",
-      "departureTime": "回程出發時間",
-      "arrivalTime": "回程抵達時間",
-      "duration": "回程飛行時間"
-    }
-  },
-  "accommodation": {
-    "hotelName": "酒店名稱",
-    "hotelGrade": "酒店等級（如：五星級、四星級）",
-    "hotelNights": 住宿晚數,
-    "hotelLocation": "酒店位置",
-    "hotelDescription": "酒店介紹（100-200字）",
-    "hotelFacilities": ["設施1", "設施2"],
-    "hotelRoomType": "房型",
-    "hotelRoomSize": "房間大小",
-    "hotelCheckIn": "入住時間",
-    "hotelCheckOut": "退房時間",
-    "hotelSpecialOffers": ["特別贈送項目"],
-    "hotelWebsite": "酒店官網"
-  },
-  "attractions": [
-    {
-      "name": "景點名稱",
-      "description": "景點描述"
-    }
-  ],
-  "dailyItinerary": [
-    {
-      "day": 1,
-      "title": "第一天標題",
-      "activities": ["活動1", "活動2"]
-    }
-  ],
-  "pricingDetails": {
-    "includes": ["費用包含項目1", "費用包含項目2"],
-    "excludes": ["費用不含項目1", "費用不含項目2"],
-    "optionalTours": [
-      {
-        "name": "自費行程名稱",
-        "content": "自費行程內容",
-        "price": 價格,
-        "includes": ["包含項目"]
-      }
-    ]
-  },
-  "highlights": ["行程亮點1", "行程亮點2"],
-  "notes": {
-    "specialReminders": "行程特殊提醒",
-    "notes": "行程備註",
-    "safetyGuidelines": "安全守則",
-    "flightRules": "團體航班規定事項"
-  },
-  "departureDate": "出發日期（YYYY-MM-DD）",
-  "imageUrl": "行程主圖片網址"
-}
-
-重要注意事項：
-1. 標題請重新撰寫，使其更吸引人，不要原文照抄
-2. 描述請重新撰寫，突出行程亮點
-3. 價格請只提取數字，不要包含貨幣符號
-4. 天數和晚數請只提取數字
-5. 請確保 JSON 格式正確，可以被解析
-6. 如果找不到某項資訊，請留空或使用合理的預設值`;
-
-            const llmResponse = await invokeLLM({
-              messages: [
-                {
-                  role: "system" as const,
-                  content: "你是一個資深旅遊編輯，專門從網頁內容中提取結構化的旅遊行程資訊。你需要重新撰寫標題和描述，使其更具吸引力。請只回傳 JSON 格式的資料，不要包含其他文字。",
-                },
-                {
-                  role: "user" as const,
-                  content: extractionPrompt,
-                },
-              ],
-              response_format: { type: "json_object" },
-            });
-
-            const fallbackContent = llmResponse.choices[0]?.message?.content;
-            if (!fallbackContent) {
-              throw new Error("LLM did not return any content");
-            }
-            llmContent = typeof fallbackContent === "string" ? fallbackContent : JSON.stringify(fallbackContent);
-            console.log("[AutoGenerate] LLM response:", llmContent);
-          }
-
-          // Now llmContent contains the JSON string from either Manus API or fallback LLM
-          console.log("[AutoGenerate] Processing extracted content...");
-
-          // Parse the JSON response
-          let extractedData;
-          try {
-            extractedData = JSON.parse(typeof llmContent === "string" ? llmContent : JSON.stringify(llmContent));
-          } catch (parseError) {
-            console.error("[AutoGenerate] JSON parse error:", parseError);
-            throw new Error("Failed to parse LLM response as JSON");
-          }
+          const extractionTime = (Date.now() - startTime) / 1000;
+          console.log(`[AutoGenerate] Extraction completed in ${extractionTime.toFixed(1)} seconds`);
 
           // Transform extracted data to match database schema
           const basicInfo = extractedData.basicInfo || {};
@@ -702,102 +532,121 @@ ${textContent}
           const pricingDetails = extractedData.pricingDetails || {};
           const notes = extractedData.notes || {};
 
-          // Return the extracted data in a standardized format matching the new schema
+          // Prepare tour data for database
+          const tourData = {
+            // Basic Information
+            title: basicInfo.title || "未命名行程",
+            productCode: basicInfo.productCode || "",
+            description: basicInfo.description || "",
+            promotionText: basicInfo.promotionText || "",
+            tags: JSON.stringify(basicInfo.tags || []),
+            
+            // Location - Departure
+            departureCountry: location.departureCountry || "台灣",
+            departureCity: location.departureCity || "桃園",
+            departureAirportCode: location.departureAirportCode || "TPE",
+            departureAirportName: location.departureAirportName || "桃園國際機場",
+            
+            // Location - Destination
+            destinationCountry: location.destinationCountry || "未指定",
+            destinationCity: location.destinationCity || "未指定",
+            destinationRegion: location.destinationRegion || "",
+            destinationAirportCode: location.destinationAirportCode || "",
+            destinationAirportName: location.destinationAirportName || "",
+            destination: `${location.destinationCountry || ""} ${location.destinationCity || ""}`.trim() || "未指定",
+            destinationDescription: location.destinationDescription || "",
+            
+            // Duration
+            duration: parseInt(duration.days) || 1,
+            nights: parseInt(duration.nights) || (parseInt(duration.days) - 1) || 0,
+            
+            // Pricing
+            price: parseInt(String(pricing.price).replace(/,/g, "")) || 0,
+            priceUnit: pricing.priceUnit || "人/起",
+            availableSeats: parseInt(pricing.availableSeats) || null,
+            
+            // Flight - Outbound
+            outboundAirline: outbound.airline || "",
+            outboundFlightNo: outbound.flightNo || "",
+            outboundDepartureTime: outbound.departureTime || "",
+            outboundArrivalTime: outbound.arrivalTime || "",
+            outboundFlightDuration: outbound.duration || "",
+            
+            // Flight - Inbound
+            inboundAirline: inbound.airline || "",
+            inboundFlightNo: inbound.flightNo || "",
+            inboundDepartureTime: inbound.departureTime || "",
+            inboundArrivalTime: inbound.arrivalTime || "",
+            inboundFlightDuration: inbound.duration || "",
+            
+            // Legacy airline field
+            airline: outbound.airline || "",
+            
+            // Accommodation
+            hotelName: accommodation.hotelName || "",
+            hotelGrade: accommodation.hotelGrade || "",
+            hotelNights: parseInt(accommodation.hotelNights) || null,
+            hotelLocation: accommodation.hotelLocation || "",
+            hotelDescription: accommodation.hotelDescription || "",
+            hotelFacilities: JSON.stringify(accommodation.hotelFacilities || []),
+            hotelRoomType: accommodation.hotelRoomType || "",
+            hotelRoomSize: accommodation.hotelRoomSize || "",
+            hotelCheckIn: accommodation.hotelCheckIn || "",
+            hotelCheckOut: accommodation.hotelCheckOut || "",
+            hotelSpecialOffers: JSON.stringify(accommodation.hotelSpecialOffers || []),
+            hotelWebsite: accommodation.hotelWebsite || "",
+            
+            // Attractions
+            attractions: JSON.stringify(extractedData.attractions || []),
+            
+            // Daily Itinerary
+            dailyItinerary: JSON.stringify(extractedData.dailyItinerary || []),
+            
+            // Pricing Details
+            includes: JSON.stringify(pricingDetails.includes || []),
+            excludes: JSON.stringify(pricingDetails.excludes || []),
+            optionalTours: JSON.stringify(pricingDetails.optionalTours || []),
+            
+            // Highlights
+            highlights: JSON.stringify(extractedData.highlights || []),
+            
+            // Notes
+            specialReminders: notes.specialReminders || "",
+            notes: notes.notes || "",
+            safetyGuidelines: notes.safetyGuidelines || "",
+            flightRules: notes.flightRules || "",
+            
+            // Images
+            imageUrl: extractedData.imageUrl || "",
+            
+            // Source
+            sourceUrl: input.url,
+            isAutoGenerated: 1,
+            
+            // Status
+            status: "active" as const,
+          };
+
+          // 如果啟用自動儲存，將行程儲存到資料庫
+          let savedTour = null;
+          if (input.autoSave) {
+            console.log("[AutoGenerate] Auto-saving tour to database...");
+            savedTour = await db.createTour({
+              ...tourData,
+              createdBy: ctx.user.id, // 添加建立者 ID
+            });
+            console.log("[AutoGenerate] Tour saved with ID:", savedTour.id);
+          }
+
+          const totalTime = (Date.now() - startTime) / 1000;
+          console.log(`[AutoGenerate] Total time: ${totalTime.toFixed(1)} seconds`);
+
           return {
             success: true,
-            data: {
-              // Basic Information
-              title: basicInfo.title || "未命名行程",
-              productCode: basicInfo.productCode || "",
-              description: basicInfo.description || "",
-              promotionText: basicInfo.promotionText || "",
-              tags: JSON.stringify(basicInfo.tags || []),
-              
-              // Location - Departure
-              departureCountry: location.departureCountry || "台灣",
-              departureCity: location.departureCity || "桃園",
-              departureAirportCode: location.departureAirportCode || "TPE",
-              departureAirportName: location.departureAirportName || "桃園國際機場",
-              
-              // Location - Destination
-              destinationCountry: location.destinationCountry || "未指定",
-              destinationCity: location.destinationCity || "未指定",
-              destinationRegion: location.destinationRegion || "",
-              destinationAirportCode: location.destinationAirportCode || "",
-              destinationAirportName: location.destinationAirportName || "",
-              destination: `${location.destinationCountry || ""} ${location.destinationCity || ""}`.trim() || "未指定",
-              destinationDescription: location.destinationDescription || "",
-              
-              // Duration
-              duration: parseInt(duration.days) || 1,
-              nights: parseInt(duration.nights) || (parseInt(duration.days) - 1) || 0,
-              
-              // Pricing
-              price: parseInt(pricing.price) || 0,
-              priceUnit: pricing.priceUnit || "人/起",
-              availableSeats: parseInt(pricing.availableSeats) || null,
-              
-              // Flight - Outbound
-              outboundAirline: outbound.airline || "",
-              outboundFlightNo: outbound.flightNo || "",
-              outboundDepartureTime: outbound.departureTime || "",
-              outboundArrivalTime: outbound.arrivalTime || "",
-              outboundFlightDuration: outbound.duration || "",
-              
-              // Flight - Inbound
-              inboundAirline: inbound.airline || "",
-              inboundFlightNo: inbound.flightNo || "",
-              inboundDepartureTime: inbound.departureTime || "",
-              inboundArrivalTime: inbound.arrivalTime || "",
-              inboundFlightDuration: inbound.duration || "",
-              
-              // Legacy airline field
-              airline: outbound.airline || "",
-              
-              // Accommodation
-              hotelName: accommodation.hotelName || "",
-              hotelGrade: accommodation.hotelGrade || "",
-              hotelNights: parseInt(accommodation.hotelNights) || null,
-              hotelLocation: accommodation.hotelLocation || "",
-              hotelDescription: accommodation.hotelDescription || "",
-              hotelFacilities: JSON.stringify(accommodation.hotelFacilities || []),
-              hotelRoomType: accommodation.hotelRoomType || "",
-              hotelRoomSize: accommodation.hotelRoomSize || "",
-              hotelCheckIn: accommodation.hotelCheckIn || "",
-              hotelCheckOut: accommodation.hotelCheckOut || "",
-              hotelSpecialOffers: JSON.stringify(accommodation.hotelSpecialOffers || []),
-              hotelWebsite: accommodation.hotelWebsite || "",
-              
-              // Attractions
-              attractions: JSON.stringify(extractedData.attractions || []),
-              
-              // Daily Itinerary
-              dailyItinerary: JSON.stringify(extractedData.dailyItinerary || []),
-              
-              // Pricing Details
-              includes: JSON.stringify(pricingDetails.includes || []),
-              excludes: JSON.stringify(pricingDetails.excludes || []),
-              optionalTours: JSON.stringify(pricingDetails.optionalTours || []),
-              
-              // Highlights
-              highlights: JSON.stringify(extractedData.highlights || []),
-              
-              // Notes
-              specialReminders: notes.specialReminders || "",
-              notes: notes.notes || "",
-              safetyGuidelines: notes.safetyGuidelines || "",
-              flightRules: notes.flightRules || "",
-              
-              // Dates
-              departureDate: extractedData.departureDate || null,
-              
-              // Images
-              imageUrl: extractedData.imageUrl || "",
-              
-              // Source
-              sourceUrl: input.url,
-              isAutoGenerated: 1,
-            },
+            data: tourData,
+            savedTour: savedTour,
+            extractionTime: extractionTime,
+            totalTime: totalTime,
           };
         } catch (error) {
           console.error("[AutoGenerate] Error:", error);
