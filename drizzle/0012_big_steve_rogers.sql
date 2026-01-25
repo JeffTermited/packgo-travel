@@ -1,0 +1,1 @@
+ALTER TABLE `tours` ADD `originalityScore` decimal(5,2);

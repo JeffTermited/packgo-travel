@@ -49,6 +49,7 @@ export interface MasterAgentResult {
     
     // Metadata
     originalityScore: number;
+    sourceUrl: string;
   };
   error?: string;
   progress?: {
@@ -214,6 +215,7 @@ export class MasterAgent {
         
         // Metadata
         originalityScore: analyzedContent.originalityScore,
+        sourceUrl: url, // Store the original source URL
       };
       
       console.log("[MasterAgent] Tour generation completed successfully");
