@@ -11,6 +11,9 @@ import { ColorThemeAgent } from "./colorThemeAgent";
 import { ItineraryAgent } from "./itineraryAgent";
 import { CostAgent } from "./costAgent";
 import { NoticeAgent } from "./noticeAgent";
+import { HotelAgent } from "./hotelAgent";
+import { MealAgent } from "./mealAgent";
+import { FlightAgent } from "./flightAgent";
 
 export interface MasterAgentResult {
   success: boolean;
@@ -59,6 +62,15 @@ export interface MasterAgentResult {
     // Detailed Notice (詳細注意事項)
     noticeDetailed: string; // JSON string
     
+    // Hotels (飯店介紹)
+    hotels: string; // JSON string
+    
+    // Meals (餐飲介紹)
+    meals: string; // JSON string
+    
+    // Flights (航班資訊)
+    flights: string; // JSON string
+    
     // Metadata
     originalityScore: number;
     sourceUrl: string;
@@ -83,6 +95,9 @@ export class MasterAgent {
   private itineraryAgent: ItineraryAgent;
   private costAgent: CostAgent;
   private noticeAgent: NoticeAgent;
+  private hotelAgent: HotelAgent;
+  private mealAgent: MealAgent;
+  private flightAgent: FlightAgent;
   
   constructor() {
     this.webScraperAgent = new WebScraperAgent();
@@ -93,6 +108,9 @@ export class MasterAgent {
     this.itineraryAgent = new ItineraryAgent();
     this.costAgent = new CostAgent();
     this.noticeAgent = new NoticeAgent();
+    this.hotelAgent = new HotelAgent();
+    this.mealAgent = new MealAgent();
+    this.flightAgent = new FlightAgent();
   }
   
   /**
@@ -226,15 +244,13 @@ export class MasterAgent {
         imageAlt: featureImages[index]?.alt || feature.imageAlt,
       }));
       
-      // Step 6: Generate itinerary, cost, and notice (90% - 95%)
-      onProgress?.("generating_details", 90);
-      
-      let itineraryData = "[]";
-      let costData = "{}";
-      let noticeData = "{}";
+      // Step 6: Generate itinerary, cost, and notice (90% - 95%      // Step 6: Generate itinerary, cost, and notice
+      let itineraryData = "";
+      let costData = "";
+      let noticeData = "";
       
       try {
-        // Generate itinerary
+        // Generate detailed itinerary
         const itineraryResult = await this.itineraryAgent.execute(rawData);
         if (itineraryResult.success && itineraryResult.data) {
           itineraryData = JSON.stringify(itineraryResult.data.dailyItineraries);
@@ -264,6 +280,41 @@ export class MasterAgent {
         console.error("[MasterAgent] Details generation error (non-blocking):", detailsError);
       }
       
+      // Step 7: Generate hotels, meals, and flights
+      let hotelsData = "";
+      let mealsData = "";
+      let flightsData = "";
+      
+      try {
+        // Generate hotel information
+        const hotelResult = await this.hotelAgent.execute(rawData);
+        if (hotelResult.success && hotelResult.data) {
+          hotelsData = JSON.stringify(hotelResult.data.hotels);
+          console.log("[MasterAgent] Hotel information generated successfully");
+        } else {
+          console.warn("[MasterAgent] Hotel generation failed:", hotelResult.error);
+        }
+        
+        // Generate meal information
+        const mealResult = await this.mealAgent.execute(rawData);
+        if (mealResult.success && mealResult.data) {
+          mealsData = JSON.stringify(mealResult.data.meals);
+          console.log("[MasterAgent] Meal information generated successfully");
+        } else {
+          console.warn("[MasterAgent] Meal generation failed:", mealResult.error);
+        }
+        
+        // Generate flight information
+        const flightResult = await this.flightAgent.execute(rawData);
+        if (flightResult.success && flightResult.data) {
+          flightsData = JSON.stringify(flightResult.data);
+          console.log("[MasterAgent] Flight information generated successfully");
+        } else {
+          console.warn("[MasterAgent] Flight generation failed:", flightResult.error);
+        }
+      } catch (additionalError) {
+        console.error("[MasterAgent] Additional details generation error (non-blocking):", additionalError);
+      }     
       const finalData = {
         // Basic info
         title: analyzedContent.title,
@@ -308,6 +359,15 @@ export class MasterAgent {
         
         // Detailed Notice (詳細注意事項)
         noticeDetailed: noticeData,
+        
+        // Hotels (飯店介紹)
+        hotels: hotelsData,
+        
+        // Meals (餐飲介紹)
+        meals: mealsData,
+        
+        // Flights (航班資訊)
+        flights: flightsData,
         
         // Metadata
         originalityScore: analyzedContent.originalityScore,

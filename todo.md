@@ -1824,3 +1824,46 @@
 - [x] 在 tours 表格中加入 costExplanation 欄位
 - [x] 在 tours 表格中加入 noticeDetailed 欄位
 - [x] 執行 pnpm db:push 同步資料庫
+
+
+## 🎨 重新設計 TourDetail 頁面（2026-01-26）
+
+### 目標
+參考 sipincollection.com 風格，創建圖文交錯的 Zigzag 佈局，根據目的地自動調整配色
+
+### 創建新的 Agent
+- [x] 創建 HotelAgent（飯店介紹）- 使用 HOTEL_SKILL
+- [x] 創建 MealAgent（餐飲介紹）- 使用 MEAL_SKILL  
+- [x] 創建 FlightAgent（航班資訊）- 使用 FLIGHT_SKILL
+- [x] 在 skillLibrary.ts 中加入 FLIGHT_SKILL
+
+### 整合新的 Agent
+- [x] 在 MasterAgent 中調用 HotelAgent
+- [x] 在 MasterAgent 中調用 MealAgent
+- [x] 在 MasterAgent 中調用 FlightAgent
+- [x] 更新 MasterAgentResult 介面（加入 hotels, meals, flights 欄位）
+
+### 更新資料庫 Schema
+- [x] 確認 tours 表格中已有 hotels 欄位
+- [x] 確認 tours 表格中已有 meals 欄位
+- [x] 確認 tours 表格中已有 flights 欄位
+- [x] 如需要則執行 pnpm db:push（不需要，資料庫已有這些欄位）
+
+### 重新設計 TourDetail 頁面
+- [ ] 設計 Hero Section（全螢幕背景圖 + 標題）
+- [ ] 設計行程特色區塊（圖文交錯）
+- [ ] 設計每日行程區塊（時間軸 + 圖片）
+- [ ] 設計飯店介紹區塊（Zigzag 佈局）
+- [ ] 設計餐飲介紹區塊（Zigzag 佈局）
+- [ ] 設計航班資訊區塊
+- [ ] 設計費用說明區塊
+- [ ] 設計注意事項區塊
+- [ ] 實作根據目的地自動調整配色的邏輯
+- [ ] 加入「行程下載」功能（參考 CSS Print）
+
+### 測試與驗證
+- [ ] 使用 Lion Travel 行程測試生成
+- [ ] 驗證所有 Agent 正常運作
+- [ ] 驗證頁面排版美觀
+- [ ] 驗證配色根據目的地調整
+- [ ] 驗證響應式設計
