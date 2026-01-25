@@ -1321,3 +1321,100 @@
 - [ ] 在行程詳情頁面新增「行程下載」按鈕
 - [ ] PDF 格式參考 sipincollection.com 的設計（包含大量圖片）
 - [ ] 測試並儲存 checkpoint
+
+
+## 明天待辦事項（2026-01-26）
+
+### 🔴 高優先級
+
+#### 1. 建立專門的 Agent（預計 2-3 小時）
+- [ ] **AttractionAgent**（server/agents/attractionAgent.ts）
+  - 生成景點深度介紹（100-200 字）
+  - 生成詩意副標題（例如：「火山灰封、時光凝結的歷史見證—龐貝古城」）
+  - 為每個景點生成圖片
+  - 返回格式：`{name, nameEn, poeticSubtitle, description, image, imageAlt, tags}`
+
+- [ ] **HotelAgent**（server/agents/hotelAgent.ts）
+  - 生成飯店介紹（100-150 字）
+  - 包含星級、特色、體驗描述
+  - 為每個飯店生成圖片
+  - 返回格式：`{name, stars, description, image, imageAlt}`
+
+- [ ] **MealAgent**（server/agents/mealAgent.ts）
+  - 生成餐食介紹
+  - 為每個餐食生成圖片
+  - 返回格式：`{breakfast, lunch, dinner}`
+
+- [ ] **FlightAgent**（server/agents/flightAgent.ts）
+  - 生成航班資訊
+  - 包含航空公司、航班號、時間、飛行時數
+  - 返回格式：`{outbound: [...], inbound: [...]}`
+
+- [ ] **PoeticAgent**（server/agents/poeticAgent.ts）
+  - 生成詩意副標題（例如：「越獅境踏野原魂，追遷徙逐天地心」）
+  - 生成每日行程的詩意開場白
+  - 返回格式：`{poeticSubtitle, dailyIntros: [...]}`
+
+- [ ] **更新 Master Agent**（server/agents/masterAgent.ts）
+  - 協調所有新的 Agent（Attraction, Hotel, Meal, Flight, Poetic）
+  - 更新進度追蹤（增加新的步驟）
+  - 更新錯誤處理機制
+
+#### 2. 重新設計行程詳情頁面（預計 3-4 小時）
+- [ ] **Hero 區域**
+  - 全螢幕 Hero 圖片
+  - 右側資訊卡片（米色背景）
+  - 標題、副標題、天數、價格、按鈕
+
+- [ ] **航班資訊區塊**
+  - 清晰的表格設計
+  - 去程/回程分開顯示
+  - 景點距離參考
+
+- [ ] **每日行程區塊**
+  - 左側天數導航（固定在左側，可快速跳轉）
+  - 每日標題 + 詩意文案
+  - 景點區塊（左右交錯佈局）：
+    - 左圖右文 → 右圖左文 → 左圖右文
+    - 圖片佔 50% 寬度
+    - 文字佔 50% 寬度
+    - 景點標題 + 詩意副標題 + 深度介紹（100-200 字）
+  - 美食資訊（圖示 + 文字）
+  - 住宿資訊（圖示 + 文字）
+
+- [ ] **配色主題**
+  - 使用 AI 生成的配色主題
+  - 不同區塊使用不同背景顏色
+
+- [ ] **直式標題**
+  - 增加藝術感
+
+#### 3. Agent 自動學習排版和風格（新需求）
+- [ ] **建立 DesignLearningAgent**（server/agents/designLearningAgent.ts）
+  - 從參考網站（sipincollection.com）抓取排版結構
+  - 分析配色方案、字體大小、間距、佈局
+  - 學習圖片與文字的比例和排列方式
+  - 生成設計規範（Design Guidelines）並儲存至資料庫或配置檔案
+
+- [ ] **整合到 Master Agent**
+  - 在生成行程前，先調用 DesignLearningAgent 學習參考網站
+  - 將學習到的設計規範傳遞給其他 Agent
+  - 確保生成的內容符合學習到的風格
+
+- [ ] **建立設計規範資料表**（design_guidelines）
+  - 儲存學習到的排版規則
+  - 儲存配色方案
+  - 儲存字體和間距設定
+  - 可供未來生成時參考
+
+### 🟡 中優先級
+
+#### 4. 測試和優化（預計 1-2 小時）
+- [ ] 測試完整生成流程（使用真實的旅遊網站 URL）
+- [ ] 調整 LLM prompt 優化內容品質
+- [ ] 修復 bug 和儲存 checkpoint
+
+#### 5. 行程下載功能（如果時間允許）
+- [ ] 實作行程下載為 PDF 功能
+- [ ] 設計 PDF 模板（參考 sipincollection.com）
+- [ ] 新增下載按鈕和測試
