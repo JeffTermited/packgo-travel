@@ -836,13 +836,205 @@
   - [ ] 測試忘記密碼與重設密碼
   - [ ] 測試登出功能
   - [ ] 測試 JWT token 過期處理
-- [ ] 儲存 checkpoint
-
-
-## 實作 Google OAuth + Email/Password 雙軌登入系統
+- [ ] 儲存 c## 實作 Google OAuth + Email/Password 雙軌登入系統
 - [x] 更新資料庫 schema（新增 googleId, password, resetPasswordToken, resetPasswordExpires）
 - [x] 安裝必要套件（bcryptjs, passport, passport-google-oauth20, etc.）
-- [x] 建立 server/auth.ts 認證邏輯
+- [x] 建立完整的認證系統
+
+---
+
+## 🚀 明天待辦事項（2026-01-26）- AI 自動生成行程系統優化
+
+**總預計時間：** 7.5-10.5 小時（核心任務 7.5 小時 + 可選任務 3 小時）
+
+### 🔴 Critical Fix（必須優先處理，預計 30 分鐘）
+
+#### 任務 1：移除 DesignLearningAgent 的 Runtime 依賴
+- [ ] 將 DesignLearningAgent 移動到 `server/tools/designLearningTool.ts`（保留作為開發工具）
+- [ ] 從 Master Agent 中移除 DesignLearningAgent 調用
+- [ ] 直接使用 `server/lib/DEFAULT_DESIGN_GUIDELINES.ts`
+- [ ] 測試行程生成流程（確認不再調用 DesignLearningAgent）
+- [ ] 驗證生成時間減少 15-30 秒
+
+**預期效果：** 零延遲、零外部依賴、風格絕對統一
+
+---
+
+### 🟡 高優先級：Skill Prompting 應用（預計 3 小時）
+
+#### 任務 2：建立 Skill Library
+- [ ] 創建 `server/agents/skillLibrary.ts`
+- [ ] 定義 COPYWRITER_SKILL（用於 ContentAnalyzerAgent）
+- [ ] 定義 PHOTOGRAPHER_SKILL（用於 ImagePromptAgent）
+- [ ] 定義 POET_SKILL（用於 PoeticAgent）
+- [ ] 定義 EDITOR_SKILL（用於內容驗證）
+- [ ] 定義 STORYTELLER_SKILL（備用）
+
+#### 任務 2.1：整合 Skill Prompting 到各 Agent
+- [ ] 在 ContentAnalyzerAgent 中引入 COPYWRITER_SKILL
+- [ ] 在 ImagePromptAgent 中引入 PHOTOGRAPHER_SKILL
+- [ ] 創建 PoeticAgent 並引入 POET_SKILL
+- [ ] 測試生成品質（比較使用前後的差異）
+
+**預期效果：** 內容品質提升 30-50%、風格一致性提升、原創性提升
+
+---
+
+### 🟡 高優先級：Prompt 優化與字數強限制（預計 2 小時）
+
+#### 任務 3：優化所有 Agent 的 Prompt
+- [ ] ContentAnalyzerAgent - 標題：嚴格 20-30 字
+- [ ] ContentAnalyzerAgent - 描述：嚴格 100-120 字
+- [ ] ContentAnalyzerAgent - Hero 副標題：嚴格 30-40 字
+- [ ] PoeticAgent - 詩意文案：嚴格 12-16 字
+- [ ] ImagePromptAgent - 提示詞：建議 80-120 字（警告不強制）
+
+#### 任務 3.1：加入字數驗證和重試機制
+- [ ] 實作 `generateTitleWithRetry` 函數（最多重試 2 次）
+- [ ] 實作字數驗證邏輯（檢查生成內容是否符合字數限制）
+- [ ] 實作強制截斷邏輯（重試失敗時使用）
+- [ ] 在所有 Agent 中加入字數驗證
+
+**預期效果：** 前端排版不會被破壞、減少防禦性 CSS 需求、提升內容品質
+
+---
+
+### 🟡 高優先級：Fallback 機制與 Partial Success（預計 2 小時）
+
+#### 任務 4：加入 Fallback 機制
+- [ ] 優化 WebScraperAgent 的 Prompt（加入「資料不足回傳 null」指示）
+- [ ] 在 ContentAnalyzerAgent 中加入資料驗證（檢查必要欄位）
+- [ ] 實作 Fallback 邏輯（資料不足時使用預設值）
+
+#### 任務 4.1：實作 Partial Success 機制
+- [ ] 修改 Master Agent 的錯誤處理邏輯
+- [ ] 圖片生成失敗時使用 placeholder 圖片
+- [ ] 確保部分失敗不會導致整個行程生成失敗
+- [ ] 測試各種失敗情境（爬蟲失敗、圖片生成失敗、LLM 超時）
+
+**預期效果：** 避免幻覺、提升系統穩定性、更好的錯誤訊息
+
+---
+
+### 🟢 中優先級：防禦性 CSS 排版（預計 2 小時）
+
+#### 任務 5：實作防禦性 CSS
+- [ ] 圖片防護：object-fit: cover + 固定長寬比
+- [ ] 文字截斷：line-clamp（標題 2 行、描述 4 行、詩意文案 1 行）
+- [ ] 直式標題的響應式處理（手機版改回橫排）
+- [ ] Zigzag 佈局的響應式處理（手機版改為單欄）
+- [ ] 測試超長內容不會破壞排版
+
+**預期效果：** 即使 LLM 生成超長內容，排版也不會破壞
+
+---
+
+### 🟢 中優先級：CSS @media print 支援（預計 1 小時）
+
+#### 任務 6：實作 CSS @media print
+- [ ] 創建 `client/src/print.css`
+- [ ] 隱藏不需要列印的元素（navbar、footer、按鈕）
+- [ ] 設定分頁規則（page-break-inside: avoid）
+- [ ] 調整字體大小和行高
+- [ ] 在 TourDetail 頁面引入 print.css
+- [ ] 添加「下載 PDF」按鈕（呼叫 window.print()）
+- [ ] 測試列印效果（Ctrl+P → 另存為 PDF）
+
+**預期效果：** 開發時間只需 1 小時、零伺服器負擔、零維護成本
+
+---
+
+### 🔵 低優先級（如果時間允許，預計 2 小時）
+
+#### 任務 7：建立專門的 Agent（可選）
+- [ ] 創建 AttractionAgent（景點介紹）
+- [ ] 創建 HotelAgent（住宿介紹）
+- [ ] 創建 MealAgent（餐飲介紹）
+- [ ] 創建 FlightAgent（航班資訊）
+- [ ] 在 Master Agent 中整合這些新 Agent
+
+**注意：** 先完成前面的核心任務，如果時間充裕再考慮實作
+
+---
+
+### ✅ 驗收標準
+
+**Critical Fix 驗收：**
+- [ ] Master Agent 不再調用 DesignLearningAgent
+- [ ] 使用 DEFAULT_DESIGN_GUIDELINES.ts 作為設計規範
+- [ ] 行程生成時間減少 15-30 秒
+
+**Skill Prompting 驗收：**
+- [ ] skillLibrary.ts 包含 5 種 Skill Prompt
+- [ ] ContentAnalyzerAgent 使用 COPYWRITER_SKILL
+- [ ] ImagePromptAgent 使用 PHOTOGRAPHER_SKILL
+- [ ] 生成的內容品質明顯提升（需人工評估）
+
+**Prompt 優化驗收：**
+- [ ] 所有 Prompt 都有「嚴格字數限制」
+- [ ] 所有 Agent 都有「字數驗證」機制
+- [ ] 超過字數限制時會「重試」或「截斷」
+
+**Fallback 機制驗收：**
+- [ ] WebScraperAgent 的 Prompt 包含「資料不足回傳 null」指示
+- [ ] ContentAnalyzerAgent 有資料驗證機制
+- [ ] Master Agent 實作 Partial Success（圖片失敗不影響行程儲存）
+
+**防禦性 CSS 驗收：**
+- [ ] 圖片使用 object-fit: cover
+- [ ] 文字使用 line-clamp 截斷
+- [ ] 手機版使用橫排佈局
+- [ ] 測試超長內容不會破壞排版
+
+**CSS @media print 驗收：**
+- [ ] print.css 已創建並引入
+- [ ] 列印時隱藏 navbar、footer、按鈕
+- [ ] 列印時保持排版美觀
+- [ ] 「下載 PDF」按鈕正常運作
+
+---
+
+### 📋 時間分配
+
+| 任務 | 優先級 | 預計時間 | 累計時間 |
+|------|--------|----------|----------|
+| 1. 移除 DesignLearningAgent Runtime 依賴 | 🔴 Critical | 30 分鐘 | 0.5 小時 |
+| 2. 建立 Skill Library | 🟡 High | 3 小時 | 3.5 小時 |
+| 3. Prompt 優化與字數強限制 | 🟡 High | 2 小時 | 5.5 小時 |
+| 4. Fallback 機制與 Partial Success | 🟡 High | 2 小時 | 7.5 小時 |
+| 5. 防禦性 CSS 排版 | 🟢 Medium | 2 小時 | 9.5 小時 |
+| 6. CSS @media print 支援 | 🟢 Medium | 1 小時 | 10.5 小時 |
+| 7. 建立專門的 Agent（可選） | 🔵 Low | 2 小時 | 12.5 小時 |
+
+**核心任務（必須完成）：** 7.5 小時  
+**核心 + 前端優化：** 10.5 小時  
+**全部任務：** 12.5 小時
+
+---
+
+### 🕐 開發流程建議
+
+**上午（9:00-12:00）：Critical Fix + Skill Prompting**
+1. **9:00-9:30**：移除 DesignLearningAgent Runtime 依賴
+2. **9:30-12:00**：建立 Skill Library（2.5 小時）
+
+**下午（13:00-18:00）：Prompt 優化 + Fallback 機制**
+3. **13:00-15:00**：Prompt 優化與字數強限制
+4. **15:00-17:00**：Fallback 機制與 Partial Success
+5. **17:00-18:00**：測試與驗證
+
+**晚上（19:00-22:00）：前端優化（可選）**
+6. **19:00-21:00**：防禦性 CSS 排版
+7. **21:00-22:00**：CSS @media print 支援
+
+---
+
+### 📚 參考文件
+
+- `/home/ubuntu/packgo-travel/TOMORROW_FINAL_PLAN.md`：完整的明天工作計畫（包含詳細說明和範例程式碼）
+- `/home/ubuntu/packgo-travel/AI_ARCHITECTURE_SUMMARY.md`：系統架構說明和 AI Prompt
+- `/home/ubuntu/packgo-travel/DESIGN_LEARNING_AGENT_PROPOSAL.md`：DesignLearningAgent 技術提案
+- `/home/ubuntu/packgo-travel/server/lib/DEFAULT_DESIGN_GUIDELINES.ts`：預設設計規範h.ts 認證邏輯
 - [x] 建立 server/db.ts 資料庫輔助函數
 - [x] 實作 Email/Password 註冊 API
 - [x] 實作 Email/Password 登入 API
