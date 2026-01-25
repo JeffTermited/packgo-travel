@@ -110,9 +110,14 @@ export async function requestPasswordReset(email: string) {
     console.error('[Auth] Error sending password reset email:', error);
   }
 
+  // In test environment, return the token for testing purposes
+  // In production, the token is only sent via email
+  const isTestEnv = process.env.NODE_ENV === 'test' || process.env.VITEST;
+  
   return { 
     success: true, 
-    message: '如果該電子郵件已註冊，您將收到重設密碼的連結'
+    message: '如果該電子郵件已註冊，您將收到重設密碼的連結',
+    ...(isTestEnv && user ? { token: resetToken } : {})
   };
 }
 

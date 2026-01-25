@@ -59,6 +59,8 @@ describe("Tours API", () => {
       const newTour = await caller.tours.create({
         title: "測試行程 - 東京賞櫻",
         destination: "日本東京",
+        destinationCountry: "日本",
+        destinationCity: "東京",
         description: "這是一個測試行程，包含東京賞櫻的完整體驗",
         duration: 5,
         price: 35000,
@@ -87,6 +89,8 @@ describe("Tours API", () => {
         caller.tours.create({
           title: "測試行程",
           destination: "測試目的地",
+          destinationCountry: "測試國家",
+          destinationCity: "測試城市",
           description: "測試描述",
           duration: 5,
           price: 10000,
@@ -104,6 +108,8 @@ describe("Tours API", () => {
         caller.tours.create({
           title: "測試行程",
           destination: "測試目的地",
+          destinationCountry: "測試國家",
+          destinationCity: "測試城市",
           description: "測試描述",
           duration: 5,
           price: 10000,
@@ -122,6 +128,8 @@ describe("Tours API", () => {
       const newTour = await adminCaller.tours.create({
         title: "測試行程 - 大阪美食",
         destination: "日本大阪",
+        destinationCountry: "日本",
+        destinationCity: "大阪",
         description: "大阪美食探索之旅",
         duration: 4,
         price: 28000,
@@ -155,6 +163,8 @@ describe("Tours API", () => {
       const newTour = await caller.tours.create({
         title: "原始標題",
         destination: "原始目的地",
+        destinationCountry: "原始國家",
+        destinationCity: "原始城市",
         description: "原始描述",
         duration: 5,
         price: 30000,
@@ -196,6 +206,8 @@ describe("Tours API", () => {
       const newTour = await caller.tours.create({
         title: "待刪除的行程",
         destination: "測試目的地",
+        destinationCountry: "測試國家",
+        destinationCity: "測試城市",
         description: "這個行程將被刪除",
         duration: 3,
         price: 20000,

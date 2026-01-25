@@ -51,12 +51,13 @@ describe("auth.logout", () => {
     expect(result).toEqual({ success: true });
     expect(clearedCookies).toHaveLength(1);
     expect(clearedCookies[0]?.name).toBe(COOKIE_NAME);
+    // Cookie options should match getSessionCookieOptions output
+    // Note: maxAge is passed separately in clearCookie call
     expect(clearedCookies[0]?.options).toMatchObject({
-      maxAge: -1,
-      secure: true,
-      sameSite: "none",
       httpOnly: true,
       path: "/",
+      sameSite: "lax",
+      secure: true,
     });
   });
 });

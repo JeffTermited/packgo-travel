@@ -944,3 +944,22 @@
 - [ ] 在生產環境測試 Google 登入功能（推薦）
 - [ ] 驗證 Cookie 正確設定（app_session_id）
 - [ ] 確認用戶資訊正確顯示在 Header
+
+
+## 自動檢查發現的問題（2026-01-25）
+
+### 高優先級修復
+- [x] 修復 tours.test.ts：加入 destinationCountry 和 destinationCity 必填欄位
+- [x] 修復 auth.logout.test.ts：更新 cookie 清除邏輯測試
+- [x] 修復 auth.test.ts：在測試環境中返回 password reset token
+- [x] 修復 Google OAuth 登入後 Header 顯示問題（添加 cookie-parser 中間件）
+
+### 中優先級修復
+- [ ] 完善代辦簽證頁面內容
+- [ ] 完善包團旅遊頁面內容
+- [ ] 完善機票預購頁面內容
+- [ ] 完善機場接送頁面內容
+- [ ] 完善飯店預訂頁面內容
+
+### 低優先級修復
+- [ ] 更新 baseline-browser-mapping 套件
