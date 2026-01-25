@@ -1,0 +1,317 @@
+/**
+ * CSS Print Styles for Tour Detail Page
+ * Optimized for PDF export via browser print (Ctrl+P)
+ */
+
+@media print {
+  /* ========================================
+     1. Hide Unnecessary Elements
+     ======================================== */
+  
+  /* Hide navigation, footer, and interactive elements */
+  header,
+  nav,
+  footer,
+  button,
+  .no-print,
+  .tour-button-group,
+  .tour-booking-section,
+  .tour-contact-section {
+    display: none !important;
+  }
+  
+  /* Hide social media share buttons */
+  .share-button,
+  .social-links {
+    display: none !important;
+  }
+  
+  /* Hide video players and embedded content */
+  video,
+  iframe,
+  embed,
+  object {
+    display: none !important;
+  }
+  
+  /* ========================================
+     2. Page Layout
+     ======================================== */
+  
+  /* Reset page margins */
+  @page {
+    margin: 1.5cm;
+    size: A4 portrait;
+  }
+  
+  /* Reset body styling */
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 12pt;
+    line-height: 1.5;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Ensure main content takes full width */
+  main,
+  .container {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  /* ========================================
+     3. Typography
+     ======================================== */
+  
+  /* Adjust font sizes for print */
+  h1 {
+    font-size: 24pt;
+    margin-bottom: 12pt;
+    page-break-after: avoid;
+  }
+  
+  h2 {
+    font-size: 18pt;
+    margin-top: 16pt;
+    margin-bottom: 8pt;
+    page-break-after: avoid;
+  }
+  
+  h3 {
+    font-size: 14pt;
+    margin-top: 12pt;
+    margin-bottom: 6pt;
+    page-break-after: avoid;
+  }
+  
+  p {
+    font-size: 12pt;
+    margin-bottom: 8pt;
+    orphans: 3;
+    widows: 3;
+  }
+  
+  /* ========================================
+     4. Images
+     ======================================== */
+  
+  /* Optimize images for print */
+  img {
+    max-width: 100% !important;
+    height: auto !important;
+    page-break-inside: avoid;
+    display: block;
+    margin: 8pt 0;
+  }
+  
+  /* Hero image: reduce size for print */
+  .tour-hero-image {
+    max-height: 15cm !important;
+    object-fit: contain !important;
+  }
+  
+  /* Hide placeholder images */
+  img[src*="placeholder"] {
+    display: none !important;
+  }
+  
+  /* ========================================
+     5. Page Breaks
+     ======================================== */
+  
+  /* Avoid page breaks inside these elements */
+  .tour-highlight,
+  .tour-feature,
+  .tour-day-item,
+  .tour-attraction,
+  .card,
+  table,
+  figure {
+    page-break-inside: avoid;
+  }
+  
+  /* Force page break before major sections */
+  .tour-section-break {
+    page-break-before: always;
+  }
+  
+  /* Avoid page break after headings */
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+  }
+  
+  /* ========================================
+     6. Colors and Backgrounds
+     ======================================== */
+  
+  /* Remove background colors to save ink */
+  * {
+    background: white !important;
+    color: black !important;
+  }
+  
+  /* Keep borders for structure */
+  .card,
+  .border {
+    border: 1pt solid #ccc !important;
+  }
+  
+  /* ========================================
+     7. Links
+     ======================================== */
+  
+  /* Show URLs after links */
+  a[href]:after {
+    content: " (" attr(href) ")";
+    font-size: 10pt;
+    color: #666;
+  }
+  
+  /* Don't show URLs for internal links */
+  a[href^="#"]:after,
+  a[href^="/"]:after {
+    content: "";
+  }
+  
+  /* ========================================
+     8. Tables
+     ======================================== */
+  
+  /* Optimize tables for print */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    page-break-inside: avoid;
+  }
+  
+  th, td {
+    padding: 6pt;
+    border: 1pt solid #ccc;
+    text-align: left;
+  }
+  
+  th {
+    font-weight: bold;
+    background: #f0f0f0 !important;
+  }
+  
+  /* ========================================
+     9. Lists
+     ======================================== */
+  
+  /* Optimize lists for print */
+  ul, ol {
+    margin-left: 1cm;
+    page-break-inside: avoid;
+  }
+  
+  li {
+    margin-bottom: 4pt;
+  }
+  
+  /* ========================================
+     10. Special Elements
+     ======================================== */
+  
+  /* Print-specific header */
+  .print-header {
+    display: block !important;
+    text-align: center;
+    margin-bottom: 16pt;
+    border-bottom: 2pt solid black;
+    padding-bottom: 8pt;
+  }
+  
+  /* Print-specific footer */
+  .print-footer {
+    display: block !important;
+    text-align: center;
+    margin-top: 16pt;
+    border-top: 1pt solid #ccc;
+    padding-top: 8pt;
+    font-size: 10pt;
+    color: #666;
+  }
+  
+  /* ========================================
+     11. Tabs and Accordions
+     ======================================== */
+  
+  /* Show all tab content */
+  .tabs-content,
+  .accordion-content {
+    display: block !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  
+  /* Hide tab triggers */
+  .tabs-list,
+  .accordion-trigger {
+    display: none !important;
+  }
+  
+  /* ========================================
+     12. Grid Layout
+     ======================================== */
+  
+  /* Convert grid to single column for print */
+  .tour-highlights-grid,
+  .tour-zigzag-layout {
+    display: block !important;
+  }
+  
+  .tour-highlights-grid > *,
+  .tour-zigzag-layout > * {
+    margin-bottom: 12pt;
+    page-break-inside: avoid;
+  }
+  
+  /* ========================================
+     13. Vertical Text
+     ======================================== */
+  
+  /* Convert vertical text to horizontal for print */
+  .tour-vertical-title {
+    writing-mode: horizontal-tb !important;
+    text-orientation: initial !important;
+  }
+  
+  /* ========================================
+     14. Print-Specific Content
+     ======================================== */
+  
+  /* Show print-only elements */
+  .print-only {
+    display: block !important;
+  }
+  
+  /* Add page numbers */
+  @page {
+    @bottom-right {
+      content: "Page " counter(page) " of " counter(pages);
+      font-size: 10pt;
+      color: #666;
+    }
+  }
+  
+  /* ========================================
+     15. Optimization
+     ======================================== */
+  
+  /* Reduce margins for compact layout */
+  .tour-content-container {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  /* Remove shadows and rounded corners */
+  * {
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+}

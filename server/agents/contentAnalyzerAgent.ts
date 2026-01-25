@@ -4,6 +4,7 @@
  */
 
 import { invokeLLM } from "../_core/llm";
+import { COPYWRITER_SKILL } from "./skillLibrary";
 
 export interface ContentAnalyzerResult {
   success: boolean;
@@ -91,69 +92,123 @@ export class ContentAnalyzerAgent {
   }
   
   /**
-   * Rewrite title as marketing copy
+   * Rewrite title as marketing copy with retry mechanism
    */
   private async rewriteTitle(rawData: any): Promise<string> {
     const originalTitle = rawData.basicInfo?.title || "";
     const destination = rawData.location?.destinationCity || rawData.location?.destinationCountry || "";
     const days = rawData.duration?.days || "";
     
-    const prompt = `你是一位資深旅遊編輯，請根據以下資訊重新撰寫一個簡潔、吸引人的行銷標題（不超過 30 字）：
+    // Data validation
+    if (!originalTitle && !destination) {
+      console.warn("[ContentAnalyzerAgent] Insufficient data for title generation");
+      return "精選行程"; // Fallback
+    }
+    
+    const userPrompt = `請根據以下資訊重新撰寫一個簡潔、吸引人的行銷標題：
 
 原標題：${originalTitle}
 目的地：${destination}
 天數：${days}天
 
-要求：
-1. 不要原文照抄
-2. 突出行程亮點和特色
-3. 使用吸引人的詞彙
-4. 保持專業和優雅的語調
-5. 只回傳標題文字，不要其他說明
+範例：「北海道雪國秘境 5 日｜米其林溫泉旅宿 × 洞爺湖心中島探索」
 
-範例：「北海道雪國秘境 5 日｜米其林溫泉旅宿 × 洞爺湖心中島探索」`;
-
-    const response = await invokeLLM({
-      messages: [{ role: "user", content: prompt }],
-    });
+只回傳標題文字，不要其他說明。`;
     
-    const content = response.choices[0]?.message?.content;
-    return (typeof content === "string" ? content.trim() : originalTitle) || originalTitle;
+    // Retry up to 2 times
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        const response = await invokeLLM({
+          messages: [
+            { role: "system", content: COPYWRITER_SKILL },
+            { role: "user", content: userPrompt }
+          ],
+        });
+        
+        const content = response.choices[0]?.message?.content;
+        const title = typeof content === "string" ? content.trim() : null;
+        
+        // Validate word count (20-30 characters)
+        if (title && title.length >= 20 && title.length <= 30) {
+          return title;
+        }
+        
+        // If word count is invalid, force truncate or retry
+        if (title && title.length > 30) {
+          console.warn(`[ContentAnalyzerAgent] Title too long (${title.length} chars), truncating...`);
+          return title.substring(0, 30);
+        }
+        
+        console.warn(`[ContentAnalyzerAgent] Title too short or invalid, attempt ${attempt}/2`);
+      } catch (error) {
+        console.error(`[ContentAnalyzerAgent] Title generation failed, attempt ${attempt}/2:`, error);
+      }
+    }
+    
+    // Fallback: use original title or default
+    return originalTitle || "精選行程";
   }
   
   /**
-   * Rewrite description (100-150 words)
+   * Rewrite description (100-120 words) with retry mechanism
    */
   private async rewriteDescription(rawData: any): Promise<string> {
     const originalDescription = rawData.basicInfo?.description || "";
     const destination = rawData.location?.destinationCity || rawData.location?.destinationCountry || "";
     const highlights = rawData.highlights || [];
     
-    const prompt = `你是一位資深旅遊編輯，請根據以下資訊重新撰寫一段精彩的行程介紹（100-150 字）：
+    // Data validation
+    if (!originalDescription && !destination && highlights.length === 0) {
+      console.warn("[ContentAnalyzerAgent] Insufficient data for description generation");
+      return "探索精彩行程，體驗難忘旅程。"; // Fallback
+    }
+    
+    const userPrompt = `請根據以下資訊重新撰寫一段精彩的行程介紹：
 
 原描述：${originalDescription}
 目的地：${destination}
 行程亮點：${highlights.join("、")}
 
-要求：
-1. 完全重寫，不要原文照抄
-2. 突出行程的獨特性和吸引力
-3. 使用優雅、詩意的語言
-4. 字數控制在 100-150 字
-5. 只回傳介紹文字，不要其他說明
+範例：「在北海道的雪白世界中，展開一場心靈的洗禮之旅。入住米其林一星鑰旅宿，感受極致奢華與日式美學的完美融合；搭乘遊船探索洞爺湖心中島，欣賞湖光山色的絕美景致；漫步二世谷秘境，體驗北國獨有的寧靜與感動。這不僅是一趟旅行，更是一場與自然、與自我的深度對話。」
 
-範例：「在北海道的雪白世界中，展開一場心靈的洗禮之旅。入住米其林一星鑰旅宿，感受極致奢華與日式美學的完美融合；搭乘遊船探索洞爺湖心中島，欣賞湖光山色的絕美景致；漫步二世谷秘境，體驗北國獨有的寧靜與感動。這不僅是一趟旅行，更是一場與自然、與自我的深度對話。」`;
-
-    const response = await invokeLLM({
-      messages: [{ role: "user", content: prompt }],
-    });
+只回傳介紹文字，不要其他說明。`;
     
-    const content = response.choices[0]?.message?.content;
-    return (typeof content === "string" ? content.trim() : originalDescription) || originalDescription;
+    // Retry up to 2 times
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        const response = await invokeLLM({
+          messages: [
+            { role: "system", content: COPYWRITER_SKILL },
+            { role: "user", content: userPrompt }
+          ],
+        });
+        
+        const content = response.choices[0]?.message?.content;
+        const description = typeof content === "string" ? content.trim() : null;
+        
+        // Validate word count (100-120 characters)
+        if (description && description.length >= 100 && description.length <= 120) {
+          return description;
+        }
+        
+        // If word count is invalid, force truncate or retry
+        if (description && description.length > 120) {
+          console.warn(`[ContentAnalyzerAgent] Description too long (${description.length} chars), truncating...`);
+          return description.substring(0, 120);
+        }
+        
+        console.warn(`[ContentAnalyzerAgent] Description too short or invalid, attempt ${attempt}/2`);
+      } catch (error) {
+        console.error(`[ContentAnalyzerAgent] Description generation failed, attempt ${attempt}/2:`, error);
+      }
+    }
+    
+    // Fallback: use original description or default
+    return originalDescription || "探索精彩行程，體驗難忘旅程。";
   }
   
   /**
-   * Generate hero subtitle
+   * Generate hero subtitle (30-40 words) with retry mechanism
    */
   private async generateHeroSubtitle(rawData: any): Promise<string> {
     const hotelGrade = rawData.accommodation?.hotelGrade || "";
@@ -162,12 +217,57 @@ export class ContentAnalyzerAgent {
     const nights = rawData.duration?.nights || "";
     const highlights = rawData.highlights?.slice(0, 3) || [];
     
-    // Simple format: highlight1 · highlight2 · highlight3
+    // Data validation
+    if (highlights.length === 0 && !destinationCity) {
+      console.warn("[ContentAnalyzerAgent] Insufficient data for hero subtitle generation");
+      return "精選行程．深度體驗"; // Fallback
+    }
+    
+    const userPrompt = `請根據以下資訊生成一個精彩的 Hero 副標題：
+
+目的地：${destinationCity}
+飯店等級：${hotelGrade}
+天數：${days}天${nights}夜
+行程亮點：${highlights.join("、")}
+
+範例：「米其林溫泉旅宿．洞爺湖心中島探索．二世谷秘境漫遊」
+
+只回傳副標題文字，不要其他說明。`;
+    
+    // Retry up to 2 times
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        const response = await invokeLLM({
+          messages: [
+            { role: "system", content: COPYWRITER_SKILL },
+            { role: "user", content: userPrompt }
+          ],
+        });
+        
+        const content = response.choices[0]?.message?.content;
+        const subtitle = typeof content === "string" ? content.trim() : null;
+        
+        // Validate word count (30-40 characters)
+        if (subtitle && subtitle.length >= 30 && subtitle.length <= 40) {
+          return subtitle;
+        }
+        
+        // If word count is invalid, force truncate or retry
+        if (subtitle && subtitle.length > 40) {
+          console.warn(`[ContentAnalyzerAgent] Hero subtitle too long (${subtitle.length} chars), truncating...`);
+          return subtitle.substring(0, 40);
+        }
+        
+        console.warn(`[ContentAnalyzerAgent] Hero subtitle too short or invalid, attempt ${attempt}/2`);
+      } catch (error) {
+        console.error(`[ContentAnalyzerAgent] Hero subtitle generation failed, attempt ${attempt}/2:`, error);
+      }
+    }
+    
+    // Fallback: use highlights or default
     if (highlights.length > 0) {
       return highlights.join("．");
     }
-    
-    // Fallback format
     return `${hotelGrade ? hotelGrade + "．" : ""}${destinationCity}深度遊．${days}天${nights}夜`;
   }
   

@@ -144,21 +144,52 @@ export class MasterAgent {
       console.log("[MasterAgent] Image prompts generated");
       
       // Step 5: Image generation (60% - 90%)
+      // Implement Partial Success: image generation failure should not block tour creation
       onProgress?.("generating_images", 60);
-      const imageResult = await this.imageGenerationAgent.execute(
-        heroPrompt,
-        highlightPrompts,
-        featurePrompts,
-        styleGuide,
-        userId
-      );
+      let heroImage = { url: "", alt: "Hero image" };
+      let highlightImages: any[] = [];
+      let featureImages: any[] = [];
       
-      if (!imageResult.success || !imageResult.data) {
-        throw new Error(imageResult.error || "Image generation failed");
+      try {
+        const imageResult = await this.imageGenerationAgent.execute(
+          heroPrompt,
+          highlightPrompts,
+          featurePrompts,
+          styleGuide,
+          userId
+        );
+        
+        if (imageResult.success && imageResult.data) {
+          heroImage = imageResult.data.heroImage;
+          highlightImages = imageResult.data.highlightImages;
+          featureImages = imageResult.data.featureImages;
+          console.log("[MasterAgent] Images generated successfully");
+        } else {
+          console.warn("[MasterAgent] Image generation failed, using placeholder images:", imageResult.error);
+          // Use placeholder images
+          heroImage = { url: "/placeholder-hero.jpg", alt: "Placeholder hero image" };
+          highlightImages = analyzedContent.highlights.map((_: any, index: number) => ({
+            url: `/placeholder-highlight-${index + 1}.jpg`,
+            alt: `Placeholder highlight image ${index + 1}`
+          }));
+          featureImages = analyzedContent.keyFeatures.map((_: any, index: number) => ({
+            url: `/placeholder-feature-${index + 1}.jpg`,
+            alt: `Placeholder feature image ${index + 1}`
+          }));
+        }
+      } catch (imageError) {
+        console.error("[MasterAgent] Image generation error (non-blocking):", imageError);
+        // Use placeholder images on error
+        heroImage = { url: "/placeholder-hero.jpg", alt: "Placeholder hero image" };
+        highlightImages = analyzedContent.highlights.map((_: any, index: number) => ({
+          url: `/placeholder-highlight-${index + 1}.jpg`,
+          alt: `Placeholder highlight image ${index + 1}`
+        }));
+        featureImages = analyzedContent.keyFeatures.map((_: any, index: number) => ({
+          url: `/placeholder-feature-${index + 1}.jpg`,
+          alt: `Placeholder feature image ${index + 1}`
+        }));
       }
-      
-      const { heroImage, highlightImages, featureImages } = imageResult.data;
-      console.log("[MasterAgent] Images generated");
       
       // Step 6: Assemble final tour data (95%)
       onProgress?.("saving", 95);

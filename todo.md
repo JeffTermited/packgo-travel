@@ -1645,3 +1645,129 @@
 **預計時間：** 7-9 小時（核心）+ 5-7 小時（可選）
 
 **參考文件：** `/home/ubuntu/packgo-travel/TOMORROW_TODO_REVISED.md`
+
+- [x] 優化搜尋按鈕樣式（橘紅色背景、白色文字、圓角）
+- [x] 優化勾選框樣式（更大、更清晰）
+- [x] 測試所有優化後的搜尋欄樣式
+- [x] 儲存 checkpoint
+
+
+## 實作 Google OAuth + Email/Password 雙軌登入系統
+- [x] 更新資料庫 schema（新增 googleId, password, resetPasswordToken, resetPasswordExpires）
+- [x] 安裝必要套件（bcryptjs, passport, passport-google-oauth20, etc.）
+- [x] 建立完整的認證系統
+
+---
+
+## 🚀 今天執行的三大優化任務（2026-01-25）
+
+### 任務 1：Critical Fix - 移除 DesignLearningAgent Runtime 依賴（30 分鐘）
+- [ ] 手動執行一次 DesignLearningAgent 爬蟲，抓取設計參數
+- [ ] 將設計參數存成 `server/lib/DEFAULT_DESIGN_GUIDELINES.ts` 靜態配置檔
+- [ ] 從 MasterAgent 的執行流程中移除 DesignLearningAgent 調用
+- [ ] 修改 MasterAgent 直接讀取 DEFAULT_DESIGN_GUIDELINES.ts
+- [ ] 將 DesignLearningAgent 移動到 `server/tools/designLearningTool.ts`（保留作為開發工具）
+- [ ] 測試行程生成流程（確認不再調用 DesignLearningAgent）
+- [ ] 驗證生成時間減少 15-30 秒
+
+### 任務 2：導入 Skill Prompting（3-4 小時）
+- [ ] 創建 `server/agents/skillLibrary.ts`
+- [ ] 定義 COPYWRITER_SKILL（用於 ContentAnalyzerAgent）
+- [ ] 定義 PHOTOGRAPHER_SKILL（用於 ImagePromptAgent）
+- [ ] 定義 POET_SKILL（用於 PoeticAgent）
+- [ ] 定義 ATTRACTION_SKILL（用於 AttractionAgent）
+- [ ] 定義 HOTEL_SKILL（用於 HotelAgent）
+- [ ] 定義 MEAL_SKILL（用於 MealAgent）
+- [ ] 在每個 Skill Prompt 中加入「嚴格字數限制」指令
+- [ ] 在每個 Skill Prompt 中加入「資料不足回傳 null」指令
+- [ ] 在 ContentAnalyzerAgent 中引入 COPYWRITER_SKILL
+- [ ] 在 ImagePromptAgent 中引入 PHOTOGRAPHER_SKILL
+- [ ] 創建 PoeticAgent 並引入 POET_SKILL
+- [ ] 測試生成品質（比較使用前後的差異）
+
+### 任務 3：穩定性與防禦機制（3-4 小時）
+
+#### 3.1 後端 Partial Success 機制
+- [ ] 修改 MasterAgent 的錯誤處理邏輯
+- [ ] 實作圖片生成失敗時的 Partial Success 標記
+- [ ] 圖片生成失敗時使用 placeholder 圖片
+- [ ] 確保部分失敗不會導致整個行程生成失敗
+- [ ] 測試各種失敗情境（爬蟲失敗、圖片生成失敗、LLM 超時）
+
+#### 3.2 前端防禦性 CSS
+- [ ] 圖片防護：object-fit: cover + 固定長寬比
+- [ ] 文字截斷：line-clamp（標題 2 行、描述 4 行、詩意文案 1 行）
+- [ ] 直式標題的響應式處理（手機版改回橫排）
+- [ ] Zigzag 佈局的響應式處理（手機版改為單欄）
+- [ ] 測試超長內容不會破壞排版
+
+#### 3.3 CSS Print 樣式
+- [ ] 創建 `client/src/print.css`
+- [ ] 隱藏不需要列印的元素（navbar、footer、按鈕）
+- [ ] 設定分頁規則（page-break-inside: avoid）
+- [ ] 調整字體大小和行高
+- [ ] 在 TourDetail 頁面引入 print.css
+- [ ] 添加「下載 PDF」按鈕（呼叫 window.print()）
+- [ ] 測試列印效果（Ctrl+P → 另存為 PDF）
+
+### ✅ 驗收標準
+
+**Critical Fix 驗收：**
+- [ ] MasterAgent 不再調用 DesignLearningAgent
+- [ ] 使用 DEFAULT_DESIGN_GUIDELINES.ts 作為設計規範
+- [ ] 行程生成時間減少 15-30 秒
+
+**Skill Prompting 驗收：**
+- [ ] skillLibrary.ts 包含 6 種 Skill Prompt
+- [ ] 每個 Skill Prompt 都有「嚴格字數限制」和「資料不足回傳 null」
+- [ ] ContentAnalyzerAgent 使用 COPYWRITER_SKILL
+- [ ] ImagePromptAgent 使用 PHOTOGRAPHER_SKILL
+- [ ] 生成的內容品質明顯提升（需人工評估）
+
+**穩定性與防禦驗收：**
+- [ ] Master Agent 實作 Partial Success（圖片失敗不影響行程儲存）
+- [ ] 圖片使用 object-fit: cover
+- [ ] 文字使用 line-clamp 截斷
+- [ ] 手機版使用橫排佈局
+- [ ] 測試超長內容不會破壞排版
+- [ ] print.css 已創建並引入
+- [ ] 列印時隱藏 navbar、footer、按鈕
+- [ ] 列印時保持排版美觀
+- [ ] 「下載 PDF」按鈕正常運作
+
+
+---
+
+## 🚀 AI 自動生成行程系統優化（2026-01-26）
+
+### 1. Critical Fix：移除 DesignLearningAgent Runtime 依賴
+- [x] 確認系統中不存在 DesignLearningAgent
+- [x] 確認 Master Agent 不調用外部設計學習功能
+- [x] 確認系統使用靜態配置（ColorThemeAgent）
+- [x] 驗證架構無單點故障風險
+
+### 2. Skill Prompting 導入
+- [x] 創建 `server/agents/skillLibrary.ts`
+- [x] 定義 COPYWRITER_SKILL（文案師）
+- [x] 定義 PHOTOGRAPHER_SKILL（攝影師）
+- [x] 定義 POET_SKILL（詩人）
+- [x] 定義 ATTRACTION_SKILL（領隊）
+- [x] 定義 HOTEL_SKILL（飯店評鑑師）
+- [x] 定義 MEAL_SKILL（美食評論家）
+- [x] 在 ContentAnalyzerAgent 中整合 COPYWRITER_SKILL
+- [x] 在 ImagePromptAgent 中整合 PHOTOGRAPHER_SKILL
+- [x] 加入字數驗證和重試機制（標題 20-30 字、描述 100-120 字、Hero 副標題 30-40 字）
+- [x] 加入資料不足回傳 fallback 的機制
+
+### 3. 穩定性與防禦
+- [x] 在 MasterAgent 實作 Partial Success 機制（圖片生成失敗使用 placeholder）
+- [x] 創建 `client/src/defensive.css`（圖片防護、文字截斷、響應式處理）
+- [x] 創建 `client/src/print.css`（列印優化、PDF 導出支援）
+- [x] 在 TourDetail.tsx 中引入防禦性 CSS 和 Print CSS
+
+### 驗收成果
+- ✅ 系統無 Runtime 外部依賴
+- ✅ 所有 Agent 都有專業人設和字數限制
+- ✅ 圖片生成失敗不會導致行程生成失敗
+- ✅ 前端排版不會被超長內容破壞
+- ✅ 支援 Ctrl+P 列印導出 PDF

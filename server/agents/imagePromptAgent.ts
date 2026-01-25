@@ -6,6 +6,7 @@
 import { invokeLLM } from "../_core/llm";
 import { StyleGuide, ImageGenerationRequest } from "../../shared/tourTypes";
 import { getStyleGuideForDestination } from "../styleGuide";
+import { PHOTOGRAPHER_SKILL } from "./skillLibrary";
 
 export interface ImagePromptResult {
   success: boolean;
@@ -81,7 +82,7 @@ export class ImagePromptAgent {
   }
   
   /**
-   * Generate hero image prompt with LLM optimization
+   * Generate hero image prompt with LLM optimization and validation
    */
   private async generateHeroPrompt(
     destination: string,
@@ -90,41 +91,63 @@ export class ImagePromptAgent {
   ): Promise<string> {
     const basePrompt = `${destinationCity || destination} landscape`;
     
-    const optimizationPrompt = `你是一位專業的旅遊攝影師和 AI 圖片生成專家。請根據以下資訊，生成一個詳細且高品質的圖片生成提示詞（prompt）：
+    // Data validation
+    if (!destination && !destinationCity) {
+      console.warn("[ImagePromptAgent] Insufficient data for hero prompt generation");
+      return "Travel destination landscape, cinematic photography, 8k resolution";
+    }
+    
+    const userPrompt = `Please generate a detailed image generation prompt for:
 
-目的地：${destinationCity || destination}
-圖片類型：Hero 全屏背景圖片
-攝影風格：${styleGuide.photographyStyle}
-氛圍：${styleGuide.mood}
-光線：${styleGuide.lighting}
-構圖：${styleGuide.composition}
+Destination: ${destinationCity || destination}
+Image Type: Hero full-screen background image
+Photography Style: ${styleGuide.photographyStyle}
+Mood: ${styleGuide.mood}
+Lighting: ${styleGuide.lighting}
+Composition: ${styleGuide.composition}
 
-要求：
-1. 提示詞必須是英文
-2. 包含具體的場景描述（地標、自然景觀、建築等）
-3. 包含攝影技術細節（光線、構圖、視角等）
-4. 包含品質關鍵詞（${styleGuide.keywords.join(", ")}）
-5. 不要包含文字、浮水印、人物特寫
-6. 長度控制在 100-150 個單詞
-7. 只回傳提示詞本身，不要其他說明
+Requirements:
+1. Include specific scene descriptions (landmarks, natural landscapes, architecture)
+2. Include quality keywords: ${styleGuide.keywords.join(", ")}
+3. No text, no watermark, no close-up portraits
+4. Length: 100-150 words
+5. Return only the prompt itself, no other explanation
 
-範例格式：
+Example format:
 "Breathtaking wide-angle view of Hokkaido winter landscape at golden hour, snow-covered mountains in the background, frozen lake reflecting the warm sunset light, traditional Japanese ryokan in the foreground, cinematic travel photography, professional 8k resolution, serene and peaceful atmosphere, rule of thirds composition, soft natural lighting, travel magazine style, no text, no watermark"`;
-
-    const response = await invokeLLM({
-      messages: [{ role: "user", content: optimizationPrompt }],
-    });
     
-    const content = response.choices[0]?.message?.content;
-    const optimizedPrompt = typeof content === "string" ? content.trim() : basePrompt;
+    // Retry up to 2 times
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        const response = await invokeLLM({
+          messages: [
+            { role: "system", content: PHOTOGRAPHER_SKILL },
+            { role: "user", content: userPrompt }
+          ],
+        });
+        
+        const content = response.choices[0]?.message?.content;
+        const prompt = typeof content === "string" ? content.trim() : null;
+        
+        // Validate prompt (should not be too short or contain generic phrases)
+        if (prompt && prompt.length >= 50 && !prompt.includes("beautiful") && !prompt.includes("amazing")) {
+          console.log("[ImagePromptAgent] Hero prompt generated:", prompt.substring(0, 100) + "...");
+          return prompt;
+        }
+        
+        console.warn(`[ImagePromptAgent] Hero prompt invalid or too generic, attempt ${attempt}/2`);
+      } catch (error) {
+        console.error(`[ImagePromptAgent] Hero prompt generation failed, attempt ${attempt}/2:`, error);
+      }
+    }
     
-    console.log("[ImagePromptAgent] Hero prompt generated:", optimizedPrompt.substring(0, 100) + "...");
-    
-    return optimizedPrompt;
+    // Fallback: use base prompt
+    console.warn("[ImagePromptAgent] Using fallback hero prompt");
+    return basePrompt;
   }
   
   /**
-   * Generate highlight image prompts
+   * Generate highlight image prompts with validation
    */
   private async generateHighlightPrompts(
     highlights: any[],
@@ -136,31 +159,46 @@ export class ImagePromptAgent {
     for (const highlight of highlights) {
       const basePrompt = `${destination} ${highlight.title} ${highlight.subtitle}`;
       
-      const optimizationPrompt = `你是一位專業的旅遊攝影師和 AI 圖片生成專家。請根據以下資訊，生成一個詳細且高品質的圖片生成提示詞（prompt）：
-
-目的地：${destination}
-主題：${highlight.title}
-類型：${highlight.subtitle}
-描述：${highlight.description}
-攝影風格：${styleGuide.photographyStyle}
-氛圍：${styleGuide.mood}
-
-要求：
-1. 提示詞必須是英文
-2. 包含具體的場景描述
-3. 包含品質關鍵詞（${styleGuide.keywords.join(", ")}）
-4. 不要包含文字、浮水印
-5. 長度控制在 80-100 個單詞
-6. 只回傳提示詞本身，不要其他說明`;
-
-      const response = await invokeLLM({
-        messages: [{ role: "user", content: optimizationPrompt }],
-      });
+      // Data validation
+      if (!highlight.title && !highlight.description) {
+        console.warn("[ImagePromptAgent] Insufficient data for highlight prompt, using fallback");
+        prompts.push(basePrompt);
+        continue;
+      }
       
-      const content = response.choices[0]?.message?.content;
-      const optimizedPrompt = typeof content === "string" ? content.trim() : basePrompt;
+      const userPrompt = `Please generate a detailed image generation prompt for:
+
+Destination: ${destination}
+Theme: ${highlight.title}
+Type: ${highlight.subtitle}
+Description: ${highlight.description}
+Photography Style: ${styleGuide.photographyStyle}
+Mood: ${styleGuide.mood}
+
+Requirements:
+1. Include specific scene descriptions
+2. Include quality keywords: ${styleGuide.keywords.join(", ")}
+3. No text, no watermark
+4. Length: 80-100 words
+5. Return only the prompt itself, no other explanation`;
       
-      prompts.push(optimizedPrompt);
+      // Single attempt (no retry for highlights to save time)
+      try {
+        const response = await invokeLLM({
+          messages: [
+            { role: "system", content: PHOTOGRAPHER_SKILL },
+            { role: "user", content: userPrompt }
+          ],
+        });
+        
+        const content = response.choices[0]?.message?.content;
+        const prompt = typeof content === "string" ? content.trim() : basePrompt;
+        
+        prompts.push(prompt);
+      } catch (error) {
+        console.error("[ImagePromptAgent] Highlight prompt generation failed, using fallback:", error);
+        prompts.push(basePrompt);
+      }
     }
     
     console.log("[ImagePromptAgent] Generated", prompts.length, "highlight prompts");

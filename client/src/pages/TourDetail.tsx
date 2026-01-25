@@ -27,6 +27,8 @@ import { useLocation, useRoute, Link } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import "../defensive.css";
+import "../print.css";
 
 export default function TourDetail() {
   const { user } = useAuth();

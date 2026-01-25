@@ -1,0 +1,252 @@
+/**
+ * Defensive CSS for Tour Detail Page
+ * Prevents layout breaking from AI-generated content
+ */
+
+/* ========================================
+   1. Image Protection
+   ======================================== */
+
+/* Hero image: fixed aspect ratio with cover */
+.tour-hero-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* Highlight images: fixed aspect ratio (16:9) */
+.tour-highlight-image {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* Feature images: fixed aspect ratio (4:3) */
+.tour-feature-image {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* Gallery images: fixed aspect ratio (1:1) */
+.tour-gallery-image {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* ========================================
+   2. Text Truncation (Line Clamp)
+   ======================================== */
+
+/* Title: max 2 lines */
+.tour-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+  max-height: calc(1.4em * 2); /* 2 lines */
+}
+
+/* Description: max 4 lines */
+.tour-description {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.6;
+  max-height: calc(1.6em * 4); /* 4 lines */
+}
+
+/* Poetic subtitle: max 1 line */
+.tour-poetic-subtitle {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.5;
+  max-height: 1.5em; /* 1 line */
+}
+
+/* Highlight title: max 2 lines */
+.tour-highlight-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+  max-height: calc(1.4em * 2); /* 2 lines */
+}
+
+/* Highlight description: max 3 lines */
+.tour-highlight-description {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.5;
+  max-height: calc(1.5em * 3); /* 3 lines */
+}
+
+/* ========================================
+   3. Responsive Layout (Mobile-First)
+   ======================================== */
+
+/* Vertical title on desktop: switch to horizontal on mobile */
+.tour-vertical-title {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+}
+
+@media (max-width: 768px) {
+  .tour-vertical-title {
+    writing-mode: horizontal-tb;
+    text-orientation: initial;
+  }
+}
+
+/* Zigzag layout: switch to single column on mobile */
+.tour-zigzag-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+@media (max-width: 768px) {
+  .tour-zigzag-layout {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+/* ========================================
+   4. Container Max Width
+   ======================================== */
+
+/* Prevent content from overflowing */
+.tour-content-container {
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+}
+
+/* ========================================
+   5. Flexible Grid Layout
+   ======================================== */
+
+/* Highlights grid: 3 columns on desktop, 1 column on mobile */
+.tour-highlights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+@media (max-width: 768px) {
+  .tour-highlights-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+/* ========================================
+   6. Button Group Responsive
+   ======================================== */
+
+/* Button group: horizontal on desktop, vertical on mobile */
+.tour-button-group {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .tour-button-group {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .tour-button-group > * {
+    width: 100%;
+  }
+}
+
+/* ========================================
+   7. Prevent Overflow
+   ======================================== */
+
+/* Ensure all images don't overflow */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Ensure all text containers don't overflow */
+p, h1, h2, h3, h4, h5, h6, span, div {
+  max-width: 100%;
+  overflow-wrap: break-word;
+}
+
+/* ========================================
+   8. Loading State
+   ======================================== */
+
+/* Skeleton loading for images */
+.tour-image-skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* ========================================
+   9. Placeholder Image Styling
+   ======================================== */
+
+/* Style for placeholder images */
+img[src*="placeholder"] {
+  background-color: #f3f4f6;
+  border: 2px dashed #d1d5db;
+}
+
+/* ========================================
+   10. Accessibility
+   ======================================== */
+
+/* Ensure focus states are visible */
+*:focus-visible {
+  outline: 2px solid #F15A29;
+  outline-offset: 2px;
+}
+
+/* Ensure sufficient color contrast */
+.tour-text-primary {
+  color: #1a1a1a;
+}
+
+.tour-text-secondary {
+  color: #4a4a4a;
+}
+
+.tour-text-muted {
+  color: #6b7280;
+}
