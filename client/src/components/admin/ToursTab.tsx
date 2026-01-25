@@ -56,6 +56,8 @@ export default function ToursTab() {
   const [extractionStep, setExtractionStep] = useState<number>(0); // 0: 未開始, 1: 抓取網頁, 2: 解析內容, 3: AI 分析, 4: 儲存資料庫
   const [selectedTourId, setSelectedTourId] = useState<number | null>(null);
   const [selectedTourIds, setSelectedTourIds] = useState<number[]>([]);
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
+  const [featuredFilter, setFeaturedFilter] = useState<"all" | "featured" | "normal">("all");
   const [formData, setFormData] = useState<TourFormData>({
     title: "",
     destination: "",
@@ -358,8 +360,8 @@ export default function ToursTab() {
   };
 
   const handleSelectAll = (checked: boolean) => {
-    if (checked && tours) {
-      setSelectedTourIds(tours.map((tour) => tour.id));
+    if (checked && filteredTours.length > 0) {
+      setSelectedTourIds(filteredTours.map((tour) => tour.id));
     } else {
       setSelectedTourIds([]);
     }
@@ -377,8 +379,19 @@ export default function ToursTab() {
     }
   };
 
-  const isAllSelected = tours && tours.length > 0 && selectedTourIds.length === tours.length;
-  const isSomeSelected = selectedTourIds.length > 0 && selectedTourIds.length < (tours?.length || 0);
+  // 篩選後的行程列表
+  const filteredTours = tours?.filter((tour) => {
+    // 上架狀態篩選
+    if (statusFilter === "active" && tour.status !== "active") return false;
+    if (statusFilter === "inactive" && tour.status !== "inactive") return false;
+    // 熱門狀態篩選
+    if (featuredFilter === "featured" && tour.featured !== 1) return false;
+    if (featuredFilter === "normal" && tour.featured !== 0) return false;
+    return true;
+  }) || [];
+
+  const isAllSelected = filteredTours.length > 0 && selectedTourIds.length === filteredTours.length;
+  const isSomeSelected = selectedTourIds.length > 0 && selectedTourIds.length < filteredTours.length;
 
   return (
     <div className="space-y-6">
@@ -386,7 +399,12 @@ export default function ToursTab() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">行程管理</h2>
-          <p className="text-sm text-gray-600 mt-1">共 {tours?.length || 0} 個行程</p>
+          <p className="text-sm text-gray-600 mt-1">
+            {statusFilter !== "all" || featuredFilter !== "all" 
+              ? `篩選結果：${filteredTours.length} / ${tours?.length || 0} 個行程`
+              : `共 ${tours?.length || 0} 個行程`
+            }
+          </p>
         </div>
         <div className="flex items-center gap-3">
           {selectedTourIds.length > 0 && (
@@ -423,6 +441,49 @@ export default function ToursTab() {
         </div>
       </div>
 
+      {/* Filters */}
+      <div className="flex items-center gap-4 bg-gray-50 p-4 rounded-2xl">
+        <div className="flex items-center gap-2">
+          <Label className="text-sm font-medium text-gray-700 whitespace-nowrap">上架狀態：</Label>
+          <Select value={statusFilter} onValueChange={(value: "all" | "active" | "inactive") => setStatusFilter(value)}>
+            <SelectTrigger className="w-32 rounded-full bg-white">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">全部</SelectItem>
+              <SelectItem value="active">已上架</SelectItem>
+              <SelectItem value="inactive">未上架</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex items-center gap-2">
+          <Label className="text-sm font-medium text-gray-700 whitespace-nowrap">熱門狀態：</Label>
+          <Select value={featuredFilter} onValueChange={(value: "all" | "featured" | "normal") => setFeaturedFilter(value)}>
+            <SelectTrigger className="w-32 rounded-full bg-white">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">全部</SelectItem>
+              <SelectItem value="featured">熱門</SelectItem>
+              <SelectItem value="normal">非熱門</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        {(statusFilter !== "all" || featuredFilter !== "all") && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setStatusFilter("all");
+              setFeaturedFilter("all");
+            }}
+            className="text-gray-500 hover:text-gray-700 rounded-full"
+          >
+            清除篩選
+          </Button>
+        )}
+      </div>
+
       {/* Tours Table */}
       <div className="bg-white rounded-3xl border-2 border-gray-200 overflow-hidden">
         {toursLoading ? (
@@ -430,7 +491,7 @@ export default function ToursTab() {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mx-auto mb-2"></div>
             <p className="text-gray-600">載入中...</p>
           </div>
-        ) : tours && tours.length > 0 ? (
+        ) : filteredTours.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
@@ -470,7 +531,7 @@ export default function ToursTab() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {tours.map((tour) => (
+                {filteredTours.map((tour) => (
                   <tr key={tour.id} className={`hover:bg-gray-50 ${selectedTourIds.includes(tour.id) ? 'bg-blue-50' : ''}`}>
                     <td className="px-4 py-4">
                       <Checkbox
@@ -573,6 +634,20 @@ export default function ToursTab() {
                 ))}
               </tbody>
             </table>
+          </div>
+        ) : tours && tours.length > 0 ? (
+          <div className="p-8 text-center">
+            <p className="text-gray-600">沒有符合篩選條件的行程</p>
+            <Button
+              variant="link"
+              onClick={() => {
+                setStatusFilter("all");
+                setFeaturedFilter("all");
+              }}
+              className="text-primary mt-2"
+            >
+              清除篩選條件
+            </Button>
           </div>
         ) : (
           <div className="p-8 text-center">
