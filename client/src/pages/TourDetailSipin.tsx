@@ -5,7 +5,7 @@
  */
 
 import React, { useEffect, useState } from "react";
-import { useParams, useLocation } from "wouter";
+import { useRoute, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Download, Calendar, MapPin, DollarSign } from "lucide-react";
@@ -37,9 +37,12 @@ const DEFAULT_COLOR_THEME = {
 };
 
 export default function TourDetailSipin() {
-  const params = useParams();
+  const [, params] = useRoute("/tours-sipin/:id");
   const [, navigate] = useLocation();
-  const tourId = params.id ? parseInt(params.id) : null;
+  const tourId = params?.id ? parseInt(params.id) : undefined;
+  
+  console.log('[TourDetailSipin] params:', params);
+  console.log('[TourDetailSipin] tourId:', tourId);
 
   const { data: tour, isLoading, error } = trpc.tours.getById.useQuery(
     { id: tourId! },

@@ -2026,3 +2026,105 @@
 - [ ] 撰寫「行程生成流程完整報告」
 - [ ] 更新 README.md
 - [ ] 創建 checkpoint
+
+
+## Lion Travel URL 測試與 Agent Review
+- [x] 重啟開發伺服器
+- [x] 使用 Lion Travel URL 測試行程生成
+- [x] Review AI 旅遊顧問的 Prompt
+- [x] Review autoGenerate API
+- [x] 發現核心問題：AI 旅遊顧問和 autoGenerate API 之間沒有連接
+- [x] 記錄每個 Agent 的問題和修復建議
+- [ ] 實作修復方案（方案 3 - 混合方案）
+- [ ] 測試修復後的完整流程
+- [ ] 向用戶報告測試結果
+
+### Agent 運作狀態（所有 Agent 都未被調用）
+- [ ] WebScraperAgent：未調用
+- [ ] MasterAgent：未調用
+- [ ] ColorThemeAgent：未調用
+- [ ] ImagePromptAgent：未調用
+- [ ] ImageGenerationAgent：未調用
+- [ ] ItineraryAgent：未調用
+- [ ] CostAgent：未調用
+- [ ] NoticeAgent：未調用
+- [ ] HotelAgent：未調用
+- [ ] MealAgent：未調用
+- [ ] FlightAgent：未調用
+
+
+## 後台管理 AI 自動生成測試（正確的測試流程）
+- [ ] 登入後台管理系統（Admin 帳號）
+- [ ] 進入「行程管理」頁面
+- [ ] 使用「AI 自動生成」功能
+- [ ] 輸入 Lion Travel URL
+- [ ] 等待行程生成完成
+- [ ] 檢查生成的行程是否成功儲存到資料庫
+- [ ] 訪問生成的行程詳細頁面
+- [ ] 檢查行程詳細頁面是否有 Sipincollection 風格的排版
+- [ ] 檢查是否有 StickyNav、HeroSection、FeaturesSection 等組件
+- [ ] 檢查配色方案是否根據目的地自動調整
+- [ ] Review 每個 Agent 是否正常運作
+- [ ] 記錄測試結果和問題
+
+
+## Sipincollection 風格行程詳情頁面重新設計（Phase 1 完成）
+
+### 規格書補強（Tech Lead 審查意見）
+- [x] 補強 ColorThemeAgent 的 Default Fallback（Pack&Go 品牌標準色）
+- [x] 補強錯誤日誌的可視化（資料庫加入 warning_flags 欄位）
+- [x] 補強直式標題的 Mobile RWD（Media Query 處理）
+
+### 後端開發
+- [x] 實作 ColorThemeAgent 的 Default Fallback 邏輯
+- [x] 更新資料庫 Schema，加入 warning_flags 欄位
+- [x] 執行資料庫遷移（pnpm db:push）
+
+### 前端開發
+- [x] 在 client/src/index.css 加入直式標題的 RWD CSS
+- [x] 實作 StickyNav 組件（固定導航列）
+- [x] 實作 HeroSection 組件（左側直式標題 + 右側大圖）
+- [x] 實作 FeaturesSection 組件（三圖並排 + 金色標籤）
+- [x] 實作 ImageTextBlock 組件（圖文交錯區塊 - 左大右小 + 重疊）
+- [x] 實作 FullWidthSection 組件（全寬背景區塊）
+- [x] 創建 TourDetailSipin.tsx，整合所有新組件
+- [x] 在 App.tsx 加入 /tours-sipin/:id 路由
+- [x] 修正 TourDetailSipin.tsx 的 useParams 錯誤
+
+### 測試與驗證
+- [x] 測試桌面版響應式設計（已驗證）
+- [ ] 測試平板版響應式設計
+- [ ] 測試手機版響應式設計
+
+## 後台管理 AI 自動生成測試（正確的測試流程）
+- [x] 登入後台管理系統
+- [x] 使用 Lion Travel URL 測試 AI 自動生成功能
+- [x] 檢查生成的行程詳細頁面的排版（原始頁面）
+- [x] 檢查生成的行程詳細頁面的排版（Sipincollection 風格頁面 - 開發環境）
+- [x] 記錄測試結果和發現的問題
+- [x] 創建完整的測試結果報告（BACKEND_TEST_RESULTS.md）
+- [ ] 創建 checkpoint 並部署到生產環境
+- [ ] 測試生產環境的 Sipincollection 風格頁面
+
+### Agent 運作狀態（所有基礎 Agent 都正常運作）
+- [x] WebScraperAgent：正常運作
+- [x] MasterAgent：正常運作
+- [x] ItineraryAgent：正常運作
+- [x] CostAgent：正常運作
+- [x] NoticeAgent：正常運作
+- [x] HotelAgent：正常運作
+- [x] MealAgent：正常運作
+- [x] FlightAgent：正常運作
+- [ ] ColorThemeAgent：需驗證（已加入 Default Fallback）
+- [ ] ImagePromptAgent：需驗證
+- [ ] ImageGenerationAgent：需驗證
+- [ ] HeroContentAgent：尚未實作
+- [ ] FeaturesExtractorAgent：尚未實作
+
+## Phase 2: AI Agents 整合（待實作）
+- [ ] 實作 HeroContentAgent（生成副標題和關鍵詞）
+- [ ] 實作 FeaturesExtractorAgent（提取 3 個核心特色）
+- [ ] 修改 ColorThemeAgent（增加更多目的地的配色方案）
+- [ ] 修改 ImagePromptAgent（增加封面圖、特色圖片提示詞）
+- [ ] 修改 MasterAgent（整合新 Agents）
+- [ ] 測試完整的 Sipincollection 風格行程生成流程
