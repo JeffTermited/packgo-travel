@@ -2563,3 +2563,12 @@
 - [ ] 修復導致中斷的問題
 - [ ] 驗證修復後的完整流程 (從 URL 輸入到頁面顯示)
 - [ ] 儲存 checkpoint
+
+
+## AI 自動生成流程統一
+- [x] 移除快速提取模式 (autoGenerate)
+- [x] 統一使用完整生成模式 (autoGenerateComplete)
+- [x] 更新前端 ToursTab 移除生成模式選擇 UI
+- [x] 更新後端 routers.ts 移除 autoGenerate 路由
+- [x] 使用雄獅旅遊 URL 進行完整測試
+- [ ] 儲存 checkpoint

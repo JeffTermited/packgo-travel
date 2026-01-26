@@ -57,7 +57,7 @@ export default function ToursTab() {
   const [autoGenerateUrl, setAutoGenerateUrl] = useState("");
   const [generatedTourData, setGeneratedTourData] = useState<any>(null);
   const [extractionStep, setExtractionStep] = useState<number>(0); // 0: 未開始, 1: 抓取網頁, 2: 解析內容, 3: AI 分析, 4: 儲存資料庫
-  const [generationMode, setGenerationMode] = useState<"quick" | "complete">("quick"); // quick: 快速提取, complete: 完整生成
+  // 統一使用完整生成模式 (MasterAgent)
   const [selectedTourId, setSelectedTourId] = useState<number | null>(null);
   const [selectedTourIds, setSelectedTourIds] = useState<number[]>([]);
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
@@ -186,7 +186,9 @@ export default function ToursTab() {
     },
   });
 
-  // 快速提取 mutation
+  // 快速提取 mutation 已移除,統一使用 autoGenerateCompleteMutation
+  const autoGenerateMutation = { isPending: false }; // Placeholder
+  /*
   const autoGenerateMutation = trpc.tours.autoGenerate.useMutation({
     onSuccess: (result) => {
       setExtractionStep(4); // 儲存資料庫完成
@@ -233,6 +235,7 @@ export default function ToursTab() {
       }
     },
   });
+  */
 
   const handleAutoGenerate = () => {
     if (!autoGenerateUrl.trim()) {
@@ -241,19 +244,11 @@ export default function ToursTab() {
     }
     setExtractionStep(1); // 開始抓取網頁
     
-    if (generationMode === "complete") {
-      // 完整生成模式 - 使用 MasterAgent
-      // 模擬進度更新 (完整生成需要更長時間)
-      setTimeout(() => setExtractionStep(2), 5000); // 5秒後進入解析內容
-      setTimeout(() => setExtractionStep(3), 10000); // 10秒後進入 AI 分析
-      autoGenerateCompleteMutation.mutate({ url: autoGenerateUrl });
-    } else {
-      // 快速提取模式
-      // 模擬進度更新
-      setTimeout(() => setExtractionStep(2), 3000); // 3秒後進入解析內容
-      setTimeout(() => setExtractionStep(3), 6000); // 6秒後進入 AI 分析
-      autoGenerateMutation.mutate({ url: autoGenerateUrl });
-    }
+    // 統一使用完整生成模式 (MasterAgent)
+    // 模擬進度更新 (完整生成需要 60-90 秒)
+    setTimeout(() => setExtractionStep(2), 5000); // 5秒後進入解析內容
+    setTimeout(() => setExtractionStep(3), 10000); // 10秒後進入 AI 分析
+    autoGenerateCompleteMutation.mutate({ url: autoGenerateUrl });
   };
 
   const handleConfirmGeneratedTour = () => {
@@ -956,78 +951,27 @@ export default function ToursTab() {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            {/* 生成模式選擇 */}
-            <div className="grid gap-3">
-              <Label>生成模式</Label>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setGenerationMode("quick")}
-                  disabled={autoGenerateMutation.isPending || autoGenerateCompleteMutation.isPending}
-                  className={`p-4 rounded-2xl border-2 transition-all text-left ${
-                    generationMode === "quick"
-                      ? "border-purple-600 bg-purple-50"
-                      : "border-gray-200 hover:border-purple-300"
-                  }`}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className={`mt-0.5 h-5 w-5 rounded-full border-2 flex items-center justify-center ${
-                      generationMode === "quick" ? "border-purple-600" : "border-gray-300"
-                    }`}>
-                      {generationMode === "quick" && (
-                        <div className="h-2.5 w-2.5 rounded-full bg-purple-600" />
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-semibold text-sm mb-1">快速提取</div>
-                      <div className="text-xs text-gray-600">
-                        約 15 秒 · 提取基本資訊
-                      </div>
-                    </div>
-                  </div>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setGenerationMode("complete")}
-                  disabled={autoGenerateMutation.isPending || autoGenerateCompleteMutation.isPending}
-                  className={`p-4 rounded-2xl border-2 transition-all text-left ${
-                    generationMode === "complete"
-                      ? "border-purple-600 bg-purple-50"
-                      : "border-gray-200 hover:border-purple-300"
-                  }`}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className={`mt-0.5 h-5 w-5 rounded-full border-2 flex items-center justify-center ${
-                      generationMode === "complete" ? "border-purple-600" : "border-gray-300"
-                    }`}>
-                      {generationMode === "complete" && (
-                        <div className="h-2.5 w-2.5 rounded-full bg-purple-600" />
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-semibold text-sm mb-1 flex items-center gap-1">
-                        完整生成
-                        <Sparkles className="h-3 w-3 text-purple-600" />
-                      </div>
-                      <div className="text-xs text-gray-600">
-                        約 60-90 秒 · Hero 圖片 + 配色主題 + 豐富內容
-                      </div>
-                    </div>
-                  </div>
-                </button>
-              </div>
-              {generationMode === "complete" && (
-                <div className="bg-purple-50 border border-purple-200 rounded-xl p-3">
-                  <p className="text-xs text-purple-900 font-medium mb-1">✨ 完整生成包含:</p>
-                  <ul className="text-xs text-purple-800 space-y-0.5 ml-4">
+            {/* 完整生成說明 */}
+            <div className="bg-purple-50 border border-purple-200 rounded-xl p-4">
+              <div className="flex items-start gap-3">
+                <Sparkles className="h-5 w-5 text-purple-600 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-purple-900 mb-2">完整 AI 自動生成</p>
+                  <p className="text-xs text-purple-800 mb-2">
+                    使用 MasterAgent 協調 12 個專業 AI Agents,生成完整的雄獅旅遊風格行程。
+                  </p>
+                  <ul className="text-xs text-purple-800 space-y-1 ml-4">
                     <li>• AI 生成的 Hero 圖片</li>
                     <li>• 根據目的地自動配色</li>
-                    <li>• 詩意化的行程描述</li>
+                    <li>• 雄獅風格的關鍵字密集標題</li>
                     <li>• Unsplash 真實景點圖片</li>
-                    <li>• 完整的費用說明與注意事項</li>
+                    <li>• 完整的費用說明、注意事項、飯店、餐飲資訊</li>
                   </ul>
+                  <p className="text-xs text-purple-700 mt-2 font-medium">
+                    ⏱️ 生成時間: 60-90 秒
+                  </p>
                 </div>
-              )}
+              </div>
             </div>
             
             <div className="grid gap-2">
@@ -1100,9 +1044,7 @@ export default function ToursTab() {
                   </div>
                 </div>
                 <p className="text-xs text-gray-500 mt-2">
-                  {generationMode === "complete" 
-                    ? "完整生成過程約需 60-90 秒，請耐心等候..." 
-                    : "提取過程約需 15-30 秒，請耐心等候..."}
+                  完整生成過程約需 60-90 秒，請耐心等候...
                 </p>
               </div>
             )}
@@ -1120,15 +1062,15 @@ export default function ToursTab() {
               disabled={autoGenerateMutation.isPending || autoGenerateCompleteMutation.isPending}
               className="bg-purple-600 text-white hover:bg-purple-700 rounded-full"
             >
-              {(autoGenerateMutation.isPending || autoGenerateCompleteMutation.isPending) ? (
+              {autoGenerateCompleteMutation.isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  {generationMode === "complete" ? "生成中..." : "提取中..."}
+                  生成中...
                 </>
               ) : (
                 <>
                   <Sparkles className="h-4 w-4 mr-2" />
-                  {generationMode === "complete" ? "開始完整生成" : "開始快速提取"}
+                  開始完整生成
                 </>
               )}
             </Button>
