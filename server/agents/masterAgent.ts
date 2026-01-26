@@ -179,7 +179,7 @@ export class MasterAgent {
       this.monitor.startAgent('WebScraperAgent');
       
       const scrapingResult = await this.retryManager.executeWithRetry(
-        () => this.webScraperAgent.execute(url),
+        () => this.webScraperAgent.execute(url.url || url),
         this.retryConfig,
         'WebScraperAgent'
       );
