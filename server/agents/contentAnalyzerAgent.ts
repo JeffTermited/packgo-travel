@@ -119,16 +119,20 @@ export class ContentAnalyzerAgent {
   private async generateLionTravelTitle(rawData: any): Promise<{ poeticTitle: string; highlights: string[] }> {
     const destinationCountry = rawData.location?.destinationCountry || "";
     const destinationCity = rawData.location?.destinationCity || "";
-    const days = rawData.duration?.days || "";
-    const nights = rawData.duration?.nights || "";
-    const highlights = rawData.highlights || [];
+    const days = rawData.duration?.days || 5;
+    const nights = rawData.duration?.nights || 4;
+    const rawHighlights = rawData.highlights || [];
     const hotelGrade = rawData.accommodation?.hotelGrade || "";
     const specialExperiences = rawData.specialExperiences || [];
+    const originalTitle = rawData.basicInfo?.title || "";
     
-    // Data validation
+    // Extract keywords from original title if available
+    const titleKeywords = originalTitle ? this.extractKeywordsFromTitle(originalTitle) : [];
+    
+    // Data validation - use fallback if no destination
     if (!destinationCity && !destinationCountry) {
       console.warn("[ContentAnalyzerAgent] Insufficient data for poetic title generation");
-      return "精選行程"; // Fallback
+      return { poeticTitle: `精選行程｜${days}日深度探索`, highlights: [] };
     }
     
     // Use SKILL.md instructions for Lion Travel style (keyword-dense stacking)
@@ -154,7 +158,7 @@ export class ContentAnalyzerAgent {
 目的地國家: ${destinationCountry}
 目的地城市: ${destinationCity}
 天數: ${days}天${nights}夜
-行程亮點: ${highlights.join("、")}
+行程亮點: ${rawHighlights.join("、")}
 飯店等級: ${hotelGrade}
 特色體驗: ${specialExperiences.join("、")}
 
@@ -238,22 +242,55 @@ export class ContentAnalyzerAgent {
       }
       
       // If too short, use fallback (Lion Travel style)
-      console.warn(`[ContentAnalyzerAgent] Lion Travel title too short, using fallback`);
-      const fallbackHighlights = highlights.slice(0, 6).join('.');
+      console.warn(`[ContentAnalyzerAgent] Lion Travel title too short (${poeticTitle?.length || 0} chars), using fallback`);
+      
+      // Build fallback title from available data
+      const destination = destinationCity || destinationCountry || '精選';
+      const keywordList = [...titleKeywords, ...rawHighlights.slice(0, 5)];
+      const uniqueKeywords = [...new Set(keywordList)].slice(0, 6);
+      const fallbackKeywords = uniqueKeywords.length > 0 ? uniqueKeywords.join('.') : '深度探索.特色體驗.精選住宿';
+      
       return {
-        poeticTitle: `${destinationCity}旅遊｜${fallbackHighlights}${days}日`,
-        highlights: []
+        poeticTitle: `${destination}旅遊｜${fallbackKeywords}.${days}日`,
+        highlights: rawHighlights.slice(0, 6)
       };
       
     } catch (error) {
       console.error("[ContentAnalyzerAgent] Poetic title generation failed:", error);
-      // Fallback: Lion Travel style template
-      const fallbackTitle = `${destinationCity}旅遊｜${days}日精選行程`;
+      
+      // Fallback: Lion Travel style template with available data
+      const destination = destinationCity || destinationCountry || '精選';
+      const keywordList = [...titleKeywords, ...rawHighlights.slice(0, 5)];
+      const uniqueKeywords = [...new Set(keywordList)].slice(0, 6);
+      const fallbackKeywords = uniqueKeywords.length > 0 ? uniqueKeywords.join('.') : '深度探索.特色體驗';
+      
       return {
-        poeticTitle: fallbackTitle,
-        highlights: []
+        poeticTitle: `${destination}旅遊｜${fallbackKeywords}.${days}日`,
+        highlights: rawHighlights.slice(0, 6)
       };
     }
+  }
+  
+  /**
+   * Extract keywords from original title
+   */
+  private extractKeywordsFromTitle(title: string): string[] {
+    // Remove common words and extract meaningful keywords
+    const cleanTitle = title
+      .replace(/旅遊/g, '')
+      .replace(/行程/g, '')
+      .replace(/\d+日/g, '')
+      .replace(/\d+晚/g, '')
+      .replace(/無購物/g, '')
+      .replace(/同級/g, '');
+    
+    // Split by common delimiters
+    const keywords = cleanTitle
+      .split(/[｜。．\.\|、，,·×\-\s]+/)
+      .filter(k => k.length >= 2 && k.length <= 15)
+      .slice(0, 10);
+    
+    return keywords;
   }
   
   /**

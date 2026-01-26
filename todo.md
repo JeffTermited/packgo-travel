@@ -2611,4 +2611,13 @@
 - [x] 添加 Unsplash fallback 機制 (如果 S3 上傳失敗)
 - [x] 重新執行完整的 AI 自動生成測試 - 183.9 秒
 - [x] 分析測試結果並撰寫報告
+- [x] 儲存 checkpoint
+
+
+## P0 錯誤修復 - ContentAnalyzerAgent 和 ItineraryAgent
+- [x] 分析 ContentAnalyzerAgent 標題格式錯誤的根本原因
+- [x] 修復 ContentAnalyzerAgent 標題生成邏輯 (符合雄獅風格)
+- [x] 分析 ItineraryAgent 返回空陣列的根本原因 (欄位名稱不匹配: itinerary vs dailyItinerary)
+- [x] 修復 ItineraryAgent 行程生成邏輯 (支援兩種欄位名稱 + 備用生成邏輯)
+- [x] 測試修復後的 Agents - 成功率 81.8% (9/11)
 - [ ] 儲存 checkpoint

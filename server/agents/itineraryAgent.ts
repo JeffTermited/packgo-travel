@@ -55,9 +55,28 @@ export class ItineraryAgent {
     console.log("[ItineraryAgent] Starting itinerary generation...");
     
     try {
+      // Support both 'itinerary' and 'dailyItinerary' field names (for compatibility)
+      const itineraryData = rawData?.itinerary || rawData?.dailyItinerary || [];
+      
+      // Log available data for debugging
+      console.log("[ItineraryAgent] Available fields:", Object.keys(rawData || {}));
+      console.log("[ItineraryAgent] Itinerary data length:", itineraryData.length);
+      
       // Validate input data
-      if (!rawData || !rawData.itinerary || rawData.itinerary.length === 0) {
-        console.warn("[ItineraryAgent] Insufficient itinerary data, returning null");
+      if (!rawData || itineraryData.length === 0) {
+        console.warn("[ItineraryAgent] Insufficient itinerary data, attempting to generate from attractions/highlights...");
+        
+        // Try to generate itinerary from attractions or highlights
+        const generatedItinerary = await this.generateFromAlternativeData(rawData);
+        if (generatedItinerary && generatedItinerary.length > 0) {
+          return {
+            success: true,
+            data: {
+              dailyItineraries: generatedItinerary,
+            },
+          };
+        }
+        
         return {
           success: true,
           data: {
@@ -69,8 +88,8 @@ export class ItineraryAgent {
       const dailyItineraries: DailyItinerary[] = [];
       
       // Generate itinerary for each day
-      for (let i = 0; i < rawData.itinerary.length; i++) {
-        const dayData = rawData.itinerary[i];
+      for (let i = 0; i < itineraryData.length; i++) {
+        const dayData = itineraryData[i];
         
         console.log(`[ItineraryAgent] Generating itinerary for Day ${i + 1}...`);
         
@@ -95,6 +114,92 @@ export class ItineraryAgent {
         success: false,
         error: error instanceof Error ? error.message : "Unknown error",
       };
+    }
+  }
+  
+  /**
+   * Generate itinerary from alternative data (attractions, highlights, etc.)
+   */
+  private async generateFromAlternativeData(rawData: any): Promise<DailyItinerary[] | null> {
+    if (!rawData) return null;
+    
+    const days = rawData.duration?.days || 5;
+    const attractions = rawData.attractions || [];
+    const highlights = rawData.highlights || [];
+    const destinationCity = rawData.location?.destinationCity || '';
+    const hotelName = rawData.accommodation?.hotelName || '精選飯店';
+    
+    // If we have attractions or highlights, generate itinerary
+    if (attractions.length === 0 && highlights.length === 0) {
+      console.warn("[ItineraryAgent] No attractions or highlights available for alternative generation");
+      return null;
+    }
+    
+    console.log(`[ItineraryAgent] Generating itinerary from ${attractions.length} attractions and ${highlights.length} highlights for ${days} days`);
+    
+    const prompt = `請根據以下資料生成 ${days} 天的詳細行程規劃：
+
+目的地：${destinationCity}
+景點：${attractions.map((a: any) => a.name || a).join('、')}
+行程亮點：${highlights.join('、')}
+住宿：${hotelName}
+
+請以 JSON 格式回傳，包含一個 dailyItineraries 陣列，每個元素包含：
+{
+  "dailyItineraries": [
+    {
+      "day": 1,
+      "title": "Day 1：[簡短標題]",
+      "activities": [
+        {
+          "time": "09:00-12:00",
+          "title": "活動名稱",
+          "description": "活動描述",
+          "transportation": "交通方式",
+          "location": "地點"
+        }
+      ],
+      "meals": {
+        "breakfast": "早餐",
+        "lunch": "午餐",
+        "dinner": "晚餐"
+      },
+      "accommodation": "住宿"
+    }
+  ]
+}
+
+注意：
+1. 每天安排 2-4 個活動
+2. 時間安排要合理
+3. 景點串聯要有邏輯
+4. 第一天通常是抵達，最後一天通常是返程`;
+    
+    try {
+      const response = await invokeLLM({
+        messages: [
+          { role: "system", content: ITINERARY_SKILL },
+          { role: "user", content: prompt },
+        ],
+        response_format: { type: "json_object" },
+      });
+      
+      const content = response.choices[0].message.content;
+      const contentStr = typeof content === 'string' ? content : JSON.stringify(content);
+      
+      // Clean JSON response (remove markdown code blocks if present)
+      let cleanedContent = contentStr.trim();
+      if (cleanedContent.startsWith('```json')) {
+        cleanedContent = cleanedContent.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+      } else if (cleanedContent.startsWith('```')) {
+        cleanedContent = cleanedContent.replace(/^```\s*/, '').replace(/\s*```$/, '');
+      }
+      
+      const result = JSON.parse(cleanedContent);
+      return result.dailyItineraries || [];
+    } catch (error) {
+      console.error("[ItineraryAgent] Alternative generation failed:", error);
+      return null;
     }
   }
   
