@@ -2548,3 +2548,9 @@
 - [x] 調整 MealAgent 輸出格式(讓 Agent 負責生成符合雄獅風格的資料)
 - [x] 創建 LionMealSection 組件
 - [ ] 測試並儲存 checkpoint
+
+
+## TourDetailLion 頁面創建 (2026-01-26)
+- [x] 創建 TourDetailLion 頁面並整合所有雄獅風格組件
+- [x] 更新路由配置 (App.tsx) - 將 /tours/:id 改為 TourDetailLion
+- [x] 測試頁面並儲存 checkpoint
