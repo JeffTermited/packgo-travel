@@ -2471,3 +2471,14 @@
 - [x] 實作並行執行優化 (Phase 1 和 Phase 3)
 - [x] 測試優化後的 MasterAgent (所有測試通過, 效能提升 66.9%)
 - [x] 儲存 checkpoint
+
+
+## 設計風格切換 - 從 Sipincollection 改為雄獅旅遊 (2026-01-26)
+- [x] 研究雄獅旅遊的設計風格(配色、字體、排版、圖片風格)
+- [x] 創建 LionTravel-Design-Guidelines.md 參考文件
+- [x] 停用 Sipincollection 引用但保留文件
+- [x] 更新 ContentAnalyzerAgent.SKILL.md (移除詩意化標題要求,改為關鍵字密集)
+- [x] 更新 ColorThemeAgent.SKILL.md (改用雄獅配色策略)
+- [x] 更新 ImagePromptAgent.SKILL.md (改用雄獅圖片風格)
+- [x] 更新 skillLoader.ts (新增 getLionTravelGuidelines 函數)
+- [x] 測試並儲存 checkpoint

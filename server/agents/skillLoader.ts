@@ -200,6 +200,16 @@ export function getDestinationColorPalette(destination?: string): string {
 }
 
 /**
+ * Quick access to LionTravel Design Guidelines
+ */
+export function getLionTravelGuidelines(sections?: string[]): string {
+  if (sections && sections.length > 0) {
+    return loadReferenceSections('LionTravel-Design-Guidelines', sections);
+  }
+  return loadReference('LionTravel-Design-Guidelines');
+}
+
+/**
  * Quick access to Poetic Title Examples
  */
 export function getPoeticTitleExamples(region?: string): string {
