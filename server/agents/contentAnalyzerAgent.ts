@@ -38,20 +38,20 @@ export class ContentAnalyzerAgent {
     console.log("[ContentAnalyzerAgent] Starting content analysis...");
     
     try {
-      // Step 1: Generate poetic title (Sipincollection style)
-      const poeticTitle = await this.generatePoeticTitle(rawData);
+      // Step 1: Generate poetic title and highlights (Sipincollection style)
+      const { poeticTitle, highlights: poeticHighlights } = await this.generatePoeticTitle(rawData);
       
       // Step 2: Rewrite title (marketing-focused, fallback)
       const title = await this.rewriteTitle(rawData);
       
-      // Step 2: Rewrite description (100-150 words)
+      // Step 3: Rewrite description (100-150 words)
       const description = await this.rewriteDescription(rawData);
       
-      // Step 3: Generate hero subtitle
+      // Step 4: Generate hero subtitle
       const heroSubtitle = await this.generateHeroSubtitle(rawData);
       
-      // Step 4: Generate highlights
-      const highlights = await this.generateHighlights(rawData);
+      // Step 5: Use poetic highlights (from Step 1)
+      const highlights = poeticHighlights.length > 0 ? poeticHighlights : await this.generateHighlights(rawData);
       
       // Step 5: Generate key features
       const keyFeatures = await this.generateKeyFeatures(rawData);
@@ -97,9 +97,9 @@ export class ContentAnalyzerAgent {
   }
   
   /**
-   * Generate poetic title (Sipincollection style) with JSON Schema
+   * Generate poetic title and highlights (Sipincollection style) with JSON Schema
    */
-  private async generatePoeticTitle(rawData: any): Promise<string> {
+  private async generatePoeticTitle(rawData: any): Promise<{ poeticTitle: string; highlights: string[] }> {
     const destinationCountry = rawData.location?.destinationCountry || "";
     const destinationCity = rawData.location?.destinationCity || "";
     const days = rawData.duration?.days || "";
@@ -132,7 +132,7 @@ export class ContentAnalyzerAgent {
 
 請根據行程資訊,生成一個符合上述風格的詩意化標題。`;
     
-    const userPrompt = `請根據以下資訊生成一個詩意化的行程標題:
+    const userPrompt = `請根據以下資訊生成一個詩意化的行程標題和亮點:
 
 目的地國家: ${destinationCountry}
 目的地城市: ${destinationCity}
@@ -146,7 +146,9 @@ export class ContentAnalyzerAgent {
 - "秘境尋蹤 中島漫遊" (強調探索)
 - "光影之城 走進藝術家眼中的旅程" (強調藝術)
 
-請生成一個 15-25 個中文字的詩意化標題。`;
+請生成:
+1. 一個 15-25 個中文字的詩意化標題
+2. 6-10 個行程亮點 (每個 10-30 個中文字的純文字描述)`;
     
     try {
       const response = await invokeLLM({
@@ -166,6 +168,15 @@ export class ContentAnalyzerAgent {
                   type: "string",
                   description: "詩意化的行程標題,15-25 個中文字"
                 },
+                highlights: {
+                  type: "array",
+                  description: "6-10 個行程亮點,每個是 10-30 個中文字的純文字描述",
+                  items: {
+                    type: "string"
+                  },
+                  minItems: 6,
+                  maxItems: 10
+                },
                 reasoning: {
                   type: "string",
                   description: "標題設計的理由"
@@ -178,7 +189,7 @@ export class ContentAnalyzerAgent {
                   }
                 }
               },
-              required: ["poeticTitle", "reasoning", "keywords"],
+              required: ["poeticTitle", "highlights", "reasoning", "keywords"],
               additionalProperties: false
             }
           }
@@ -192,28 +203,36 @@ export class ContentAnalyzerAgent {
       
       const result = JSON.parse(content);
       const poeticTitle = result.poeticTitle;
+      const highlights = result.highlights || [];
       
       // Validate length
       if (poeticTitle && poeticTitle.length >= 15 && poeticTitle.length <= 30) {
         console.log(`[ContentAnalyzerAgent] Poetic title generated: ${poeticTitle}`);
+        console.log(`[ContentAnalyzerAgent] Highlights count: ${highlights.length}`);
         console.log(`[ContentAnalyzerAgent] Reasoning: ${result.reasoning}`);
-        return poeticTitle;
+        return { poeticTitle, highlights };
       }
       
       // If too long, truncate
       if (poeticTitle && poeticTitle.length > 30) {
         console.warn(`[ContentAnalyzerAgent] Poetic title too long (${poeticTitle.length} chars), truncating...`);
-        return poeticTitle.substring(0, 30);
+        return { poeticTitle: poeticTitle.substring(0, 30), highlights };
       }
       
       // If too short, use fallback
       console.warn(`[ContentAnalyzerAgent] Poetic title too short, using fallback`);
-      return `${destinationCity}${days}日精選之旅`;
+      return {
+        poeticTitle: `${destinationCity}${days}日精選之旅`,
+        highlights: []
+      };
       
     } catch (error) {
       console.error("[ContentAnalyzerAgent] Poetic title generation failed:", error);
       // Fallback: simple template
-      return `${destinationCity}${days}日精選之旅`;
+      return {
+        poeticTitle: `${destinationCity}${days}日精選之旅`,
+        highlights: []
+      };
     }
   }
   

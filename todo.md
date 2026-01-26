@@ -2322,3 +2322,100 @@
 - [ ] Day 9: 多目的地測試 (北海道、京都、義大利、摩洛哥)
 - [ ] Day 10: 性能優化 (測量各步驟耗時)
 - [ ] Day 10: 實作圖片並行生成與快取機制
+
+
+## 前端頁面無法顯示問題分析與解決 (緊急) 🔴
+- [ ] 檢查開發伺服器日誌找出錯誤訊息
+- [ ] 分析 TourDetailV2 程式碼找出潛在問題
+- [ ] 檢查資料庫中的實際資料格式
+- [ ] 撰寫技術根本原因分析文檔
+- [ ] 設計三種可行的解決方案
+- [ ] 實作最優解決方案
+- [ ] 測試修復後的頁面顯示效果
+
+
+## 方案 3: Agents 輸出格式重構 (1-2 天) 🔧
+- [ ] Step 1: 定義標準輸出格式 (shared/types.ts)
+- [ ] Step 2: 更新 ContentAnalyzerAgent (加入 JSON Schema)
+- [ ] Step 3: 更新 ColorThemeAgent (加入 JSON Schema)
+- [ ] Step 4: 更新 ImageGenerationAgent
+- [ ] Step 5: 更新 ItineraryAgent
+- [ ] Step 6: 更新 MasterAgent 組裝邏輯
+- [ ] Step 7: 測試完整生成流程
+- [ ] Step 8: 驗證前端頁面正常顯示
+
+
+## AI 自動生成系統架構報告與測試
+- [x] 創建 AI 自動生成系統架構報告
+- [x] 加入系統架構圖和流程圖
+- [x] 加入實際案例展示
+- [x] 加入性能分析章節
+- [x] 加入錯誤處理流程圖
+- [x] 加入測試策略章節
+- [x] 加入部署與監控章節
+- [x] 加入成本分析章節
+
+## AI 自動生成系統優化執行計劃 (10 天)
+
+### Phase 1: 資料庫與基礎架構 (Day 1-2) - ✅ 已完成
+- [x] Day 1: 新增 `poeticTitle` 和 `featureImages` 欄位到資料庫
+- [x] Day 1: 擴充 `dailyItinerary` 結構 (加入 `images` 欄位)
+- [x] Day 1: 執行 `pnpm db:push` 同步資料庫
+- [x] Day 2: 測試 TourDetailV2 頁面能正確顯示所有新欄位
+- [x] Day 2: 驗證 tRPC API 回傳所有必要欄位
+
+### Phase 2: Agents 優化 (Day 3-7) - 🚧 進行中
+- [x] Day 3: 優化 ContentAnalyzerAgent (詩意化標題生成)
+- [x] Day 3: 使用 JSON Schema 確保輸出格式
+- [x] Day 3: 更新 MasterAgent 使用新的 poeticTitle 欄位
+- [ ] Day 3: 撰寫 ContentAnalyzerAgent 單元測試
+- [ ] Day 4-5: 優化 ImageGenerationAgent (Hero 圖片 + 3-6 張特色圖片)
+- [ ] Day 4-5: 整合 Unsplash API 作為 Fallback
+- [ ] Day 6-7: 優化 ItineraryAgent (每日行程加入 1-2 張圖片)
+- [ ] Day 6-7: 更新 MasterAgent 協調邏輯
+
+### Phase 3: 測試與優化 (Day 8-10)
+- [ ] Day 8: 整合測試 (MasterAgent + 所有 Agents)
+- [ ] Day 9: 端到端測試 (真實 URL 生成)
+- [ ] Day 10: 性能優化 (圖片並行生成、快取機制)
+
+## 行程展示視覺升級 (參考 Sipincollection 高端設計)
+### 高優先級 (立即實作) - ✅ 已完成
+- [x] 分析現有 TourDetail 頁面結構
+- [x] 超大型 Hero 圖片 (全寬 100vh 高度,文字疊加)
+- [x] 詩意化標題顯示 (使用 poeticTitle 欄位)
+- [x] 配色主題適應 (根據 colorTheme 欄位調整頁面配色)
+- [x] 實作特色區塊與圖片疊加效果
+- [x] 實作每日行程區塊 (直排標題 + 金色標籤)
+- [x] 加入路由設定 (/tours-v2/:id)
+
+### 中優先級 (本週完成)
+- [ ] 大幅增加圖片數量 (從 5-8 張增加到 20-30 張)
+- [ ] 實作圖片疊加效果 (大圖 + 小圖組合)
+- [ ] 實作直排標題 (writing-mode: vertical-rl)
+- [ ] 實作金色標籤 (金色邊框 + 透明背景)
+
+### 低優先級 (下週完成)
+- [ ] 實作圖片懸停效果 (放大、陰影)
+- [ ] 實作滾動動畫 (淡入、滑入)
+- [ ] 實作響應式設計 (手機、平板、桌面)
+
+## 前端頁面無法顯示問題分析與解決 (緊急) 🔴
+- [x] 檢查開發伺服器日誌找出錯誤訊息
+- [x] 分析 TourDetailV2 程式碼找出潛在問題
+- [ ] 檢查資料庫中的實際資料格式
+- [x] 撰寫技術根本原因分析文檔
+- [x] 設計三種可行的解決方案
+- [x] 選擇方案 3: Agents 輸出格式重構
+- [ ] 實作方案 3
+- [ ] 測試修復後的頁面顯示效果
+
+## 方案 3: Agents 輸出格式重構 (1-2 天) 🚧 進行中
+- [x] 定義標準輸出格式 (shared/agentTypes.ts)
+- [x] 更新 ContentAnalyzerAgent (加入 JSON Schema 確保 highlights 是字串陣列)
+- [ ] 更新 ColorThemeAgent (加入 JSON Schema)
+- [ ] 更新 ImageGenerationAgent (確保 featureImages 是字串陣列)
+- [ ] 更新 ItineraryAgent (確保 dailyItinerary 格式正確)
+- [ ] 更新 MasterAgent 組裝邏輯
+- [ ] 測試完整生成流程
+- [ ] 驗證前端頁面能正常顯示
