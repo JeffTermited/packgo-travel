@@ -5,13 +5,25 @@ import { getKeyInstructions } from "./skillLoader";
 export interface MealAgentResult {
   success: boolean;
   data?: {
-    meals: Array<{
-      name: string;
-      type: string; // breakfast, lunch, dinner
-      description: string;
-      cuisine: string;
-      restaurant?: string;
+    title: string;           // 餐飲標題 (例如: "餐食介紹")
+    description: string;     // 簡單描述 (50-100字)
+    mealPlan: {
+      breakfast: string;     // 早餐安排
+      lunch: string;         // 午餐安排
+      dinner: string;        // 晚餐安排
+    };
+    highlights: string[];    // 餐飲亮點 (例如: "當地特色海鮮料理")
+    details: Array<{
+      day: number;           // 第幾天
+      meals: Array<{
+        type: string;        // breakfast, lunch, dinner
+        name: string;        // 餐點名稱
+        description: string; // 餐點描述 (50-100字)
+        restaurant?: string; // 餐廳名稱
+        image?: string;      // 餐點圖片
+      }>;
     }>;
+    notes: string[];         // 注意事項
   };
   error?: string;
 }
@@ -37,25 +49,52 @@ export class MealAgent {
         };
       }
 
-      // Build prompt for LLM
+      // Build prompt for LLM (Lion Travel style)
       const prompt = `
-請根據以下餐飲資訊，生成專業的餐飲介紹：
+請根據以下餐飲資訊，生成符合雄獅旅遊風格的餐飲介紹：
 
 餐飲資訊：
 ${JSON.stringify(rawData.meals, null, 2)}
 
 請以 JSON 格式回傳，包含以下欄位：
 {
-  "meals": [
+  "title": "餐食介紹",
+  "description": "簡單描述（50-100字，介紹整體餐飲安排的特色）",
+  "mealPlan": {
+    "breakfast": "早餐安排（例如：飯店自助式早餐）",
+    "lunch": "午餐安排（例如：當地特色料理）",
+    "dinner": "晚餐安排（例如：海鮮自助餐）"
+  },
+  "highlights": [
+    "餐飲亮雞1（例如：當地特色海鮮料理）",
+    "餐飲亮雞2（例如：米其林推薦餐廳）"
+  ],
+  "details": [
     {
-      "name": "餐點名稱",
-      "type": "餐點類型（breakfast/lunch/dinner）",
-      "description": "餐點描述（100-150字，包含菜餚特色、食材來源、烹飪方式、用餐體驗）",
-      "cuisine": "料理類型（例如：日式料理、法式料理、當地特色料理）",
-      "restaurant": "餐廳名稱（如有）"
+      "day": 1,
+      "meals": [
+        {
+          "type": "breakfast",
+          "name": "餐點名稱",
+          "description": "餐點描述（50-100字）",
+          "restaurant": "餐廳名稱（如有）",
+          "image": "placeholder-meal.jpg"
+        }
+      ]
     }
+  ],
+  "notes": [
+    "注意事項1（例如：特殊飲食需求請事先告知）",
+    "注意事項2"
   ]
 }
+
+**風格要求：**
+- 描述應詳細且資訊完整
+- mealPlan 應清晰說明每餐的安排
+- highlights 應列出 2-4 個餐飲亮點
+- details 應按天數組織，每天包含多餐
+- notes 應包含重要的注意事項
 
 **重要：如果提供的餐飲資訊不足以生成完整的餐飲介紹，請回傳 null。**
 `;
@@ -92,17 +131,33 @@ ${JSON.stringify(rawData.meals, null, 2)}
         };
       }
 
-      // Validate word count for each meal description
-      if (mealData.meals) {
-        for (const meal of mealData.meals) {
-          const wordCount = meal.description.length;
-          if (wordCount < 100 || wordCount > 150) {
-            console.warn(
-              `[MealAgent] Meal description word count out of range: ${wordCount} (expected 100-150)`
-            );
-            // Truncate if too long
-            if (wordCount > 150) {
-              meal.description = meal.description.substring(0, 150) + "...";
+      // Validate word count for description
+      if (mealData.description) {
+        const wordCount = mealData.description.length;
+        if (wordCount < 50 || wordCount > 100) {
+          console.warn(
+            `[MealAgent] Description word count out of range: ${wordCount} (expected 50-100)`
+          );
+          // Truncate if too long
+          if (wordCount > 100) {
+            mealData.description = mealData.description.substring(0, 100) + "...";
+          }
+        }
+      }
+
+      // Validate word count for each meal detail description
+      if (mealData.details) {
+        for (const dayDetail of mealData.details) {
+          for (const meal of dayDetail.meals) {
+            const wordCount = meal.description.length;
+            if (wordCount < 50 || wordCount > 100) {
+              console.warn(
+                `[MealAgent] Meal description word count out of range: ${wordCount} (expected 50-100)`
+              );
+              // Truncate if too long
+              if (wordCount > 100) {
+                meal.description = meal.description.substring(0, 100) + "...";
+              }
             }
           }
         }
