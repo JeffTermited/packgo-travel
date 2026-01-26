@@ -2620,4 +2620,13 @@
 - [x] 分析 ItineraryAgent 返回空陣列的根本原因 (欄位名稱不匹配: itinerary vs dailyItinerary)
 - [x] 修復 ItineraryAgent 行程生成邏輯 (支援兩種欄位名稱 + 備用生成邏輯)
 - [x] 測試修復後的 Agents - 成功率 81.8% (9/11)
+- [x] 儲存 checkpoint
+
+
+## Agent 優化與修復 (第二輪)
+- [x] 修復 CostAgent JSON 解析錯誤 (添加 response_format 和 JSON 清理邏輯)
+- [x] 優化 ItineraryAgent 執行時間 (批量生成方案 + 並行 fallback)
+- [x] 完善 MealAgent 資料提取邏輯 (支援多種資料來源)
+- [x] 完善 FlightAgent 資料提取邏輯 (支援多種資料來源)
+- [x] 測試修復後的所有 Agents - 成功率 81.8% (9/11), ItineraryAgent 87% 性能提升
 - [ ] 儲存 checkpoint

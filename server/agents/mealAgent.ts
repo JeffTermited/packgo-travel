@@ -40,21 +40,25 @@ export class MealAgent {
     try {
       console.log("[MealAgent] Starting meal information generation...");
 
-      // Validate input data
-      if (!rawData || !rawData.meals) {
-        console.warn("[MealAgent] No meal data provided");
+      // 嘗試從多種資料來源提取餐飲資訊
+      const mealData = this.extractMealData(rawData);
+      
+      if (!mealData) {
+        console.warn("[MealAgent] No meal data available from any source");
         return {
           success: false,
           error: "No meal data available",
         };
       }
+      
+      console.log("[MealAgent] Extracted meal data:", JSON.stringify(mealData).substring(0, 200));
 
       // Build prompt for LLM (Lion Travel style)
       const prompt = `
 請根據以下餐飲資訊，生成符合雄獅旅遊風格的餐飲介紹：
 
 餐飲資訊：
-${JSON.stringify(rawData.meals, null, 2)}
+${JSON.stringify(mealData, null, 2)}
 
 請以 JSON 格式回傳，包含以下欄位：
 {
@@ -120,9 +124,9 @@ ${JSON.stringify(rawData.meals, null, 2)}
       }
 
       // Parse JSON response
-      let mealData;
+      let parsedMealData;
       try {
-        mealData = JSON.parse(content);
+        parsedMealData = JSON.parse(content);
       } catch (parseError) {
         console.error("[MealAgent] Failed to parse LLM response:", parseError);
         return {
@@ -132,22 +136,22 @@ ${JSON.stringify(rawData.meals, null, 2)}
       }
 
       // Validate word count for description
-      if (mealData.description) {
-        const wordCount = mealData.description.length;
+      if (parsedMealData.description) {
+        const wordCount = parsedMealData.description.length;
         if (wordCount < 50 || wordCount > 100) {
           console.warn(
             `[MealAgent] Description word count out of range: ${wordCount} (expected 50-100)`
           );
           // Truncate if too long
           if (wordCount > 100) {
-            mealData.description = mealData.description.substring(0, 100) + "...";
+            parsedMealData.description = parsedMealData.description.substring(0, 100) + "...";
           }
         }
       }
 
       // Validate word count for each meal detail description
-      if (mealData.details) {
-        for (const dayDetail of mealData.details) {
+      if (parsedMealData.details) {
+        for (const dayDetail of parsedMealData.details) {
           for (const meal of dayDetail.meals) {
             const wordCount = meal.description.length;
             if (wordCount < 50 || wordCount > 100) {
@@ -166,7 +170,7 @@ ${JSON.stringify(rawData.meals, null, 2)}
       console.log("[MealAgent] Meal information generated successfully");
       return {
         success: true,
-        data: mealData,
+        data: parsedMealData,
       };
     } catch (error) {
       console.error("[MealAgent] Error:", error);
@@ -175,5 +179,69 @@ ${JSON.stringify(rawData.meals, null, 2)}
         error: error instanceof Error ? error.message : "Unknown error",
       };
     }
+  }
+
+  /**
+   * 從多種資料來源提取餐飲資訊
+   */
+  private extractMealData(rawData: any): any | null {
+    if (!rawData) return null;
+    
+    // 1. 直接使用 meals 欄位
+    if (rawData.meals && (Array.isArray(rawData.meals) ? rawData.meals.length > 0 : Object.keys(rawData.meals).length > 0)) {
+      console.log("[MealAgent] Using meals field directly");
+      return rawData.meals;
+    }
+    
+    // 2. 從 itinerary 或 dailyItinerary 提取餐飲資訊
+    const itineraryData = rawData.itinerary || rawData.dailyItinerary || [];
+    if (itineraryData.length > 0) {
+      const extractedMeals: any[] = [];
+      
+      for (const day of itineraryData) {
+        if (day.meals) {
+          extractedMeals.push({
+            day: day.day || extractedMeals.length + 1,
+            ...day.meals
+          });
+        }
+      }
+      
+      if (extractedMeals.length > 0) {
+        console.log(`[MealAgent] Extracted meals from itinerary: ${extractedMeals.length} days`);
+        return extractedMeals;
+      }
+    }
+    
+    // 3. 從 highlights 提取餐飲相關資訊
+    const highlights = rawData.highlights || [];
+    const mealRelatedHighlights = highlights.filter((h: string) => 
+      h.includes('餐') || h.includes('料理') || h.includes('美食') || 
+      h.includes('下午茶') || h.includes('早餐') || h.includes('午餐') || h.includes('晚餐')
+    );
+    
+    if (mealRelatedHighlights.length > 0) {
+      console.log(`[MealAgent] Extracted meal highlights: ${mealRelatedHighlights.length}`);
+      return {
+        highlights: mealRelatedHighlights,
+        description: mealRelatedHighlights.join('、')
+      };
+    }
+    
+    // 4. 從 attractions 提取餐飲相關景點
+    const attractions = rawData.attractions || [];
+    const mealRelatedAttractions = attractions.filter((a: any) => {
+      const name = a.name || a;
+      return name.includes('餐') || name.includes('料理') || name.includes('美食');
+    });
+    
+    if (mealRelatedAttractions.length > 0) {
+      console.log(`[MealAgent] Extracted meal attractions: ${mealRelatedAttractions.length}`);
+      return {
+        attractions: mealRelatedAttractions
+      };
+    }
+    
+    return null;
   }
 }

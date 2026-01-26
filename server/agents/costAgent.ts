@@ -140,9 +140,10 @@ ${JSON.stringify(pricingData, null, 2)}
 
       const response = await invokeLLM({
         messages: [
-          { role: "system", content: COST_SKILL },
+          { role: "system", content: COST_SKILL + "\n\n重要：你必須只回傳有效的 JSON 格式，不要包含任何其他文字、問候語或解釋。直接輸出 JSON 物件。" },
           { role: "user", content: prompt },
         ],
+        response_format: { type: "json_object" },
       });
       
       const content = response.choices[0].message.content;
@@ -155,8 +156,24 @@ ${JSON.stringify(pricingData, null, 2)}
         return null;
       }
       
-      // Clean up markdown code blocks (```json ... ```)
-      contentStr = contentStr.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+      // Clean up markdown code blocks and non-JSON content
+      contentStr = contentStr.trim();
+      
+      // Remove markdown code blocks
+      if (contentStr.startsWith('```json')) {
+        contentStr = contentStr.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+      } else if (contentStr.startsWith('```')) {
+        contentStr = contentStr.replace(/^```\s*/, '').replace(/\s*```$/, '');
+      }
+      
+      // Try to extract JSON from response if it contains non-JSON text
+      const jsonMatch = contentStr.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        contentStr = jsonMatch[0];
+      } else {
+        console.warn("[CostAgent] Could not extract JSON from response:", contentStr.substring(0, 100));
+        return null;
+      }
       
       // Parse JSON response
       const costExplanation = JSON.parse(contentStr);

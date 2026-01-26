@@ -85,20 +85,10 @@ export class ItineraryAgent {
         };
       }
       
-      const dailyItineraries: DailyItinerary[] = [];
+      // 優化: 使用批量生成方案，一次 LLM 調用生成所有天數的行程
+      console.log(`[ItineraryAgent] Using batch generation for ${itineraryData.length} days...`);
       
-      // Generate itinerary for each day
-      for (let i = 0; i < itineraryData.length; i++) {
-        const dayData = itineraryData[i];
-        
-        console.log(`[ItineraryAgent] Generating itinerary for Day ${i + 1}...`);
-        
-        const itinerary = await this.generateDailyItinerary(dayData, i + 1);
-        
-        if (itinerary) {
-          dailyItineraries.push(itinerary);
-        }
-      }
+      const dailyItineraries = await this.generateAllDaysAtOnce(itineraryData);
       
       console.log(`[ItineraryAgent] Generated ${dailyItineraries.length} daily itineraries`);
       
@@ -114,6 +104,98 @@ export class ItineraryAgent {
         success: false,
         error: error instanceof Error ? error.message : "Unknown error",
       };
+    }
+  }
+  
+  /**
+   * 批量生成所有天數的行程 (優化: 一次 LLM 調用)
+   */
+  private async generateAllDaysAtOnce(itineraryData: any[]): Promise<DailyItinerary[]> {
+    const totalDays = itineraryData.length;
+    
+    const prompt = `請根據以下資料生成 ${totalDays} 天的詳細行程規劃：
+
+原始資料：
+${JSON.stringify(itineraryData, null, 2)}
+
+請以 JSON 格式回傳，包含一個 dailyItineraries 陣列，每個元素包含：
+{
+  "dailyItineraries": [
+    {
+      "day": 1,
+      "title": "Day 1：[簡短標題，例如「抵達東京，淺草寺巡禮」]",
+      "activities": [
+        {
+          "time": "09:00-12:00",
+          "title": "活動名稱",
+          "description": "活動描述 (不超過 50 字)",
+          "transportation": "交通方式",
+          "location": "地點"
+        }
+      ],
+      "meals": {
+        "breakfast": "早餐",
+        "lunch": "午餐",
+        "dinner": "晚餐"
+      },
+      "accommodation": "住宿"
+    }
+  ]
+}
+
+注意：
+1. 每天安排 3-5 個活動
+2. 時間安排要合理
+3. 景點串聯要有邏輯
+4. 第一天通常是抵達，最後一天通常是返程
+5. 每個活動描述不超過 50 字`;
+    
+    try {
+      console.log(`[ItineraryAgent] Batch generating ${totalDays} days of itinerary...`);
+      
+      const response = await invokeLLM({
+        messages: [
+          { role: "system", content: ITINERARY_SKILL + "\n\n重要：你必須只回傳有效的 JSON 格式，不要包含任何其他文字。" },
+          { role: "user", content: prompt },
+        ],
+        response_format: { type: "json_object" },
+      });
+      
+      const content = response.choices[0].message.content;
+      const contentStr = typeof content === 'string' ? content : JSON.stringify(content);
+      
+      // Clean JSON response
+      let cleanedContent = contentStr.trim();
+      if (cleanedContent.startsWith('```json')) {
+        cleanedContent = cleanedContent.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+      } else if (cleanedContent.startsWith('```')) {
+        cleanedContent = cleanedContent.replace(/^```\s*/, '').replace(/\s*```$/, '');
+      }
+      
+      // Try to extract JSON
+      const jsonMatch = cleanedContent.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        cleanedContent = jsonMatch[0];
+      }
+      
+      const result = JSON.parse(cleanedContent);
+      const itineraries = result.dailyItineraries || [];
+      
+      console.log(`[ItineraryAgent] Batch generation completed: ${itineraries.length} days`);
+      
+      return itineraries;
+    } catch (error) {
+      console.error("[ItineraryAgent] Batch generation failed:", error);
+      
+      // Fallback: 使用並行處理每日行程
+      console.log("[ItineraryAgent] Falling back to parallel generation...");
+      
+      const promises = itineraryData.map((dayData, index) => 
+        this.generateDailyItinerary(dayData, index + 1)
+      );
+      
+      const results = await Promise.all(promises);
+      return results.filter((r): r is DailyItinerary => r !== null);
     }
   }
   
