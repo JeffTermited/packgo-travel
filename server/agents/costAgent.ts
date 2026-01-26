@@ -4,6 +4,7 @@
  */
 
 import { invokeLLM } from "../_core/llm";
+import { getKeyInstructions } from "./skillLoader";
 import { COST_SKILL } from "./skillLibrary";
 
 export interface CostAgentResult {
@@ -22,6 +23,13 @@ export interface CostAgentResult {
  * 使用 COST_SKILL 生成費用說明
  */
 export class CostAgent {
+  private skillInstructions: string;
+
+  constructor() {
+    this.skillInstructions = getKeyInstructions('CostAgent');
+    console.log('[CostAgent] SKILL loaded:', this.skillInstructions.length, 'chars');
+  }
+
   /**
    * Execute cost explanation generation
    */

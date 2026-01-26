@@ -1,5 +1,6 @@
 import { invokeLLM } from "../_core/llm";
 import { FLIGHT_SKILL } from "./skillLibrary";
+import { getKeyInstructions } from "./skillLoader";
 
 export interface FlightAgentResult {
   success: boolean;
@@ -28,6 +29,13 @@ export interface FlightAgentResult {
 }
 
 export class FlightAgent {
+  private skillInstructions: string;
+
+  constructor() {
+    this.skillInstructions = getKeyInstructions('FlightAgent');
+    console.log('[FlightAgent] SKILL loaded:', this.skillInstructions.length, 'chars');
+  }
+
   async execute(rawData: any): Promise<FlightAgentResult> {
     try {
       console.log("[FlightAgent] Starting flight information generation...");

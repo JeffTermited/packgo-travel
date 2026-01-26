@@ -14,6 +14,7 @@ import { NoticeAgent } from "./noticeAgent";
 import { HotelAgent } from "./hotelAgent";
 import { MealAgent } from "./mealAgent";
 import { FlightAgent } from "./flightAgent";
+import { getKeyInstructions } from "./skillLoader";
 
 export interface MasterAgentResult {
   success: boolean;
@@ -88,19 +89,14 @@ export interface MasterAgentResult {
  * Orchestrates all agents to generate a complete tour
  */
 export class MasterAgent {
-  private webScraperAgent: WebScraperAgent;
-  private contentAnalyzerAgent: ContentAnalyzerAgent;
-  private imagePromptAgent: ImagePromptAgent;
-  private imageGenerationAgent: ImageGenerationAgent;
-  private colorThemeAgent: ColorThemeAgent;
-  private itineraryAgent: ItineraryAgent;
-  private costAgent: CostAgent;
-  private noticeAgent: NoticeAgent;
-  private hotelAgent: HotelAgent;
-  private mealAgent: MealAgent;
-  private flightAgent: FlightAgent;
-  
+  private skillInstructions: string;
+
   constructor() {
+    // Load SKILL.md instructions
+    this.skillInstructions = getKeyInstructions('MasterAgent');
+    console.log('[MasterAgent] SKILL loaded:', this.skillInstructions.length, 'chars');
+    
+    // Initialize all agents
     this.webScraperAgent = new WebScraperAgent();
     this.contentAnalyzerAgent = new ContentAnalyzerAgent();
     this.imagePromptAgent = new ImagePromptAgent();
@@ -113,6 +109,18 @@ export class MasterAgent {
     this.mealAgent = new MealAgent();
     this.flightAgent = new FlightAgent();
   }
+
+  private webScraperAgent: WebScraperAgent;
+  private contentAnalyzerAgent: ContentAnalyzerAgent;
+  private imagePromptAgent: ImagePromptAgent;
+  private imageGenerationAgent: ImageGenerationAgent;
+  private colorThemeAgent: ColorThemeAgent;
+  private itineraryAgent: ItineraryAgent;
+  private costAgent: CostAgent;
+  private noticeAgent: NoticeAgent;
+  private hotelAgent: HotelAgent;
+  private mealAgent: MealAgent;
+  private flightAgent: FlightAgent;
   
   /**
    * Execute complete tour generation

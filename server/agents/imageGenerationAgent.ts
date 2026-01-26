@@ -9,6 +9,7 @@ import { createApi } from "unsplash-js";
 import { StyleGuide, ImageGenerationResult } from "../../shared/tourTypes";
 import { validateStyleConsistency } from "../styleGuide";
 import { checkImageGenerationRateLimit } from "../rateLimit";
+import { getKeyInstructions } from "./skillLoader";
 
 export interface ImageGenerationAgentResult {
   success: boolean;
@@ -26,8 +27,13 @@ export interface ImageGenerationAgentResult {
  */
 export class ImageGenerationAgent {
   private unsplashClient: any;
+  private skillInstructions: string;
   
   constructor() {
+    // Load SKILL.md instructions
+    this.skillInstructions = getKeyInstructions('ImageGenerationAgent');
+    console.log('[ImageGenerationAgent] SKILL loaded:', this.skillInstructions.length, 'chars');
+    
     // Initialize Unsplash client if API key is available
     const accessKey = process.env.UNSPLASH_ACCESS_KEY;
     if (accessKey) {

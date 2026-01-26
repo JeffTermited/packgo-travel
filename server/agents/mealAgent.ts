@@ -1,5 +1,6 @@
 import { invokeLLM } from "../_core/llm";
 import { MEAL_SKILL } from "./skillLibrary";
+import { getKeyInstructions } from "./skillLoader";
 
 export interface MealAgentResult {
   success: boolean;
@@ -16,6 +17,13 @@ export interface MealAgentResult {
 }
 
 export class MealAgent {
+  private skillInstructions: string;
+
+  constructor() {
+    this.skillInstructions = getKeyInstructions('MealAgent');
+    console.log('[MealAgent] SKILL loaded:', this.skillInstructions.length, 'chars');
+  }
+
   async execute(rawData: any): Promise<MealAgentResult> {
     try {
       console.log("[MealAgent] Starting meal information generation...");

@@ -4,6 +4,7 @@
  */
 
 import { invokeLLM } from "../_core/llm";
+import { getKeyInstructions } from "./skillLoader";
 import { NOTICE_SKILL } from "./skillLibrary";
 
 export interface NoticeAgentResult {
@@ -22,6 +23,13 @@ export interface NoticeAgentResult {
  * 使用 NOTICE_SKILL 生成注意事項
  */
 export class NoticeAgent {
+  private skillInstructions: string;
+
+  constructor() {
+    this.skillInstructions = getKeyInstructions('NoticeAgent');
+    console.log('[NoticeAgent] SKILL loaded:', this.skillInstructions.length, 'chars');
+  }
+
   /**
    * Execute notice generation
    */

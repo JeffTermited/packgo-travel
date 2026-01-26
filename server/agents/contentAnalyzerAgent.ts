@@ -5,6 +5,7 @@
 
 import { invokeLLM } from "../_core/llm";
 import { COPYWRITER_SKILL } from "./skillLibrary";
+import { getKeyInstructions, extractJsonSchema } from "./skillLoader";
 
 export interface ContentAnalyzerResult {
   success: boolean;
@@ -31,6 +32,15 @@ export interface ContentAnalyzerResult {
  * Analyzes and rewrites content to ensure originality
  */
 export class ContentAnalyzerAgent {
+  private skillInstructions: string;
+  private jsonSchema: any;
+
+  constructor() {
+    // Load SKILL.md instructions (only key sections for token optimization)
+    this.skillInstructions = getKeyInstructions('ContentAnalyzerAgent');
+    this.jsonSchema = extractJsonSchema('ContentAnalyzerAgent');
+    console.log('[ContentAnalyzerAgent] SKILL loaded:', this.skillInstructions.length, 'chars');
+  }
   /**
    * Execute content analysis and copyright cleansing
    */
@@ -114,7 +124,8 @@ export class ContentAnalyzerAgent {
       return "精選行程"; // Fallback
     }
     
-    const systemPrompt = `你是一位資深的高端旅遊文案編輯,專門為頂級旅遊品牌撰寫詩意化的行程標題。
+    // Use SKILL.md instructions instead of hardcoded prompt
+    const systemPrompt = this.skillInstructions || `你是一位資深的高端旅遊文案編輯,專門為頂級旅遊品牌撰寫詩意化的行程標題。
 
 你的標題風格特點:
 1. 使用精煉的形容詞修飾目的地或體驗 (例如: 雅奢、秘境、光影、極致)

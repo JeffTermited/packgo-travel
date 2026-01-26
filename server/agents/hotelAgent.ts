@@ -1,5 +1,6 @@
 import { invokeLLM } from "../_core/llm";
 import { HOTEL_SKILL } from "./skillLibrary";
+import { getKeyInstructions } from "./skillLoader";
 
 export interface HotelAgentResult {
   success: boolean;
@@ -16,6 +17,13 @@ export interface HotelAgentResult {
 }
 
 export class HotelAgent {
+  private skillInstructions: string;
+
+  constructor() {
+    this.skillInstructions = getKeyInstructions('HotelAgent');
+    console.log('[HotelAgent] SKILL loaded:', this.skillInstructions.length, 'chars');
+  }
+
   async execute(rawData: any): Promise<HotelAgentResult> {
     try {
       console.log("[HotelAgent] Starting hotel information generation...");

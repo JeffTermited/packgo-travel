@@ -7,6 +7,7 @@ import { invokeLLM } from "../_core/llm";
 import { StyleGuide, ImageGenerationRequest } from "../../shared/tourTypes";
 import { getStyleGuideForDestination } from "../styleGuide";
 import { PHOTOGRAPHER_SKILL } from "./skillLibrary";
+import { getKeyInstructions } from "./skillLoader";
 
 export interface ImagePromptResult {
   success: boolean;
@@ -24,6 +25,12 @@ export interface ImagePromptResult {
  * Generates optimized prompts for image generation
  */
 export class ImagePromptAgent {
+  private skillInstructions: string;
+
+  constructor() {
+    this.skillInstructions = getKeyInstructions('ImagePromptAgent');
+    console.log('[ImagePromptAgent] SKILL loaded:', this.skillInstructions.length, 'chars');
+  }
   /**
    * Execute prompt generation
    */

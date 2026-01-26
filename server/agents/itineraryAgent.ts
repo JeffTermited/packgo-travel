@@ -5,6 +5,7 @@
 
 import { invokeLLM } from "../_core/llm";
 import { ITINERARY_SKILL } from "./skillLibrary";
+import { getKeyInstructions } from "./skillLoader";
 
 export interface ItineraryAgentResult {
   success: boolean;
@@ -39,6 +40,12 @@ export interface Activity {
  * 使用 ITINERARY_SKILL 生成每日行程詳細規劃
  */
 export class ItineraryAgent {
+  private skillInstructions: string;
+
+  constructor() {
+    this.skillInstructions = getKeyInstructions('ItineraryAgent');
+    console.log('[ItineraryAgent] SKILL loaded:', this.skillInstructions.length, 'chars');
+  }
   /**
    * Execute itinerary generation
    */

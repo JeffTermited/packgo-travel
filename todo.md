@@ -2419,3 +2419,21 @@
 - [x] 更新 MasterAgent 組裝邏輯 (將 highlights 和 featureImages 儲存為字串陣列)
 - [ ] 測試完整生成流程
 - [ ] 驗證前端頁面能正常顯示
+
+
+## Agent Skills 架構整合完成 (2026-01-26)
+- [x] 創建 skillLoader.ts 統一載入器和快取機制
+- [x] 整合 MasterAgent SKILL.md
+- [x] 整合 WebScraperAgent SKILL.md
+- [x] 整合 ContentAnalyzerAgent SKILL.md
+- [x] 整合 ColorThemeAgent SKILL.md
+- [x] 整合 ImagePromptAgent SKILL.md
+- [x] 整合 ImageGenerationAgent SKILL.md
+- [x] 整合 ItineraryAgent SKILL.md
+- [x] 整合 CostAgent SKILL.md
+- [x] 整合 NoticeAgent SKILL.md
+- [x] 整合 HotelAgent SKILL.md
+- [x] 整合 MealAgent SKILL.md
+- [x] 整合 FlightAgent SKILL.md
+- [x] 創建整合測試腳本
+- [x] 驗證所有 Agents 成功載入 SKILL 文檔

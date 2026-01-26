@@ -4,6 +4,7 @@
  */
 
 import { ColorTheme } from "../../shared/tourTypes";
+import { getKeyInstructions } from "./skillLoader";
 
 export interface ColorThemeResult {
   success: boolean;
@@ -16,6 +17,12 @@ export interface ColorThemeResult {
  * Generates color themes based on destination characteristics
  */
 export class ColorThemeAgent {
+  private skillInstructions: string;
+
+  constructor() {
+    this.skillInstructions = getKeyInstructions('ColorThemeAgent');
+    console.log('[ColorThemeAgent] SKILL loaded:', this.skillInstructions.length, 'chars');
+  }
   /**
    * Execute color theme generation
    */

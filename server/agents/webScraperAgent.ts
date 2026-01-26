@@ -4,6 +4,7 @@
  */
 
 import { fetchWebPage, extractTourInfoWithLLM } from "../webScraper";
+import { getKeyInstructions } from "./skillLoader";
 
 export interface WebScraperResult {
   success: boolean;
@@ -16,6 +17,12 @@ export interface WebScraperResult {
  * Extracts tour information from a given URL
  */
 export class WebScraperAgent {
+  private skillInstructions: string;
+
+  constructor() {
+    this.skillInstructions = getKeyInstructions('WebScraperAgent');
+    console.log('[WebScraperAgent] SKILL loaded:', this.skillInstructions.length, 'chars');
+  }
   /**
    * Execute web scraping
    */
