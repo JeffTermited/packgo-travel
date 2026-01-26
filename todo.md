@@ -2495,3 +2495,37 @@
 - [x] 分析錯誤來源並定位問題程式碼 (HeroSection.tsx 第 64 行)
 - [x] 修復物件渲染問題 (添加 typeof 檢查並提取 keyword 字串)
 - [x] 測試並儲存 checkpoint
+
+
+## 三個優先任務 (2026-01-26)
+### P0: 修復 ContentAnalyzerAgent 標題生成邏輯
+- [ ] 分析現有標題生成邏輯
+- [ ] 收集雄獅旅遊真實標題範例
+- [ ] 重構標題生成方法(關鍵字密集堆疊格式)
+- [ ] 更新 ContentAnalyzerAgent.SKILL.md
+- [ ] 測試新標題生成邏輯
+
+### P1: 改善 keyFeatures 資料結構一致性
+- [ ] 分析現有 keyFeatures 資料格式
+- [ ] 統一為純字串陣列格式
+- [ ] 更新所有相關 Agents
+- [ ] 更新前端組件
+- [ ] 測試資料格式一致性
+
+### P2: 建立前端錯誤監控機制
+- [ ] 註冊 Sentry 帳號並創建專案
+- [ ] 安裝 Sentry SDK
+- [ ] 整合 Sentry 到前端
+- [ ] 設定錯誤過濾和通知
+- [ ] 測試錯誤捕獲功能
+
+
+## 行程詳情頁面完整重構 - 參考雄獅旅遊 (2026-01-26)
+- [x] 深入研究雄獅旅遊的設計風格(配色、字體、排版、圖片風格)
+- [x] 設計新的頁面架構和組件結構 (LionTravel-TourDetail-Design-Analysis.md)
+- [x] Phase 1: Hero Section 重構 (概覽卡片 + 日曆 + 標題格式)
+- [ ] Phase 2: 色彩系統調整 (紅色主色 + CTA 按鈕)
+- [ ] Phase 3: 景點卡片重構 (網格佈局 + 圖片 + 描述)
+- [ ] Phase 4: Agent 輸出格式調整
+- [ ] Phase 5: P1 優先級實作 (搜尋欄 + 飯店 + 餐飲 + 行程)
+- [ ] 測試並儲存 checkpoint
