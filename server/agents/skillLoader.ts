@@ -6,10 +6,17 @@
 
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Global cache for SKILL documents
 const skillCache = new Map<string, string>();
 const sectionCache = new Map<string, string>();
+const referenceCache = new Map<string, string>();
+const referenceSectionCache = new Map<string, string>();
 
 /**
  * Load full SKILL.md document for an agent
@@ -114,16 +121,104 @@ export function getKeyInstructions(agentName: string): string {
 
 /**
  * Load reference document (from references/ directory)
+ * With caching support
  */
 export function loadReference(referenceName: string): string {
-  const referencePath = path.join(__dirname, 'skills', 'references', `${referenceName}.md`);
+  const cacheKey = referenceName;
   
-  if (!fs.existsSync(referencePath)) {
-    console.warn(`[SkillLoader] Reference file not found: ${referencePath}`);
-    return '';
+  if (!referenceCache.has(cacheKey)) {
+    const referencePath = path.join(__dirname, 'skills', 'references', `${referenceName}.md`);
+    
+    if (!fs.existsSync(referencePath)) {
+      console.warn(`[SkillLoader] Reference file not found: ${referencePath}`);
+      return '';
+    }
+    
+    const referenceContent = fs.readFileSync(referencePath, 'utf-8');
+    referenceCache.set(cacheKey, referenceContent);
+    console.log(`[SkillLoader] Loaded Reference: ${referenceName} (${referenceContent.length} chars)`);
   }
   
-  return fs.readFileSync(referencePath, 'utf-8');
+  return referenceCache.get(cacheKey)!;
+}
+
+/**
+ * Extract specific sections from Reference document
+ * This is the recommended approach to reduce token usage
+ */
+export function loadReferenceSections(referenceName: string, sections: string[]): string {
+  const cacheKey = `${referenceName}:${sections.join(',')}`;
+  
+  if (!referenceSectionCache.has(cacheKey)) {
+    const fullReference = loadReference(referenceName);
+    if (!fullReference) return '';
+    
+    let result = '';
+    
+    for (const section of sections) {
+      const sectionHeader = `## ${section}`;
+      const startIndex = fullReference.indexOf(sectionHeader);
+      
+      if (startIndex !== -1) {
+        // Find next section or end of document
+        const nextSectionIndex = fullReference.indexOf('\n## ', startIndex + sectionHeader.length);
+        const sectionContent = nextSectionIndex !== -1
+          ? fullReference.substring(startIndex, nextSectionIndex)
+          : fullReference.substring(startIndex);
+        
+        result += sectionContent + '\n\n';
+      }
+    }
+    
+    referenceSectionCache.set(cacheKey, result);
+    console.log(`[SkillLoader] Extracted sections from ${referenceName}: ${sections.join(', ')} (${result.length} chars)`);
+  }
+  
+  return referenceSectionCache.get(cacheKey)!;
+}
+
+/**
+ * Quick access to Sipincollection Design Guidelines
+ */
+export function getSipincollectionGuidelines(sections?: string[]): string {
+  if (sections && sections.length > 0) {
+    return loadReferenceSections('Sipincollection-Design-Guidelines', sections);
+  }
+  return loadReference('Sipincollection-Design-Guidelines');
+}
+
+/**
+ * Quick access to Destination Color Palette
+ */
+export function getDestinationColorPalette(destination?: string): string {
+  if (destination) {
+    // Try to extract specific destination section
+    const sections = [`🌏 亞洲地區`, `🌍 歐洲地區`, `🌎 美洲地區`, `🌊 大洋洲地區`, `🏝️ 海島地區`, `❄️ 極地地區`, `🏜️ 中東地區`];
+    return loadReferenceSections('Destination-Color-Palette', sections);
+  }
+  return loadReference('Destination-Color-Palette');
+}
+
+/**
+ * Quick access to Poetic Title Examples
+ */
+export function getPoeticTitleExamples(region?: string): string {
+  if (region) {
+    const sectionMap: Record<string, string> = {
+      '亞洲': '🌏 亞洲地區範例',
+      '歐洲': '🌍 歐洲地區範例',
+      '美洲': '🌎 美洲地區範例',
+      '大洋洲': '🌊 大洋洲地區範例',
+      '海島': '🏝️ 海島地區範例',
+      '極地': '❄️ 極地地區範例',
+      '中東': '🏜️ 中東地區範例'
+    };
+    const section = sectionMap[region];
+    if (section) {
+      return loadReferenceSections('Poetic-Title-Examples', [section, '🎨 標題撰寫原則']);
+    }
+  }
+  return loadReference('Poetic-Title-Examples');
 }
 
 /**
@@ -132,15 +227,19 @@ export function loadReference(referenceName: string): string {
 export function clearCache(): void {
   skillCache.clear();
   sectionCache.clear();
+  referenceCache.clear();
+  referenceSectionCache.clear();
   console.log('[SkillLoader] Cache cleared');
 }
 
 /**
  * Get cache statistics
  */
-export function getCacheStats(): { skillCount: number; sectionCount: number } {
+export function getCacheStats(): { skillCount: number; sectionCount: number; referenceCount: number; referenceSectionCount: number } {
   return {
     skillCount: skillCache.size,
-    sectionCount: sectionCache.size
+    sectionCount: sectionCache.size,
+    referenceCount: referenceCache.size,
+    referenceSectionCount: referenceSectionCache.size
   };
 }

@@ -2437,3 +2437,26 @@
 - [x] 整合 FlightAgent SKILL.md
 - [x] 創建整合測試腳本
 - [x] 驗證所有 Agents 成功載入 SKILL 文檔
+
+
+## Reference 文件庫建立 (2026-01-26)
+- [ ] 建立 references/ 目錄架構
+- [ ] 創建 Sipincollection 設計規範參考文件
+- [ ] 創建目的地色彩對照表參考文件
+- [ ] 創建詩意化標題範例庫參考文件
+- [ ] 更新 skillLoader.ts 支援 Reference 載入
+- [ ] 更新相關 Agents 的 SKILL.md 引用 Reference
+- [ ] 測試 Reference 載入功能
+- [ ] 儲存 checkpoint
+
+
+## Reference 文件庫建立完成 (2026-01-26)
+- [x] 研究 Sipincollection 設計風格
+- [x] 創建 Sipincollection-Design-Guidelines.md (5.1KB, 完整設計規範)
+- [x] 創建 Destination-Color-Palette.md (6.1KB, 全球目的地色彩對照表)
+- [x] 創建 Poetic-Title-Examples.md (4.0KB, 詩意化標題範例庫)
+- [x] 擴展 skillLoader 支援 Reference 載入和快取
+- [x] 更新 ContentAnalyzerAgent SKILL.md 引用 Reference
+- [x] 更新 ColorThemeAgent SKILL.md 引用 Reference
+- [x] 更新 ImagePromptAgent SKILL.md 引用 Reference
+- [x] 測試 Reference 整合功能 (11項測試全部通過)

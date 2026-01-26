@@ -11,6 +11,38 @@
 3. **行銷文案重寫**: 創造吸引人的標題和描述
 4. **原創性驗證**: 確保生成的內容具有高度原創性
 
+## 📚 Reference 文件
+
+執行任務時,請按需載入以下 Reference 文件:
+
+### 1. Sipincollection 設計規範
+```typescript
+import { getSipincollectionGuidelines } from '../skillLoader';
+
+// 載入完整規範
+const guidelines = getSipincollectionGuidelines();
+
+// 或只載入特定 Section (推薦,節省 Token)
+const sections = getSipincollectionGuidelines([
+  '✍️ 文案風格',
+  '🎯 應用指南 (給 AI Agents)'
+]);
+```
+
+### 2. 詩意化標題範例庫
+```typescript
+import { getPoeticTitleExamples } from '../skillLoader';
+
+// 載入完整範例庫
+const examples = getPoeticTitleExamples();
+
+// 或只載入特定地區 (推薦)
+const asiaExamples = getPoeticTitleExamples('亞洲');
+const europeExamples = getPoeticTitleExamples('歐洲');
+```
+
+**使用時機**: 在生成詩意化標題和行銷文案時,參考這些文件以確保風格一致性。
+
 ## 輸入格式
 
 ```typescript

@@ -11,6 +11,32 @@
 3. **品牌一致性**: 確保配色符合 PACK&GO 的高端定位
 4. **Fallback 機制**: 當無法判斷目的地時,使用品牌標準色
 
+## 📚 Reference 文件
+
+執行任務時,**必須**載入以下 Reference 文件:
+
+### 1. 目的地色彩對照表
+```typescript
+import { getDestinationColorPalette } from '../skillLoader';
+
+// 載入完整對照表
+const palette = getDestinationColorPalette();
+
+// 或只載入特定地區 (推薦,節省 Token)
+const asiaPalette = getDestinationColorPalette('亞洲');
+```
+
+### 2. Sipincollection 設計規範 (配色部分)
+```typescript
+import { getSipincollectionGuidelines } from '../skillLoader';
+
+const colorGuidelines = getSipincollectionGuidelines([
+  '🎨 視覺設計系統'
+]);
+```
+
+**使用時機**: 在生成配色方案時,先查詢「目的地色彩對照表」,如果有匹配的目的地,直接使用其配色方案。
+
 ## 輸入格式
 
 ```typescript

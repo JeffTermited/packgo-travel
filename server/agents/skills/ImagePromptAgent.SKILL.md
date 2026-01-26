@@ -8,8 +8,23 @@
 
 1. **Prompt 設計**: 根據行程內容設計 AI 圖片生成 prompts
 2. **風格定義**: 確保圖片風格符合高端旅遊品牌定位
-3. **場景描述**: 精確描述目的地的景觀、氛圍、光線
+3. **場景描述**: 精確描述目的地的景觀、氣圍、光線
 4. **技術參數**: 加入攝影技術參數 (鏡頭、光圈、構圖)
+
+## 📚 Reference 文件
+
+執行任務時,請參考以下 Reference 文件:
+
+### 1. Sipincollection 設計規範 (圖片部分)
+```typescript
+import { getSipincollectionGuidelines } from '../skillLoader';
+
+const imageGuidelines = getSipincollectionGuidelines([
+  '📸 圖片使用規範'
+]);
+```
+
+**使用時機**: 在生成 Image Prompts 時,參考設計規範以確保圖片品質和風格符合 Sipincollection 標準。
 
 ## 輸入格式
 
