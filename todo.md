@@ -2255,3 +2255,42 @@
 - [ ] 資料庫新增欄位 (poeticTitle, sectionImages, layoutConfig)
 - [ ] 圖片優化 (響應式圖片、懶加載、WebP 格式)
 - [ ] 性能優化 (並行生成、CDN)
+
+
+## AI 自動生成系統升級執行計劃 (10 天)
+
+### Phase 1: 資料庫與基礎架構 (Day 1-2) - ✅ 已完成
+- [x] Day 1: 新增 `poeticTitle` 和 `featureImages` 欄位到資料庫
+- [x] Day 1: 擴充 `dailyItinerary` 結構 (加入 `images` 欄位)
+- [x] Day 1: 執行 `pnpm db:push` 同步資料庫
+- [x] Day 2: 測試 TourDetailV2 頁面能正確顯示所有新欄位
+- [x] Day 2: 驗證 tRPC API 回傳所有必要欄位
+
+### Phase 2: Agents 優化 (Day 3-7)
+- [ ] Day 3: ContentAnalyzerAgent - 實作詩意化標題生成
+- [ ] Day 3: ContentAnalyzerAgent - 使用 JSON Schema 確保輸出格式
+- [ ] Day 3: ContentAnalyzerAgent - 撰寫單元測試
+- [ ] Day 4: ImageGenerationAgent - 實作 Hero 圖片生成
+- [ ] Day 4: ImageGenerationAgent - 加入圖片品質驗證
+- [ ] Day 5: ImageGenerationAgent - 實作特色圖片生成 (3-6 張)
+- [ ] Day 5: ImageGenerationAgent - 整合 Unsplash Fallback
+- [ ] Day 6: ItineraryAgent - 實作關鍵字提取邏輯
+- [ ] Day 6: ItineraryAgent - 實作每日圖片生成 (1-2 張)
+- [ ] Day 7: ItineraryAgent - 撰寫單元測試
+- [ ] Day 7: MasterAgent - 更新協調邏輯整合所有 Agent
+
+### Phase 3: 測試與優化 (Day 8-10)
+- [ ] Day 8: MasterAgent 整合測試
+- [ ] Day 8: 加入錯誤處理與 Fallback 機制
+- [ ] Day 9: 使用真實雄獅旅遊 URL 端到端測試
+- [ ] Day 9: 多目的地測試 (北海道、京都、義大利、摩洛哥)
+- [ ] Day 9: 檢查所有視覺元素是否正確顯示
+- [ ] Day 10: 測量各步驟耗時,分析瓶頸
+- [ ] Day 10: 實作圖片並行生成優化
+- [ ] Day 10: 實作圖片快取機制
+- [ ] Day 10: 確保總生成時間 < 70 秒
+
+### 後續優化 (Optional)
+- [ ] 實作背景任務處理 (Redis + Bull Queue)
+- [ ] 實作生成歷史記錄追蹤
+- [ ] 實作 A/B 測試系統
