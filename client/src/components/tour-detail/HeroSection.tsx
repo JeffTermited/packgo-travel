@@ -52,18 +52,27 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
             {keywords && keywords.length > 0 && (
               <div className="flex flex-wrap gap-2">
-                {keywords.map((keyword, index) => (
-                  <span
-                    key={index}
-                    className="px-3 py-1 text-sm font-medium rounded"
-                    style={{
-                      backgroundColor: colorTheme.accent + "20",
-                      color: colorTheme.primary,
-                    }}
-                  >
-                    {keyword}
-                  </span>
-                ))}
+                {keywords.map((keyword, index) => {
+                  // 處理 keyword 可能是物件或字串的情況
+                  const keywordText = typeof keyword === 'string' 
+                    ? keyword 
+                    : keyword?.keyword || keyword?.name || '';
+                  
+                  if (!keywordText) return null;
+                  
+                  return (
+                    <span
+                      key={index}
+                      className="px-3 py-1 text-sm font-medium rounded"
+                      style={{
+                        backgroundColor: colorTheme.accent + "20",
+                        color: colorTheme.primary,
+                      }}
+                    >
+                      {keywordText}
+                    </span>
+                  );
+                })}
               </div>
             )}
           </div>
