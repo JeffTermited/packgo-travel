@@ -109,13 +109,13 @@ export function LionHeroSection({
   };
 
   return (
-    <div className="bg-gray-50 py-8">
+    <div className="lion-theme" style={{ backgroundColor: 'var(--lion-gray-50)', padding: 'var(--lion-space-8) 0' }}>
       <div className="container">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* 左側:行程概覽卡片 */}
           <div className="bg-white rounded-lg shadow-lg p-6 space-y-6">
             {/* 行程編號標籤 */}
-            <div className="inline-block bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded">
+            <div className="tag-lion-primary">
               國外團體
             </div>
 
@@ -133,7 +133,7 @@ export function LionHeroSection({
               {departures.length > 0 && (
                 <div className="flex items-center gap-1">
                   <Users className="h-4 w-4" />
-                  <span className="text-green-600 font-medium">
+                  <span style={{ color: 'var(--lion-success)', fontWeight: 'var(--lion-font-medium)' }}>
                     可賣 {departures.filter(d => d.status !== "soldout").reduce((sum, d) => sum + d.availableSeats, 0)} 席次
                   </span>
                 </div>
@@ -152,14 +152,14 @@ export function LionHeroSection({
             {/* 行程資訊 */}
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div className="flex items-center gap-2">
-                <MapPin className="h-5 w-5 text-red-600" />
+                <MapPin className="h-5 w-5" style={{ color: 'var(--lion-primary)' }} />
                 <div>
                   <div className="text-gray-500">目的地</div>
                   <div className="font-medium">{destination}</div>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Clock className="h-5 w-5 text-red-600" />
+                <Clock className="h-5 w-5" style={{ color: 'var(--lion-primary)' }} />
                 <div>
                   <div className="text-gray-500">行程天數</div>
                   <div className="font-medium">{duration}</div>

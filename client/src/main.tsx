@@ -7,6 +7,7 @@ import superjson from "superjson";
 import App from "./App";
 import { getLoginUrl } from "./const";
 import "./index.css";
+import "./styles/lion-theme.css";
 import { Toaster } from "@/components/ui/sonner";
 
 const queryClient = new QueryClient();

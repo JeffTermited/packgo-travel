@@ -1,0 +1,234 @@
+/**
+ * lion-theme.css
+ * 雄獅旅遊風格的全局 CSS 變數和色彩系統
+ * 參考: https://travel.liontravel.com/
+ */
+
+:root {
+  /* ========== 主色系 (Primary Colors) ========== */
+  --lion-primary: #E60012;        /* 雄獅紅 - 主要品牌色 */
+  --lion-primary-dark: #CC0000;   /* 深紅 - Hover 狀態 */
+  --lion-primary-darker: #B30000; /* 更深紅 - Active 狀態 */
+  --lion-primary-light: #FF1A2E;  /* 淺紅 - 輔助色 */
+  --lion-primary-lightest: #FFE5E7; /* 最淺紅 - 背景色 */
+
+  /* ========== 輔助色系 (Secondary Colors) ========== */
+  --lion-secondary: #0066CC;      /* 藍色 - 次要按鈕、連結 */
+  --lion-secondary-dark: #0052A3; /* 深藍 - Hover 狀態 */
+  --lion-secondary-light: #E6F2FF; /* 淺藍 - 背景色 */
+
+  /* ========== 成功/可用色系 (Success Colors) ========== */
+  --lion-success: #00A651;        /* 綠色 - 成功狀態、可用席次 */
+  --lion-success-dark: #008A44;   /* 深綠 - Hover 狀態 */
+  --lion-success-light: #E6F7EF;  /* 淺綠 - 背景色 */
+
+  /* ========== 警告色系 (Warning Colors) ========== */
+  --lion-warning: #FF9500;        /* 橙色 - 警告、席次有限 */
+  --lion-warning-dark: #E68500;   /* 深橙 - Hover 狀態 */
+  --lion-warning-light: #FFF3E6;  /* 淺橙 - 背景色 */
+
+  /* ========== 中性色系 (Neutral Colors) ========== */
+  --lion-gray-50: #FAFAFA;        /* 最淺灰 - 頁面背景 */
+  --lion-gray-100: #F5F5F5;       /* 淺灰 - 區塊背景 */
+  --lion-gray-200: #EEEEEE;       /* 灰 - 邊框 */
+  --lion-gray-300: #E0E0E0;       /* 中灰 - 分隔線 */
+  --lion-gray-400: #BDBDBD;       /* 深中灰 - 不可用狀態 */
+  --lion-gray-500: #9E9E9E;       /* 深灰 - 次要文字 */
+  --lion-gray-600: #757575;       /* 更深灰 - 輔助文字 */
+  --lion-gray-700: #616161;       /* 深灰 - 次要標題 */
+  --lion-gray-800: #424242;       /* 更深灰 - 主要文字 */
+  --lion-gray-900: #212121;       /* 最深灰 - 標題 */
+
+  /* ========== 語義色彩 (Semantic Colors) ========== */
+  --lion-price: var(--lion-primary);        /* 價格顯示 */
+  --lion-cta: var(--lion-primary);          /* CTA 按鈕 */
+  --lion-available: var(--lion-success);    /* 可用狀態 */
+  --lion-limited: var(--lion-warning);      /* 有限狀態 */
+  --lion-soldout: var(--lion-gray-400);     /* 已滿狀態 */
+
+  /* ========== 字體系統 (Typography) ========== */
+  --lion-font-family: "Microsoft JhengHei", "Noto Sans TC", "PingFang TC", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  
+  /* 字體大小 */
+  --lion-text-xs: 12px;           /* 極小文字 */
+  --lion-text-sm: 14px;           /* 小文字 */
+  --lion-text-base: 16px;         /* 基礎文字 */
+  --lion-text-lg: 18px;           /* 大文字 */
+  --lion-text-xl: 20px;           /* 超大文字 */
+  --lion-text-2xl: 24px;          /* H3 標題 */
+  --lion-text-3xl: 28px;          /* H2 標題 */
+  --lion-text-4xl: 32px;          /* H1 標題 */
+  --lion-text-5xl: 36px;          /* 特大標題 */
+  --lion-text-6xl: 48px;          /* 超特大標題 */
+
+  /* 字重 */
+  --lion-font-normal: 400;
+  --lion-font-medium: 500;
+  --lion-font-semibold: 600;
+  --lion-font-bold: 700;
+
+  /* ========== 間距系統 (Spacing) ========== */
+  --lion-space-1: 4px;
+  --lion-space-2: 8px;
+  --lion-space-3: 12px;
+  --lion-space-4: 16px;
+  --lion-space-5: 20px;
+  --lion-space-6: 24px;
+  --lion-space-8: 32px;
+  --lion-space-10: 40px;
+  --lion-space-12: 48px;
+  --lion-space-16: 64px;
+  --lion-space-20: 80px;
+
+  /* ========== 圓角系統 (Border Radius) ========== */
+  --lion-radius-sm: 4px;          /* 小圓角 - 按鈕、輸入框 */
+  --lion-radius-md: 8px;          /* 中圓角 - 卡片 */
+  --lion-radius-lg: 12px;         /* 大圓角 - 圖片 */
+  --lion-radius-xl: 16px;         /* 超大圓角 */
+  --lion-radius-full: 9999px;     /* 完全圓角 - 標籤 */
+
+  /* ========== 陰影系統 (Shadows) ========== */
+  --lion-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --lion-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --lion-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.15);
+  --lion-shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.2);
+
+  /* ========== 過渡動畫 (Transitions) ========== */
+  --lion-transition-fast: 150ms ease;
+  --lion-transition-base: 300ms ease;
+  --lion-transition-slow: 500ms ease;
+
+  /* ========== 容器寬度 (Container Width) ========== */
+  --lion-container-max: 1400px;
+  --lion-container-padding: 20px;
+}
+
+/* ========== 全局樣式覆寫 ========== */
+.lion-theme {
+  font-family: var(--lion-font-family);
+  color: var(--lion-gray-800);
+}
+
+/* ========== 按鈕樣式 (Lion Style Buttons) ========== */
+.btn-lion-primary {
+  background-color: var(--lion-primary);
+  color: white;
+  border: none;
+  border-radius: var(--lion-radius-sm);
+  padding: var(--lion-space-3) var(--lion-space-6);
+  font-size: var(--lion-text-base);
+  font-weight: var(--lion-font-medium);
+  cursor: pointer;
+  transition: background-color var(--lion-transition-fast);
+}
+
+.btn-lion-primary:hover {
+  background-color: var(--lion-primary-dark);
+}
+
+.btn-lion-primary:active {
+  background-color: var(--lion-primary-darker);
+}
+
+.btn-lion-primary:disabled {
+  background-color: var(--lion-gray-400);
+  cursor: not-allowed;
+}
+
+.btn-lion-secondary {
+  background-color: white;
+  color: var(--lion-primary);
+  border: 1px solid var(--lion-primary);
+  border-radius: var(--lion-radius-sm);
+  padding: var(--lion-space-3) var(--lion-space-6);
+  font-size: var(--lion-text-base);
+  font-weight: var(--lion-font-medium);
+  cursor: pointer;
+  transition: all var(--lion-transition-fast);
+}
+
+.btn-lion-secondary:hover {
+  background-color: var(--lion-primary-lightest);
+}
+
+.btn-lion-secondary:active {
+  background-color: var(--lion-primary-light);
+  color: white;
+}
+
+/* ========== 卡片樣式 (Lion Style Cards) ========== */
+.card-lion {
+  background-color: white;
+  border-radius: var(--lion-radius-md);
+  box-shadow: var(--lion-shadow-md);
+  transition: box-shadow var(--lion-transition-base), transform var(--lion-transition-base);
+}
+
+.card-lion:hover {
+  box-shadow: var(--lion-shadow-lg);
+  transform: translateY(-4px);
+}
+
+/* ========== 標籤樣式 (Lion Style Tags) ========== */
+.tag-lion-primary {
+  display: inline-block;
+  background-color: var(--lion-secondary-light);
+  color: var(--lion-secondary);
+  padding: var(--lion-space-1) var(--lion-space-3);
+  border-radius: var(--lion-radius-sm);
+  font-size: var(--lion-text-sm);
+  font-weight: var(--lion-font-medium);
+}
+
+.tag-lion-success {
+  display: inline-block;
+  background-color: var(--lion-success-light);
+  color: var(--lion-success);
+  padding: var(--lion-space-1) var(--lion-space-3);
+  border-radius: var(--lion-radius-sm);
+  font-size: var(--lion-text-sm);
+  font-weight: var(--lion-font-medium);
+}
+
+.tag-lion-warning {
+  display: inline-block;
+  background-color: var(--lion-warning-light);
+  color: var(--lion-warning);
+  padding: var(--lion-space-1) var(--lion-space-3);
+  border-radius: var(--lion-radius-sm);
+  font-size: var(--lion-text-sm);
+  font-weight: var(--lion-font-medium);
+}
+
+/* ========== 價格顯示 (Lion Style Price) ========== */
+.price-lion {
+  color: var(--lion-price);
+  font-size: var(--lion-text-5xl);
+  font-weight: var(--lion-font-bold);
+  line-height: 1;
+}
+
+.price-lion-small {
+  color: var(--lion-price);
+  font-size: var(--lion-text-2xl);
+  font-weight: var(--lion-font-bold);
+}
+
+/* ========== 容器 (Lion Style Container) ========== */
+.container-lion {
+  max-width: var(--lion-container-max);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--lion-container-padding);
+  padding-right: var(--lion-container-padding);
+}
+
+/* ========== 響應式設計 (Responsive Design) ========== */
+@media (max-width: 768px) {
+  :root {
+    --lion-container-padding: 16px;
+    --lion-text-4xl: 24px;
+    --lion-text-5xl: 28px;
+    --lion-text-6xl: 32px;
+  }
+}

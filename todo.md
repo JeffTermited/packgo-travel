@@ -2524,7 +2524,7 @@
 - [x] 深入研究雄獅旅遊的設計風格(配色、字體、排版、圖片風格)
 - [x] 設計新的頁面架構和組件結構 (LionTravel-TourDetail-Design-Analysis.md)
 - [x] Phase 1: Hero Section 重構 (概覽卡片 + 日曆 + 標題格式)
-- [ ] Phase 2: 色彩系統調整 (紅色主色 + CTA 按鈕)
+- [x] Phase 2: 色彩系統調整 (紅色主色 + CTA 按鈕)
 - [ ] Phase 3: 景點卡片重構 (網格佈局 + 圖片 + 描述)
 - [ ] Phase 4: Agent 輸出格式調整
 - [ ] Phase 5: P1 優先級實作 (搜尋欄 + 飯店 + 餐飲 + 行程)
