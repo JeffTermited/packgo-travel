@@ -2554,3 +2554,12 @@
 - [x] 創建 TourDetailLion 頁面並整合所有雄獅風格組件
 - [x] 更新路由配置 (App.tsx) - 將 /tours/:id 改為 TourDetailLion
 - [x] 測試頁面並儲存 checkpoint
+
+
+## AI 自動生成流程完整測試 (2026-01-26)
+- [ ] 檢查現有的 API 路由和 MasterAgent 整合
+- [ ] 執行完整的 MasterAgent 測試 (使用雄獅旅遊 URL)
+- [ ] 分析「signal is aborted without reason」錯誤原因
+- [ ] 修復導致中斷的問題
+- [ ] 驗證修復後的完整流程 (從 URL 輸入到頁面顯示)
+- [ ] 儲存 checkpoint
