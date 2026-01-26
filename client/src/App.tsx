@@ -43,7 +43,7 @@ function Router() {
       <Route path={"/reset-password"} component={ResetPassword} />
       <Route path={"/admin"} component={Admin} />
       <Route path={"/profile"} component={Profile} />
-      <Route path={"/tours/:id"} component={TourDetail} />
+      <Route path={"/tours/:id"} component={TourDetailSipin} />
       <Route path={"/tours-sipin-test/:id"} component={TourDetailSipinTest} />
       <Route path={"/tours-sipin/:id"} component={TourDetailSipin} />
       <Route path={"/book/:id"} component={BookTour} />

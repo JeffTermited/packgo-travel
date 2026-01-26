@@ -4,6 +4,7 @@
  */
 
 import { invokeLLM } from "./_core/llm";
+import { PriceAgent } from "./agents/priceAgent";
 
 interface ScrapedContent {
   html: string;
@@ -262,6 +263,34 @@ export async function quickExtractTourInfo(url: string): Promise<any> {
     
     // Step 2: Use LLM to extract tour info
     const extractedData = await extractTourInfoWithLLM(content, url);
+    
+    // Step 3: If price is 0 or missing, use PriceAgent to extract dynamic price
+    const currentPrice = extractedData.pricing?.price || 0;
+    if (currentPrice === 0) {
+      console.log("[WebScraper] Price not found in static content, using PriceAgent for dynamic extraction...");
+      const priceAgent = new PriceAgent();
+      try {
+        const priceResult = await priceAgent.execute(url);
+        if (priceResult.success && priceResult.data && priceResult.data.price > 0) {
+          console.log("[WebScraper] PriceAgent extracted price:", priceResult.data.price);
+          if (!extractedData.pricing) {
+            extractedData.pricing = {};
+          }
+          extractedData.pricing.price = priceResult.data.price;
+          extractedData.pricing.priceUnit = priceResult.data.priceUnit || "人/起";
+          extractedData.pricing.originalPriceText = priceResult.data.originalPriceText;
+          if (priceResult.data.departureDates) {
+            extractedData.departureDates = priceResult.data.departureDates;
+          }
+        } else {
+          console.warn("[WebScraper] PriceAgent could not extract price:", priceResult.error);
+        }
+      } catch (priceError) {
+        console.error("[WebScraper] PriceAgent error:", priceError);
+      } finally {
+        await priceAgent.closeBrowser();
+      }
+    }
     
     const duration = (Date.now() - startTime) / 1000;
     console.log(`[WebScraper] Quick extraction completed in ${duration.toFixed(1)} seconds`);

@@ -37,7 +37,10 @@ const DEFAULT_COLOR_THEME = {
 };
 
 export default function TourDetailSipin() {
-  const [, params] = useRoute("/tours-sipin/:id");
+  // 支援多個路由路徑
+  const [matchSipin, paramsSipin] = useRoute("/tours-sipin/:id");
+  const [matchTours, paramsTours] = useRoute("/tours/:id");
+  const params = paramsSipin || paramsTours;
   const [, navigate] = useLocation();
   const tourId = params?.id ? parseInt(params.id) : undefined;
   

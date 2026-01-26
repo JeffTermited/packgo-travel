@@ -2183,3 +2183,30 @@
 - 目的地: 德國、瑞士 法蘭克福 (預估入境點)
 - 天數: 10 天
 - 狀態: 已下架（需手動上架）
+
+
+## 行程詳情頁面改用 Sipincollection 風格
+- [ ] 檢查目前的路由設定和頁面導向
+- [ ] 修改預設行程詳情頁面為 Sipincollection 風格
+- [ ] 測試並報告結果
+
+
+## TourDetailSipin 路由問題修復
+- [x] 修復 TourDetailSipin 組件的路由參數解析（支援 /tours/:id 和 /tours-sipin/:id）
+
+## 價格抓取問題修復
+- [x] 分析雄獅旅遊網頁結構（價格在日曆中動態載入）
+- [x] 安裝 Puppeteer 依賴
+- [x] 創建 PriceAgent 使用 Puppeteer 抓取動態價格
+- [x] 更新 WebScraperAgent 整合 PriceAgent
+- [x] 測試價格抓取功能（成功抓取到 NT$ 144,900，耗時 12.1 秒）
+
+## 啟用完整 Multi-Agent 流程
+- [ ] 啟用 ContentAnalyzer Agent
+- [ ] 啟用 ImageGeneration Agent
+- [ ] 啟用 ColorTheme Agent
+
+## 設定 Unsplash API Key
+- [x] 設定 Unsplash API Key
+- [x] 驗證 Unsplash API 憑證（成功搜尋到 10,000 張圖片）
+- [ ] 測試圖片獲取功能
