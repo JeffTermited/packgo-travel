@@ -890,8 +890,8 @@ Important guidelines:
         const booking = await db.createBooking({
           ...input,
           userId: ctx.user.id,
-          totalAmount,
-          status: "pending",
+          totalPrice: totalAmount,
+          bookingStatus: "pending",
         });
 
         // Send confirmation email
