@@ -5,6 +5,7 @@
 
 import { invokeLLM } from "./_core/llm";
 import { PriceAgent } from "./agents/priceAgent";
+import { fetchWebPageWithPuppeteer } from "./webScraperPuppeteer";
 
 interface ScrapedContent {
   html: string;
@@ -14,10 +15,25 @@ interface ScrapedContent {
 }
 
 /**
- * 使用 fetch 直接抓取網頁內容
- * 速度最快，但可能無法處理 JavaScript 渲染的內容
+ * 使用 Puppeteer 抓取網頁內容
+ * 支援 JavaScript 渲染、等待頁面載入、滾動觸發懶加載
  */
 export async function fetchWebPage(url: string): Promise<ScrapedContent> {
+  // 優先使用 Puppeteer 抓取
+  try {
+    return await fetchWebPageWithPuppeteer(url);
+  } catch (error) {
+    console.error('[WebScraper] Puppeteer failed, falling back to fetch:', error);
+    // 如果 Puppeteer 失敗,回退到簡單的 fetch
+    return await fetchWebPageWithFetch(url);
+  }
+}
+
+/**
+ * 使用 fetch 直接抓取網頁內容 (備用方案)
+ * 速度最快，但可能無法處理 JavaScript 渲染的內容
+ */
+async function fetchWebPageWithFetch(url: string): Promise<ScrapedContent> {
   console.log("[WebScraper] Fetching URL:", url);
   
   const response = await fetch(url, {

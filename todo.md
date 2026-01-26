@@ -2572,3 +2572,14 @@
 - [x] 更新後端 routers.ts 移除 autoGenerate 路由
 - [x] 使用雄獅旅遊 URL 進行完整測試
 - [ ] 儲存 checkpoint
+
+
+## WebScraperAgent 升級 (Puppeteer)
+- [x] 檢查雄獅旅遊是否有 API 可用 (決定優先使用 Puppeteer)
+- [x] 安裝 Puppeteer 依賴
+- [x] 升級 WebScraperAgent 使用 Puppeteer
+- [x] 實作頁面等待邏輯 (等待 JavaScript 執行完成)
+- [x] 實作頁面滾動邏輯 (觸發懶加載)
+- [x] 測試升級後的 WebScraperAgent
+- [x] 驗證抓取的內容完整性 (應 > 10,000 字元) - 實際 18,611 字元
+- [ ] 儲存 checkpoint
