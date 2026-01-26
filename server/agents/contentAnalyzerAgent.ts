@@ -9,6 +9,7 @@ import { COPYWRITER_SKILL } from "./skillLibrary";
 export interface ContentAnalyzerResult {
   success: boolean;
   data?: {
+    poeticTitle: string; // 詩意化標題 (Sipincollection 風格)
     title: string;
     description: string;
     heroSubtitle: string;
@@ -37,7 +38,10 @@ export class ContentAnalyzerAgent {
     console.log("[ContentAnalyzerAgent] Starting content analysis...");
     
     try {
-      // Step 1: Rewrite title (marketing-focused)
+      // Step 1: Generate poetic title (Sipincollection style)
+      const poeticTitle = await this.generatePoeticTitle(rawData);
+      
+      // Step 2: Rewrite title (marketing-focused, fallback)
       const title = await this.rewriteTitle(rawData);
       
       // Step 2: Rewrite description (100-150 words)
@@ -68,6 +72,7 @@ export class ContentAnalyzerAgent {
       return {
         success: true,
         data: {
+          poeticTitle, // 新增: 詩意化標題
           title,
           description,
           heroSubtitle,
@@ -88,6 +93,127 @@ export class ContentAnalyzerAgent {
         success: false,
         error: error instanceof Error ? error.message : "Unknown error",
       };
+    }
+  }
+  
+  /**
+   * Generate poetic title (Sipincollection style) with JSON Schema
+   */
+  private async generatePoeticTitle(rawData: any): Promise<string> {
+    const destinationCountry = rawData.location?.destinationCountry || "";
+    const destinationCity = rawData.location?.destinationCity || "";
+    const days = rawData.duration?.days || "";
+    const nights = rawData.duration?.nights || "";
+    const highlights = rawData.highlights || [];
+    const hotelGrade = rawData.accommodation?.hotelGrade || "";
+    const specialExperiences = rawData.specialExperiences || [];
+    
+    // Data validation
+    if (!destinationCity && !destinationCountry) {
+      console.warn("[ContentAnalyzerAgent] Insufficient data for poetic title generation");
+      return "精選行程"; // Fallback
+    }
+    
+    const systemPrompt = `你是一位資深的高端旅遊文案編輯,專門為頂級旅遊品牌撰寫詩意化的行程標題。
+
+你的標題風格特點:
+1. 使用精煉的形容詞修飾目的地或體驗 (例如: 雅奢、秘境、光影、極致)
+2. 加入動詞增加動感 (例如: 尋蹤、漫遊、走進、探索)
+3. 使用比喻和意象,讓標題更有畫面感
+4. 保持簡潔,15-25 個中文字
+5. 突出行程的核心賣點和獨特性
+
+參考範例:
+- "北海道二世谷雅奢6日" (強調奢華體驗)
+- "秘境尋蹤 中島漫遊" (強調神秘探索)
+- "光影之城 走進藝術家眼中的旅程" (強調藝術體驗)
+- "京都禪意之旅 米其林懷石料理" (強調文化與美食)
+- "托斯卡尼艷陽下 品味義式慢活" (強調生活方式)
+
+請根據行程資訊,生成一個符合上述風格的詩意化標題。`;
+    
+    const userPrompt = `請根據以下資訊生成一個詩意化的行程標題:
+
+目的地國家: ${destinationCountry}
+目的地城市: ${destinationCity}
+天數: ${days}天${nights}夜
+行程亮點: ${highlights.slice(0, 3).join("、")}
+飯店等級: ${hotelGrade}
+特色體驗: ${specialExperiences.join("、")}
+
+範例風格:
+- "北海道二世谷雅奢6日" (強調奢華)
+- "秘境尋蹤 中島漫遊" (強調探索)
+- "光影之城 走進藝術家眼中的旅程" (強調藝術)
+
+請生成一個 15-25 個中文字的詩意化標題。`;
+    
+    try {
+      const response = await invokeLLM({
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt }
+        ],
+        response_format: {
+          type: "json_schema",
+          json_schema: {
+            name: "poetic_title_response",
+            strict: true,
+            schema: {
+              type: "object",
+              properties: {
+                poeticTitle: {
+                  type: "string",
+                  description: "詩意化的行程標題,15-25 個中文字"
+                },
+                reasoning: {
+                  type: "string",
+                  description: "標題設計的理由"
+                },
+                keywords: {
+                  type: "array",
+                  description: "標題中使用的關鍵詞",
+                  items: {
+                    type: "string"
+                  }
+                }
+              },
+              required: ["poeticTitle", "reasoning", "keywords"],
+              additionalProperties: false
+            }
+          }
+        }
+      });
+      
+      const content = response.choices[0]?.message?.content;
+      if (!content) {
+        throw new Error("Empty response from LLM");
+      }
+      
+      const result = JSON.parse(content);
+      const poeticTitle = result.poeticTitle;
+      
+      // Validate length
+      if (poeticTitle && poeticTitle.length >= 15 && poeticTitle.length <= 30) {
+        console.log(`[ContentAnalyzerAgent] Poetic title generated: ${poeticTitle}`);
+        console.log(`[ContentAnalyzerAgent] Reasoning: ${result.reasoning}`);
+        return poeticTitle;
+      }
+      
+      // If too long, truncate
+      if (poeticTitle && poeticTitle.length > 30) {
+        console.warn(`[ContentAnalyzerAgent] Poetic title too long (${poeticTitle.length} chars), truncating...`);
+        return poeticTitle.substring(0, 30);
+      }
+      
+      // If too short, use fallback
+      console.warn(`[ContentAnalyzerAgent] Poetic title too short, using fallback`);
+      return `${destinationCity}${days}日精選之旅`;
+      
+    } catch (error) {
+      console.error("[ContentAnalyzerAgent] Poetic title generation failed:", error);
+      // Fallback: simple template
+      return `${destinationCity}${days}日精選之旅`;
     }
   }
   

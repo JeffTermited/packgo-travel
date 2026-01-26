@@ -19,6 +19,7 @@ export interface MasterAgentResult {
   success: boolean;
   data?: {
     // Basic info
+    poeticTitle: string; // 詩意化標題 (Sipincollection 風格)
     title: string;
     description: string;
     productCode: string;
@@ -317,6 +318,7 @@ export class MasterAgent {
       }     
       const finalData = {
         // Basic info
+        poeticTitle: analyzedContent.poeticTitle, // 詩意化標題
         title: analyzedContent.title,
         description: analyzedContent.description,
         productCode: rawData.basicInfo?.productCode || "",

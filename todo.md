@@ -2294,3 +2294,31 @@
 - [ ] 實作背景任務處理 (Redis + Bull Queue)
 - [ ] 實作生成歷史記錄追蹤
 - [ ] 實作 A/B 測試系統
+
+
+## AI 自動生成系統升級執行計劃 (10 天)
+
+### Phase 1: 資料庫與基礎架構 (Day 1-2) - ✅ 已完成
+- [x] Day 1: 新增 `poeticTitle` 和 `featureImages` 欄位到資料庫
+- [x] Day 1: 擴充 `dailyItinerary` 結構 (加入 `images` 欄位)
+- [x] Day 1: 執行 `pnpm db:push` 同步資料庫
+- [x] Day 2: 測試 TourDetailV2 頁面能正確顯示所有新欄位
+- [x] Day 2: 驗證 tRPC API 回傳所有必要欄位
+
+### Phase 2: Agents 優化 (Day 3-7) - 🚧 進行中
+- [x] Day 3: 優化 ContentAnalyzerAgent (詩意化標題生成)
+- [x] Day 3: 使用 JSON Schema 確保輸出格式
+- [x] Day 3: 更新 MasterAgent 使用新的 poeticTitle 欄位
+- [ ] Day 3: 撰寫 ContentAnalyzerAgent 單元測試
+- [ ] Day 4-5: 優化 ImageGenerationAgent (Hero 圖片 + 特色圖片 3-6 張)
+- [ ] Day 4-5: 整合 Unsplash API 作為 Fallback
+- [ ] Day 6-7: 優化 ItineraryAgent (每日行程加入 1-2 張圖片)
+- [ ] Day 6-7: 更新 MasterAgent 協調邏輯
+
+### Phase 3: 測試與優化 (Day 8-10)
+- [ ] Day 8: MasterAgent 整合測試
+- [ ] Day 8: 錯誤處理與 Fallback 機制測試
+- [ ] Day 9: 端到端測試 (使用真實雄獅旅遊 URL)
+- [ ] Day 9: 多目的地測試 (北海道、京都、義大利、摩洛哥)
+- [ ] Day 10: 性能優化 (測量各步驟耗時)
+- [ ] Day 10: 實作圖片並行生成與快取機制
