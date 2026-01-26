@@ -1,6 +1,12 @@
 /**
  * Master Agent
  * Coordinates all agents to generate a complete tour
+ * 
+ * Optimizations:
+ * - Retry mechanism with exponential backoff
+ * - Parallel execution for independent agents
+ * - Agent status monitoring
+ * - Fallback handling for non-critical agents
  */
 
 import { WebScraperAgent } from "./webScraperAgent";
@@ -15,6 +21,14 @@ import { HotelAgent } from "./hotelAgent";
 import { MealAgent } from "./mealAgent";
 import { FlightAgent } from "./flightAgent";
 import { getKeyInstructions } from "./skillLoader";
+import {
+  RetryManager,
+  AgentMonitor,
+  FallbackManager,
+  DEFAULT_RETRY_CONFIG,
+  DEFAULT_FALLBACK_CONFIGS,
+  type RetryConfig
+} from "./agentOrchestration";
 
 export interface MasterAgentResult {
   success: boolean;
@@ -82,6 +96,7 @@ export interface MasterAgentResult {
     currentStep: string;
     percentage: number;
   };
+  executionReport?: string; // Agent execution report
 }
 
 /**
@@ -90,11 +105,39 @@ export interface MasterAgentResult {
  */
 export class MasterAgent {
   private skillInstructions: string;
+  private retryManager: RetryManager;
+  private monitor: AgentMonitor;
+  private fallbackManager: FallbackManager;
+  private retryConfig: RetryConfig;
+
+  // Agent instances
+  private webScraperAgent: WebScraperAgent;
+  private contentAnalyzerAgent: ContentAnalyzerAgent;
+  private imagePromptAgent: ImagePromptAgent;
+  private imageGenerationAgent: ImageGenerationAgent;
+  private colorThemeAgent: ColorThemeAgent;
+  private itineraryAgent: ItineraryAgent;
+  private costAgent: CostAgent;
+  private noticeAgent: NoticeAgent;
+  private hotelAgent: HotelAgent;
+  private mealAgent: MealAgent;
+  private flightAgent: FlightAgent;
 
   constructor() {
     // Load SKILL.md instructions
     this.skillInstructions = getKeyInstructions('MasterAgent');
     console.log('[MasterAgent] SKILL loaded:', this.skillInstructions.length, 'chars');
+    
+    // Initialize orchestration utilities
+    this.retryManager = new RetryManager();
+    this.monitor = new AgentMonitor();
+    this.fallbackManager = new FallbackManager();
+    this.retryConfig = DEFAULT_RETRY_CONFIG;
+    
+    // Register fallback configurations
+    for (const config of DEFAULT_FALLBACK_CONFIGS) {
+      this.fallbackManager.registerFallback(config);
+    }
     
     // Initialize all agents
     this.webScraperAgent = new WebScraperAgent();
@@ -108,123 +151,156 @@ export class MasterAgent {
     this.hotelAgent = new HotelAgent();
     this.mealAgent = new MealAgent();
     this.flightAgent = new FlightAgent();
+    
+    console.log('[MasterAgent] Initialized with retry and fallback mechanisms');
   }
-
-  private webScraperAgent: WebScraperAgent;
-  private contentAnalyzerAgent: ContentAnalyzerAgent;
-  private imagePromptAgent: ImagePromptAgent;
-  private imageGenerationAgent: ImageGenerationAgent;
-  private colorThemeAgent: ColorThemeAgent;
-  private itineraryAgent: ItineraryAgent;
-  private costAgent: CostAgent;
-  private noticeAgent: NoticeAgent;
-  private hotelAgent: HotelAgent;
-  private mealAgent: MealAgent;
-  private flightAgent: FlightAgent;
   
   /**
-   * Execute complete tour generation
+   * Execute complete tour generation with optimizations
    */
   async execute(
     url: string,
     userId: number,
     onProgress?: (step: string, percentage: number) => void
   ): Promise<MasterAgentResult> {
-    console.log("[MasterAgent] Starting tour generation...");
+    const startTime = Date.now();
+    console.log("[MasterAgent] Starting optimized tour generation...");
     console.log("[MasterAgent] URL:", url);
     console.log("[MasterAgent] User ID:", userId);
     
+    // Reset monitor for new execution
+    this.monitor.reset();
+    
     try {
-      // Step 1: Web scraping (10%)
+      // ========================================================================
+      // Phase 1: Web Scraping (Critical)
+      // ========================================================================
       onProgress?.("scraping", 10);
-      const scrapingResult = await this.webScraperAgent.execute(url);
+      this.monitor.startAgent('WebScraperAgent');
+      
+      const scrapingResult = await this.retryManager.executeWithRetry(
+        () => this.webScraperAgent.execute(url),
+        this.retryConfig,
+        'WebScraperAgent'
+      );
       
       if (!scrapingResult.success || !scrapingResult.data) {
+        this.monitor.failAgent('WebScraperAgent', new Error(scrapingResult.error || "Web scraping failed"));
         throw new Error(scrapingResult.error || "Web scraping failed");
       }
       
+      this.monitor.completeAgent('WebScraperAgent', scrapingResult);
       const rawData = scrapingResult.data;
-      console.log("[MasterAgent] Web scraping completed");
+      console.log("[MasterAgent] ✓ Web scraping completed");
       
-      // Step 2: Content analysis (30%)
+      // ========================================================================
+      // Phase 2: Content Analysis (Critical)
+      // ========================================================================
       onProgress?.("analyzing", 30);
-      const analysisResult = await this.contentAnalyzerAgent.execute(rawData);
+      this.monitor.startAgent('ContentAnalyzerAgent');
+      
+      const analysisResult = await this.retryManager.executeWithRetry(
+        () => this.contentAnalyzerAgent.execute(rawData),
+        this.retryConfig,
+        'ContentAnalyzerAgent'
+      );
       
       if (!analysisResult.success || !analysisResult.data) {
+        this.monitor.failAgent('ContentAnalyzerAgent', new Error(analysisResult.error || "Content analysis failed"));
         throw new Error(analysisResult.error || "Content analysis failed");
       }
       
+      this.monitor.completeAgent('ContentAnalyzerAgent', analysisResult);
       const analyzedContent = analysisResult.data;
-      console.log("[MasterAgent] Content analysis completed");
+      console.log("[MasterAgent] ✓ Content analysis completed");
       console.log("[MasterAgent] Originality score:", analyzedContent.originalityScore);
       
-      // Step 3: Color theme generation (40%)
-      onProgress?.("generating_color_theme", 40);
-      const colorThemeResult = await this.colorThemeAgent.execute(
-        rawData.location?.destinationCountry || "",
-        rawData.location?.destinationCity
-      );
+      // ========================================================================
+      // Phase 3: Parallel Execution - Color Theme + Image Prompts
+      // Optimization: Execute ColorThemeAgent and ImagePromptAgent in parallel
+      // ========================================================================
+      onProgress?.("generating_themes", 45);
+      console.log("[MasterAgent] Starting parallel execution: ColorTheme + ImagePrompt");
       
+      this.monitor.startAgent('ColorThemeAgent');
+      this.monitor.startAgent('ImagePromptAgent');
+      
+      const [colorThemeResult, promptResult] = await Promise.all([
+        this.retryManager.executeWithRetry(
+          () => this.colorThemeAgent.execute(
+            rawData.location?.destinationCountry || "",
+            rawData.location?.destinationCity
+          ),
+          this.retryConfig,
+          'ColorThemeAgent'
+        ),
+        this.retryManager.executeWithRetry(
+          () => this.imagePromptAgent.execute(
+            rawData.location?.destinationCountry || "",
+            rawData.location?.destinationCity || "",
+            analyzedContent.highlights,
+            analyzedContent.keyFeatures
+          ),
+          this.retryConfig,
+          'ImagePromptAgent'
+        )
+      ]);
+      
+      // Handle ColorThemeAgent result
       if (!colorThemeResult.success || !colorThemeResult.data) {
+        this.monitor.failAgent('ColorThemeAgent', new Error(colorThemeResult.error || "Color theme generation failed"));
         throw new Error(colorThemeResult.error || "Color theme generation failed");
       }
-      
+      this.monitor.completeAgent('ColorThemeAgent', colorThemeResult);
       const colorTheme = colorThemeResult.data;
-      console.log("[MasterAgent] Color theme generated");
       
-      // Step 4: Image prompt generation (50%)
-      onProgress?.("generating_image_prompts", 50);
-      const promptResult = await this.imagePromptAgent.execute(
-        rawData.location?.destinationCountry || "",
-        rawData.location?.destinationCity || "",
-        analyzedContent.highlights,
-        analyzedContent.keyFeatures
-      );
-      
+      // Handle ImagePromptAgent result
       if (!promptResult.success || !promptResult.data) {
+        this.monitor.failAgent('ImagePromptAgent', new Error(promptResult.error || "Image prompt generation failed"));
         throw new Error(promptResult.error || "Image prompt generation failed");
       }
-      
+      this.monitor.completeAgent('ImagePromptAgent', promptResult);
       const { heroPrompt, highlightPrompts, featurePrompts, styleGuide } = promptResult.data;
-      console.log("[MasterAgent] Image prompts generated");
       
-      // Step 5: Image generation (60% - 90%)
-      // Implement Partial Success: image generation failure should not block tour creation
+      console.log("[MasterAgent] ✓ Parallel execution completed (ColorTheme + ImagePrompt)");
+      
+      // ========================================================================
+      // Phase 4: Image Generation (Critical, but with fallback)
+      // ========================================================================
       onProgress?.("generating_images", 60);
+      this.monitor.startAgent('ImageGenerationAgent');
+      
       let heroImage = { url: "", alt: "Hero image" };
       let highlightImages: any[] = [];
       let featureImages: any[] = [];
       
       try {
-        const imageResult = await this.imageGenerationAgent.execute(
-          heroPrompt,
-          highlightPrompts,
-          featurePrompts,
-          styleGuide,
-          userId
+        const imageResult = await this.retryManager.executeWithRetry(
+          () => this.imageGenerationAgent.execute(
+            heroPrompt,
+            highlightPrompts,
+            featurePrompts,
+            styleGuide,
+            userId
+          ),
+          this.retryConfig,
+          'ImageGenerationAgent'
         );
         
         if (imageResult.success && imageResult.data) {
           heroImage = imageResult.data.heroImage;
           highlightImages = imageResult.data.highlightImages;
           featureImages = imageResult.data.featureImages;
-          console.log("[MasterAgent] Images generated successfully");
+          this.monitor.completeAgent('ImageGenerationAgent', imageResult);
+          console.log("[MasterAgent] ✓ Images generated successfully");
         } else {
-          console.warn("[MasterAgent] Image generation failed, using placeholder images:", imageResult.error);
-          // Use placeholder images
-          heroImage = { url: "/placeholder-hero.jpg", alt: "Placeholder hero image" };
-          highlightImages = analyzedContent.highlights.map((_: any, index: number) => ({
-            url: `/placeholder-highlight-${index + 1}.jpg`,
-            alt: `Placeholder highlight image ${index + 1}`
-          }));
-          featureImages = analyzedContent.keyFeatures.map((_: any, index: number) => ({
-            url: `/placeholder-feature-${index + 1}.jpg`,
-            alt: `Placeholder feature image ${index + 1}`
-          }));
+          throw new Error(imageResult.error || "Image generation failed");
         }
       } catch (imageError) {
-        console.error("[MasterAgent] Image generation error (non-blocking):", imageError);
-        // Use placeholder images on error
+        this.monitor.failAgent('ImageGenerationAgent', imageError as Error);
+        console.warn("[MasterAgent] ⚠ Image generation failed, using placeholder images");
+        
+        // Use placeholder images
         heroImage = { url: "/placeholder-hero.jpg", alt: "Placeholder hero image" };
         highlightImages = analyzedContent.highlights.map((_: any, index: number) => ({
           url: `/placeholder-highlight-${index + 1}.jpg`,
@@ -236,86 +312,110 @@ export class MasterAgent {
         }));
       }
       
-      // Step 6: Assemble final tour data (95%)
-      onProgress?.("saving", 95);
-      
-      // Extract feature image URLs as string array
+      // Extract feature image URLs
       const featureImageUrls = featureImages.map(img => img.url).filter(url => url !== "");
       
-      // Step 6: Generate itinerary, cost, and notice (90% - 95%      // Step 6: Generate itinerary, cost, and notice
-      let itineraryData = "";
-      let costData = "";
-      let noticeData = "";
+      // ========================================================================
+      // Phase 5: Itinerary Generation (Required before detail agents)
+      // ========================================================================
+      onProgress?.("generating_itinerary", 75);
+      this.monitor.startAgent('ItineraryAgent');
       
+      let itineraryData = "";
       try {
-        // Generate detailed itinerary
-        const itineraryResult = await this.itineraryAgent.execute(rawData);
+        const itineraryResult = await this.retryManager.executeWithRetry(
+          () => this.itineraryAgent.execute(rawData),
+          this.retryConfig,
+          'ItineraryAgent'
+        );
+        
         if (itineraryResult.success && itineraryResult.data) {
           itineraryData = JSON.stringify(itineraryResult.data.dailyItineraries);
-          console.log("[MasterAgent] Itinerary generated successfully");
+          this.monitor.completeAgent('ItineraryAgent', itineraryResult);
+          console.log("[MasterAgent] ✓ Itinerary generated successfully");
         } else {
-          console.warn("[MasterAgent] Itinerary generation failed:", itineraryResult.error);
+          throw new Error(itineraryResult.error || "Itinerary generation failed");
         }
-        
-        // Generate cost explanation
-        const costResult = await this.costAgent.execute(rawData);
-        if (costResult.success && costResult.data) {
-          costData = JSON.stringify(costResult.data);
-          console.log("[MasterAgent] Cost explanation generated successfully");
-        } else {
-          console.warn("[MasterAgent] Cost generation failed:", costResult.error);
-        }
-        
-        // Generate notice
-        const noticeResult = await this.noticeAgent.execute(rawData);
-        if (noticeResult.success && noticeResult.data) {
-          noticeData = JSON.stringify(noticeResult.data);
-          console.log("[MasterAgent] Notice generated successfully");
-        } else {
-          console.warn("[MasterAgent] Notice generation failed:", noticeResult.error);
-        }
-      } catch (detailsError) {
-        console.error("[MasterAgent] Details generation error (non-blocking):", detailsError);
+      } catch (itineraryError) {
+        this.monitor.failAgent('ItineraryAgent', itineraryError as Error);
+        console.warn("[MasterAgent] ⚠ Itinerary generation failed, using empty data");
+        itineraryData = JSON.stringify([]);
       }
       
-      // Step 7: Generate hotels, meals, and flights
-      let hotelsData = "";
-      let mealsData = "";
-      let flightsData = "";
+      // ========================================================================
+      // Phase 6: Parallel Execution - Detail Agents (Non-critical)
+      // Optimization: Execute 5 detail agents in parallel
+      // ========================================================================
+      onProgress?.("generating_details", 85);
+      console.log("[MasterAgent] Starting parallel execution: 5 detail agents");
       
-      try {
-        // Generate hotel information
-        const hotelResult = await this.hotelAgent.execute(rawData);
-        if (hotelResult.success && hotelResult.data) {
-          hotelsData = JSON.stringify(hotelResult.data.hotels);
-          console.log("[MasterAgent] Hotel information generated successfully");
-        } else {
-          console.warn("[MasterAgent] Hotel generation failed:", hotelResult.error);
-        }
+      this.monitor.startAgent('CostAgent');
+      this.monitor.startAgent('NoticeAgent');
+      this.monitor.startAgent('HotelAgent');
+      this.monitor.startAgent('MealAgent');
+      this.monitor.startAgent('FlightAgent');
+      
+      const detailResults = await Promise.allSettled([
+        this.retryManager.executeWithRetry(
+          () => this.costAgent.execute(rawData),
+          this.retryConfig,
+          'CostAgent'
+        ),
+        this.retryManager.executeWithRetry(
+          () => this.noticeAgent.execute(rawData),
+          this.retryConfig,
+          'NoticeAgent'
+        ),
+        this.retryManager.executeWithRetry(
+          () => this.hotelAgent.execute(rawData),
+          this.retryConfig,
+          'HotelAgent'
+        ),
+        this.retryManager.executeWithRetry(
+          () => this.mealAgent.execute(rawData),
+          this.retryConfig,
+          'MealAgent'
+        ),
+        this.retryManager.executeWithRetry(
+          () => this.flightAgent.execute(rawData),
+          this.retryConfig,
+          'FlightAgent'
+        )
+      ]);
+      
+      // Process results with fallback handling
+      const agentNames = ['CostAgent', 'NoticeAgent', 'HotelAgent', 'MealAgent', 'FlightAgent'];
+      const processedResults = detailResults.map((result, index) => {
+        const agentName = agentNames[index];
         
-        // Generate meal information
-        const mealResult = await this.mealAgent.execute(rawData);
-        if (mealResult.success && mealResult.data) {
-          mealsData = JSON.stringify(mealResult.data.meals);
-          console.log("[MasterAgent] Meal information generated successfully");
+        if (result.status === 'fulfilled' && result.value.success && result.value.data) {
+          this.monitor.completeAgent(agentName, result.value);
+          console.log(`[MasterAgent] ✓ ${agentName} completed`);
+          return result.value.data;
         } else {
-          console.warn("[MasterAgent] Meal generation failed:", mealResult.error);
+          const error = result.status === 'rejected' 
+            ? result.reason 
+            : new Error(result.value.error || `${agentName} failed`);
+          
+          this.monitor.failAgent(agentName, error);
+          console.warn(`[MasterAgent] ⚠ ${agentName} failed, using fallback`);
+          
+          return this.fallbackManager.handleFailure(agentName, error);
         }
-        
-        // Generate flight information
-        const flightResult = await this.flightAgent.execute(rawData);
-        if (flightResult.success && flightResult.data) {
-          flightsData = JSON.stringify(flightResult.data);
-          console.log("[MasterAgent] Flight information generated successfully");
-        } else {
-          console.warn("[MasterAgent] Flight generation failed:", flightResult.error);
-        }
-      } catch (additionalError) {
-        console.error("[MasterAgent] Additional details generation error (non-blocking):", additionalError);
-      }     
+      });
+      
+      const [costData, noticeData, hotelData, mealData, flightData] = processedResults;
+      
+      console.log("[MasterAgent] ✓ Parallel execution completed (5 detail agents)");
+      
+      // ========================================================================
+      // Phase 7: Assemble Final Data
+      // ========================================================================
+      onProgress?.("saving", 95);
+      
       const finalData = {
         // Basic info
-        poeticTitle: analyzedContent.poeticTitle, // 詩意化標題
+        poeticTitle: analyzedContent.poeticTitle,
         title: analyzedContent.title,
         description: analyzedContent.description,
         productCode: rawData.basicInfo?.productCode || "",
@@ -341,49 +441,64 @@ export class MasterAgent {
         // Color theme
         colorTheme: JSON.stringify(colorTheme),
         
-        // Highlights (字串陣列)
+        // Highlights
         highlights: JSON.stringify(analyzedContent.highlights),
         
-        // Feature Images (字串陣列)
+        // Feature Images
         featureImages: JSON.stringify(featureImageUrls),
         
         // Poetic content
         poeticContent: JSON.stringify(analyzedContent.poeticContent),
         
-        // Detailed Itinerary (詳細每日行程)
+        // Detailed Itinerary
         itineraryDetailed: itineraryData,
         
-        // Cost Explanation (費用說明)
-        costExplanation: costData,
+        // Cost Explanation
+        costExplanation: JSON.stringify(costData),
         
-        // Detailed Notice (詳細注意事項)
-        noticeDetailed: noticeData,
+        // Detailed Notice
+        noticeDetailed: JSON.stringify(noticeData),
         
-        // Hotels (飯店介紹)
-        hotels: hotelsData,
+        // Hotels
+        hotels: JSON.stringify(hotelData.hotels || []),
         
-        // Meals (餐飲介紹)
-        meals: mealsData,
+        // Meals
+        meals: JSON.stringify(mealData.meals || []),
         
-        // Flights (航班資訊)
-        flights: flightsData,
+        // Flights
+        flights: JSON.stringify(flightData),
         
         // Metadata
         originalityScore: analyzedContent.originalityScore,
-        sourceUrl: url, // Store the original source URL
+        sourceUrl: url,
       };
       
-      console.log("[MasterAgent] Tour generation completed successfully");;
+      // ========================================================================
+      // Generate Execution Report
+      // ========================================================================
+      const executionReport = this.monitor.generateReport();
+      const totalDuration = Date.now() - startTime;
+      
+      console.log("[MasterAgent] ✓ Tour generation completed successfully");
+      console.log("[MasterAgent] Total execution time:", totalDuration, "ms");
+      console.log(executionReport);
       
       return {
         success: true,
         data: finalData,
+        executionReport
       };
+      
     } catch (error) {
-      console.error("[MasterAgent] Error:", error);
+      console.error("[MasterAgent] ✗ Critical error:", error);
+      
+      const executionReport = this.monitor.generateReport();
+      console.log(executionReport);
+      
       return {
         success: false,
         error: error instanceof Error ? error.message : "Unknown error",
+        executionReport
       };
     }
   }
