@@ -2601,4 +2601,14 @@
 - [x] 檢查詳情頁面的排版細節 (時間、價格、格式)
 - [x] 撰寫完整的關聯性報告 (輸入→輸出流程)
 - [x] 提供建議修復的部分
+- [x] 儲存 checkpoint
+
+
+## ImageGenerationAgent 錯誤處理改進
+- [x] 修改 ImageGenerationAgent 添加 S3 上傳重試機制
+- [x] 增加重試次數從 3 次到 5 次
+- [x] 添加指數退避策略 (1s → 2s → 4s → 8s → 16s)
+- [x] 添加 Unsplash fallback 機制 (如果 S3 上傳失敗)
+- [x] 重新執行完整的 AI 自動生成測試 - 183.9 秒
+- [x] 分析測試結果並撰寫報告
 - [ ] 儲存 checkpoint
