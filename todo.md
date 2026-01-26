@@ -2529,3 +2529,11 @@
 - [ ] Phase 4: Agent 輸出格式調整
 - [ ] Phase 5: P1 優先級實作 (搜尋欄 + 飯店 + 餐飲 + 行程)
 - [ ] 測試並儲存 checkpoint
+
+
+## ContentAnalyzerAgent 標題生成邏輯調整 (2026-01-26)
+- [x] 重構 ContentAnalyzerAgent 標題生成方法 (改為關鍵字密集堆疊風格)
+- [x] 更新 ContentAnalyzerAgent SKILL.md (添加雄獅標題範例)
+- [x] 測試新的標題生成效果 (生成符合雄獅風格的標題)
+- [x] 修復 highlights 資料格式問題
+- [x] 儲存 checkpoint

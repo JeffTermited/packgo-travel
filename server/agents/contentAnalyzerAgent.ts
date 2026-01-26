@@ -60,8 +60,15 @@ export class ContentAnalyzerAgent {
       // Step 4: Generate hero subtitle
       const heroSubtitle = await this.generateHeroSubtitle(rawData);
       
-      // Step 5: Use poetic highlights (from Step 1)
-      const highlights = poeticHighlights.length > 0 ? poeticHighlights : await this.generateHighlights(rawData);
+      // Step 5: Use poetic highlights (from Step 1) or generate structured highlights
+      // Note: poeticHighlights are string[], generateHighlights returns object[]
+      const highlights = poeticHighlights.length > 0 
+        ? poeticHighlights.map((h, i) => ({
+            id: i + 1,
+            text: h,
+            description: h,
+          }))
+        : await this.generateHighlights(rawData);
       
       // Step 5: Generate key features
       const keyFeatures = await this.generateKeyFeatures(rawData);
