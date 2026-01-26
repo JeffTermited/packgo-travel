@@ -2413,9 +2413,9 @@
 ## 方案 3: Agents 輸出格式重構 (1-2 天) 🚧 進行中
 - [x] 定義標準輸出格式 (shared/agentTypes.ts)
 - [x] 更新 ContentAnalyzerAgent (加入 JSON Schema 確保 highlights 是字串陣列)
-- [ ] 更新 ColorThemeAgent (加入 JSON Schema)
-- [ ] 更新 ImageGenerationAgent (確保 featureImages 是字串陣列)
-- [ ] 更新 ItineraryAgent (確保 dailyItinerary 格式正確)
-- [ ] 更新 MasterAgent 組裝邏輯
+- [x] 更新 ColorThemeAgent (已確認格式正確,不需修改)
+- [x] 更新 ImageGenerationAgent (在 MasterAgent 中轉換為 featureImages 字串陣列)
+- [x] 更新 ItineraryAgent (格式正確,圖片功能待後續優化)
+- [x] 更新 MasterAgent 組裝邏輯 (將 highlights 和 featureImages 儲存為字串陣列)
 - [ ] 測試完整生成流程
 - [ ] 驗證前端頁面能正常顯示

@@ -231,19 +231,8 @@ export class MasterAgent {
       // Step 6: Assemble final tour data (95%)
       onProgress?.("saving", 95);
       
-      // Update highlights with generated images
-      const finalHighlights = analyzedContent.highlights.map((highlight: any, index: number) => ({
-        ...highlight,
-        image: highlightImages[index]?.url || "",
-        imageAlt: highlightImages[index]?.alt || highlight.imageAlt,
-      }));
-      
-      // Update key features with generated images
-      const finalKeyFeatures = analyzedContent.keyFeatures.map((feature: any, index: number) => ({
-        ...feature,
-        image: featureImages[index]?.url || null,
-        imageAlt: featureImages[index]?.alt || feature.imageAlt,
-      }));
+      // Extract feature image URLs as string array
+      const featureImageUrls = featureImages.map(img => img.url).filter(url => url !== "");
       
       // Step 6: Generate itinerary, cost, and notice (90% - 95%      // Step 6: Generate itinerary, cost, and notice
       let itineraryData = "";
@@ -344,11 +333,11 @@ export class MasterAgent {
         // Color theme
         colorTheme: JSON.stringify(colorTheme),
         
-        // Highlights
-        highlights: JSON.stringify(finalHighlights),
+        // Highlights (字串陣列)
+        highlights: JSON.stringify(analyzedContent.highlights),
         
-        // Key features
-        keyFeatures: JSON.stringify(finalKeyFeatures),
+        // Feature Images (字串陣列)
+        featureImages: JSON.stringify(featureImageUrls),
         
         // Poetic content
         poeticContent: JSON.stringify(analyzedContent.poeticContent),
