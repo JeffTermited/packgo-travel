@@ -2543,8 +2543,8 @@
 - [x] 修復 hotelAgent.ts 的語法錯誤 (無語法錯誤,是 esbuild 報錯)
 - [ ] 修復 server/routers.ts 的 4 個類型錯誤 (需要重構 booking 系統,後續處理)
 - [x] 研究雄獅旅遊的飯店和餐飲介紹設計 (已創建 LionTravel-Hotel-Meal-Design-Analysis.md)
-- [ ] 調整 HotelAgent 輸出格式(讓 Agent 負責生成符合雄獅風格的資料)
-- [ ] 創建 LionHotelSection 組件
+- [x] 調整 HotelAgent 輸出格式(讓 Agent 負責生成符合雄獅風格的資料)
+- [x] 創建 LionHotelSection 組件
 - [ ] 調整 MealAgent 輸出格式(讓 Agent 負責生成符合雄獅風格的資料)
 - [ ] 創建 LionMealSection 組件
 - [ ] 測試並儲存 checkpoint
