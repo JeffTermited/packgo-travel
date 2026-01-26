@@ -2141,3 +2141,10 @@
 - [x] 診斷 Logo 過大問題的原因
 - [x] 修復 Logo 顯示問題（將 logo-bag-black-v3.png 從 788x1106 縮小到 99x140 像素）
 - [x] 測試修復結果
+
+
+## Logo 圖片同步更新
+- [x] 縮小白色版本 Logo 圖片（logo-bag-white-v3.png 從 788x1106 縮小到 99x140）
+- [x] 修復 Header Logo 尺寸（h-14 改為 h-10 w-10）
+- [x] 修復 Footer Logo 尺寸（h-16 改為 h-10 w-10）
+- [x] 測試 Header 和 Footer 顯示效果

@@ -29,8 +29,7 @@ export default function Header() {
           <img 
             src="/images/logo-bag-black-v3.png" 
             alt="PACK&GO Logo" 
-            className="h-14 w-auto object-contain"
-          />
+           className="h-10 w-10 object-contain"          />
           <div className="flex flex-col justify-center pl-1">
             <span className="text-[24px] font-bold tracking-wide text-black leading-none font-sans">
               PACK&GO

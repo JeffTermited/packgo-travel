@@ -12,7 +12,7 @@ export default function Footer() {
               <img 
                 src="/images/logo-bag-white-v3.png" 
                 alt="PACK&GO Logo" 
-                className="h-16 w-auto object-contain mix-blend-screen"
+                className="h-10 w-10 object-contain"
               />
               <div className="flex flex-col justify-center pl-1">
                 <span className="text-[28px] font-bold tracking-wide text-white leading-none font-sans">
