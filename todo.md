@@ -2210,3 +2210,20 @@
 - [x] 設定 Unsplash API Key
 - [x] 驗證 Unsplash API 憑證（成功搜尋到 10,000 張圖片）
 - [ ] 測試圖片獲取功能
+
+
+## 啟用完整 Multi-Agent 流程
+- [ ] 分析現有的管理後台和 API 結構
+- [ ] 創建使用 MasterAgent 的新 API 端點
+- [ ] 更新管理後台 UI 加入「完整生成」選項
+- [ ] 測試完整生成功能並報告結果
+
+
+## AI 自動生成行程系統優化
+- [x] 創建 autoGenerateComplete API 端點（使用 MasterAgent）
+- [x] 在管理後台加入「完整生成」選項
+- [x] 實作生成模式選擇 UI（快速提取 vs 完整生成）
+- [ ] 測試完整生成功能（使用 Lion Travel URL）
+- [ ] 驗證生成的行程包含所有豐富內容（Hero 圖片、配色主題、Unsplash 圖片等）
+- [ ] 優化完整生成的進度追蹤
+- [ ] 儲存 checkpoint
