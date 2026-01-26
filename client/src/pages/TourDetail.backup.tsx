@@ -770,8 +770,8 @@ export default function TourDetail() {
                   </CardContent>
                 </Card>
 
-                {/* Source Link */}
-                {tour.sourceUrl && (
+                {/* Source Link - Admin Only */}
+                {isAdmin && tour.sourceUrl && (
                   <Card className="border-0 shadow-lg bg-gray-50">
                     <CardContent className="p-4">
                       <a 

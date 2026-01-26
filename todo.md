@@ -2148,3 +2148,21 @@
 - [x] 修復 Header Logo 尺寸（h-14 改為 h-10 w-10）
 - [x] 修復 Footer Logo 尺寸（h-16 改為 h-10 w-10）
 - [x] 測試 Header 和 Footer 顯示效果
+
+
+## AI Agents 測試
+- [x] 使用雄獅旅遊連結測試所有 Agents 自動建立行程功能
+- [x] 檢視測試結果並報告
+
+
+## 價格抓取問題修復
+- [ ] 分析雄獅旅遊網頁結構
+- [ ] 找出價格資訊的正確抓取方式
+- [ ] 修復 WebScraperAgent 的價格抓取邏輯
+- [ ] 測試修復結果
+
+
+## 「查看原始行程」按鈕權限修復
+- [x] 找到「查看原始行程」按鈕的程式碼位置（TourDetail.tsx 第 774 行）
+- [x] 修復權限控制，只讓 admin 看到（加入 isAdmin && 條件）
+- [x] 同步修復 TourDetail.backup.tsx
