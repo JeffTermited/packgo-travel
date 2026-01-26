@@ -248,9 +248,9 @@ export class ContentAnalyzerAgent {
     } catch (error) {
       console.error("[ContentAnalyzerAgent] Poetic title generation failed:", error);
       // Fallback: Lion Travel style template
-      const fallbackHighlights = highlights.slice(0, 6).join('.');
+      const fallbackTitle = `${destinationCity}旅遊｜${days}日精選行程`;
       return {
-        poeticTitle: `${destinationCity}旅遊｜${fallbackHighlights}${days}日`,
+        poeticTitle: fallbackTitle,
         highlights: []
       };
     }

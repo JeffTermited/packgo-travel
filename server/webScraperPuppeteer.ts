@@ -79,7 +79,7 @@ export async function fetchWebPageWithPuppeteer(url: string): Promise<ScrapedCon
     
     // 等待主要內容容器出現 (針對雄獅旅遊網站)
     try {
-      await page.waitForSelector('#pb-render-root', { timeout: 10000 });
+      await page.waitForSelector('#pb-render-root', { timeout: 5000 });
       console.log('[PuppeteerScraper] Main content container found');
     } catch (error) {
       console.log('[PuppeteerScraper] Main content container not found, continuing...');
@@ -90,7 +90,7 @@ export async function fetchWebPageWithPuppeteer(url: string): Promise<ScrapedCon
     await autoScroll(page);
     
     // 再等待一下,確保所有內容都已載入
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise(resolve => setTimeout(resolve, 1000));
     
     // 獲取頁面標題
     const title = await page.title();
@@ -146,8 +146,8 @@ async function autoScroll(page: Page): Promise<void> {
   await page.evaluate(async () => {
     await new Promise<void>((resolve) => {
       let totalHeight = 0;
-      const distance = 500; // 每次滾動 500px
-      const maxScrolls = 20; // 最多滾動 20 次
+      const distance = 800; // 每次滾動 800px (增加滾動距離)
+      const maxScrolls = 10; // 最多滾動 10 次 (減少滾動次數)
       let scrollCount = 0;
       
       const timer = setInterval(() => {
@@ -163,7 +163,7 @@ async function autoScroll(page: Page): Promise<void> {
           window.scrollTo(0, 0);
           resolve();
         }
-      }, 200); // 每 200ms 滾動一次
+      }, 150); // 每 150ms 滾動一次 (減少等待時間)
     });
   });
   

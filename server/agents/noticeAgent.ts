@@ -146,12 +146,15 @@ ${JSON.stringify(locationData, null, 2)}
       const content = response.choices[0].message.content;
       
       // Handle content type (string or array)
-      const contentStr = typeof content === 'string' ? content : JSON.stringify(content);
+      let contentStr = typeof content === 'string' ? content : JSON.stringify(content);
       
       if (!contentStr || contentStr.trim().toLowerCase() === "null") {
         console.warn("[NoticeAgent] Insufficient data, returning null");
         return null;
       }
+      
+      // Clean up markdown code blocks (```json ... ```)
+      contentStr = contentStr.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
       
       // Parse JSON response
       const notice = JSON.parse(contentStr);

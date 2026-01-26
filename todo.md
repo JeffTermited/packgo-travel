@@ -2582,4 +2582,23 @@
 - [x] 實作頁面滾動邏輯 (觸發懶加載)
 - [x] 測試升級後的 WebScraperAgent
 - [x] 驗證抓取的內容完整性 (應 > 10,000 字元) - 實際 18,611 字元
+- [x] 儲存 checkpoint
+
+
+## MasterAgent 完整測試與優化
+- [x] 修復 CostAgent 的 JSON 解析錯誤
+- [x] 修復 NoticeAgent 的 JSON 解析錯誤
+- [x] 優化 Puppeteer 性能 (目標: 20-30 秒) - 實際 25.3 秒 (36% 性能提升)
+- [ ] 重新測試完整 MasterAgent 流程
+- [ ] 驗證 ContentAnalyzerAgent 標題格式 (包含「.」和「｜」,長度 40-80 字)
+- [ ] 儲存 checkpoint
+
+
+## AI 自動生成完整測試與報告
+- [x] 修復 ContentAnalyzerAgent 的 fallback 邏輯錯誤
+- [x] 執行完整的 AI 自動生成測試 (使用雄獅旅遊 URL) - 105.9 秒
+- [x] 檢驗所有 11 個 Agents 的互動關係並打分
+- [x] 檢查詳情頁面的排版細節 (時間、價格、格式)
+- [x] 撰寫完整的關聯性報告 (輸入→輸出流程)
+- [x] 提供建議修復的部分
 - [ ] 儲存 checkpoint
