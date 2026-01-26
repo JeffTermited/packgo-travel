@@ -2166,3 +2166,20 @@
 - [x] 找到「查看原始行程」按鈕的程式碼位置（TourDetail.tsx 第 774 行）
 - [x] 修復權限控制，只讓 admin 看到（加入 isAdmin && 條件）
 - [x] 同步修復 TourDetail.backup.tsx
+
+
+
+## 完整測試「自動生成行程」功能
+- [x] 使用管理員帳號登入網站
+- [x] 從管理後台測試自動生成行程功能
+- [x] 監控所有 agents 的運作情況
+- [x] 回報測試結果
+
+### 測試結果（2026-01-26）
+- 測試 URL: https://travel.liontravel.com/detail?NormGroupID=ffaabdeb-b371-441d-9a6b-c93e65db57c4&GroupID=26EU214CI-T&TourSource=Lion&Platform=APP
+- 總耗時: 15.6 秒
+- 生成行程 ID: 300002
+- 行程標題: 【旗艦德瑞】冰雪奇緣！少女峰、馬特宏峰、冰河列車、黃金快線奢華鐵道之旅10日｜冬季限定．一晚五星．免小費
+- 目的地: 德國、瑞士 法蘭克福 (預估入境點)
+- 天數: 10 天
+- 狀態: 已下架（需手動上架）
