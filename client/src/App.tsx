@@ -30,6 +30,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import FAQ from "./pages/FAQ";
 import ContactUs from "./pages/ContactUs";
 import SearchResults from "./pages/SearchResults";
+import Tours from "./pages/Tours";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentFailure from "./pages/PaymentFailure";
 
@@ -39,6 +40,7 @@ function Router() {
     <Switch>
       <Route path={"/"} component={Home} />
       <Route path={"/search"} component={SearchResults} />
+      <Route path={"/tours"} component={Tours} />
       <Route path={"/login"} component={Login} />
       <Route path={"/forgot-password"} component={ForgotPassword} />
       <Route path={"/reset-password"} component={ResetPassword} />
