@@ -121,6 +121,63 @@ async function captureScreenshots(url: string): Promise<{ screenshots: Buffer[];
       screenshots.push(screenshot);
     }
 
+    // 嘗試點擊標籤頁並截圖（針對雄獅旅遊）
+    const tabNames = ['每日行程', '飯店介紹', '費用說明', '出發日期'];
+    
+    for (const tabName of tabNames) {
+      try {
+        console.log(`[PuppeteerVision] Trying to click tab: ${tabName}...`);
+        
+        // 滾動到頁面頂部
+        await page.evaluate(() => window.scrollTo(0, 0));
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // 嘗試多種選擇器來找到標籤頁
+        const clicked = await page.evaluate((name) => {
+          // 方法 1: 查找包含文字的按鈕或連結
+          const elements = Array.from(document.querySelectorAll('button, a, div[role="tab"], li'));
+          const targetElement = elements.find(el => 
+            el.textContent?.trim() === name || 
+            el.textContent?.includes(name)
+          ) as HTMLElement;
+          
+          if (targetElement) {
+            targetElement.click();
+            return true;
+          }
+          
+          return false;
+        }, tabName);
+        
+        if (clicked) {
+          console.log(`[PuppeteerVision] Successfully clicked tab: ${tabName}`);
+          
+          // 等待內容載入
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          
+          // 截取標籤頁內容
+          const tabScreenshot = await page.screenshot({ type: 'png' }) as Buffer;
+          screenshots.push(tabScreenshot);
+          
+          // 滾動標籤頁內容並截取更多截圖
+          for (let i = 0; i < 2; i++) {
+            await page.evaluate((scrollY) => {
+              window.scrollBy(0, scrollY);
+            }, 1000);
+            
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            const scrollScreenshot = await page.screenshot({ type: 'png' }) as Buffer;
+            screenshots.push(scrollScreenshot);
+          }
+        } else {
+          console.log(`[PuppeteerVision] Could not find tab: ${tabName}`);
+        }
+      } catch (error: any) {
+        console.error(`[PuppeteerVision] Error clicking tab ${tabName}:`, error.message);
+      }
+    }
+
     console.log(`[PuppeteerVision] Captured ${screenshots.length} screenshots`);
     return { screenshots };
 
