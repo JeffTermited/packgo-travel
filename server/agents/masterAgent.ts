@@ -37,6 +37,7 @@ import {
   DEFAULT_FALLBACK_CONFIGS,
   type RetryConfig
 } from "./agentOrchestration";
+import { progressTracker } from "./progressTracker";
 
 export interface MasterAgentResult {
   success: boolean;
@@ -179,7 +180,8 @@ export class MasterAgent {
   async execute(
     url: string,
     userId?: number,
-    onProgress?: (step: string, percentage: number) => void
+    onProgress?: (step: string, percentage: number) => void,
+    taskId?: string
   ): Promise<MasterAgentResult> {
     const startTime = Date.now();
     console.log("[MasterAgent] Starting OPTIMIZED tour generation...");
@@ -189,6 +191,11 @@ export class MasterAgent {
     // Reset monitor for new execution
     this.monitor.reset();
     
+    // Initialize progress tracker if taskId is provided
+    if (taskId) {
+      progressTracker.createTask(taskId);
+    }
+    
     try {
       // ========================================================================
       // Phase 1: Web Scraping (Critical, Sequential)
@@ -196,6 +203,7 @@ export class MasterAgent {
       // ========================================================================
       onProgress?.("scraping", 10);
       this.monitor.startAgent('WebScraperAgent');
+      if (taskId) progressTracker.startPhase(taskId, 'web_scraper');
       
       const scrapingResult = await this.retryManager.executeWithRetry(
         () => this.webScraperAgent.execute(url),
@@ -209,6 +217,7 @@ export class MasterAgent {
       }
       
       this.monitor.completeAgent('WebScraperAgent', scrapingResult);
+      if (taskId) progressTracker.completePhase(taskId, 'web_scraper');
       const rawData = scrapingResult.data;
       console.log("[MasterAgent] ✓ Phase 1 completed: Web scraping");
       
@@ -218,6 +227,7 @@ export class MasterAgent {
       // ========================================================================
       onProgress?.("analyzing", 25);
       this.monitor.startAgent('ContentAnalyzerAgent');
+      if (taskId) progressTracker.startPhase(taskId, 'content_analyzer');
       
       // Run Content Analysis and Lion Title in parallel
       const [analysisResult, lionTravelTitle] = await Promise.all([
@@ -235,6 +245,7 @@ export class MasterAgent {
       }
       
       this.monitor.completeAgent('ContentAnalyzerAgent', analysisResult);
+      if (taskId) progressTracker.completePhase(taskId, 'content_analyzer');
       const analyzedContent = analysisResult.data;
       console.log("[MasterAgent] ✓ Phase 2 completed: Content analysis + Lion title");
       console.log("[MasterAgent] Originality score:", analyzedContent.originalityScore);
@@ -249,6 +260,10 @@ export class MasterAgent {
       
       this.monitor.startAgent('ColorThemeAgent');
       this.monitor.startAgent('ImagePromptAgent');
+      if (taskId) {
+        progressTracker.startPhase(taskId, 'color_theme');
+        progressTracker.startPhase(taskId, 'image_prompt');
+      }
       
       const [colorThemeResult, promptResult] = await Promise.all([
         this.retryManager.executeWithRetry(
@@ -277,6 +292,7 @@ export class MasterAgent {
         throw new Error(colorThemeResult.error || "Color theme generation failed");
       }
       this.monitor.completeAgent('ColorThemeAgent', colorThemeResult);
+      if (taskId) progressTracker.completePhase(taskId, 'color_theme');
       const colorTheme = colorThemeResult.data;
       
       // Handle ImagePromptAgent result
@@ -285,6 +301,7 @@ export class MasterAgent {
         throw new Error(promptResult.error || "Image prompt generation failed");
       }
       this.monitor.completeAgent('ImagePromptAgent', promptResult);
+      if (taskId) progressTracker.completePhase(taskId, 'image_prompt');
       const { heroPrompt, highlightPrompts, featurePrompts, styleGuide } = promptResult.data;
       
       console.log("[MasterAgent] ✓ Phase 3 completed: ColorTheme + ImagePrompt");
@@ -306,6 +323,15 @@ export class MasterAgent {
       this.monitor.startAgent('HotelAgent');
       this.monitor.startAgent('MealAgent');
       this.monitor.startAgent('FlightAgent');
+      if (taskId) {
+        progressTracker.startPhase(taskId, 'image_generation');
+        progressTracker.startPhase(taskId, 'itinerary');
+        progressTracker.startPhase(taskId, 'cost_agent');
+        progressTracker.startPhase(taskId, 'notice_agent');
+        progressTracker.startPhase(taskId, 'hotel_agent');
+        progressTracker.startPhase(taskId, 'meal_agent');
+        progressTracker.startPhase(taskId, 'flight_agent');
+      }
       
       const megaParallelResults = await Promise.allSettled([
         // Image Generation
@@ -369,12 +395,14 @@ export class MasterAgent {
         highlightImages = imageResult.value.data.highlightImages;
         featureImages = imageResult.value.data.featureImages;
         this.monitor.completeAgent('ImageGenerationAgent', imageResult.value);
+        if (taskId) progressTracker.completePhase(taskId, 'image_generation');
         console.log("[MasterAgent] ✓ ImageGenerationAgent completed");
       } else {
         const error = imageResult.status === 'rejected' 
           ? imageResult.reason 
           : new Error(imageResult.value?.error || "Image generation failed");
         this.monitor.failAgent('ImageGenerationAgent', error);
+        if (taskId) progressTracker.failPhase(taskId, 'image_generation', error.message);
         console.warn("[MasterAgent] ⚠ ImageGenerationAgent failed, using placeholder images");
         
         // Use placeholder images
@@ -395,12 +423,14 @@ export class MasterAgent {
       if (itineraryResult.status === 'fulfilled' && itineraryResult.value.success && itineraryResult.value.data) {
         itineraryData = JSON.stringify(itineraryResult.value.data.dailyItineraries);
         this.monitor.completeAgent('ItineraryAgent', itineraryResult.value);
+        if (taskId) progressTracker.completePhase(taskId, 'itinerary');
         console.log("[MasterAgent] ✓ ItineraryAgent completed");
       } else {
         const error = itineraryResult.status === 'rejected' 
           ? itineraryResult.reason 
           : new Error(itineraryResult.value?.error || "Itinerary generation failed");
         this.monitor.failAgent('ItineraryAgent', error);
+        if (taskId) progressTracker.failPhase(taskId, 'itinerary', error.message);
         console.warn("[MasterAgent] ⚠ ItineraryAgent failed, using empty data");
         itineraryData = JSON.stringify([]);
       }
@@ -410,8 +440,18 @@ export class MasterAgent {
       const detailResults = megaParallelResults.slice(2).map((result, index) => {
         const agentName = detailAgentNames[index];
         
+        // Map agent names to progress phase IDs
+        const agentToPhaseId: Record<string, string> = {
+          'CostAgent': 'cost_agent',
+          'NoticeAgent': 'notice_agent',
+          'HotelAgent': 'hotel_agent',
+          'MealAgent': 'meal_agent',
+          'FlightAgent': 'flight_agent'
+        };
+        
         if (result.status === 'fulfilled' && result.value.success && result.value.data) {
           this.monitor.completeAgent(agentName, result.value);
+          if (taskId) progressTracker.completePhase(taskId, agentToPhaseId[agentName]);
           console.log(`[MasterAgent] ✓ ${agentName} completed`);
           return result.value.data;
         } else {
@@ -420,6 +460,7 @@ export class MasterAgent {
             : new Error(result.value?.error || `${agentName} failed`);
           
           this.monitor.failAgent(agentName, error);
+          if (taskId) progressTracker.failPhase(taskId, agentToPhaseId[agentName], error.message);
           console.warn(`[MasterAgent] ⚠ ${agentName} failed, using fallback`);
           
           return this.fallbackManager.handleFailure(agentName, error);
@@ -437,6 +478,7 @@ export class MasterAgent {
       // Phase 5: Assemble Final Data
       // ========================================================================
       onProgress?.("assembling", 90);
+      if (taskId) progressTracker.startPhase(taskId, 'finalize');
       
       const finalData = {
         // Basic info
@@ -510,6 +552,10 @@ export class MasterAgent {
       console.log(executionReport);
       
       onProgress?.("completed", 100);
+      if (taskId) {
+        progressTracker.completePhase(taskId, 'finalize');
+        progressTracker.completeTask(taskId);
+      }
       
       return {
         success: true,
@@ -522,6 +568,11 @@ export class MasterAgent {
       
       const executionReport = this.monitor.generateReport();
       console.log(executionReport);
+      
+      // Mark task as failed in progress tracker
+      if (taskId) {
+        progressTracker.failTask(taskId, error instanceof Error ? error.message : "Unknown error");
+      }
       
       return {
         success: false,

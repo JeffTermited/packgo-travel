@@ -2560,3 +2560,22 @@
 - [x] 診斷「signal is aborted without reason」錯誤原因
 - [x] 將前端 tRPC 客戶端超時時間從 120 秒增加到 300 秒
 - [ ] 測試修復效果
+
+
+## 新增 AI 自動生成進度條功能 (2026-01-27)
+- [ ] 設計進度追蹤架構（使用 Server-Sent Events）
+- [ ] 實作後端進度回報 API
+- [ ] 更新 MasterAgent 發送進度事件
+- [ ] 實作前端進度條 UI 組件
+- [ ] 整合進度條到 ToursTab.tsx
+- [ ] 測試並驗證功能
+
+
+## 新增 AI 自動生成進度條功能 (2026-01-27)
+- [x] 設計進度追蹤架構（使用 Server-Sent Events）
+- [x] 實作後端進度回報 API（progressRouter.ts）
+- [x] 建立進度追蹤管理器（progressTracker.ts）
+- [x] 更新 MasterAgent 發送進度事件
+- [x] 實作前端進度條 UI 組件（GenerationProgress.tsx）
+- [x] 整合進度條到 ToursTab.tsx
+- [ ] 測試並驗證功能

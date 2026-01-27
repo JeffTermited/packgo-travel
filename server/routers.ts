@@ -520,7 +520,10 @@ Important guidelines:
         }
 
         const startTime = Date.now();
+        // Generate unique task ID for progress tracking
+        const taskId = `gen_${Date.now()}_${Math.random().toString(36).substring(7)}`;
         console.log("[AutoGenerateComplete] Starting complete generation from URL:", input.url);
+        console.log("[AutoGenerateComplete] Task ID:", taskId);
 
         try {
           // Import MasterAgent
@@ -533,7 +536,8 @@ Important guidelines:
             ctx.user.id,
             (step, percentage) => {
               console.log(`[AutoGenerateComplete] Progress: ${step} (${percentage}%)`);
-            }
+            },
+            taskId // Pass taskId for progress tracking
           );
           
           if (!result.success || !result.data) {
@@ -682,6 +686,7 @@ Important guidelines:
               message: `行程預覽已生成！耗時 ${totalTime.toFixed(1)} 秒`,
               tourId: null,
               previewMode: true,
+              taskId, // 返回 taskId 以便前端追蹤進度
             };
           }
 
@@ -705,6 +710,7 @@ Important guidelines:
             message: `行程生成成功！耗時 ${totalTime.toFixed(1)} 秒`,
             tourId: savedTour?.id,
             previewMode: false,
+            taskId, // 返回 taskId 以便前端追蹤進度
           };
         } catch (error: any) {
           const totalTime = (Date.now() - startTime) / 1000;
