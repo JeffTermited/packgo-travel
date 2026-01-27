@@ -226,12 +226,16 @@
   /* 手機版：強制橫排，防止破版 */
   .vertical-title {
     writing-mode: horizontal-tb;
+    line-height: 1.4;
+    letter-spacing: 0.05em;
   }
   
   /* 桌面版：啟用直排 */
   @media (min-width: 1024px) {
     .vertical-title {
       writing-mode: vertical-rl;
+      line-height: 1.8;
+      letter-spacing: 0.1em;
     }
   }
 }

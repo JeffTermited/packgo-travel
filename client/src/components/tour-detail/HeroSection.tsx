@@ -31,12 +31,14 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         <div className="w-full lg:w-1/3 flex flex-col lg:flex-row items-start gap-6 lg:gap-8">
           {/* 直式標題（桌面版直排，手機版橫排） */}
           <h1
-            className="vertical-title text-4xl lg:text-5xl xl:text-6xl font-serif font-bold"
+            className="vertical-title text-2xl lg:text-3xl xl:text-4xl font-serif font-bold max-w-[200px] lg:max-w-[300px]"
             style={{
               color: colorTheme.primary,
+              lineHeight: '1.8',
+              letterSpacing: '0.15em',
             }}
           >
-            {title}
+            {title.length > 30 ? title.slice(0, 30) + '...' : title}
           </h1>
 
           {/* 副標題 + 關鍵詞 */}

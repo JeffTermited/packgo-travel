@@ -39,7 +39,7 @@ export const StickyNav: React.FC<StickyNavProps> = ({ tourTitle, colorTheme }) =
 
   return (
     <nav
-      className="sticky top-0 z-50 bg-white border-b shadow-sm"
+      className="sticky top-20 z-40 bg-white border-b shadow-sm"
       style={{
         backgroundColor: colorTheme.secondary + "20", // 20% opacity
         borderBottomColor: colorTheme.primary + "20",
@@ -49,10 +49,11 @@ export const StickyNav: React.FC<StickyNavProps> = ({ tourTitle, colorTheme }) =
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
           {/* 行程名稱 */}
           <h2
-            className="text-lg lg:text-xl font-bold truncate max-w-md"
+            className="text-sm lg:text-base font-bold truncate max-w-[300px] lg:max-w-[500px]"
             style={{ color: colorTheme.primary }}
+            title={tourTitle}
           >
-            {tourTitle}
+            {tourTitle.length > 40 ? tourTitle.slice(0, 40) + '...' : tourTitle}
           </h2>
 
           {/* 快速連結 */}

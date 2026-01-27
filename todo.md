@@ -2485,3 +2485,16 @@
 - [x] 創建 PrintFriendlyAgent 模組
 - [x] 更新 WebScraperAgent 支援 PrintFriendly 模式
 - [x] 測試 PrintFriendly 整合 - 成功提取 5 天完整行程
+
+
+## 字體重疊與瀏覽器截圖方案
+- [ ] 修復行程詳情頁面頂部導航欄字體重疊問題
+- [ ] 研究使用 Manus 內建瀏覽器取代 PrintFriendly API
+- [ ] 實作 Manus 瀏覽器 + Vision API 整合方案
+
+
+## 字體重疊與瀏覽器截圖方案
+- [x] 修復行程詳情頁面頂部導航欄字體重疊問題
+- [x] 研究使用 Manus 內建瀏覽器取代 PrintFriendly API
+- [x] 實作 Puppeteer 截圖 + Vision API 整合方案 - 測試成功，33秒完成分析
+- [x] 成功提取：標題、目的地、天數、價格、4天行程、5項包含、7項不包含、3間飯店
