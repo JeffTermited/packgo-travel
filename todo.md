@@ -2595,3 +2595,17 @@
 - [x] ItineraryAgent Day 缺失問題 (添加空值檢查)
 - [x] MealAgent/FlightAgent 資料不足時拋出錯誤 (改用預設值)
 - [x] 測試所有修復效果 (耗時 108.8 秒，進度條即時更新正常)
+
+
+## 修復 tours.toggleStatus API 缺失錯誤 (2026-01-27)
+- [x] 檢查前端調用 toggleStatus 的位置
+- [x] 在後端 routers.ts 中添加 toggleStatus API
+- [x] 測試並驗證修復 (上架/下架功能正常運作)
+
+
+## 修復行程詳情頁面風格問題 (2026-01-27)
+- [ ] 檢查目前詳情頁面的設計
+- [ ] 重新設計詳情頁面風格（參考 sipincollection.com 和雄獅旅遊）
+- [ ] 添加返回鍵功能
+- [ ] 根據行程目的地/主題調整配色方案
+- [ ] 測試並驗證修復

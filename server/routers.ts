@@ -932,6 +932,40 @@ Important guidelines:
           });
         }
       }),
+
+    // Toggle tour status (admin only)
+    toggleStatus: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        // Check if user is admin
+        if (ctx.user.role !== "admin") {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Only admins can toggle tour status",
+          });
+        }
+
+        // Get current tour
+        const tour = await db.getTourById(input.id);
+        if (!tour) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Tour not found",
+          });
+        }
+
+        // Toggle status: active <-> inactive
+        const newStatus = tour.status === "active" ? "inactive" : "active";
+
+        // Update tour status
+        await db.updateTour(input.id, { status: newStatus });
+
+        return {
+          success: true,
+          newStatus,
+          message: `行程已${newStatus === "active" ? "上架" : "下架"}`,
+        };
+      }),
   }),
 
   // Booking management router
