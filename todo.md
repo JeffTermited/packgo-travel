@@ -2794,3 +2794,27 @@
 - [x] 引入 print.css 到 index.html
 - [x] 測試所有新功能（Sticky Navigation、下載按鈕、注意事項區塊）
 - [x] 儲存 checkpoint
+
+
+## 優化行程詳情頁面視覺設計（2026-01-27）
+- [x] 分析當前頁面的視覺問題（間距、排版、視覺層次）
+- [x] 優化 Hero Section 和下載按鈕區塊（減少留白、統一間距）
+- [x] 優化每日行程區塊（DailyItinerarySection）- 更緊湊的 Timeline 設計
+- [ ] 優化費用說明區塊（CostExplanationSection）- 簡化視覺元素
+- [ ] 優化航班資訊區塊（FlightInfoSection）- 更清晰的資訊呈現
+- [ ] 優化注意事項區塊（NoticeSection）- 統一圖示和間距
+- [ ] 優化基本資訊區塊 - 簡化排版
+- [ ] 測試優化結果並儲存 checkpoint
+
+## 優化 AI Agents 的用詞和文字生成邏輯（2026-01-27）
+- [x] 分析當前 Agents 的用詞問題（過於浮誇、修飾過度）
+- [x] 優化 ContentAnalyzerAgent 的 description prompt（改為雄獅風格）
+- [x] 優化 COPYWRITER_SKILL（改為專業旅遊業風格）
+- [ ] 測試重新生成行程，驗證用詞優化效果
+- [ ] 儲存 checkpoint
+
+## 重新調整 AI Agents 用詞策略（2026-01-27）
+- [x] 重新理解用戶需求：保留感官、場景、情緒，但避免過度哲學化
+- [x] 重新調整 COPYWRITER_SKILL（平衡感官細節與實用性）
+- [x] 重新調整 ContentAnalyzerAgent 的 description prompt
+- [x] 儲存 checkpoint

@@ -25,17 +25,17 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   colorTheme,
 }) => {
   return (
-    <section className="w-full py-8 lg:py-16 bg-gray-50">
-      <div className="container mx-auto px-4 flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
+    <section className="w-full py-6 lg:py-10 bg-gray-50">
+      <div className="container mx-auto px-4 flex flex-col lg:flex-row items-center gap-6 lg:gap-8">
         {/* 左側：直式標題 + 副標題 + 關鍵詞 */}
         <div className="w-full lg:w-1/3 flex flex-col lg:flex-row items-start gap-6 lg:gap-8">
           {/* 直式標題（桌面版直排，手機版橫排） */}
           <h1
-            className="vertical-title text-2xl lg:text-3xl xl:text-4xl font-serif font-bold max-w-[200px] lg:max-w-[300px]"
+            className="vertical-title text-xl lg:text-2xl xl:text-3xl font-serif font-bold max-w-[180px] lg:max-w-[250px]"
             style={{
               color: colorTheme.primary,
-              lineHeight: '1.8',
-              letterSpacing: '0.15em',
+              lineHeight: '1.6',
+              letterSpacing: '0.12em',
             }}
           >
             {title.length > 30 ? title.slice(0, 30) + '...' : title}
@@ -45,7 +45,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           <div className="flex flex-col gap-4">
             {subtitle && (
               <h2
-                className="text-xl lg:text-2xl font-bold"
+                className="text-lg lg:text-xl font-bold"
                 style={{ color: colorTheme.primary }}
               >
                 {subtitle}
@@ -78,7 +78,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             alt={title}
             className="w-full h-auto object-cover rounded-lg shadow-lg"
             style={{
-              maxHeight: "600px",
+              maxHeight: "500px",
               objectFit: "cover",
             }}
           />

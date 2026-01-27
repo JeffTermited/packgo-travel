@@ -197,16 +197,16 @@ export default function TourDetailSipin() {
       />
 
       {/* 下載按鈕 */}
-      <div className="w-full py-6 bg-white border-b no-print">
+      <div className="py-8 bg-gray-50">
         <div className="container mx-auto px-4 flex justify-center">
           <Button
             onClick={() => window.print()}
-            className="flex items-center gap-2 px-6 py-3 rounded-full text-white font-bold shadow-lg hover:shadow-xl transition-all"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-full text-white font-medium shadow-md hover:shadow-lg transition-all"
             style={{
               backgroundColor: colorTheme.accent,
             }}
           >
-            <Download className="h-5 w-5" />
+            <Download className="h-4 w-4" />
             下載行程 PDF
           </Button>
         </div>
