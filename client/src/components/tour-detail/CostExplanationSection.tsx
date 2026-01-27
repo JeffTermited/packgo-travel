@@ -33,32 +33,32 @@ export const CostExplanationSection: React.FC<CostExplanationSectionProps> = ({
   const { included = [], excluded = [], additionalCosts = [], notes } = costExplanation;
 
   return (
-    <section id="cost" className="w-full py-12 lg:py-16 bg-gray-50">
+    <section id="cost" className="w-full py-8 lg:py-10 bg-gray-50">
       <div className="container mx-auto px-4">
         <h2
-          className="text-3xl lg:text-4xl font-serif font-bold text-center mb-8 lg:mb-12"
+          className="text-2xl lg:text-3xl font-serif font-bold text-center mb-6"
           style={{ color: colorTheme.primary }}
         >
           費用說明
         </h2>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {/* Included */}
           {included.length > 0 && (
-            <div className="bg-white rounded-lg p-6 shadow-sm">
-              <div className="flex items-center gap-3 mb-4">
+            <div className="bg-white rounded-lg p-5 shadow-sm">
+              <div className="flex items-center gap-2 mb-3">
                 <CheckCircle2
-                  className="h-6 w-6"
+                  className="h-5 w-5"
                   style={{ color: colorTheme.accent }}
                 />
                 <h3
-                  className="text-xl font-bold"
+                  className="text-lg font-bold"
                   style={{ color: colorTheme.primary }}
                 >
                   費用包含
                 </h3>
               </div>
-              <ul className="space-y-3">
+              <ul className="space-y-2">
                 {included.map((item, index) => (
                   <li key={index} className="flex items-start gap-3">
                     <CheckCircle2
@@ -74,20 +74,20 @@ export const CostExplanationSection: React.FC<CostExplanationSectionProps> = ({
 
           {/* Excluded */}
           {excluded.length > 0 && (
-            <div className="bg-white rounded-lg p-6 shadow-sm">
-              <div className="flex items-center gap-3 mb-4">
+            <div className="bg-white rounded-lg p-5 shadow-sm">
+              <div className="flex items-center gap-2 mb-3">
                 <XCircle
-                  className="h-6 w-6"
+                  className="h-5 w-5"
                   style={{ color: "#EF4444" }}
                 />
                 <h3
-                  className="text-xl font-bold"
+                  className="text-lg font-bold"
                   style={{ color: colorTheme.primary }}
                 >
                   費用不包含
                 </h3>
               </div>
-              <ul className="space-y-3">
+              <ul className="space-y-2">
                 {excluded.map((item, index) => (
                   <li key={index} className="flex items-start gap-3">
                     <XCircle
@@ -104,20 +104,20 @@ export const CostExplanationSection: React.FC<CostExplanationSectionProps> = ({
 
         {/* Additional Costs */}
         {additionalCosts.length > 0 && (
-          <div className="bg-white rounded-lg p-6 shadow-sm mb-8">
-            <div className="flex items-center gap-3 mb-4">
+          <div className="bg-white rounded-lg p-5 shadow-sm mb-6">
+            <div className="flex items-center gap-2 mb-3">
               <AlertCircle
-                className="h-6 w-6"
+                className="h-5 w-5"
                 style={{ color: "#F59E0B" }}
               />
               <h3
-                className="text-xl font-bold"
+                className="text-lg font-bold"
                 style={{ color: colorTheme.primary }}
               >
                 額外費用說明
               </h3>
             </div>
-            <ul className="space-y-3">
+            <ul className="space-y-2">
               {additionalCosts.map((item, index) => (
                 <li key={index} className="flex items-start gap-3">
                   <AlertCircle
@@ -134,25 +134,25 @@ export const CostExplanationSection: React.FC<CostExplanationSectionProps> = ({
         {/* Notes */}
         {notes && (
           <div
-            className="rounded-lg p-6"
+            className="rounded-lg p-5"
             style={{
               backgroundColor: colorTheme.accent + "10",
               borderLeft: `4px solid ${colorTheme.accent}`,
             }}
           >
-            <div className="flex items-start gap-3">
+            <div className="flex items-start gap-2">
               <Info
-                className="h-6 w-6 flex-shrink-0 mt-0.5"
+                className="h-5 w-5 flex-shrink-0 mt-0.5"
                 style={{ color: colorTheme.accent }}
               />
               <div>
                 <h4
-                  className="font-bold mb-2"
+                  className="font-bold mb-1.5"
                   style={{ color: colorTheme.primary }}
                 >
                   重要提醒
                 </h4>
-                <p className="text-gray-700 leading-relaxed">{notes}</p>
+                <p className="text-gray-700 leading-relaxed text-sm">{notes}</p>
               </div>
             </div>
           </div>

@@ -48,10 +48,10 @@ export const FlightInfoSection: React.FC<FlightInfoSectionProps> = ({
   const { airline, outbound, inbound, description, features = [] } = flightInfo;
 
   return (
-    <section id="flights" className="w-full py-12 lg:py-16 bg-white">
+    <section id="flights" className="w-full py-8 lg:py-10 bg-white">
       <div className="container mx-auto px-4">
         <h2
-          className="text-3xl lg:text-4xl font-serif font-bold text-center mb-8 lg:mb-12"
+          className="text-2xl lg:text-3xl font-serif font-bold text-center mb-6"
           style={{ color: colorTheme.primary }}
         >
           航班資訊
@@ -59,43 +59,43 @@ export const FlightInfoSection: React.FC<FlightInfoSectionProps> = ({
 
         {/* Airline & Description */}
         {(airline || description) && (
-          <div className="text-center mb-8">
+          <div className="text-center mb-6">
             {airline && (
-              <p className="text-xl font-bold mb-2" style={{ color: colorTheme.primary }}>
+              <p className="text-lg font-bold mb-1.5" style={{ color: colorTheme.primary }}>
                 {airline}
               </p>
             )}
             {description && (
-              <p className="text-gray-700 max-w-3xl mx-auto leading-relaxed">
+              <p className="text-gray-700 max-w-3xl mx-auto leading-relaxed text-sm">
                 {description}
               </p>
             )}
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {/* Outbound Flight */}
           {outbound && (
-            <div className="bg-gray-50 rounded-lg p-6 shadow-sm">
-              <div className="flex items-center gap-3 mb-4">
+            <div className="bg-gray-50 rounded-lg p-5 shadow-sm">
+              <div className="flex items-center gap-2 mb-3">
                 <div
-                  className="flex items-center justify-center w-10 h-10 rounded-full"
+                  className="flex items-center justify-center w-8 h-8 rounded-full"
                   style={{ backgroundColor: colorTheme.accent + "20" }}
                 >
                   <Plane
-                    className="h-5 w-5"
+                    className="h-4 w-4"
                     style={{ color: colorTheme.accent }}
                   />
                 </div>
                 <h3
-                  className="text-xl font-bold"
+                  className="text-lg font-bold"
                   style={{ color: colorTheme.primary }}
                 >
                   去程航班
                 </h3>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {outbound.flightNo && (
                   <div className="flex items-start gap-3">
                     <span className="font-medium text-gray-600 min-w-[80px]">航班編號：</span>
@@ -139,26 +139,26 @@ export const FlightInfoSection: React.FC<FlightInfoSectionProps> = ({
 
           {/* Inbound Flight */}
           {inbound && (
-            <div className="bg-gray-50 rounded-lg p-6 shadow-sm">
-              <div className="flex items-center gap-3 mb-4">
+            <div className="bg-gray-50 rounded-lg p-5 shadow-sm">
+              <div className="flex items-center gap-2 mb-3">
                 <div
-                  className="flex items-center justify-center w-10 h-10 rounded-full"
+                  className="flex items-center justify-center w-8 h-8 rounded-full"
                   style={{ backgroundColor: colorTheme.accent + "20" }}
                 >
                   <Plane
-                    className="h-5 w-5 transform rotate-180"
+                    className="h-4 w-4 transform rotate-180"
                     style={{ color: colorTheme.accent }}
                   />
                 </div>
                 <h3
-                  className="text-xl font-bold"
+                  className="text-lg font-bold"
                   style={{ color: colorTheme.primary }}
                 >
                   回程航班
                 </h3>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {inbound.flightNo && (
                   <div className="flex items-start gap-3">
                     <span className="font-medium text-gray-600 min-w-[80px]">航班編號：</span>

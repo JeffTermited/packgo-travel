@@ -66,37 +66,37 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
   const displayNotice = hasData ? notice : defaultNotice;
 
   return (
-    <section id="notice" className="w-full py-12 lg:py-16 bg-white">
+    <section id="notice" className="w-full py-8 lg:py-10 bg-white">
       <div className="container mx-auto px-4">
         <h2
-          className="text-3xl lg:text-4xl font-serif font-bold text-center mb-8 lg:mb-12"
+          className="text-2xl lg:text-3xl font-serif font-bold text-center mb-6"
           style={{ color: colorTheme.primary }}
         >
           注意事項
         </h2>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* 行前準備 */}
           {displayNotice.preparation && displayNotice.preparation.length > 0 && (
-            <div className="bg-gray-50 rounded-lg p-6 shadow-sm">
-              <div className="flex items-center gap-3 mb-4">
+            <div className="bg-gray-50 rounded-lg p-5 shadow-sm">
+              <div className="flex items-center gap-2 mb-3">
                 <div
-                  className="flex items-center justify-center w-10 h-10 rounded-full"
+                  className="flex items-center justify-center w-8 h-8 rounded-full"
                   style={{ backgroundColor: colorTheme.accent + "20" }}
                 >
                   <FileText
-                    className="h-5 w-5"
+                    className="h-4 w-4"
                     style={{ color: colorTheme.accent }}
                   />
                 </div>
                 <h3
-                  className="text-xl font-bold"
+                  className="text-lg font-bold"
                   style={{ color: colorTheme.primary }}
                 >
                   行前準備
                 </h3>
               </div>
-              <ul className="space-y-3">
+              <ul className="space-y-2">
                 {displayNotice.preparation.map((item, index) => (
                   <li key={index} className="flex items-start gap-3">
                     <span
@@ -114,25 +114,25 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
 
           {/* 文化禮儀 */}
           {displayNotice.culturalNotes && displayNotice.culturalNotes.length > 0 && (
-            <div className="bg-gray-50 rounded-lg p-6 shadow-sm">
-              <div className="flex items-center gap-3 mb-4">
+            <div className="bg-gray-50 rounded-lg p-5 shadow-sm">
+              <div className="flex items-center gap-2 mb-3">
                 <div
-                  className="flex items-center justify-center w-10 h-10 rounded-full"
+                  className="flex items-center justify-center w-8 h-8 rounded-full"
                   style={{ backgroundColor: "#3B82F6" + "20" }}
                 >
                   <AlertCircle
-                    className="h-5 w-5"
+                    className="h-4 w-4"
                     style={{ color: "#3B82F6" }}
                   />
                 </div>
                 <h3
-                  className="text-xl font-bold"
+                  className="text-lg font-bold"
                   style={{ color: colorTheme.primary }}
                 >
                   文化禮儀
                 </h3>
               </div>
-              <ul className="space-y-3">
+              <ul className="space-y-2">
                 {displayNotice.culturalNotes.map((item, index) => (
                   <li key={index} className="flex items-start gap-3">
                     <span
@@ -150,25 +150,25 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
 
           {/* 健康安全 */}
           {displayNotice.healthSafety && displayNotice.healthSafety.length > 0 && (
-            <div className="bg-gray-50 rounded-lg p-6 shadow-sm">
-              <div className="flex items-center gap-3 mb-4">
+            <div className="bg-gray-50 rounded-lg p-5 shadow-sm">
+              <div className="flex items-center gap-2 mb-3">
                 <div
-                  className="flex items-center justify-center w-10 h-10 rounded-full"
+                  className="flex items-center justify-center w-8 h-8 rounded-full"
                   style={{ backgroundColor: "#10B981" + "20" }}
                 >
                   <Heart
-                    className="h-5 w-5"
+                    className="h-4 w-4"
                     style={{ color: "#10B981" }}
                   />
                 </div>
                 <h3
-                  className="text-xl font-bold"
+                  className="text-lg font-bold"
                   style={{ color: colorTheme.primary }}
                 >
                   健康安全
                 </h3>
               </div>
-              <ul className="space-y-3">
+              <ul className="space-y-2">
                 {displayNotice.healthSafety.map((item, index) => (
                   <li key={index} className="flex items-start gap-3">
                     <span
@@ -186,25 +186,25 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
 
           {/* 緊急聯絡 */}
           {displayNotice.emergency && displayNotice.emergency.length > 0 && (
-            <div className="bg-gray-50 rounded-lg p-6 shadow-sm">
-              <div className="flex items-center gap-3 mb-4">
+            <div className="bg-gray-50 rounded-lg p-5 shadow-sm">
+              <div className="flex items-center gap-2 mb-3">
                 <div
-                  className="flex items-center justify-center w-10 h-10 rounded-full"
+                  className="flex items-center justify-center w-8 h-8 rounded-full"
                   style={{ backgroundColor: "#EF4444" + "20" }}
                 >
                   <Phone
-                    className="h-5 w-5"
+                    className="h-4 w-4"
                     style={{ color: "#EF4444" }}
                   />
                 </div>
                 <h3
-                  className="text-xl font-bold"
+                  className="text-lg font-bold"
                   style={{ color: colorTheme.primary }}
                 >
                   緊急聯絡
                 </h3>
               </div>
-              <ul className="space-y-3">
+              <ul className="space-y-2">
                 {displayNotice.emergency.map((item, index) => (
                   <li key={index} className="flex items-start gap-3">
                     <span
