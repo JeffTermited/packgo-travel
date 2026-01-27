@@ -117,6 +117,29 @@ ${JSON.stringify(rawData.flight, null, 2)}
         };
       }
 
+      // Regex 補強：從 Markdown 中提取 HH:MM 格式的時間
+      if (flightData && typeof flightData === 'string') {
+        const timeRegex = /\b([0-2]?[0-9]):([0-5][0-9])\b/g;
+        const times = flightData.match(timeRegex);
+        
+        if (times && times.length >= 4) {
+          // 假設順序：去程起飛、去程抵達、回程起飛、回程抵達
+          if (!parsedFlightData.outbound.departureTime || parsedFlightData.outbound.departureTime === 'TBA') {
+            parsedFlightData.outbound.departureTime = times[0];
+          }
+          if (!parsedFlightData.outbound.arrivalTime || parsedFlightData.outbound.arrivalTime === 'TBA') {
+            parsedFlightData.outbound.arrivalTime = times[1];
+          }
+          if (!parsedFlightData.inbound.departureTime || parsedFlightData.inbound.departureTime === 'TBA') {
+            parsedFlightData.inbound.departureTime = times[2];
+          }
+          if (!parsedFlightData.inbound.arrivalTime || parsedFlightData.inbound.arrivalTime === 'TBA') {
+            parsedFlightData.inbound.arrivalTime = times[3];
+          }
+          console.log(`[FlightAgent] Regex 補強成功，提取到 ${times.length} 個時間`);
+        }
+      }
+
       // Validate word count for description
       if (parsedFlightData.description) {
         const wordCount = parsedFlightData.description.length;

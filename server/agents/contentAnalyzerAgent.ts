@@ -125,10 +125,10 @@ export class ContentAnalyzerAgent {
     }
     
     // Use SKILL.md instructions instead of hardcoded prompt
-    const systemPrompt = this.skillInstructions || `你是一位資深的高端旅遊文案編輯,專門為頂級旅遊品牌撰寫詩意化的行程標題。
+    const systemPrompt = this.skillInstructions || `你是一位資深旅遊雜誌主編 (Senior Travel Magazine Editor)，專門為旅遊業撰寫有資訊量的銷售標題。
 
 你的標題風格特點:
-1. 使用精煉的形容詞修飾目的地或體驗 (例如: 雅奢、秘境、光影、極致)
+1. 使用精煉的形容詞修飾目的地或體驗 (例如: 雅奢、秘境、極致)
 2. 加入動詞增加動感 (例如: 尋蹤、漫遊、走進、探索)
 3. 使用比喻和意象,讓標題更有畫面感
 4. 保持簡潔,15-25 個中文字
@@ -137,9 +137,12 @@ export class ContentAnalyzerAgent {
 參考範例:
 - "北海道二世谷雅奢6日" (強調奢華體驗)
 - "秘境尋蹤 中島漫遊" (強調神秘探索)
-- "光影之城 走進藝術家眼中的旅程" (強調藝術體驗)
 - "京都禪意之旅 米其林懷石料理" (強調文化與美食)
 - "托斯卡尼艷陽下 品味義式慢活" (強調生活方式)
+
+禁用詞彙 (Negative Constraints):
+- 禁止使用：靈魂、洗滞、光影、呵喃、心靈、深度對話、完美融合
+- 避免過於哲學化或抽象的詞彙
 
 請根據行程資訊,生成一個符合上述風格的詩意化標題。`;
     
@@ -154,8 +157,7 @@ export class ContentAnalyzerAgent {
 
 範例風格:
 - "北海道二世谷雅奢6日" (強調奢華)
-- "秘境尋蹤 中島漫遊" (強調探索)
-- "光影之城 走進藝術家眼中的旅程" (強調藝術)
+- "秘境尋蹤 中島漫遊" (強調探索
 
 請生成:
 1. 一個 15-25 個中文字的詩意化標題
@@ -218,8 +220,8 @@ export class ContentAnalyzerAgent {
       const poeticTitle = result.poeticTitle;
       const highlights = result.highlights || [];
       
-      // Validate length
-      if (poeticTitle && poeticTitle.length >= 15 && poeticTitle.length <= 30) {
+      // Validate length (寬容檢查：±30% 誤差，15-30 字 → 10-39 字)
+      if (poeticTitle && poeticTitle.length >= 10 && poeticTitle.length <= 39) {
         console.log(`[ContentAnalyzerAgent] Poetic title generated: ${poeticTitle}`);
         console.log(`[ContentAnalyzerAgent] Highlights count: ${highlights.length}`);
         console.log(`[ContentAnalyzerAgent] Reasoning: ${result.reasoning}`);
@@ -227,7 +229,7 @@ export class ContentAnalyzerAgent {
       }
       
       // If too long, truncate
-      if (poeticTitle && poeticTitle.length > 30) {
+      if (poeticTitle && poeticTitle.length > 39) {
         console.warn(`[ContentAnalyzerAgent] Poetic title too long (${poeticTitle.length} chars), truncating...`);
         return { poeticTitle: poeticTitle.substring(0, 30), highlights };
       }
@@ -286,13 +288,13 @@ export class ContentAnalyzerAgent {
         const content = response.choices[0]?.message?.content;
         const title = typeof content === "string" ? content.trim() : null;
         
-        // Validate word count (20-30 characters)
-        if (title && title.length >= 20 && title.length <= 30) {
+        // Validate word count (寬容檢查：±30% 誤差，20-30 字 → 14-39 字)
+        if (title && title.length >= 14 && title.length <= 39) {
           return title;
         }
         
         // If word count is invalid, force truncate or retry
-        if (title && title.length > 30) {
+        if (title && title.length > 39) {
           console.warn(`[ContentAnalyzerAgent] Title too long (${title.length} chars), truncating...`);
           return title.substring(0, 30);
         }
@@ -331,8 +333,11 @@ export class ContentAnalyzerAgent {
 1. 使用感官細節描寫，但不要過度哲學化
 2. 場景化敘事，但保持具體景點名稱
 3. 喚起情緒共鳴，但不要延伸到心靈層面
-4. 避免「與自然的深度對話」、「心靈洗禮」、「完美融合」等抽象詞彙
-5. 長度控制在 100-120 字
+4. 長度控制在 100-120 字
+
+禁用詞彙 (Negative Constraints):
+- 禁止使用：靈魂、洗滞、光影、呵喃、心靈、深度對話、完美融合
+- 避免過於哲學化或抽象的詞彙
 
 範例：「在北海道的雪白世界中，踩著雪地吱吱作響。入住洞爺湖米其林一星鑰旅宿，泡在露天溫泉看雪花飄落。搭乘遊船探索中島，欣賞湖光山色。前往二世谷滑雪度假村，體驗粉雪飄落的刺激。參觀札幌市區，品嚐剛捕撈的海膽在舌尖融化。」
 
@@ -351,13 +356,13 @@ export class ContentAnalyzerAgent {
         const content = response.choices[0]?.message?.content;
         const description = typeof content === "string" ? content.trim() : null;
         
-        // Validate word count (100-120 characters)
-        if (description && description.length >= 100 && description.length <= 120) {
+        // Validate word count (寬容檢查：±30% 誤差，100-120 字 → 70-156 字)
+        if (description && description.length >= 70 && description.length <= 156) {
           return description;
         }
         
         // If word count is invalid, force truncate or retry
-        if (description && description.length > 120) {
+        if (description && description.length > 156) {
           console.warn(`[ContentAnalyzerAgent] Description too long (${description.length} chars), truncating...`);
           return description.substring(0, 120);
         }
@@ -412,13 +417,13 @@ export class ContentAnalyzerAgent {
         const content = response.choices[0]?.message?.content;
         const subtitle = typeof content === "string" ? content.trim() : null;
         
-        // Validate word count (30-40 characters)
-        if (subtitle && subtitle.length >= 30 && subtitle.length <= 40) {
+        // Validate word count (寬容檢查：±30% 誤差，30-40 字 → 21-52 字)
+        if (subtitle && subtitle.length >= 21 && subtitle.length <= 52) {
           return subtitle;
         }
         
         // If word count is invalid, force truncate or retry
-        if (subtitle && subtitle.length > 40) {
+        if (subtitle && subtitle.length > 52) {
           console.warn(`[ContentAnalyzerAgent] Hero subtitle too long (${subtitle.length} chars), truncating...`);
           return subtitle.substring(0, 40);
         }

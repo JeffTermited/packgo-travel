@@ -69,14 +69,14 @@ export async function generateLionTravelTitle(rawData: any): Promise<string> {
       const content = response.choices[0]?.message?.content;
       const title = typeof content === "string" ? content.trim() : null;
       
-      // Validate length (40-80 characters)
-      if (title && title.length >= 40 && title.length <= 80) {
+      // Validate length (寬容檢查：±30% 誤差，40-80 字 → 28-104 字)
+      if (title && title.length >= 28 && title.length <= 104) {
         console.log(`[LionTitleGenerator] Title generated: ${title} (${title.length} chars)`);
         return title;
       }
       
       // If too long, truncate and add days suffix
-      if (title && title.length > 80) {
+      if (title && title.length > 104) {
         console.warn(`[LionTitleGenerator] Title too long (${title.length} chars), truncating...`);
         const truncated = title.substring(0, 75);
         // Find last . and truncate there

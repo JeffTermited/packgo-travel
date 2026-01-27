@@ -131,8 +131,8 @@ ${JSON.stringify(locationData, null, 2)}
 }
 
 注意：
-1. 注意事項總字數必須控制在 200-300 字之間
-2. 每個類別不超過 80 字
+1. 注意事項總字數控制在 200-300 字之間（寬容檢查：±30% 誤差，即 140-390 字）
+2. 每個類別不超過 80 字（寬容檢查：±30% 誤差，即不超過 104 字）
 3. 重點放在最重要和最實用的提醒
 4. 如果資料不足，請回傳 null`;
 
@@ -161,8 +161,14 @@ ${JSON.stringify(locationData, null, 2)}
         contentStr = contentStr.replace(/^```\s*/, "").replace(/\s*```$/, "");
       }
       
-      // Parse JSON response
-      const notice = JSON.parse(contentStr);
+      // Parse JSON response with error handling
+      let notice;
+      try {
+        notice = JSON.parse(contentStr);
+      } catch (parseError) {
+        console.error("[NoticeAgent] JSON parse failed, using default template:", parseError);
+        return this.getDefaultNotice(locationData);
+      }
       
       // Validate and normalize notice structure
       const normalizedNotice = this.normalizeNotice(notice);
@@ -190,7 +196,9 @@ ${JSON.stringify(locationData, null, 2)}
         return this.generateNotice(locationData, retryCount + 1);
       }
       
-      return null;
+      // Use default template as final fallback
+      console.warn("[NoticeAgent] All retries failed, using default template");
+      return this.getDefaultNotice(locationData);
     }
   }
   
@@ -285,6 +293,45 @@ ${JSON.stringify(locationData, null, 2)}
       culturalNotes: toArray(notice?.culturalNotes),
       healthSafety: toArray(notice?.healthSafety),
       emergency: toArray(notice?.emergency),
+    };
+  }
+
+  /**
+   * Get default notice template when LLM fails
+   */
+  private getDefaultNotice(locationData: any): {
+    preparation: string[];
+    culturalNotes: string[];
+    healthSafety: string[];
+    emergency: string[];
+  } {
+    const country = locationData?.country || "目的地";
+    
+    return {
+      preparation: [
+        "請確認護照效期至少6個月以上",
+        "建議提前兌換當地貨幣或準備信用卡",
+        "攜帶常用藥品及個人用品",
+        "確認簽證要求並提前辦理"
+      ],
+      culturalNotes: [
+        "尊重當地文化習俗與宗教信仰",
+        "進入宗教場所請著裝得體",
+        "拍照前請先詢問是否允許",
+        "遵守當地法律規定"
+      ],
+      healthSafety: [
+        "建議購買旅遊保險",
+        "注意飲食衛生，避免生食",
+        "隨身攜帶緊急聯絡資訊",
+        "保管好個人財物"
+      ],
+      emergency: [
+        `${country}緊急電話：請查詢當地緊急服務號碼`,
+        "駐外館處24小時急難救助電話：請查詢外交部網站",
+        "遺失護照請立即聯絡領隊及駐外單位",
+        "如遇緊急狀況請保持冷靜並尋求協助"
+      ]
     };
   }
 }
