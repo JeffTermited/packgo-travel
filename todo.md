@@ -91,3 +91,16 @@
 - [ ] 電子報訂閱功能實作
 - [ ] 聯絡表單
 - [ ] 多語系支援（中/英）
+
+### Phase 7: 測試與驗證（2026-01-27）
+- [ ] 在管理後台生成新行程測試生成時間是否 < 90 秒
+- [ ] 驗證 Unsplash 圖片補齊功能是否正常運作
+- [ ] 檢查行程詳情頁面 Hero Section 的 16:9 Aspect Ratio
+- [ ] 檢查行程詳情頁面 Feature Cards 的 4:3 Aspect Ratio
+- [ ] 測試 Sticky Navigation 是否固定在頂部
+- [ ] 測試 Back to Top 按鈕是否在滾動超過 500px 時顯示
+
+### Phase 8: 優化行程列表頁面
+- [x] 將 Aspect Ratio 規範應用到首頁行程卡片
+- [x] 確保首頁行程卡片使用 object-cover
+- [x] 確保整體視覺一致性

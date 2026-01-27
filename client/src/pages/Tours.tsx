@@ -140,7 +140,7 @@ export default function Tours() {
                     <Link key={tour.id} href={`/tours/${tour.id}`}>
                       <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group rounded-3xl border-0">
                         {/* 行程圖片 */}
-                        <div className="relative h-64 overflow-hidden">
+                        <div className="relative aspect-[4/3] overflow-hidden">
                           {tour.imageUrl || tour.heroImage ? (
                             <img
                               src={tour.imageUrl || tour.heroImage}

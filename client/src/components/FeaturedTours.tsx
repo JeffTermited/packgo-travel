@@ -45,7 +45,7 @@ export default function FeaturedTours() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {featuredTours.map((tour) => (
                 <Card key={tour.id} className="group overflow-hidden border-2 border-black rounded-3xl rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300">
-                  <div className="relative aspect-[16/9] overflow-hidden">
+                  <div className="relative aspect-[4/3] overflow-hidden">
                     <img 
                       src={tour.imageUrl || '/images/tour-placeholder.jpg'} 
                       alt={tour.title} 
