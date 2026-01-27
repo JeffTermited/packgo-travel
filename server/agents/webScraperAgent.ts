@@ -1,15 +1,21 @@
 /**
  * Web Scraper Agent
  * Responsible for extracting tour information from URLs
+ * 
+ * 支援兩種模式：
+ * 1. PrintFriendly 模式（推薦）：將網頁轉換為 PDF 後分析
+ * 2. 傳統模式：直接爬取網頁 HTML 並用 LLM 分析
  */
 
 import { fetchWebPage, extractTourInfoWithLLM } from "../webScraper";
 import { getKeyInstructions } from "./skillLoader";
+import { PrintFriendlyAgent } from "./printFriendlyAgent";
 
 export interface WebScraperResult {
   success: boolean;
   data?: any;
   error?: string;
+  method?: 'printfriendly' | 'traditional';
 }
 
 /**
@@ -18,16 +24,82 @@ export interface WebScraperResult {
  */
 export class WebScraperAgent {
   private skillInstructions: string;
+  private printFriendlyAgent: PrintFriendlyAgent;
+  private usePrintFriendly: boolean;
 
-  constructor() {
+  constructor(options?: { usePrintFriendly?: boolean }) {
     this.skillInstructions = getKeyInstructions('WebScraperAgent');
     console.log('[WebScraperAgent] SKILL loaded:', this.skillInstructions.length, 'chars');
+    
+    // 預設使用 PrintFriendly（如果有配置 API Key）
+    this.usePrintFriendly = options?.usePrintFriendly ?? !!process.env.PRINTFRIENDLY_API_KEY;
+    this.printFriendlyAgent = new PrintFriendlyAgent();
+    
+    console.log(`[WebScraperAgent] Mode: ${this.usePrintFriendly ? 'PrintFriendly' : 'Traditional'}`);
   }
+  
   /**
    * Execute web scraping
    */
   async execute(url: string): Promise<WebScraperResult> {
     console.log("[WebScraperAgent] Starting web scraping for URL:", url);
+    
+    // 優先使用 PrintFriendly 模式
+    if (this.usePrintFriendly) {
+      const result = await this.executeWithPrintFriendly(url);
+      
+      // 如果 PrintFriendly 成功，直接返回
+      if (result.success) {
+        return result;
+      }
+      
+      // 如果 PrintFriendly 失敗，fallback 到傳統模式
+      console.log("[WebScraperAgent] PrintFriendly failed, falling back to traditional mode");
+    }
+    
+    // 傳統模式
+    return await this.executeTraditional(url);
+  }
+  
+  /**
+   * 使用 PrintFriendly API 執行爬取
+   */
+  private async executeWithPrintFriendly(url: string): Promise<WebScraperResult> {
+    console.log("[WebScraperAgent] Using PrintFriendly mode");
+    
+    try {
+      const result = await this.printFriendlyAgent.execute(url);
+      
+      if (!result.success || !result.data) {
+        return {
+          success: false,
+          error: result.error || "PrintFriendly extraction failed",
+          method: 'printfriendly',
+        };
+      }
+      
+      console.log("[WebScraperAgent] PrintFriendly extraction successful");
+      
+      return {
+        success: true,
+        data: result.data,
+        method: 'printfriendly',
+      };
+    } catch (error) {
+      console.error("[WebScraperAgent] PrintFriendly error:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+        method: 'printfriendly',
+      };
+    }
+  }
+  
+  /**
+   * 使用傳統模式執行爬取
+   */
+  private async executeTraditional(url: string): Promise<WebScraperResult> {
+    console.log("[WebScraperAgent] Using traditional mode");
     
     try {
       // Step 1: Fetch web page content
@@ -51,12 +123,14 @@ export class WebScraperAgent {
       return {
         success: true,
         data: tourInfo,
+        method: 'traditional',
       };
     } catch (error) {
-      console.error("[WebScraperAgent] Error:", error);
+      console.error("[WebScraperAgent] Traditional mode error:", error);
       return {
         success: false,
         error: error instanceof Error ? error.message : "Unknown error",
+        method: 'traditional',
       };
     }
   }
@@ -81,8 +155,9 @@ export class WebScraperAgent {
       return false;
     }
     
-    if (!data.pricing || !data.pricing.price) {
-      console.error("[WebScraperAgent] Missing required field: pricing.price");
+    // pricing.price 或 pricing.basePrice 都可以
+    if (!data.pricing || (!data.pricing.price && !data.pricing.basePrice)) {
+      console.error("[WebScraperAgent] Missing required field: pricing.price or pricing.basePrice");
       return false;
     }
     

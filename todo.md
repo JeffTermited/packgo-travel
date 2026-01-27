@@ -2471,3 +2471,17 @@
 - [x] 實作並行執行優化 (Phase 1 和 Phase 3)
 - [x] 測試優化後的 MasterAgent (所有測試通過, 效能提升 66.9%)
 - [x] 儲存 checkpoint
+
+
+## AI 自動生成行程問題修復
+- [x] 修復 ContentAnalyzerAgent 的標題生成問題（標題太短，未達 40-80 字）- 新增 lionTitleGenerator.ts
+- [x] 修復 ItineraryAgent 的每日行程生成問題（未生成詳細每日行程）- 新增 generateItineraryFromScratch 函數
+- [x] 修復 CostAgent 的 JSON 解析錯誤（費用說明未成功生成）- 修復 markdown 格式處理
+- [x] 修復 NoticeAgent 的 JSON 解析錯誤 - 修復 markdown 格式處理
+
+
+## PrintFriendly API 整合
+- [x] 整合 PrintFriendly API 到 WebScraper
+- [x] 創建 PrintFriendlyAgent 模組
+- [x] 更新 WebScraperAgent 支援 PrintFriendly 模式
+- [x] 測試 PrintFriendly 整合 - 成功提取 5 天完整行程

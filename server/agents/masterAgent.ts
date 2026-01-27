@@ -20,6 +20,7 @@ import { NoticeAgent } from "./noticeAgent";
 import { HotelAgent } from "./hotelAgent";
 import { MealAgent } from "./mealAgent";
 import { FlightAgent } from "./flightAgent";
+import { generateLionTravelTitle } from "./lionTitleGenerator";
 import { getKeyInstructions } from "./skillLoader";
 import {
   RetryManager,
@@ -214,6 +215,11 @@ export class MasterAgent {
       const analyzedContent = analysisResult.data;
       console.log("[MasterAgent] ✓ Content analysis completed");
       console.log("[MasterAgent] Originality score:", analyzedContent.originalityScore);
+      
+      // Generate Lion Travel style title (40-80 chars)
+      console.log("[MasterAgent] Generating Lion Travel style title...");
+      const lionTravelTitle = await generateLionTravelTitle(rawData);
+      console.log("[MasterAgent] ✓ Lion Travel title generated:", lionTravelTitle);
       
       // ========================================================================
       // Phase 3: Parallel Execution - Color Theme + Image Prompts
@@ -415,7 +421,7 @@ export class MasterAgent {
       
       const finalData = {
         // Basic info
-        poeticTitle: analyzedContent.poeticTitle,
+        poeticTitle: lionTravelTitle, // Use Lion Travel style title (40-80 chars)
         title: analyzedContent.title,
         description: analyzedContent.description,
         productCode: rawData.basicInfo?.productCode || "",

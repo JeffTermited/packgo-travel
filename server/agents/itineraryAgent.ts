@@ -55,9 +55,29 @@ export class ItineraryAgent {
     console.log("[ItineraryAgent] Starting itinerary generation...");
     
     try {
-      // Validate input data
-      if (!rawData || !rawData.itinerary || rawData.itinerary.length === 0) {
-        console.warn("[ItineraryAgent] Insufficient itinerary data, returning null");
+      // Validate input data - support both 'itinerary' and 'dailyItinerary' field names
+      const itineraryData = rawData?.itinerary || rawData?.dailyItinerary || [];
+      const days = rawData?.duration?.days || 5;
+      
+      console.log(`[ItineraryAgent] Found ${itineraryData.length} days of itinerary data`);
+      
+      // If no itinerary data but we have days, generate based on available info
+      if (itineraryData.length === 0) {
+        console.log("[ItineraryAgent] No itinerary data found, generating from scratch...");
+        
+        // Try to generate itinerary from highlights and attractions
+        const generatedItineraries = await this.generateItineraryFromScratch(rawData, days);
+        
+        if (generatedItineraries.length > 0) {
+          return {
+            success: true,
+            data: {
+              dailyItineraries: generatedItineraries,
+            },
+          };
+        }
+        
+        console.warn("[ItineraryAgent] Could not generate itinerary, returning empty");
         return {
           success: true,
           data: {
@@ -69,8 +89,8 @@ export class ItineraryAgent {
       const dailyItineraries: DailyItinerary[] = [];
       
       // Generate itinerary for each day
-      for (let i = 0; i < rawData.itinerary.length; i++) {
-        const dayData = rawData.itinerary[i];
+      for (let i = 0; i < itineraryData.length; i++) {
+        const dayData = itineraryData[i];
         
         console.log(`[ItineraryAgent] Generating itinerary for Day ${i + 1}...`);
         
@@ -152,11 +172,19 @@ ${JSON.stringify(dayData, null, 2)}
       const content = response.choices[0].message.content;
       
       // Handle content type (string or array)
-      const contentStr = typeof content === 'string' ? content : JSON.stringify(content);
+      let contentStr = typeof content === 'string' ? content : JSON.stringify(content);
       
       if (!contentStr || contentStr.trim().toLowerCase() === "null") {
         console.warn(`[ItineraryAgent] Insufficient data for Day ${dayNumber}, returning null`);
         return null;
+      }
+      
+      // Remove markdown code blocks if present
+      contentStr = contentStr.trim();
+      if (contentStr.startsWith("```json")) {
+        contentStr = contentStr.replace(/^```json\s*/, "").replace(/\s*```$/, "");
+      } else if (contentStr.startsWith("```")) {
+        contentStr = contentStr.replace(/^```\s*/, "").replace(/\s*```$/, "");
       }
       
       // Parse JSON response
@@ -236,5 +264,107 @@ ${JSON.stringify(dayData, null, 2)}
     }));
     
     return itinerary;
+  }
+  
+  /**
+   * Generate itinerary from scratch when no itinerary data is available
+   */
+  private async generateItineraryFromScratch(
+    rawData: any,
+    days: number
+  ): Promise<DailyItinerary[]> {
+    const destinationCountry = rawData.location?.destinationCountry || "";
+    const destinationCity = rawData.location?.destinationCity || "";
+    const highlights = rawData.highlights || [];
+    const attractions = rawData.attractions || [];
+    const hotelName = rawData.accommodation?.hotelName || "";
+    
+    if (!destinationCity && !destinationCountry) {
+      console.warn("[ItineraryAgent] Insufficient data for scratch generation");
+      return [];
+    }
+    
+    const systemPrompt = `你是一位資深旅遊行程規劃師，專門為高端旅遊品牌設計詳細的每日行程。
+
+你的行程規劃特點：
+1. 時間安排合理，考慮交通、用餐、休息
+2. 景點串聯有邏輯，按照地理位置安排順序
+3. 每日行程豐富但不過於緊湊
+4. 包含當地特色餐食和住宿安排`;
+    
+    const userPrompt = `請為以下旅遊行程生成 ${days} 天的詳細每日行程：
+
+目的地國家: ${destinationCountry}
+目的地城市: ${destinationCity}
+行程亮點: ${highlights.slice(0, 5).join("、")}
+景點: ${attractions.map((a: any) => a.name || a).slice(0, 5).join("、")}
+住宿: ${hotelName}
+
+請以 JSON 陣列格式回傳，每天的格式如下：
+[
+  {
+    "day": 1,
+    "title": "Day 1：抵達目的地，初探城市風光",
+    "activities": [
+      {
+        "time": "09:00-12:00",
+        "title": "活動名稱",
+        "description": "活動描述（50-80字）",
+        "transportation": "交通方式",
+        "location": "地點"
+      }
+    ],
+    "meals": {
+      "breakfast": "早餐安排",
+      "lunch": "午餐安排",
+      "dinner": "晚餐安排"
+    },
+    "accommodation": "住宿安排"
+  }
+]
+
+注意：
+1. 每天安排 3-5 個活動
+2. 第一天通常是抵達和初步遊覽
+3. 最後一天通常是自由活動和返程
+4. 中間幾天安排主要景點和體驗`;
+    
+    try {
+      const response = await invokeLLM({
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt }
+        ],
+        response_format: { type: "json_object" },
+      });
+      
+      const content = response.choices[0]?.message?.content;
+      let contentStr = typeof content === "string" ? content : JSON.stringify(content);
+      
+      if (!contentStr) {
+        console.warn("[ItineraryAgent] Empty response from LLM");
+        return [];
+      }
+      
+      // Remove markdown code blocks if present
+      contentStr = contentStr.trim();
+      if (contentStr.startsWith("```json")) {
+        contentStr = contentStr.replace(/^```json\s*/, "").replace(/\s*```$/, "");
+      } else if (contentStr.startsWith("```")) {
+        contentStr = contentStr.replace(/^```\s*/, "").replace(/\s*```$/, "");
+      }
+      
+      const parsed = JSON.parse(contentStr);
+      
+      // Handle both array and object with itinerary key
+      const itineraries = Array.isArray(parsed) ? parsed : (parsed.itinerary || parsed.dailyItineraries || []);
+      
+      console.log(`[ItineraryAgent] Generated ${itineraries.length} days from scratch`);
+      return itineraries;
+      
+    } catch (error) {
+      console.error("[ItineraryAgent] Error generating from scratch:", error);
+      return [];
+    }
   }
 }

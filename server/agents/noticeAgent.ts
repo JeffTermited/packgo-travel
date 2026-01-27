@@ -146,11 +146,19 @@ ${JSON.stringify(locationData, null, 2)}
       const content = response.choices[0].message.content;
       
       // Handle content type (string or array)
-      const contentStr = typeof content === 'string' ? content : JSON.stringify(content);
+      let contentStr = typeof content === 'string' ? content : JSON.stringify(content);
       
       if (!contentStr || contentStr.trim().toLowerCase() === "null") {
         console.warn("[NoticeAgent] Insufficient data, returning null");
         return null;
+      }
+      
+      // Remove markdown code blocks if present
+      contentStr = contentStr.trim();
+      if (contentStr.startsWith("```json")) {
+        contentStr = contentStr.replace(/^```json\s*/, "").replace(/\s*```$/, "");
+      } else if (contentStr.startsWith("```")) {
+        contentStr = contentStr.replace(/^```\s*/, "").replace(/\s*```$/, "");
       }
       
       // Parse JSON response
