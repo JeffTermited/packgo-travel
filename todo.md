@@ -2617,3 +2617,10 @@
 - [x] 實作階段三：智慧視覺救援（Vision Fallback）
 - [x] 整合三階段策略到 WebScraperAgent
 - [x] 測試並驗證優化效果 (發現 Vision 救援失敗問題)
+
+
+## 修復 Vision 救援失敗問題 (2026-01-27)
+- [x] 檢查 Puppeteer Vision 錯誤日誌
+- [x] 識別 Vision 救援失敗的根本原因 (資料合併邏輯問題)
+- [x] 修復 Puppeteer 導航問題 (修復 executeVisionFallback 資料合併)
+- [x] 測試並驗證修復效果 (Vision 救援成功提取完整行程資料)

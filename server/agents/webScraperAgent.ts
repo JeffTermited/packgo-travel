@@ -488,17 +488,17 @@ ${markdown.substring(0, 15000)}
       // 轉換為標準格式
       const visionData = this.convertPuppeteerVisionData(result.extractedData);
       
-      // 只使用 Vision 資料來填補缺失的部分
-      const mergedData: any = {};
+      // 使用 Vision 資料來填補缺失的部分，但保留 existingData 的完整結構
+      const mergedData: any = { ...existingData };
       
       // 如果缺少價格，使用 Vision 的價格
-      if (!existingData.pricing?.price && visionData.pricing?.price) {
-        mergedData.pricing = visionData.pricing;
+      if (!mergedData.pricing?.price && visionData.pricing?.price) {
+        mergedData.pricing = { ...mergedData.pricing, ...visionData.pricing };
         console.log("[WebScraperAgent] Vision 救援：補充價格資訊");
       }
       
       // 如果缺少每日行程，使用 Vision 的行程
-      if ((!existingData.dailyItinerary || existingData.dailyItinerary.length === 0) && 
+      if ((!mergedData.dailyItinerary || mergedData.dailyItinerary.length === 0) && 
           visionData.dailyItinerary && visionData.dailyItinerary.length > 0) {
         mergedData.dailyItinerary = visionData.dailyItinerary;
         mergedData.itinerary = visionData.dailyItinerary;
@@ -506,20 +506,20 @@ ${markdown.substring(0, 15000)}
       }
       
       // 如果缺少標題，使用 Vision 的標題
-      if (!existingData.basicInfo?.title && visionData.basicInfo?.title) {
-        mergedData.basicInfo = visionData.basicInfo;
+      if (!mergedData.basicInfo?.title && visionData.basicInfo?.title) {
+        mergedData.basicInfo = { ...mergedData.basicInfo, ...visionData.basicInfo };
         console.log("[WebScraperAgent] Vision 救援：補充基本資訊");
       }
       
       // 如果缺少目的地，使用 Vision 的目的地
-      if (!existingData.location?.destinationCountry && visionData.location?.destinationCountry) {
-        mergedData.location = visionData.location;
+      if (!mergedData.location?.destinationCountry && visionData.location?.destinationCountry) {
+        mergedData.location = { ...mergedData.location, ...visionData.location };
         console.log("[WebScraperAgent] Vision 救援：補充目的地資訊");
       }
       
       // 如果缺少天數，使用 Vision 的天數
-      if (!existingData.duration?.days && visionData.duration?.days) {
-        mergedData.duration = visionData.duration;
+      if (!mergedData.duration?.days && visionData.duration?.days) {
+        mergedData.duration = { ...mergedData.duration, ...visionData.duration };
         console.log("[WebScraperAgent] Vision 救援：補充天數資訊");
       }
       
