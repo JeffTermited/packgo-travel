@@ -121,7 +121,7 @@ export class ContentAnalyzerAgent {
     // Data validation
     if (!destinationCity && !destinationCountry) {
       console.warn("[ContentAnalyzerAgent] Insufficient data for poetic title generation");
-      return "精選行程"; // Fallback
+      return { poeticTitle: "精選行程", highlights: [] }; // Fallback
     }
     
     // Use SKILL.md instructions instead of hardcoded prompt
@@ -212,7 +212,9 @@ export class ContentAnalyzerAgent {
         throw new Error("Empty response from LLM");
       }
       
-      const result = JSON.parse(content);
+      // Convert content to string if it's an array
+      const contentStr = typeof content === 'string' ? content : JSON.stringify(content);
+      const result = JSON.parse(contentStr);
       const poeticTitle = result.poeticTitle;
       const highlights = result.highlights || [];
       

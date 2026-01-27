@@ -511,6 +511,9 @@ export class MasterAgent {
         // Highlights
         highlights: JSON.stringify(analyzedContent.highlights),
         
+        // Key Features (required field)
+        keyFeatures: JSON.stringify(analyzedContent.highlights || []),
+        
         // Feature Images
         featureImages: JSON.stringify(featureImageUrls),
         

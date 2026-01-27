@@ -657,7 +657,7 @@ Important guidelines:
             flights: masterData.flights || "",
             
             // Metadata
-            originalityScore: masterData.originalityScore || 0,
+            originalityScore: String(masterData.originalityScore || 0),
             
             // Source
             sourceUrl: input.url,
@@ -997,19 +997,39 @@ Important guidelines:
 
         // Create booking
         const booking = await db.createBooking({
-          ...input,
+          tourId: input.tourId,
+          departureId: 0, // TODO: Add departure selection
           userId: ctx.user.id,
-          totalAmount,
-          status: "pending",
+          customerName: input.contactName,
+          customerEmail: input.contactEmail,
+          customerPhone: input.contactPhone,
+          numberOfAdults: input.participants,
+          numberOfChildrenWithBed: 0,
+          numberOfChildrenNoBed: 0,
+          numberOfInfants: 0,
+          numberOfSingleRooms: 0,
+          totalPrice: totalAmount,
+          depositAmount: Math.floor(totalAmount * 0.2), // 20% deposit
+          remainingAmount: Math.floor(totalAmount * 0.8),
+          message: input.specialRequests,
+          bookingStatus: "pending",
         });
 
         // Send confirmation email
         await sendBookingConfirmationEmail({
           to: input.contactEmail,
+          customerName: input.contactName,
+          customerEmail: input.contactEmail,
           bookingId: booking.id,
           tourTitle: tour.title,
-          participants: input.participants,
-          totalAmount,
+          departureDate: "TBD", // TODO: Add departure date selection
+          returnDate: "TBD", // TODO: Calculate return date
+          numberOfAdults: input.participants,
+          numberOfChildren: 0,
+          numberOfInfants: 0,
+          totalPrice: totalAmount,
+          depositAmount: Math.floor(totalAmount * 0.2),
+          remainingAmount: Math.floor(totalAmount * 0.8),
         });
 
         return booking;
@@ -1064,7 +1084,7 @@ Important guidelines:
         }
 
         // Update booking status
-        await db.updateBooking(input.id, { status: "cancelled" });
+        await db.updateBooking(input.id, { bookingStatus: "cancelled" });
 
         return { success: true };
       }),
@@ -1100,9 +1120,191 @@ Important guidelines:
         }
 
         const { id, status } = input;
-        await db.updateBooking(id, { status });
+        await db.updateBooking(id, { bookingStatus: status });
 
         return { success: true };
+      }),
+  }),
+
+  // Departures management router
+  departures: router({
+    // Get all departures for a tour
+    list: publicProcedure
+      .input(z.object({ tourId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getTourDepartures(input.tourId);
+      }),
+
+    // Get single departure
+    getById: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getDepartureById(input.id);
+      }),
+
+    // Create new departure (admin only)
+    create: adminProcedure
+      .input(
+        z.object({
+          tourId: z.number(),
+          departureDate: z.date(),
+          returnDate: z.date(),
+          totalSlots: z.number(),
+          adultPrice: z.number(),
+          childPriceWithBed: z.number().optional(),
+          childPriceNoBed: z.number().optional(),
+          infantPrice: z.number().optional(),
+          singleRoomSupplement: z.number().optional(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        return await db.createDeparture(input);
+      }),
+
+    // Update departure (admin only)
+    update: adminProcedure
+      .input(
+        z.object({
+          id: z.number(),
+          departureDate: z.date().optional(),
+          returnDate: z.date().optional(),
+          totalSlots: z.number().optional(),
+          adultPrice: z.number().optional(),
+          childPriceWithBed: z.number().optional(),
+          childPriceNoBed: z.number().optional(),
+          infantPrice: z.number().optional(),
+          singleRoomSupplement: z.number().optional(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const { id, ...updates } = input;
+        return await db.updateDeparture(id, updates);
+      }),
+
+    // Delete departure (admin only)
+    delete: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.deleteDeparture(input.id);
+        return { success: true };
+      }),
+  }),
+
+  // Inquiries management router
+  inquiries: router({
+    // Get all inquiries (admin only)
+    list: adminProcedure.query(async () => {
+      return await db.getAllInquiries();
+    }),
+
+    // Get single inquiry
+    getById: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const inquiry = await db.getInquiryById(input.id);
+        if (!inquiry) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Inquiry not found",
+          });
+        }
+        // Check if user owns this inquiry or is admin
+        if (inquiry.userId !== ctx.user.id && ctx.user.role !== "admin") {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "You don't have permission to view this inquiry",
+          });
+        }
+        return inquiry;
+      }),
+
+    // Create new inquiry
+    create: publicProcedure
+      .input(
+        z.object({
+          name: z.string().min(1),
+          email: z.string().email(),
+          phone: z.string().optional(),
+          subject: z.string().min(1),
+          message: z.string().min(1),
+        })
+      )
+      .mutation(async ({ input, ctx }) => {
+        return await db.createInquiry({
+          customerName: input.name,
+          customerEmail: input.email,
+          customerPhone: input.phone,
+          subject: input.subject,
+          message: input.message,
+          inquiryType: "general",
+          userId: ctx.user?.id,
+          status: "new",
+        });
+      }),
+
+    // Update inquiry status (admin only)
+    updateStatus: adminProcedure
+      .input(
+        z.object({
+          id: z.number(),
+          status: z.enum(["new", "in_progress", "replied", "resolved", "closed"]),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const { id, status } = input;
+        return await db.updateInquiry(id, { status });
+      }),
+
+    // Get messages for an inquiry
+    getMessages: protectedProcedure
+      .input(z.object({ inquiryId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const inquiry = await db.getInquiryById(input.inquiryId);
+        if (!inquiry) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Inquiry not found",
+          });
+        }
+        // Check if user owns this inquiry or is admin
+        if (inquiry.userId !== ctx.user.id && ctx.user.role !== "admin") {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "You don't have permission to view these messages",
+          });
+        }
+        return await db.getInquiryMessages(input.inquiryId);
+      }),
+
+    // Add message to inquiry
+    addMessage: protectedProcedure
+      .input(
+        z.object({
+          inquiryId: z.number(),
+          message: z.string().min(1),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const inquiry = await db.getInquiryById(input.inquiryId);
+        if (!inquiry) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Inquiry not found",
+          });
+        }
+        // Check if user owns this inquiry or is admin
+        if (inquiry.userId !== ctx.user.id && ctx.user.role !== "admin") {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "You don't have permission to add messages to this inquiry",
+          });
+        }
+        return await db.createInquiryMessage({
+          inquiryId: input.inquiryId,
+          senderId: ctx.user.id,
+          senderType: ctx.user.role === "admin" ? "admin" : "customer",
+          message: input.message,
+        });
       }),
   }),
 });

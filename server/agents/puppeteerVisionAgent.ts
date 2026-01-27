@@ -206,10 +206,9 @@ JSON 格式範例：
     });
 
     const content = response.choices[0]?.message?.content || '';
-    console.log('[PuppeteerVision] Raw LLM response length:', content.length);
-    
-    // 嘗試解析 JSON
-    let jsonStr = content;
+    // Convert content to string if it's an array
+    let jsonStr = typeof content === 'string' ? content : JSON.stringify(content);
+    console.log('[PuppeteerVision] Raw LLM response length:', jsonStr.length);
     
     // 移除 markdown 代碼塊
     if (jsonStr.includes('```json')) {

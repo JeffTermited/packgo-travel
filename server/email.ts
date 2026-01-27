@@ -5,6 +5,7 @@ import { notifyOwner } from "./_core/notification";
  */
 
 interface BookingEmailData {
+  to: string; // Customer email address
   customerName: string;
   customerEmail: string;
   bookingId: number;

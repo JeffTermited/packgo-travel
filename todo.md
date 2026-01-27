@@ -2624,3 +2624,51 @@
 - [x] 識別 Vision 救援失敗的根本原因 (資料合併邏輯問題)
 - [x] 修復 Puppeteer 導航問題 (修復 executeVisionFallback 資料合併)
 - [x] 測試並驗證修復效果 (Vision 救援成功提取完整行程資料)
+
+
+## 修復 Booking 系統 TypeScript 錯誤 (2026-01-27)
+- [ ] 檢查所有 TypeScript 錯誤
+- [ ] 修復 BookingEmailData 類型定義問題
+- [ ] 修復 getUserBookings 函數缺失問題
+- [ ] 修復 booking status 欄位類型問題
+- [ ] 測試並驗證修復
+
+## 重新設計行程詳情頁面風格 (2026-01-27)
+- [ ] 參考雄獅旅遊的行程詳情頁面設計
+- [ ] 實作圖文交錯佈局（Zigzag）
+- [ ] 實作根據行程目的地/主題自動調整配色方案
+- [ ] 添加返回鍵功能
+- [ ] 添加行程下載功能（PDF）
+- [ ] 測試並驗證新設計
+
+## 優化 AI 自動生成速度 (2026-01-27)
+- [ ] 分析目前 AI 生成流程的瓶頸
+- [ ] 實作快取機制（常用資料）
+- [ ] 優化 LLM 呼叫次數
+- [ ] 測試並驗證優化效果
+
+
+## 修復 Booking 系統 TypeScript 錯誤 (2026-01-27)
+- [x] 檢查所有 TypeScript 錯誤（從 63 個減少到 25 個）
+- [x] 修復 BookingEmailData 類型定義問題（添加 to 欄位）
+- [x] 修復 getUserBookings 函數缺失問題（添加函數實作）
+- [x] 修復 booking status 欄位類型問題（改為 bookingStatus）
+- [x] 添加 departures 和 inquiries router（完整 CRUD API）
+- [x] 修復 Agent 相關的 LLM content 類型錯誤
+- [x] 修復 originalityScore 類型不匹配（number → string）
+- [x] 安裝 jsdom 類型定義（@types/jsdom）
+- [ ] 修復剩餘的前端組件錯誤（25 個）
+
+## 重新設計行程詳情頁面風格 (2026-01-27)
+- [ ] 參考雄獅旅遊的行程詳情頁面設計
+- [ ] 實作圖文交錯佈局（Zigzag）
+- [ ] 實作根據行程目的地/主題自動調整配色方案
+- [ ] 添加返回鍵功能
+- [ ] 添加行程下載功能（PDF）
+- [ ] 測試並驗證新設計
+
+## 優化 AI 自動生成速度 (2026-01-27)
+- [ ] 分析目前 AI 生成流程的瓶頸
+- [ ] 實作快取機制（常用資料）
+- [ ] 優化 LLM 呼叫次數
+- [ ] 測試並驗證優化效果

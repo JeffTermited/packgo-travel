@@ -490,6 +490,20 @@ export async function deleteDeparture(id: number): Promise<void> {
 // ============================================
 
 /**
+ * Get bookings for a specific user
+ */
+export async function getUserBookings(userId: number) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get user bookings: database not available");
+    return [];
+  }
+
+  const result = await db.select().from(bookings).where(eq(bookings.userId, userId));
+  return result;
+}
+
+/**
  * Get all bookings with optional filtering
  */
 export async function getAllBookings(filters?: {

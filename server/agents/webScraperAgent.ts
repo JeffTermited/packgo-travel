@@ -431,7 +431,9 @@ ${markdown.substring(0, 15000)}
         return null;
       }
       
-      const extractedData = JSON.parse(content);
+      // Convert content to string if it's an array
+      const contentStr = typeof content === 'string' ? content : JSON.stringify(content);
+      const extractedData = JSON.parse(contentStr);
       
       // 驗證每日行程是否有效
       if (!extractedData.dailyItinerary || extractedData.dailyItinerary.length === 0) {
