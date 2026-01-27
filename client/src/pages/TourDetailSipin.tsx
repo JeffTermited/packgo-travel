@@ -18,6 +18,9 @@ import { HeroSection } from "@/components/tour-detail/HeroSection";
 import { FeaturesSection } from "@/components/tour-detail/FeaturesSection";
 import { ImageTextBlock } from "@/components/tour-detail/ImageTextBlock";
 import { FullWidthSection } from "@/components/tour-detail/FullWidthSection";
+import { DailyItinerarySection } from "@/components/tour-detail/DailyItinerarySection";
+import { CostExplanationSection } from "@/components/tour-detail/CostExplanationSection";
+import { FlightInfoSection } from "@/components/tour-detail/FlightInfoSection";
 
 // 解析 JSON 字串
 const parseJSON = (str: string | null | undefined, defaultValue: any = null) => {
@@ -74,47 +77,101 @@ export default function TourDetailSipin() {
 
   if (error || !tour) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">找不到行程</h2>
-          <Button onClick={() => navigate("/tours")}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            返回行程列表
-          </Button>
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <div className="flex-grow flex items-center justify-center bg-white">
+          <div className="text-center max-w-md mx-auto px-4">
+            <div className="mb-6">
+              <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+                <svg className="w-10 h-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">找不到此行程</h2>
+              <p className="text-gray-600 mb-6">
+                {error ? '資料載入失敗，請稍後再試。' : '此行程不存在或已被移除。'}
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Button onClick={() => navigate("/")} className="bg-primary hover:bg-red-700 text-white rounded-full">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                返回首頁
+              </Button>
+              <Button onClick={() => navigate("/search")} variant="outline" className="border-gray-300 rounded-full">
+                瀏覽所有行程
+              </Button>
+            </div>
+          </div>
         </div>
+        <Footer />
       </div>
     );
   }
 
-  // 解析資料
+  // 解析資料（加入錯誤處理）
   const heroImage = tour.heroImage || tour.imageUrl || "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1200";
-  const heroSubtitle = tour.heroSubtitle || `探索 ${tour.destinationCountry} ${tour.destinationCity} 的美好`;
-  const keyFeatures = parseJSON(tour.keyFeatures, []);
+  const heroSubtitle = tour.heroSubtitle || `探索 ${tour.destinationCountry || '未知目的地'} ${tour.destinationCity || ''} 的美好`;
+  
+  // 安全解析 keyFeatures，支援字串陣列和物件陣列
+  let keyFeatures = [];
+  try {
+    keyFeatures = parseJSON(tour.keyFeatures, []);
+    if (!Array.isArray(keyFeatures)) {
+      console.warn('[TourDetailSipin] keyFeatures is not an array, using empty array');
+      keyFeatures = [];
+    }
+  } catch (error) {
+    console.error('[TourDetailSipin] Error parsing keyFeatures:', error);
+    keyFeatures = [];
+  }
+  
   // 從 keyFeatures 物件陣列中提取 title 欄位作為字串陣列
-  const keywords = keyFeatures.slice(0, 5).map((feature: any) => 
-    typeof feature === 'string' ? feature : (feature.title || feature.subtitle || feature.description || '')
-  ).filter((keyword: string) => keyword.length > 0);
+  const keywords = keyFeatures.slice(0, 5).map((feature: any) => {
+    if (typeof feature === 'string') return feature;
+    if (typeof feature === 'object' && feature !== null) {
+      return feature.title || feature.subtitle || feature.description || '';
+    }
+    return '';
+  }).filter((keyword: string) => keyword.length > 0);
 
-  // 準備 Features 資料
+  // 準備 Features 資料（加入錯誤處理）
   const attractions = parseJSON(tour.attractions, []);
-  const features = attractions.slice(0, 3).map((attr: any, index: number) => ({
+  const features = Array.isArray(attractions) ? attractions.slice(0, 3).map((attr: any, index: number) => ({
     label: `特色 ${index + 1}`,
-    title: attr.name || `景點 ${index + 1}`,
-    description: attr.description || "探索這個令人驚嘆的目的地",
-    image: attr.image || `https://images.unsplash.com/photo-${1488646953014 + index}?w=600`,
-    imageAlt: attr.imageAlt || attr.name || `景點 ${index + 1}`,
-  }));
+    title: attr?.name || `景點 ${index + 1}`,
+    description: attr?.description || "探索這個令人驚嘆的目的地",
+    image: attr?.image || `https://images.unsplash.com/photo-${1488646953014 + index}?w=600`,
+    imageAlt: attr?.imageAlt || attr?.name || `景點 ${index + 1}`,
+  })) : [];
 
-  // 準備 ImageTextBlock 資料
+  // 準備 ImageTextBlock 資料（加入錯誤處理）
   const hotels = parseJSON(tour.hotels, []);
-  const firstHotel = hotels[0];
+  const firstHotel = Array.isArray(hotels) && hotels.length > 0 ? hotels[0] : null;
 
-  // 準備 FullWidthSection 資料
+  // 準備 FullWidthSection 資料（加入錯誤處理）
   const meals = parseJSON(tour.meals, []);
-  const smallImages = meals.slice(0, 3).map((meal: any) => ({
-    url: meal.image || "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=200",
-    alt: meal.name || "美食",
-  }));
+  const smallImages = Array.isArray(meals) ? meals.slice(0, 3).map((meal: any) => ({
+    url: meal?.image || "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=200",
+    alt: meal?.name || "美食",
+  })) : [];
+
+  // 準備每日行程資料（加入錯誤處理）
+  const itineraryDetailed = parseJSON(tour.itineraryDetailed, []);
+  if (!Array.isArray(itineraryDetailed)) {
+    console.warn('[TourDetailSipin] itineraryDetailed is not an array');
+  }
+
+  // 準備費用說明資料（加入錯誤處理）
+  const costExplanation = parseJSON(tour.costExplanation, null);
+  if (costExplanation && typeof costExplanation !== 'object') {
+    console.warn('[TourDetailSipin] costExplanation is not an object');
+  }
+
+  // 準備航班資訊（加入錯誤處理）
+  const flightInfo = parseJSON(tour.flights, null);
+  if (flightInfo && typeof flightInfo !== 'object') {
+    console.warn('[TourDetailSipin] flightInfo is not an object');
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
@@ -157,6 +214,30 @@ export default function TourDetailSipin() {
           mainImage={meals[0]?.image || "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800"}
           mainImageAlt={meals[0]?.name || "美食"}
           smallImages={smallImages}
+          colorTheme={colorTheme}
+        />
+      )}
+
+      {/* 每日行程區塊 */}
+      {itineraryDetailed.length > 0 && (
+        <DailyItinerarySection
+          itineraries={itineraryDetailed}
+          colorTheme={colorTheme}
+        />
+      )}
+
+      {/* 費用說明區塊 */}
+      {costExplanation && (
+        <CostExplanationSection
+          costExplanation={costExplanation}
+          colorTheme={colorTheme}
+        />
+      )}
+
+      {/* 航班資訊區塊 */}
+      {flightInfo && (
+        <FlightInfoSection
+          flightInfo={flightInfo}
           colorTheme={colorTheme}
         />
       )}

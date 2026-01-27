@@ -2764,3 +2764,14 @@
 - [x] 修復 TourDetailSipin.tsx 中的 keyFeatures 渲染邏輯（從物件陣列提取 title 欄位）
 - [x] 測試修復結果，確認頁面正常顯示（無錯誤）
 - [x] 儲存 checkpoint
+
+
+## 完善行程詳情頁面內容與優化（2026-01-27）
+- [x] 查看當前 TourDetailSipin 頁面結構和資料庫資料
+- [x] 補充每日行程區塊（itineraryDetailed）- 顯示完整每日活動安排
+- [x] 補充費用說明區塊（costExplanation）- 顯示包含/不包含項目
+- [x] 補充航班資訊區塊（flights）- 顯示去回程航班詳情
+- [x] 優化 keyFeatures 資料結構 - 保持現有物件陣列格式，前端加強錯誤處理
+- [x] 添加錯誤邊界處理 - 當資料格式異常時顯示友善錯誤訊息
+- [x] 測試所有新增區塊的顯示效果（成功）
+- [x] 儲存 checkpoint
