@@ -164,8 +164,11 @@ ${JSON.stringify(locationData, null, 2)}
       // Parse JSON response
       const notice = JSON.parse(contentStr);
       
+      // Validate and normalize notice structure
+      const normalizedNotice = this.normalizeNotice(notice);
+      
       // Validate word count (total should be 200-300 characters)
-      const totalWords = this.calculateTotalWords(notice);
+      const totalWords = this.calculateTotalWords(normalizedNotice);
       
       if (totalWords < 200 || totalWords > 300) {
         console.warn(`[NoticeAgent] Notice word count (${totalWords}) out of range, retrying...`);
@@ -174,11 +177,11 @@ ${JSON.stringify(locationData, null, 2)}
           return this.generateNotice(locationData, retryCount + 1);
         } else {
           console.warn(`[NoticeAgent] Notice word count still out of range after ${MAX_RETRIES} retries, using truncation`);
-          return this.truncateNotice(notice, 300);
+          return this.truncateNotice(normalizedNotice, 300);
         }
       }
       
-      return notice;
+      return normalizedNotice;
     } catch (error) {
       console.error("[NoticeAgent] Error generating notice:", error);
       
@@ -256,5 +259,32 @@ ${JSON.stringify(locationData, null, 2)}
     }
     
     return notice;
+  }
+  
+  /**
+   * Normalize notice structure to ensure all fields are arrays
+   */
+  private normalizeNotice(notice: any): {
+    preparation: string[];
+    culturalNotes: string[];
+    healthSafety: string[];
+    emergency: string[];
+  } {
+    const toArray = (value: any): string[] => {
+      if (Array.isArray(value)) {
+        return value.filter(item => typeof item === 'string');
+      }
+      if (typeof value === 'string') {
+        return [value];
+      }
+      return [];
+    };
+    
+    return {
+      preparation: toArray(notice?.preparation),
+      culturalNotes: toArray(notice?.culturalNotes),
+      healthSafety: toArray(notice?.healthSafety),
+      emergency: toArray(notice?.emergency),
+    };
   }
 }

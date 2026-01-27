@@ -2498,3 +2498,20 @@
 - [x] 研究使用 Manus 內建瀏覽器取代 PrintFriendly API
 - [x] 實作 Puppeteer 截圖 + Vision API 整合方案 - 測試成功，33秒完成分析
 - [x] 成功提取：標題、目的地、天數、價格、4天行程、5項包含、7項不包含、3間飯店
+
+
+## AI 自動生成行程功能修復 (2026-01-26)
+- [ ] 移除「快速提取」選項，只保留「完整生成」
+- [ ] 修復網址提取錯誤（signal is aborted without reason）
+- [ ] 深度檢查所有 Agent 函數的實作
+- [ ] 重啟伺服器確保修改生效
+
+
+## AI 自動生成行程功能修復 (2026-01-27)
+- [x] 移除「快速提取」選項，只保留「完整生成」模式
+- [x] 移除 ToursTab.tsx 中的 autoGenerateMutation 引用
+- [x] 移除 generationMode state（固定使用完整生成模式）
+- [x] 修復資料結構轉換（hotels → accommodation, meals, flights）
+- [x] 端到端測試成功（行程 ID: 390005，執行時間: 131.96 秒）
+- [x] 標題格式符合雄獅旅遊風格（68 字，包含「｜」和「.」分隔符）
+

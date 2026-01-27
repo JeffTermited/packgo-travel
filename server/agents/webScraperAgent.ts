@@ -170,6 +170,23 @@ export class WebScraperAgent {
       destinationCity = parts.slice(1).join(' ') || parts[0] || '';
     }
     
+    // 將 hotels 轉換為 accommodation 格式（HotelAgent 期望的格式）
+    const accommodation = (extractedData.hotels || []).map((hotel: any) => ({
+      name: hotel.name || '',
+      stars: hotel.rating || hotel.stars || '',
+      description: hotel.description || '',
+      location: hotel.location || '',
+    }));
+    
+    // 從 dailyItinerary 提取餐食資訊
+    const meals = (extractedData.dailyItinerary || []).map((day: any) => ({
+      day: day.day || 0,
+      breakfast: day.meals?.includes('早') || day.meals?.includes('breakfast'),
+      lunch: day.meals?.includes('午') || day.meals?.includes('lunch'),
+      dinner: day.meals?.includes('晚') || day.meals?.includes('dinner'),
+      description: day.meals || '',
+    }));
+    
     return {
       basicInfo: {
         title: extractedData.title || '',
@@ -188,12 +205,21 @@ export class WebScraperAgent {
         price,
         basePrice: price,
         currency: 'TWD',
+        includes: extractedData.includes || [],
+        excludes: extractedData.excludes || [],
       },
       highlights: extractedData.highlights || [],
       dailyItinerary: extractedData.dailyItinerary || [],
+      itinerary: extractedData.dailyItinerary || [], // ItineraryAgent 期望的欄位名
       includes: extractedData.includes || [],
       excludes: extractedData.excludes || [],
+      // HotelAgent 期望的欄位
+      accommodation: accommodation.length > 0 ? accommodation : extractedData.hotels || [],
       hotels: extractedData.hotels || [],
+      // MealAgent 期望的欄位
+      meals: meals.length > 0 ? meals : [],
+      // FlightAgent 期望的欄位（從截圖中通常無法提取航班資訊）
+      flights: [],
     };
   }
   
