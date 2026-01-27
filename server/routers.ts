@@ -502,6 +502,65 @@ Important guidelines:
         return await getUserTourGenerationJobs(ctx.user.id);
       }),
 
+    // Submit async tour generation job (admin only)
+    submitAsyncGeneration: protectedProcedure
+      .input(z.object({ 
+        url: z.string().url(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Check if user is admin
+        if (ctx.user.role !== "admin") {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Only admins can auto-generate tours",
+          });
+        }
+
+        const { addTourGenerationJob } = await import("./queue");
+        const requestId = `gen_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+        
+        const job = await addTourGenerationJob({
+          url: input.url,
+          userId: ctx.user.id,
+          requestId,
+        });
+
+        console.log(`[SubmitAsyncGeneration] Job submitted: ${job.id}`);
+
+        return {
+          jobId: job.id!,
+          requestId,
+          message: "行程生成任務已提交，請稍候...",
+        };
+      }),
+
+    // Get generation job status (admin only)
+    getGenerationStatus: protectedProcedure
+      .input(z.object({ 
+        jobId: z.string(),
+      }))
+      .query(async ({ ctx, input }) => {
+        // Check if user is admin
+        if (ctx.user.role !== "admin") {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Only admins can check generation status",
+          });
+        }
+
+        const { getTourGenerationJobStatus } = await import("./queue");
+        const status = await getTourGenerationJobStatus(input.jobId);
+
+        if (status.status === "not_found") {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Generation job not found",
+          });
+        }
+
+        return status;
+      }),
+
     // Auto-generate tour from URL (admin only) - Complete version with all AI agents
     // Supports preview mode: when previewOnly=true, returns data without saving
     autoGenerateComplete: protectedProcedure

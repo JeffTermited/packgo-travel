@@ -104,3 +104,72 @@
 - [x] 將 Aspect Ratio 規範應用到首頁行程卡片
 - [x] 確保首頁行程卡片使用 object-cover
 - [x] 確保整體視覺一致性
+
+### Phase 9: 測試 AI 行程生成功能（2026-01-27）
+- [ ] 檢查或創建管理員帳號
+- [ ] 登入管理後台並導航到行程生成頁面
+- [ ] 生成新行程並監控生成時間（目標 < 90 秒）
+- [ ] 驗證 Unsplash 圖片補齊功能（當圖片 < 6 張時自動補齊）
+- [ ] 檢查生成的行程是否符合「資深旅遊雜誌主編」風格
+- [ ] 報告測試結果
+
+### Phase 10: 長期架構優化 - 異步生成模式（2026-01-27）
+
+#### 10.1 架構設計
+- [ ] 設計異步生成流程圖
+- [ ] 定義 Bull Queue 任務結構
+- [ ] 設計進度追蹤機制（使用 Redis）
+- [ ] 設計 WebSocket 或 SSE 進度推送機制
+
+#### 10.2 後端實作
+- [x] 檢查 Bull Queue 相關依賴是否已安裝
+- [x] 發現已有 `server/queue.ts` 和 `server/worker.ts` 實作
+- [x] 修改 `server/routers.ts` 添加異步生成 API
+  - `tours.submitAsyncGeneration` - 提交生成任務並返回 jobId
+  - `tours.getGenerationStatus` - 查詢生成進度
+- [x] 修改 `server/tourGenerator.ts` 支援進度回報
+  - 在每個 Agent 執行前後更新進度到 Redis
+  - 記錄當前執行的 Agent 名稱和完成百分比
+- [x] 實作錯誤處理和重試機制
+  - 生成失敗時保存錯誤訊息
+  - 支援手動重試失敗的任務
+
+#### 10.3 前端實作
+- [x] 修改 `client/src/components/admin/ToursTab.tsx`
+  - 點擊「開始生成」後立即返回，顯示進度追蹤界面
+  - 使用 `trpc.tours.getGenerationStatus.useQuery` 輪詢進度（每 2 秒）
+- [x] 保留現有的 `GenerationProgress.tsx` 組件
+  - 顯示當前執行的步驟
+  - 顯示整體進度百分比
+- [x] 實作生成完成通知
+  - 使用 Toast 通知管理員生成完成
+  - 自動刷新行程列表
+
+#### 10.4 並行處理優化
+- [ ] 分析各 Agent 的依賴關係
+- [ ] 將獨立的 Agent 改為並行執行
+  - HotelAgent 和 RestaurantAgent 可並行
+  - ItineraryAgent 和 NoticeAgent 可並行
+- [ ] 使用 `Promise.all()` 同時執行多個 Agent
+- [ ] 測試並行執行的正確性
+
+#### 10.5 測試與驗證
+- [ ] 測試異步生成流程
+  - 提交生成任務
+  - 監控進度更新
+  - 驗證生成結果
+- [ ] 測試錯誤處理
+  - 模擬生成失敗
+  - 驗證錯誤訊息顯示
+  - 測試重試機制
+- [ ] 測試並行處理
+  - 驗證生成時間是否縮短
+  - 驗證生成結果的正確性
+- [ ] 壓力測試
+  - 同時提交多個生成任務
+  - 驗證佇列管理是否正常
+
+#### 10.6 文檔與部署
+- [ ] 更新 README.md 說明異步生成架構
+- [ ] 記錄性能改進數據（生成時間對比）
+- [ ] 儲存 checkpoint
