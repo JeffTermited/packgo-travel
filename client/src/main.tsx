@@ -44,9 +44,9 @@ const trpcClient = trpc.createClient({
       url: "/api/trpc",
       transformer: superjson,
       fetch(input, init) {
-        // 設定 5 分鐘超時時間以支援 AI 自動生成等長時間操作
+        // 設定 10 分鐘超時時間以支援 AI 自動生成等長時間操作
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 300000);
+        const timeoutId = setTimeout(() => controller.abort(), 600000);
         
         return globalThis.fetch(input, {
           ...(init ?? {}),
