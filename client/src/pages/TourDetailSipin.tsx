@@ -22,6 +22,7 @@ import { DailyItinerarySection } from "@/components/tour-detail/DailyItinerarySe
 import { CostExplanationSection } from "@/components/tour-detail/CostExplanationSection";
 import { FlightInfoSection } from "@/components/tour-detail/FlightInfoSection";
 import { NoticeSection } from "@/components/tour-detail/NoticeSection";
+import { BackToTop } from "@/components/tour-detail/BackToTop";
 
 // 解析 JSON 字串
 const parseJSON = (str: string | null | undefined, defaultValue: any = null) => {
@@ -373,6 +374,9 @@ export default function TourDetailSipin() {
       </section>
 
       <Footer />
+      
+      {/* Back to Top Button */}
+      <BackToTop colorTheme={colorTheme} />
     </div>
   );
 }

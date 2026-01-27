@@ -22,21 +22,28 @@
 - [x] 確保 NoticeAgent JSON 格式合法，若 LLM 失敗直接使用預設 Template
 - [x] 加入 FlightAgent Regex 補強，針對 Markdown 中的 HH:MM 格式進行提取
 
-### Phase 4: 解決排版混亂與照片不足（待執行）
-- [ ] 自動調用 Unsplash API 補齊圖片（當圖片數量 < 6 時）
-- [ ] 強制執行 Aspect Ratio 規範（Hero 16:9, Feature Cards 4:3）
-- [ ] 使用 line-clamp-3 和 Grid layout 確保卡片高度一致
-- [ ] 修復圖片對齊問題
+### Phase 4: 解決排版混亂與照片不足
+- [x] 實作 Unsplash API 後端整合（搜尋旅遊相關圖片）
+- [x] 在 tourGenerator.ts 中加入圖片補齊邏輯（當圖片 < 6 時自動調用 Unsplash）
+- [x] 修改 TourDetailSipin.tsx Hero Section 強制執行 16:9 Aspect Ratio
+- [x] 修改 Feature Cards 強制執行 4:3 Aspect Ratio
+- [x] 使用 object-fit: cover 確保圖片填滿容器
+- [x] 使用 line-clamp-3 和 Grid layout 確保卡片高度一致
+- [x] 修復圖片對齊問題
 
-### Phase 5: 導航與互動（待執行）
-- [ ] 實作 Sticky Navigation（滾動時固定在頂部）
-- [ ] 實作 Back to Top 浮動按鈕
-- [ ] 手機版檢查（vertical text 改為 horizontal）
+### Phase 5: 導航與互動
+- [x] 實作 Sticky Navigation（滾動時固定在頂部）
+- [x] 實作 Back to Top 浮動按鈕（右下角，滾動超過 500px 時顯示）
+- [x] 手機版檢查（vertical text 改為 horizontal）
+- [x] 測試所有互動功能
 
 ### Phase 6: 測試所有優化並儲存 checkpoint
-- [ ] 生成新行程測試生成時間是否 < 90 秒
+- [ ] 在管理後台生成新行程測試生成時間是否 < 90 秒
 - [ ] 驗證用詞品質是否符合「資深旅遊雜誌主編」風格
 - [ ] 檢查所有區塊是否正確渲染
+- [ ] 檢查圖片數量是否 >= 6 張
+- [ ] 檢查 Aspect Ratio 是否正確
+- [ ] 檢查 Sticky Navigation 和 Back to Top 是否正常運作
 - [ ] 儲存 checkpoint
 
 ---

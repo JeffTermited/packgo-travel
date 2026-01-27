@@ -41,7 +41,7 @@ export const StickyNav: React.FC<StickyNavProps> = ({ tourTitle, colorTheme }) =
 
   return (
     <nav
-      className="sticky top-20 z-40 bg-white border-b shadow-sm"
+      className="sticky top-0 z-40 bg-white border-b shadow-sm"
       style={{
         backgroundColor: colorTheme.secondary + "20", // 20% opacity
         borderBottomColor: colorTheme.primary + "20",

@@ -44,12 +44,12 @@ export const FeaturesSection: React.FC<FeaturesSectionProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
           {displayFeatures.map((feature, index) => (
             <div key={index} className="flex flex-col gap-4">
-              {/* 圖片 */}
+              {/* 圖片 (4:3 Aspect Ratio) */}
               <div className="relative w-full aspect-[4/3] overflow-hidden rounded-lg shadow-md">
                 <img
                   src={feature.image}
                   alt={feature.imageAlt}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-cover"
                 />
 
                 {/* 金色標籤 */}

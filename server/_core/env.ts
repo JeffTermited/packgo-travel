@@ -9,4 +9,6 @@ export const ENV = {
   forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
   stripeSecretKey: process.env.STRIPE_SECRET_KEY ?? "",
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET ?? "",
+  unsplashAccessKey: process.env.UNSPLASH_ACCESS_KEY ?? "",
+  unsplashSecretKey: process.env.UNSPLASH_SECRET_KEY ?? "",
 };

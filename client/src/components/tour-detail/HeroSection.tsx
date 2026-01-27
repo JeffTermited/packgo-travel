@@ -71,17 +71,15 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           </div>
         </div>
 
-        {/* 右側：大圖 */}
+        {/* 右側：大圖 (16:9 Aspect Ratio) */}
         <div className="w-full lg:w-2/3">
-          <img
-            src={heroImage}
-            alt={title}
-            className="w-full h-auto object-cover rounded-lg shadow-lg"
-            style={{
-              maxHeight: "500px",
-              objectFit: "cover",
-            }}
-          />
+          <div className="relative w-full" style={{ paddingBottom: '56.25%' /* 16:9 aspect ratio */ }}>
+            <img
+              src={heroImage}
+              alt={title}
+              className="absolute top-0 left-0 w-full h-full object-cover rounded-lg shadow-lg"
+            />
+          </div>
         </div>
       </div>
     </section>
