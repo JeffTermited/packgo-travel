@@ -90,7 +90,10 @@ export default function TourDetailSipin() {
   const heroImage = tour.heroImage || tour.imageUrl || "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1200";
   const heroSubtitle = tour.heroSubtitle || `探索 ${tour.destinationCountry} ${tour.destinationCity} 的美好`;
   const keyFeatures = parseJSON(tour.keyFeatures, []);
-  const keywords = keyFeatures.slice(0, 5);
+  // 從 keyFeatures 物件陣列中提取 title 欄位作為字串陣列
+  const keywords = keyFeatures.slice(0, 5).map((feature: any) => 
+    typeof feature === 'string' ? feature : (feature.title || feature.subtitle || feature.description || '')
+  ).filter((keyword: string) => keyword.length > 0);
 
   // 準備 Features 資料
   const attractions = parseJSON(tour.attractions, []);

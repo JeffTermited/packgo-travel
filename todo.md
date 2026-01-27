@@ -2757,3 +2757,10 @@
 - [x] 測試 AI 生成功能，驗證資料完整性（100% 通過）
 - [x] 生成測試報告（AI_GENERATION_TEST_REPORT.md）
 - [x] 驗證所有標籤頁資訊成功提取（每日行程、飯店介紹、費用說明、航班資訊）
+
+
+## 修復 /tours/2 頁面 React 渲染錯誤（2026-01-27）
+- [x] 診斷錯誤原因（keyFeatures 物件無法直接渲染為 React 子元素）
+- [x] 修復 TourDetailSipin.tsx 中的 keyFeatures 渲染邏輯（從物件陣列提取 title 欄位）
+- [x] 測試修復結果，確認頁面正常顯示（無錯誤）
+- [x] 儲存 checkpoint
