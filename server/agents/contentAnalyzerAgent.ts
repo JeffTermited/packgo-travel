@@ -48,8 +48,8 @@ export class ContentAnalyzerAgent {
     console.log("[ContentAnalyzerAgent] Starting content analysis...");
     
     try {
-      // Step 1: Generate Lion Travel style title and highlights (keyword-dense stacking)
-      const { poeticTitle, highlights: poeticHighlights } = await this.generateLionTravelTitle(rawData);
+      // Step 1: Generate poetic title and highlights (Sipincollection style)
+      const { poeticTitle, highlights: poeticHighlights } = await this.generatePoeticTitle(rawData);
       
       // Step 2: Rewrite title (marketing-focused, fallback)
       const title = await this.rewriteTitle(rawData);
@@ -60,15 +60,8 @@ export class ContentAnalyzerAgent {
       // Step 4: Generate hero subtitle
       const heroSubtitle = await this.generateHeroSubtitle(rawData);
       
-      // Step 5: Use poetic highlights (from Step 1) or generate structured highlights
-      // Note: poeticHighlights are string[], generateHighlights returns object[]
-      const highlights = poeticHighlights.length > 0 
-        ? poeticHighlights.map((h, i) => ({
-            id: i + 1,
-            text: h,
-            description: h,
-          }))
-        : await this.generateHighlights(rawData);
+      // Step 5: Use poetic highlights (from Step 1)
+      const highlights = poeticHighlights.length > 0 ? poeticHighlights : await this.generateHighlights(rawData);
       
       // Step 5: Generate key features
       const keyFeatures = await this.generateKeyFeatures(rawData);
@@ -114,63 +107,59 @@ export class ContentAnalyzerAgent {
   }
   
   /**
-   * Generate Lion Travel style title and highlights (keyword-dense stacking format)
+   * Generate poetic title and highlights (Sipincollection style) with JSON Schema
    */
-  private async generateLionTravelTitle(rawData: any): Promise<{ poeticTitle: string; highlights: string[] }> {
+  private async generatePoeticTitle(rawData: any): Promise<{ poeticTitle: string; highlights: string[] }> {
     const destinationCountry = rawData.location?.destinationCountry || "";
     const destinationCity = rawData.location?.destinationCity || "";
-    const days = rawData.duration?.days || 5;
-    const nights = rawData.duration?.nights || 4;
-    const rawHighlights = rawData.highlights || [];
+    const days = rawData.duration?.days || "";
+    const nights = rawData.duration?.nights || "";
+    const highlights = rawData.highlights || [];
     const hotelGrade = rawData.accommodation?.hotelGrade || "";
     const specialExperiences = rawData.specialExperiences || [];
-    const originalTitle = rawData.basicInfo?.title || "";
     
-    // Extract keywords from original title if available
-    const titleKeywords = originalTitle ? this.extractKeywordsFromTitle(originalTitle) : [];
-    
-    // Data validation - use fallback if no destination
+    // Data validation
     if (!destinationCity && !destinationCountry) {
       console.warn("[ContentAnalyzerAgent] Insufficient data for poetic title generation");
-      return { poeticTitle: `精選行程｜${days}日深度探索`, highlights: [] };
+      return "精選行程"; // Fallback
     }
     
-    // Use SKILL.md instructions for Lion Travel style (keyword-dense stacking)
-    const systemPrompt = this.skillInstructions || `你是雄獅旅遊的資深行程企劃,專門撰寫關鍵字密集堆疊格式的行程標題。
+    // Use SKILL.md instructions instead of hardcoded prompt
+    const systemPrompt = this.skillInstructions || `你是一位資深的高端旅遊文案編輯,專門為頂級旅遊品牌撰寫詩意化的行程標題。
 
-標題格式規則:
-1. 結構: [目的地]旅遊｜[景點1].[景點2].[景點3]...[景點N][天數]
-2. 目的地: 明確的國家/城市名稱 (例如: 日本大阪旅遊、泰國清邁旅遊)
-3. 景點堆疊: 5-10個具體景點/體驗,用「.」分隔
-4. 禁止使用: 詩意化修飾詞(雅奢、秘境、光影)、比喻、抽象概念
-5. 應使用: 具體景點名稱、明確體驗活動、飯店等級、美食特色
-6. 長度: 40-80 個中文字
+你的標題風格特點:
+1. 使用精煉的形容詞修飾目的地或體驗 (例如: 雅奢、秘境、光影、極致)
+2. 加入動詞增加動感 (例如: 尋蹤、漫遊、走進、探索)
+3. 使用比喻和意象,讓標題更有畫面感
+4. 保持簡潔,15-25 個中文字
+5. 突出行程的核心賣點和獨特性
 
-真實範例:
-- "高松四國旅遊｜石鎚山纜車雪場戲雪.道後溫泉街.日本三大秘境.大步危遊船.金刀比羅宮.倉敷美觀.三井outlet五日"
-- "日本大阪旅遊│京阪神奈～奈良東大寺.梅花鹿公園.嵐山渡月橋.北野異人館街.京都錦市場.日本環球影城五日"
-- "泰國清邁旅遊｜渡假村2晚.金三角遊船.天空步道.白廟.友善象營.泰服體驗.米其林推薦美食.無購物五日"
+參考範例:
+- "北海道二世谷雅奢6日" (強調奢華體驗)
+- "秘境尋蹤 中島漫遊" (強調神秘探索)
+- "光影之城 走進藝術家眼中的旅程" (強調藝術體驗)
+- "京都禪意之旅 米其林懷石料理" (強調文化與美食)
+- "托斯卡尼艷陽下 品味義式慢活" (強調生活方式)
 
-請生成符合雄獅旅遊風格的關鍵字密集堆疊標題。`;
+請根據行程資訊,生成一個符合上述風格的詩意化標題。`;
     
-    const userPrompt = `請根據以下資訊生成雄獅旅遊風格的關鍵字密集堆疊標題和亮點:
+    const userPrompt = `請根據以下資訊生成一個詩意化的行程標題和亮點:
 
 目的地國家: ${destinationCountry}
 目的地城市: ${destinationCity}
 天數: ${days}天${nights}夜
-行程亮點: ${rawHighlights.join("、")}
+行程亮點: ${highlights.slice(0, 3).join("、")}
 飯店等級: ${hotelGrade}
 特色體驗: ${specialExperiences.join("、")}
 
-標題格式: [目的地]旅遊｜[景點1].[景點2].[景點3]...[景點N][天數]
-
-真實範例:
-- "高松四國旅遊｜石鎚山纜車雪場戲雪.道後溫泉街.日本三大秘境.大步危遊船.金刀比羅宮.倉敷美觀.三井outlet五日"
-- "泰國清邁旅遊｜渡假村2晚.金三角遊船.天空步道.白廟.友善象營.泰服體驗.米其林推薦美食.無購物五日"
+範例風格:
+- "北海道二世谷雅奢6日" (強調奢華)
+- "秘境尋蹤 中島漫遊" (強調探索)
+- "光影之城 走進藝術家眼中的旅程" (強調藝術)
 
 請生成:
-1. 一個 40-80 個中文字的關鍵字密集堆疊標題 (使用「.」分隔景點,不要使用詩意化修飾詞)
-2. 6-10 個行程亮點 (每個 10-30 個中文字的純文字描述)`;  
+1. 一個 15-25 個中文字的詩意化標題
+2. 6-10 個行程亮點 (每個 10-30 個中文字的純文字描述)`;
     
     try {
       const response = await invokeLLM({
@@ -188,7 +177,7 @@ export class ContentAnalyzerAgent {
               properties: {
                 poeticTitle: {
                   type: "string",
-                  description: "雄獅旅遊風格的關鍵字密集堆疊標題,40-80 個中文字,格式: [目的地]旅遊｜[景點1].[景點2]...[天數]"
+                  description: "詩意化的行程標題,15-25 個中文字"
                 },
                 highlights: {
                   type: "array",
@@ -227,8 +216,8 @@ export class ContentAnalyzerAgent {
       const poeticTitle = result.poeticTitle;
       const highlights = result.highlights || [];
       
-      // Validate length (Lion Travel style: 40-80 chars)
-      if (poeticTitle && poeticTitle.length >= 40 && poeticTitle.length <= 100) {
+      // Validate length
+      if (poeticTitle && poeticTitle.length >= 15 && poeticTitle.length <= 30) {
         console.log(`[ContentAnalyzerAgent] Poetic title generated: ${poeticTitle}`);
         console.log(`[ContentAnalyzerAgent] Highlights count: ${highlights.length}`);
         console.log(`[ContentAnalyzerAgent] Reasoning: ${result.reasoning}`);
@@ -236,61 +225,26 @@ export class ContentAnalyzerAgent {
       }
       
       // If too long, truncate
-      if (poeticTitle && poeticTitle.length > 100) {
-        console.warn(`[ContentAnalyzerAgent] Lion Travel title too long (${poeticTitle.length} chars), truncating...`);
-        return { poeticTitle: poeticTitle.substring(0, 100), highlights };
+      if (poeticTitle && poeticTitle.length > 30) {
+        console.warn(`[ContentAnalyzerAgent] Poetic title too long (${poeticTitle.length} chars), truncating...`);
+        return { poeticTitle: poeticTitle.substring(0, 30), highlights };
       }
       
-      // If too short, use fallback (Lion Travel style)
-      console.warn(`[ContentAnalyzerAgent] Lion Travel title too short (${poeticTitle?.length || 0} chars), using fallback`);
-      
-      // Build fallback title from available data
-      const destination = destinationCity || destinationCountry || '精選';
-      const keywordList = [...titleKeywords, ...rawHighlights.slice(0, 5)];
-      const uniqueKeywords = [...new Set(keywordList)].slice(0, 6);
-      const fallbackKeywords = uniqueKeywords.length > 0 ? uniqueKeywords.join('.') : '深度探索.特色體驗.精選住宿';
-      
+      // If too short, use fallback
+      console.warn(`[ContentAnalyzerAgent] Poetic title too short, using fallback`);
       return {
-        poeticTitle: `${destination}旅遊｜${fallbackKeywords}.${days}日`,
-        highlights: rawHighlights.slice(0, 6)
+        poeticTitle: `${destinationCity}${days}日精選之旅`,
+        highlights: []
       };
       
     } catch (error) {
       console.error("[ContentAnalyzerAgent] Poetic title generation failed:", error);
-      
-      // Fallback: Lion Travel style template with available data
-      const destination = destinationCity || destinationCountry || '精選';
-      const keywordList = [...titleKeywords, ...rawHighlights.slice(0, 5)];
-      const uniqueKeywords = [...new Set(keywordList)].slice(0, 6);
-      const fallbackKeywords = uniqueKeywords.length > 0 ? uniqueKeywords.join('.') : '深度探索.特色體驗';
-      
+      // Fallback: simple template
       return {
-        poeticTitle: `${destination}旅遊｜${fallbackKeywords}.${days}日`,
-        highlights: rawHighlights.slice(0, 6)
+        poeticTitle: `${destinationCity}${days}日精選之旅`,
+        highlights: []
       };
     }
-  }
-  
-  /**
-   * Extract keywords from original title
-   */
-  private extractKeywordsFromTitle(title: string): string[] {
-    // Remove common words and extract meaningful keywords
-    const cleanTitle = title
-      .replace(/旅遊/g, '')
-      .replace(/行程/g, '')
-      .replace(/\d+日/g, '')
-      .replace(/\d+晚/g, '')
-      .replace(/無購物/g, '')
-      .replace(/同級/g, '');
-    
-    // Split by common delimiters
-    const keywords = cleanTitle
-      .split(/[｜。．\.\|、，,·×\-\s]+/)
-      .filter(k => k.length >= 2 && k.length <= 15)
-      .slice(0, 10);
-    
-    return keywords;
   }
   
   /**

@@ -205,7 +205,7 @@ export default function TourDetailSipin() {
                   價格
                 </h3>
                 <p className="text-2xl font-bold" style={{ color: colorTheme.accent }}>
-                  NT$ {(tour.price || 0).toLocaleString()}
+                  NT$ {tour.price.toLocaleString()}
                 </p>
                 <p className="text-sm text-gray-600">{tour.priceUnit || "人/起"}</p>
               </div>

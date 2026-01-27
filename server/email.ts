@@ -5,21 +5,18 @@ import { notifyOwner } from "./_core/notification";
  */
 
 interface BookingEmailData {
-  to?: string; // Email recipient (optional, defaults to customerEmail)
-  customerName?: string;
-  customerEmail?: string;
+  customerName: string;
+  customerEmail: string;
   bookingId: number;
   tourTitle: string;
-  departureDate?: string;
-  returnDate?: string;
-  numberOfAdults?: number;
-  numberOfChildren?: number;
-  numberOfInfants?: number;
-  totalPrice?: number;
-  depositAmount?: number;
-  remainingAmount?: number;
-  participants?: any; // Participant details
-  totalAmount?: number; // Total amount (alias for totalPrice)
+  departureDate: string;
+  returnDate: string;
+  numberOfAdults: number;
+  numberOfChildren: number;
+  numberOfInfants: number;
+  totalPrice: number;
+  depositAmount: number;
+  remainingAmount: number;
 }
 
 /**

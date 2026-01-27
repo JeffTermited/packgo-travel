@@ -7,7 +7,6 @@ import superjson from "superjson";
 import App from "./App";
 import { getLoginUrl } from "./const";
 import "./index.css";
-import "./styles/lion-theme.css";
 import { Toaster } from "@/components/ui/sonner";
 
 const queryClient = new QueryClient();
@@ -45,9 +44,9 @@ const trpcClient = trpc.createClient({
       url: "/api/trpc",
       transformer: superjson,
       fetch(input, init) {
-        // 設定較長的超時時間（300 秒 = 5 分鐘）以支援 AI 自動生成等長時間操作
+        // 設定較長的超時時間（120 秒）以支援 AI 自動生成等長時間操作
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 300000);
+        const timeoutId = setTimeout(() => controller.abort(), 120000);
         
         return globalThis.fetch(input, {
           ...(init ?? {}),

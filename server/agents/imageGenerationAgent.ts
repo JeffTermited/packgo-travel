@@ -250,57 +250,34 @@ export class ImageGenerationAgent {
   }
   
   /**
-   * Upload image to S3 with retry mechanism and exponential backoff
+   * Upload image to S3
    */
   private async uploadImageToS3(
     imageUrl: string,
     category: string
   ): Promise<string> {
-    const maxRetries = 5;
-    const baseDelay = 1000; // 1 second
-    
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      try {
-        console.log(`[ImageGenerationAgent] S3 upload attempt ${attempt}/${maxRetries}`);
-        
-        // Download image
-        const response = await fetch(imageUrl);
-        if (!response.ok) {
-          throw new Error(`Failed to download image: ${response.statusText}`);
-        }
-        
-        const arrayBuffer = await response.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
-        
-        // Generate unique filename
-        const timestamp = Date.now();
-        const random = Math.random().toString(36).substring(7);
-        const filename = `tours/${category}-${timestamp}-${random}.jpg`;
-        
-        // Upload to S3
-        const result = await storagePut(filename, buffer, "image/jpeg");
-        
-        console.log("[ImageGenerationAgent] Image uploaded to S3:", result.url);
-        
-        return result.url;
-      } catch (error) {
-        console.error(`[ImageGenerationAgent] S3 upload attempt ${attempt} failed:`, error);
-        
-        // If this is the last attempt, return original URL as fallback
-        if (attempt === maxRetries) {
-          console.warn("[ImageGenerationAgent] All S3 upload attempts failed, using original URL");
-          return imageUrl;
-        }
-        
-        // Exponential backoff: 1s, 2s, 4s, 8s, 16s
-        const delay = baseDelay * Math.pow(2, attempt - 1);
-        console.log(`[ImageGenerationAgent] Retrying in ${delay}ms...`);
-        await new Promise(resolve => setTimeout(resolve, delay));
-      }
+    try {
+      // Download image
+      const response = await fetch(imageUrl);
+      const arrayBuffer = await response.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      
+      // Generate unique filename
+      const timestamp = Date.now();
+      const random = Math.random().toString(36).substring(7);
+      const filename = `tours/${category}-${timestamp}-${random}.jpg`;
+      
+      // Upload to S3
+      const result = await storagePut(filename, buffer, "image/jpeg");
+      
+      console.log("[ImageGenerationAgent] Image uploaded to S3:", result.url);
+      
+      return result.url;
+    } catch (error) {
+      console.error("[ImageGenerationAgent] S3 upload failed:", error);
+      // Return original URL as fallback
+      return imageUrl;
     }
-    
-    // This should never be reached, but TypeScript requires it
-    return imageUrl;
   }
   
   /**

@@ -83,10 +83,6 @@ async function startServer() {
     exclusive: false,
   });
   
-  // Set timeout to 5 minutes for long-running operations (e.g., AI generation)
-  server.timeout = 300000; // 5 minutes
-  server.keepAliveTimeout = 305000; // Slightly longer than timeout
-  
   // Handle port already in use error
   server.on('error', async (err: any) => {
     if (err.code === 'EADDRINUSE') {
@@ -98,9 +94,6 @@ async function startServer() {
         host: '0.0.0.0',
         exclusive: false,
       });
-      // Set timeout for alternative port as well
-      server.timeout = 300000;
-      server.keepAliveTimeout = 305000;
     } else {
       console.error('Server error:', err);
       throw err;

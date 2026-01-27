@@ -40,25 +40,21 @@ export class FlightAgent {
     try {
       console.log("[FlightAgent] Starting flight information generation...");
 
-      // 嘗試從多種資料來源提取航班資訊
-      const flightData = this.extractFlightData(rawData);
-      
-      if (!flightData) {
-        console.warn("[FlightAgent] No flight data available from any source");
+      // Validate input data
+      if (!rawData || !rawData.flight) {
+        console.warn("[FlightAgent] No flight data provided");
         return {
           success: false,
           error: "No flight data available",
         };
       }
-      
-      console.log("[FlightAgent] Extracted flight data:", JSON.stringify(flightData).substring(0, 200));
 
       // Build prompt for LLM
       const prompt = `
 請根據以下航班資訊，生成專業的航班介紹：
 
 航班資訊：
-${JSON.stringify(flightData, null, 2)}
+${JSON.stringify(rawData.flight, null, 2)}
 
 請以 JSON 格式回傳，包含以下欄位：
 {
@@ -107,9 +103,9 @@ ${JSON.stringify(flightData, null, 2)}
       }
 
       // Parse JSON response
-      let parsedFlightData;
+      let flightData;
       try {
-        parsedFlightData = JSON.parse(content);
+        flightData = JSON.parse(content);
       } catch (parseError) {
         console.error("[FlightAgent] Failed to parse LLM response:", parseError);
         return {
@@ -119,15 +115,15 @@ ${JSON.stringify(flightData, null, 2)}
       }
 
       // Validate word count for description
-      if (parsedFlightData.description) {
-        const wordCount = parsedFlightData.description.length;
+      if (flightData.description) {
+        const wordCount = flightData.description.length;
         if (wordCount < 150 || wordCount > 200) {
           console.warn(
             `[FlightAgent] Flight description word count out of range: ${wordCount} (expected 150-200)`
           );
           // Truncate if too long
           if (wordCount > 200) {
-            parsedFlightData.description = parsedFlightData.description.substring(0, 200) + "...";
+            flightData.description = flightData.description.substring(0, 200) + "...";
           }
         }
       }
@@ -135,7 +131,7 @@ ${JSON.stringify(flightData, null, 2)}
       console.log("[FlightAgent] Flight information generated successfully");
       return {
         success: true,
-        data: parsedFlightData,
+        data: flightData,
       };
     } catch (error) {
       console.error("[FlightAgent] Error:", error);
@@ -144,64 +140,5 @@ ${JSON.stringify(flightData, null, 2)}
         error: error instanceof Error ? error.message : "Unknown error",
       };
     }
-  }
-
-  /**
-   * 從多種資料來源提取航班資訊
-   */
-  private extractFlightData(rawData: any): any | null {
-    if (!rawData) return null;
-    
-    // 1. 直接使用 flight 欄位
-    if (rawData.flight && Object.keys(rawData.flight).length > 0) {
-      console.log("[FlightAgent] Using flight field directly");
-      return rawData.flight;
-    }
-    
-    // 2. 從 itinerary 提取航班資訊 (第一天和最後一天)
-    const itineraryData = rawData.itinerary || rawData.dailyItinerary || [];
-    if (itineraryData.length > 0) {
-      const firstDay = itineraryData[0];
-      const lastDay = itineraryData[itineraryData.length - 1];
-      
-      // 檢查第一天是否有航班資訊
-      if (firstDay.flight || firstDay.transportation?.includes('航班') || firstDay.transportation?.includes('飛機')) {
-        console.log("[FlightAgent] Extracted flight from first day itinerary");
-        return {
-          outbound: firstDay.flight || { description: firstDay.transportation },
-          inbound: lastDay.flight || { description: lastDay.transportation }
-        };
-      }
-    }
-    
-    // 3. 從 highlights 提取航班相關資訊
-    const highlights = rawData.highlights || [];
-    const flightRelatedHighlights = highlights.filter((h: string) => 
-      h.includes('航班') || h.includes('飛機') || h.includes('航空') || 
-      h.includes('直飛') || h.includes('轉機')
-    );
-    
-    if (flightRelatedHighlights.length > 0) {
-      console.log(`[FlightAgent] Extracted flight highlights: ${flightRelatedHighlights.length}`);
-      return {
-        description: flightRelatedHighlights.join('、'),
-        features: flightRelatedHighlights
-      };
-    }
-    
-    // 4. 從 location 提取出發地和目的地
-    if (rawData.location) {
-      const { departureCity, destinationCity } = rawData.location;
-      if (departureCity && destinationCity) {
-        console.log(`[FlightAgent] Generating flight info from location: ${departureCity} -> ${destinationCity}`);
-        return {
-          departureCity,
-          destinationCity,
-          description: `從${departureCity}出發前往${destinationCity}`
-        };
-      }
-    }
-    
-    return null;
   }
 }

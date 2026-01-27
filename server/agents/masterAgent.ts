@@ -179,7 +179,7 @@ export class MasterAgent {
       this.monitor.startAgent('WebScraperAgent');
       
       const scrapingResult = await this.retryManager.executeWithRetry(
-        () => this.webScraperAgent.execute(url.url || url),
+        () => this.webScraperAgent.execute(url),
         this.retryConfig,
         'WebScraperAgent'
       );
@@ -451,7 +451,7 @@ export class MasterAgent {
         poeticContent: JSON.stringify(analyzedContent.poeticContent),
         
         // Detailed Itinerary
-        itineraryDetailed: typeof itineraryData === 'string' ? itineraryData : JSON.stringify(itineraryData),
+        itineraryDetailed: itineraryData,
         
         // Cost Explanation
         costExplanation: JSON.stringify(costData),

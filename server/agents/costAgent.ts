@@ -140,38 +140,18 @@ ${JSON.stringify(pricingData, null, 2)}
 
       const response = await invokeLLM({
         messages: [
-          { role: "system", content: COST_SKILL + "\n\n重要：你必須只回傳有效的 JSON 格式，不要包含任何其他文字、問候語或解釋。直接輸出 JSON 物件。" },
+          { role: "system", content: COST_SKILL },
           { role: "user", content: prompt },
         ],
-        response_format: { type: "json_object" },
       });
       
       const content = response.choices[0].message.content;
       
       // Handle content type (string or array)
-      let contentStr = typeof content === 'string' ? content : JSON.stringify(content);
+      const contentStr = typeof content === 'string' ? content : JSON.stringify(content);
       
       if (!contentStr || contentStr.trim().toLowerCase() === "null") {
         console.warn("[CostAgent] Insufficient data, returning null");
-        return null;
-      }
-      
-      // Clean up markdown code blocks and non-JSON content
-      contentStr = contentStr.trim();
-      
-      // Remove markdown code blocks
-      if (contentStr.startsWith('```json')) {
-        contentStr = contentStr.replace(/^```json\s*/, '').replace(/\s*```$/, '');
-      } else if (contentStr.startsWith('```')) {
-        contentStr = contentStr.replace(/^```\s*/, '').replace(/\s*```$/, '');
-      }
-      
-      // Try to extract JSON from response if it contains non-JSON text
-      const jsonMatch = contentStr.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        contentStr = jsonMatch[0];
-      } else {
-        console.warn("[CostAgent] Could not extract JSON from response:", contentStr.substring(0, 100));
         return null;
       }
       

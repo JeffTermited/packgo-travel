@@ -26,22 +26,16 @@ const palette = getDestinationColorPalette();
 const asiaPalette = getDestinationColorPalette('亞洲');
 ```
 
-### 2. 雄獅旅遊設計規範 (配色部分)
+### 2. Sipincollection 設計規範 (配色部分)
 ```typescript
-import { getLionTravelGuidelines } from '../skillLoader';
+import { getSipincollectionGuidelines } from '../skillLoader';
 
-const colorGuidelines = getLionTravelGuidelines([
-  '二、視覺設計系統'
+const colorGuidelines = getSipincollectionGuidelines([
+  '🎨 視覺設計系統'
 ]);
 ```
 
-### 3. ~~Sipincollection 設計規範~~ (已停用)
-```typescript
-// 注意: Sipincollection 風格已暫時停用
-// 如需參考,文件仍保留在 references/ 目錄中
-```
-
-**使用時機**: 在生成配色方案時,先查詢「目的地色彩對照表」,如果有匹配的目的地,直接使用其配色方案。否則參考雄獅旅遊的配色策略(多色彩、明亮鮮豔)。
+**使用時機**: 在生成配色方案時,先查詢「目的地色彩對照表」,如果有匹配的目的地,直接使用其配色方案。
 
 ## 輸入格式
 

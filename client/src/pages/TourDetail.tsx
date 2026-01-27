@@ -690,7 +690,7 @@ export default function TourDetail() {
                     <div className="text-center mb-6 pb-6 border-b border-gray-200">
                       <p className="text-sm text-gray-500 mb-1">每人</p>
                       <p className="text-4xl font-bold text-primary">
-                        NT$ {(tour.price || 0).toLocaleString()}
+                        NT$ {tour.price.toLocaleString()}
                       </p>
                       <p className="text-sm text-gray-500">{tour.priceUnit || '起'}</p>
                     </div>
