@@ -503,10 +503,12 @@ Important guidelines:
       }),
 
     // Auto-generate tour from URL (admin only) - Complete version with all AI agents
+    // Supports preview mode: when previewOnly=true, returns data without saving
     autoGenerateComplete: protectedProcedure
       .input(z.object({ 
         url: z.string().url(),
-        autoSave: z.boolean().default(true),
+        autoSave: z.boolean().default(false), // 預設不自動儲存，讓管理員預覽後確認
+        previewOnly: z.boolean().default(true), // 預設為預覽模式
       }))
       .mutation(async ({ ctx, input }) => {
         // Check if user is admin
@@ -663,10 +665,30 @@ Important guidelines:
             category: "group" as const,
           };
 
+          // 預覽模式：只返回資料，不儲存到資料庫
+          if (input.previewOnly) {
+            const totalTime = (Date.now() - startTime) / 1000;
+            console.log(`[AutoGenerateComplete] Preview mode - Total time: ${totalTime.toFixed(1)} seconds`);
+            
+            return {
+              success: true,
+              data: {
+                ...tourData,
+                // 額外返回原始 MasterAgent 資料以便預覽
+                poeticTitle: masterData.poeticTitle,
+                featureImages: masterData.featureImages,
+                executionReport: result.executionReport,
+              },
+              message: `行程預覽已生成！耗時 ${totalTime.toFixed(1)} 秒`,
+              tourId: null,
+              previewMode: true,
+            };
+          }
+
           // 如果啟用自動儲存,將行程儲存到資料庫
           let savedTour = null;
-          if (input.autoSave) {
-            console.log("[AutoGenerateComplete] Auto-saving tour to database...");
+          if (input.autoSave || !input.previewOnly) {
+            console.log("[AutoGenerateComplete] Saving tour to database...");
             savedTour = await db.createTour({
               ...tourData,
               createdBy: ctx.user.id,
@@ -680,8 +702,9 @@ Important guidelines:
           return {
             success: true,
             data: savedTour || tourData,
-            message: `行程生成成功!耗時 ${totalTime.toFixed(1)} 秒`,
+            message: `行程生成成功！耗時 ${totalTime.toFixed(1)} 秒`,
             tourId: savedTour?.id,
+            previewMode: false,
           };
         } catch (error: any) {
           const totalTime = (Date.now() - startTime) / 1000;
@@ -854,6 +877,51 @@ Important guidelines:
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
             message: error.message || "行程提取失敗",
+          });
+        }
+      }),
+
+    // Save tour from preview (admin only)
+    // Used after previewing generated tour data
+    saveFromPreview: protectedProcedure
+      .input(z.object({
+        tourData: z.any(), // The tour data from preview
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Check if user is admin
+        if (ctx.user.role !== "admin") {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Only admins can save tours",
+          });
+        }
+
+        console.log("[SaveFromPreview] Saving tour from preview...");
+
+        try {
+          const tourData = input.tourData;
+          
+          // Remove preview-only fields
+          const { poeticTitle, featureImages, executionReport, ...savableData } = tourData;
+          
+          // Save to database
+          const savedTour = await db.createTour({
+            ...savableData,
+            createdBy: ctx.user.id,
+          });
+
+          console.log("[SaveFromPreview] Tour saved with ID:", savedTour.id);
+
+          return {
+            success: true,
+            tourId: savedTour.id,
+            message: "行程已成功儲存！",
+          };
+        } catch (error: any) {
+          console.error("[SaveFromPreview] Error:", error);
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: error.message || "儲存行程失敗",
           });
         }
       }),
