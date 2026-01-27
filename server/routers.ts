@@ -509,6 +509,7 @@ Important guidelines:
         url: z.string().url(),
         autoSave: z.boolean().default(false), // 預設不自動儲存，讓管理員預覽後確認
         previewOnly: z.boolean().default(true), // 預設為預覽模式
+        taskId: z.string().optional(), // 前端傳入的 taskId，用於進度追蹤
       }))
       .mutation(async ({ ctx, input }) => {
         // Check if user is admin
@@ -520,8 +521,8 @@ Important guidelines:
         }
 
         const startTime = Date.now();
-        // Generate unique task ID for progress tracking
-        const taskId = `gen_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+        // Use provided taskId or generate a new one for progress tracking
+        const taskId = input.taskId || `gen_${Date.now()}_${Math.random().toString(36).substring(7)}`;
         console.log("[AutoGenerateComplete] Starting complete generation from URL:", input.url);
         console.log("[AutoGenerateComplete] Task ID:", taskId);
 

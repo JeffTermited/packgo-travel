@@ -220,26 +220,34 @@ ${JSON.stringify(dayData, null, 2)}
   /**
    * Calculate total word count of itinerary
    */
-  private calculateTotalWords(itinerary: DailyItinerary): number {
+  private calculateTotalWords(itinerary: DailyItinerary | null): number {
+    if (!itinerary) return 0;
+    
     let total = 0;
     
-    // Title
-    total += itinerary.title.length;
+    // Title (with null check)
+    total += (itinerary.title || '').length;
     
-    // Activities
-    itinerary.activities.forEach(activity => {
-      total += activity.title.length;
-      total += activity.description.length;
-      total += activity.transportation.length;
-    });
+    // Activities (with null check)
+    if (Array.isArray(itinerary.activities)) {
+      itinerary.activities.forEach(activity => {
+        if (activity) {
+          total += (activity.title || '').length;
+          total += (activity.description || '').length;
+          total += (activity.transportation || '').length;
+        }
+      });
+    }
     
-    // Meals
-    total += itinerary.meals.breakfast.length;
-    total += itinerary.meals.lunch.length;
-    total += itinerary.meals.dinner.length;
+    // Meals (with null check)
+    if (itinerary.meals) {
+      total += (itinerary.meals.breakfast || '').length;
+      total += (itinerary.meals.lunch || '').length;
+      total += (itinerary.meals.dinner || '').length;
+    }
     
-    // Accommodation
-    total += itinerary.accommodation.length;
+    // Accommodation (with null check)
+    total += (itinerary.accommodation || '').length;
     
     return total;
   }
@@ -247,23 +255,42 @@ ${JSON.stringify(dayData, null, 2)}
   /**
    * Truncate itinerary to fit word count limit
    */
-  private truncateItinerary(itinerary: DailyItinerary, maxWords: number): DailyItinerary {
+  private truncateItinerary(itinerary: DailyItinerary | null, maxWords: number): DailyItinerary | null {
+    if (!itinerary) return null;
+    
+    // Ensure all required fields exist
+    const result: DailyItinerary = {
+      day: itinerary.day || 1,
+      title: itinerary.title || '',
+      activities: Array.isArray(itinerary.activities) ? itinerary.activities : [],
+      meals: itinerary.meals || { breakfast: '', lunch: '', dinner: '' },
+      accommodation: itinerary.accommodation || '',
+    };
+    
     // Simple truncation strategy: truncate activity descriptions
-    const currentWords = this.calculateTotalWords(itinerary);
+    const currentWords = this.calculateTotalWords(result);
     
     if (currentWords <= maxWords) {
-      return itinerary;
+      return result;
+    }
+    
+    if (result.activities.length === 0) {
+      return result;
     }
     
     const excessWords = currentWords - maxWords;
-    const wordsPerActivity = Math.ceil(excessWords / itinerary.activities.length);
+    const wordsPerActivity = Math.ceil(excessWords / result.activities.length);
     
-    itinerary.activities = itinerary.activities.map(activity => ({
-      ...activity,
-      description: activity.description.slice(0, activity.description.length - wordsPerActivity) + "...",
-    }));
+    result.activities = result.activities.map(activity => {
+      if (!activity) return activity;
+      const desc = activity.description || '';
+      return {
+        ...activity,
+        description: desc.length > wordsPerActivity ? desc.slice(0, desc.length - wordsPerActivity) + "..." : desc,
+      };
+    });
     
-    return itinerary;
+    return result;
   }
   
   /**

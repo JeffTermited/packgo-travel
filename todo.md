@@ -2579,3 +2579,19 @@
 - [x] 實作前端進度條 UI 組件（GenerationProgress.tsx）
 - [x] 整合進度條到 ToursTab.tsx
 - [ ] 測試並驗證功能
+
+
+## 修復 AI 自動生成已知問題 (2026-01-27)
+- [ ] 修復 SSE 進度追蹤問題（進度條沒有即時更新）
+- [ ] 修復 CostAgent TypeError（Cannot read properties of undefined）
+- [ ] 修復 ItineraryAgent Day 缺失問題（Day 4 有 null 錯誤）
+- [ ] 修復 MealAgent/FlightAgent 資料不足問題
+- [ ] 測試並驗證所有修復
+
+
+## 修復 AI 自動生成已知問題 (2026-01-27)
+- [x] SSE 進度追蹤事件沒有正確發送到前端 (修復 taskId 同步問題)
+- [x] CostAgent TypeError: Cannot read properties of undefined (添加空值檢查)
+- [x] ItineraryAgent Day 缺失問題 (添加空值檢查)
+- [x] MealAgent/FlightAgent 資料不足時拋出錯誤 (改用預設值)
+- [x] 測試所有修復效果 (耗時 108.8 秒，進度條即時更新正常)

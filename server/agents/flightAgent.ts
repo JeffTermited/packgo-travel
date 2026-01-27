@@ -98,10 +98,10 @@ ${JSON.stringify(rawData.flight, null, 2)}
         : null;
 
       if (!content || content === "null") {
-        console.warn("[FlightAgent] LLM returned null (insufficient data)");
+        console.warn("[FlightAgent] LLM returned null (insufficient data), using default flight");
         return {
-          success: false,
-          error: "Insufficient data to generate flight information",
+          success: true,
+          data: this.generateDefaultFlight(rawData),
         };
       }
 

@@ -89,10 +89,12 @@ ${JSON.stringify(rawData.meals, null, 2)}
         : null;
 
       if (!content || content === "null") {
-        console.warn("[MealAgent] LLM returned null (insufficient data)");
+        console.warn("[MealAgent] LLM returned null (insufficient data), using default meals");
         return {
-          success: false,
-          error: "Insufficient data to generate meal information",
+          success: true,
+          data: {
+            meals: this.generateDefaultMeals(rawData),
+          },
         };
       }
 

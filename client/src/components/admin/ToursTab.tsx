@@ -224,11 +224,12 @@ export default function ToursTab() {
     setExtractionStep(1); // 開始抓取網頁
     setIsGenerating(true);
     
-    // 使用預覽模式，不自動儲存
+    // 使用預覽模式，不自動儲存，傳入 taskId 用於進度追蹤
     autoGenerateCompleteMutation.mutate({ 
       url: autoGenerateUrl,
       previewOnly: true,
       autoSave: false,
+      taskId, // 傳入 taskId 讓後端使用同一個 ID
     });
   };
 

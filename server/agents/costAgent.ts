@@ -214,23 +214,29 @@ ${JSON.stringify(pricingData, null, 2)}
   private calculateTotalWords(costExplanation: any): number {
     let total = 0;
     
-    // Included items
-    costExplanation.included.forEach((item: string) => {
-      total += item.length;
-    });
+    // Included items (with null check)
+    if (Array.isArray(costExplanation?.included)) {
+      costExplanation.included.forEach((item: string) => {
+        total += (item || '').length;
+      });
+    }
     
-    // Excluded items
-    costExplanation.excluded.forEach((item: string) => {
-      total += item.length;
-    });
+    // Excluded items (with null check)
+    if (Array.isArray(costExplanation?.excluded)) {
+      costExplanation.excluded.forEach((item: string) => {
+        total += (item || '').length;
+      });
+    }
     
-    // Additional costs
-    costExplanation.additionalCosts.forEach((item: string) => {
-      total += item.length;
-    });
+    // Additional costs (with null check)
+    if (Array.isArray(costExplanation?.additionalCosts)) {
+      costExplanation.additionalCosts.forEach((item: string) => {
+        total += (item || '').length;
+      });
+    }
     
-    // Notes
-    total += costExplanation.notes.length;
+    // Notes (with null check)
+    total += (costExplanation?.notes || '').length;
     
     return total;
   }
@@ -239,18 +245,28 @@ ${JSON.stringify(pricingData, null, 2)}
    * Truncate cost explanation to fit word count limit
    */
   private truncateCostExplanation(costExplanation: any, maxWords: number): any {
+    // Ensure all required fields exist
+    const result = {
+      included: Array.isArray(costExplanation?.included) ? costExplanation.included : [],
+      excluded: Array.isArray(costExplanation?.excluded) ? costExplanation.excluded : [],
+      additionalCosts: Array.isArray(costExplanation?.additionalCosts) ? costExplanation.additionalCosts : [],
+      notes: costExplanation?.notes || '',
+    };
+    
     // Simple truncation strategy: truncate notes
-    const currentWords = this.calculateTotalWords(costExplanation);
+    const currentWords = this.calculateTotalWords(result);
     
     if (currentWords <= maxWords) {
-      return costExplanation;
+      return result;
     }
     
     const excessWords = currentWords - maxWords;
     
-    costExplanation.notes = costExplanation.notes.slice(0, costExplanation.notes.length - excessWords) + "...";
+    if (result.notes.length > excessWords) {
+      result.notes = result.notes.slice(0, result.notes.length - excessWords) + "...";
+    }
     
-    return costExplanation;
+    return result;
   }
   
   /**
