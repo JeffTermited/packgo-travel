@@ -1,0 +1,19 @@
+{
+  "query": "SELECT id, title, price, duration, nights, heroImage, colorTheme FROM tours WHERE id = 360001;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4TdGiyGWHynzTjR.2f22c070361b --database D3XjbQ67JpFf2y4FWefWHw --execute SELECT id, title, price, duration, nights, heroImage, colorTheme FROM tours WHERE id = 360001;",
+  "rows": [
+    {
+      "id": "360001",
+      "title": "新加坡/新山/馬六甲旅遊｜紫竹谷禪境.入住話題性十足的棕櫚水上渡假村.深度體驗世界文化遺產馬六甲古城.特別安排三輪車漫遊古城.品嚐精緻六宮格下午茶.探訪馬來西亞清幽的紫竹谷及普陀村.5日",
+      "price": "26999",
+      "duration": "5",
+      "nights": "NULL",
+      "heroImage": "https://d2xsxph8kpxj0f.cloudfront.net/310519663159191204/D3XjbQ67JpFf2y4FWefWHw/tours/hero-1769474035540-rycav.jpg",
+      "colorTheme": "{\"primary\":\"#1A1A1A\",\"secondary\":\"#F5F5F5\",\"accent\":\"#E63946\",\"text\":\"#2C3E50\",\"textLight\":\"#7F8C8D\",\"background\":\"#F8F9FA\",\"backgroundDark\":\"#E9ECEF\"}"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\ttitle\tprice\tduration\tnights\theroImage\tcolorTheme\n360001\t新加坡/新山/馬六甲旅遊｜紫竹谷禪境.入住話題性十足的棕櫚水上渡假村.深度體驗世界文化遺產馬六甲古城.特別安排三輪車漫遊古城.品嚐精緻六宮格下午茶.探訪馬來西亞清幽的紫竹谷及普陀村.5日\t26999\t5\tNULL\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663159191204/D3XjbQ67JpFf2y4FWefWHw/tours/hero-1769474035540-rycav.jpg\t{\"primary\":\"#1A1A1A\",\"secondary\":\"#F5F5F5\",\"accent\":\"#E63946\",\"text\":\"#2C3E50\",\"textLight\":\"#7F8C8D\",\"background\":\"#F8F9FA\",\"backgroundDark\":\"#E9ECEF\"}\n",
+  "stderr": "",
+  "execution_time_ms": 106
+}

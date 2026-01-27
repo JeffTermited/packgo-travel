@@ -451,7 +451,7 @@ export class MasterAgent {
         poeticContent: JSON.stringify(analyzedContent.poeticContent),
         
         // Detailed Itinerary
-        itineraryDetailed: itineraryData,
+        itineraryDetailed: typeof itineraryData === 'string' ? itineraryData : JSON.stringify(itineraryData),
         
         // Cost Explanation
         costExplanation: JSON.stringify(costData),

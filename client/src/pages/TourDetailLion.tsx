@@ -54,14 +54,11 @@ export default function TourDetailLion() {
       <LionHeroSection
         title={tour.title}
         productCode={tour.productCode || `TOUR-${tour.id}`}
-        availableSeats={tour.availableSeats || 20}
-        mainImage={tour.coverImage || "/placeholder-tour.jpg"}
-        destination={tour.destination}
-        days={tour.days}
-        nights={tour.nights}
+        mainImage={tour.heroImage || tour.imageUrl || "/placeholder-tour.jpg"}
+        destination={tour.destinationCity || tour.destinationCountry || ""}
+        duration={`${tour.duration}天${tour.nights ? tour.nights + '夜' : ''}`}
         airline={content.airline || "中華航空"}
-        flightInfo={content.flightInfo || "直飛航班"}
-        price={tour.price}
+        basePrice={tour.price || 0}
         departures={tour.departures || []}
       />
 

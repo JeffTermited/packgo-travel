@@ -194,7 +194,7 @@ export function LionHeroSection({
                 <div>
                   <div className="text-sm text-gray-500 mb-1">TWD</div>
                   <div className="text-4xl font-bold text-red-600">
-                    {selectedDeparture ? selectedDeparture.price.toLocaleString() : basePrice.toLocaleString()}+
+                    {selectedDeparture ? selectedDeparture.price.toLocaleString() : (basePrice || 0).toLocaleString()}+
                   </div>
                   <div className="text-sm text-gray-500">人/起</div>
                 </div>
