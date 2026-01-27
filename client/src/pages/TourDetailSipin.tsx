@@ -21,6 +21,7 @@ import { FullWidthSection } from "@/components/tour-detail/FullWidthSection";
 import { DailyItinerarySection } from "@/components/tour-detail/DailyItinerarySection";
 import { CostExplanationSection } from "@/components/tour-detail/CostExplanationSection";
 import { FlightInfoSection } from "@/components/tour-detail/FlightInfoSection";
+import { NoticeSection } from "@/components/tour-detail/NoticeSection";
 
 // 解析 JSON 字串
 const parseJSON = (str: string | null | undefined, defaultValue: any = null) => {
@@ -173,6 +174,12 @@ export default function TourDetailSipin() {
     console.warn('[TourDetailSipin] flightInfo is not an object');
   }
 
+  // 準備注意事項資料（加入錯誤處理）
+  const noticeDetailed = parseJSON(tour.noticeDetailed, null);
+  if (noticeDetailed && typeof noticeDetailed !== 'object') {
+    console.warn('[TourDetailSipin] noticeDetailed is not an object');
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-white">
       <Header />
@@ -188,6 +195,22 @@ export default function TourDetailSipin() {
         heroImage={heroImage}
         colorTheme={colorTheme}
       />
+
+      {/* 下載按鈕 */}
+      <div className="w-full py-6 bg-white border-b no-print">
+        <div className="container mx-auto px-4 flex justify-center">
+          <Button
+            onClick={() => window.print()}
+            className="flex items-center gap-2 px-6 py-3 rounded-full text-white font-bold shadow-lg hover:shadow-xl transition-all"
+            style={{
+              backgroundColor: colorTheme.accent,
+            }}
+          >
+            <Download className="h-5 w-5" />
+            下載行程 PDF
+          </Button>
+        </div>
+      </div>
 
       {/* Features Section */}
       {features.length > 0 && (
@@ -241,6 +264,12 @@ export default function TourDetailSipin() {
           colorTheme={colorTheme}
         />
       )}
+
+      {/* 注意事項區塊 */}
+      <NoticeSection
+        noticeDetailed={noticeDetailed}
+        colorTheme={colorTheme}
+      />
 
       {/* 基本資訊區塊 */}
       <section id="info" className="w-full py-12 lg:py-16 bg-gray-50">

@@ -2775,3 +2775,22 @@
 - [x] 添加錯誤邊界處理 - 當資料格式異常時顯示友善錯誤訊息
 - [x] 測試所有新增區塊的顯示效果（成功）
 - [x] 儲存 checkpoint
+
+
+## 添加注意事項、行程下載功能、優化導航列（2026-01-27）
+- [ ] 查看資料庫中的 noticeDetailed 欄位資料
+- [ ] 創建注意事項區塊組件（NoticeSection）- 顯示行程注意事項、簽證要求、健康提醒
+- [ ] 優化 Sticky Navigation - 添加「航班資訊」和「注意事項」按鈕
+- [ ] 實作行程下載 PDF 功能 - 將行程詳情匯出為 PDF 檔案
+- [ ] 測試所有新功能
+- [ ] 儲存 checkpoint
+
+
+## 添加注意事項、行程下載功能、優化導航列（2026-01-27）
+- [x] 查看資料庫中的 noticeDetailed 欄位
+- [x] 創建注意事項區塊組件（NoticeSection）- 支援空資料時顯示預設內容
+- [x] 優化 Sticky Navigation - 添加「航班資訊」和「注意事項」按鈕
+- [x] 實作行程下載 PDF 功能 - 使用瀏覽器原生 window.print()
+- [x] 引入 print.css 到 index.html
+- [x] 測試所有新功能（Sticky Navigation、下載按鈕、注意事項區塊）
+- [x] 儲存 checkpoint

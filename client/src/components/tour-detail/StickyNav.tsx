@@ -20,6 +20,8 @@ export const StickyNav: React.FC<StickyNavProps> = ({ tourTitle, colorTheme }) =
     { label: "每日行程", href: "#itinerary" },
     { label: "飯店介紹", href: "#hotels" },
     { label: "費用說明", href: "#cost" },
+    { label: "航班資訊", href: "#flights" },
+    { label: "注意事項", href: "#notice" },
     { label: "出發日期", href: "#departures" },
   ];
 

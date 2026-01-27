@@ -48,7 +48,7 @@ export const FlightInfoSection: React.FC<FlightInfoSectionProps> = ({
   const { airline, outbound, inbound, description, features = [] } = flightInfo;
 
   return (
-    <section id="flight" className="w-full py-12 lg:py-16 bg-white">
+    <section id="flights" className="w-full py-12 lg:py-16 bg-white">
       <div className="container mx-auto px-4">
         <h2
           className="text-3xl lg:text-4xl font-serif font-bold text-center mb-8 lg:mb-12"
