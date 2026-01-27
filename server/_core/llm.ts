@@ -1,4 +1,5 @@
 import { ENV } from "./env";
+import { getCachedResponse, setCachedResponse } from "./llmCache";
 
 export type Role = "system" | "user" | "assistant" | "tool" | "function";
 
@@ -268,6 +269,12 @@ const normalizeResponseFormat = ({
 export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
   assertApiKey();
 
+  // Check cache first
+  const cachedResult = await getCachedResponse(params);
+  if (cachedResult) {
+    return cachedResult;
+  }
+
   const {
     messages,
     tools,
@@ -328,5 +335,10 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     );
   }
 
-  return (await response.json()) as InvokeResult;
+  const result = (await response.json()) as InvokeResult;
+  
+  // Cache the result
+  await setCachedResponse(params, result);
+  
+  return result;
 }
