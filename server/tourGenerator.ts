@@ -63,15 +63,27 @@ export async function generateTourFromUrlInternal(
       destination: tourData.destinationCity || tourData.destinationCountry, // Legacy field for compatibility
       tags: JSON.stringify(tourData.tags),
       
-      // New fields
+      // Hero section
       heroImage: tourData.heroImage,
       heroImageAlt: tourData.heroImageAlt,
       heroSubtitle: tourData.heroSubtitle,
+      
+      // Color theme and features
       colorTheme: tourData.colorTheme,
       keyFeatures: tourData.keyFeatures,
       poeticContent: tourData.poeticContent,
+      featureImages: tourData.featureImages,
+      highlights: tourData.highlights,
       
-      // Additional fields (use defaults for now)
+      // Detailed content from agents (CRITICAL: These fields were missing!)
+      itineraryDetailed: tourData.itineraryDetailed, // 每日行程
+      costExplanation: tourData.costExplanation, // 費用說明
+      noticeDetailed: tourData.noticeDetailed, // 注意事項
+      hotels: tourData.hotels, // 飯店介紹
+      meals: tourData.meals, // 餐飲介紹
+      flights: tourData.flights, // 航班資訊
+      
+      // Additional fields
       status: "active",
       featured: 0, // 0 = false, 1 = true
       promotionText: "",

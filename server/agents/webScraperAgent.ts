@@ -479,6 +479,7 @@ ${markdown.substring(0, 15000)}
   private async executeVisionFallback(url: string, existingData: any, details: any): Promise<any | null> {
     try {
       console.log("[WebScraperAgent] 啟動 Puppeteer Vision 救援");
+      console.log("[WebScraperAgent] Vision Fallback URL:", url);
       
       const result = await scrapeWithPuppeteerVision(url);
       
