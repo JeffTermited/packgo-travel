@@ -60,9 +60,12 @@ export default function BookingDetail() {
       return;
     }
 
+    // Convert payment type to API format
+    const apiPaymentType = paymentType === "balance" || paymentType === "full" ? "remaining" : "deposit";
+
     createCheckoutMutation.mutate({
       bookingId,
-      paymentType,
+      paymentType: apiPaymentType,
     });
   };
 

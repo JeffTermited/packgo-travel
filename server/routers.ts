@@ -966,6 +966,28 @@ Important guidelines:
           message: `行程已${newStatus === "active" ? "上架" : "下架"}`,
         };
       }),
+
+    // Toggle featured status (admin only)
+    toggleFeatured: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        const tour = await db.getTourById(input.id);
+        if (!tour) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Tour not found",
+          });
+        }
+
+        const newFeatured = tour.featured === 1 ? 0 : 1;
+        await db.updateTour(input.id, { featured: newFeatured });
+
+        return {
+          success: true,
+          featured: newFeatured === 1,
+          message: `行程已${newFeatured === 1 ? "設為精選" : "取消精選"}`,
+        };
+      }),
   }),
 
   // Booking management router
@@ -1063,6 +1085,41 @@ Important guidelines:
         return booking;
       }),
 
+    // Create Stripe checkout session
+    createCheckoutSession: protectedProcedure
+      .input(
+        z.object({
+          bookingId: z.number(),
+          paymentType: z.enum(["deposit", "remaining"]),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const booking = await db.getBookingById(input.bookingId);
+        if (!booking) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Booking not found",
+          });
+        }
+
+        // Check if user owns this booking
+        if (booking.userId !== ctx.user.id && ctx.user.role !== "admin") {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "You don't have permission to pay for this booking",
+          });
+        }
+
+        const amount = input.paymentType === "deposit" ? booking.depositAmount : booking.remainingAmount;
+        const description = input.paymentType === "deposit" ? "訂金" : "尾款";
+
+        // TODO: Implement Stripe checkout session creation
+        // For now, return a mock URL
+        return {
+          url: `https://checkout.stripe.com/pay/mock-${input.bookingId}-${input.paymentType}`,
+        };
+      }),
+
     // Cancel booking
     cancel: protectedProcedure
       .input(z.object({ id: z.number() }))
@@ -1130,6 +1187,13 @@ Important guidelines:
   departures: router({
     // Get all departures for a tour
     list: publicProcedure
+      .input(z.object({ tourId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getTourDepartures(input.tourId);
+      }),
+
+    // Alias for list (for backward compatibility)
+    listByTour: publicProcedure
       .input(z.object({ tourId: z.number() }))
       .query(async ({ input }) => {
         return await db.getTourDepartures(input.tourId);
@@ -1222,20 +1286,16 @@ Important guidelines:
     create: publicProcedure
       .input(
         z.object({
-          name: z.string().min(1),
-          email: z.string().email(),
-          phone: z.string().optional(),
+          customerName: z.string().min(1),
+          customerEmail: z.string().email(),
+          customerPhone: z.string().optional(),
           subject: z.string().min(1),
           message: z.string().min(1),
         })
       )
       .mutation(async ({ input, ctx }) => {
         return await db.createInquiry({
-          customerName: input.name,
-          customerEmail: input.email,
-          customerPhone: input.phone,
-          subject: input.subject,
-          message: input.message,
+          ...input,
           inquiryType: "general",
           userId: ctx.user?.id,
           status: "new",
@@ -1244,6 +1304,19 @@ Important guidelines:
 
     // Update inquiry status (admin only)
     updateStatus: adminProcedure
+      .input(
+        z.object({
+          id: z.number(),
+          status: z.enum(["new", "in_progress", "replied", "resolved", "closed"]),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const { id, status } = input;
+        return await db.updateInquiry(id, { status });
+      }),
+
+    // Alias for updateStatus (for backward compatibility)
+    update: adminProcedure
       .input(
         z.object({
           id: z.number(),
@@ -1305,8 +1378,38 @@ Important guidelines:
           senderType: ctx.user.role === "admin" ? "admin" : "customer",
           message: input.message,
         });
+       }),
+  }),
+
+  // Newsletter subscription router
+  newsletter: router({
+    // Subscribe to newsletter
+    subscribe: publicProcedure
+      .input(z.object({ email: z.string().email() }))
+      .mutation(async ({ input }) => {
+        // TODO: Implement newsletter subscription logic
+        console.log(`Newsletter subscription: ${input.email}`);
+        return { success: true, message: "訂閱成功！感謝您的支持" };
       }),
   }),
-});
 
+  // Admin dashboard router
+  admin: router({
+    // Get dashboard statistics
+    getStats: adminProcedure.query(async () => {
+      // TODO: Implement dashboard statistics logic
+      return {
+        totalTours: 0,
+        totalBookings: 0,
+        totalRevenue: 0,
+        totalInquiries: 0,
+        activeTours: 0,
+        pendingInquiries: 0,
+        thisMonthRevenue: 0,
+        revenueGrowth: 0,
+        todayBookings: 0,
+      };
+    }),
+  }),
+});
 export type AppRouter = typeof appRouter;

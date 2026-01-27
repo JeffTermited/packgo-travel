@@ -45,7 +45,6 @@ export default function CustomTours() {
       customerName: formData.customerName,
       customerEmail: formData.email,
       customerPhone: formData.phone,
-      inquiryType: "custom_tour",
       subject: `客製旅遊諮詢 - ${formData.destination}`,
       message: `目的地：${formData.destination}\n天數：${formData.duration}\n人數：${formData.travelers}\n預算：${formData.budget}\n出發日期：${formData.departureDate}\n詳細需求：${formData.requirements}`,
     });

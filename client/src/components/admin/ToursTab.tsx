@@ -862,7 +862,10 @@ export default function ToursTab() {
             </DialogDescription>
           </DialogHeader>
           {selectedTourForDepartures && (
-            <DeparturesManagement tourId={selectedTourForDepartures.id} />
+            <DeparturesManagement 
+              tourId={selectedTourForDepartures.id} 
+              tourTitle={selectedTourForDepartures.title}
+            />
           )}
         </DialogContent>
       </Dialog>

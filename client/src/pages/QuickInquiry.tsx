@@ -37,10 +37,7 @@ export default function QuickInquiry() {
   });
 
   const onSubmit = (data: QuickInquiryForm) => {
-    createInquiry.mutate({
-      inquiryType: "general",
-      ...data,
-    });
+    createInquiry.mutate(data);
   };
 
   if (isSubmitted) {

@@ -139,8 +139,6 @@ export default function DeparturesManagement({ tourId, tourTitle }: DeparturesMa
       infantPrice: formData.infantPrice,
       singleRoomSupplement: formData.singleRoomSupplement,
       totalSlots: formData.totalSlots,
-      status: formData.status,
-      notes: formData.notes,
     });
   };
 

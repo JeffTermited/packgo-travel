@@ -42,10 +42,7 @@ export default function CustomTourRequest() {
   });
 
   const onSubmit = (data: CustomTourForm) => {
-    createInquiry.mutate({
-      inquiryType: "custom_tour",
-      ...data,
-    });
+    createInquiry.mutate(data);
   };
 
   if (isSubmitted) {

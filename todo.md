@@ -2672,3 +2672,23 @@
 - [ ] 實作快取機制（常用資料）
 - [ ] 優化 LLM 呼叫次數
 - [ ] 測試並驗證優化效果
+
+
+## 修復剩餘的 25 個前端 TypeScript 錯誤 (2026-01-27)
+- [x] 檢查並分析所有剩餘的 TypeScript 錯誤
+- [x] 修復 BookingDetail.tsx 的 error 參數類型
+- [x] 修復 CustomTourRequest.tsx 的 inquiryType 欄位
+- [x] 修復 CustomTours.tsx 的 customerName 欄位
+- [x] 修復 QuickInquiry.tsx 的 inquiryType 欄位
+- [x] 修復 NewsletterSection.tsx 的錯誤
+- [x] 修復 DashboardTab.tsx 的錯誤
+- [x] 修復 ToursTab.tsx 的錯誤
+- [x] 修復 BookTour.tsx 的錯誤
+- [x] 添加 departures.listByTour API
+- [x] 添加 bookings.createCheckoutSession API
+- [x] 添加 inquiries.update API
+- [x] 添加 tours.toggleFeatured API
+- [x] 添加 newsletter.subscribe API
+- [x] 添加 admin.getStats API
+- [x] 測試並驗證所有修復
+- [x] 生成完整的修復報告

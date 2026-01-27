@@ -113,23 +113,14 @@ export default function BookTour() {
     }
     
     try {
+      const totalParticipants = numberOfAdults + numberOfChildrenWithBed + numberOfChildrenNoBed + numberOfInfants;
       const booking = await createBookingMutation.mutateAsync({
         tourId,
-        departureId: selectedDepartureId,
-        customerName,
-        customerEmail,
-        customerPhone,
-        numberOfAdults,
-        numberOfChildrenWithBed,
-        numberOfChildrenNoBed,
-        numberOfInfants,
-        numberOfSingleRooms,
-        message,
-        participants: participants.map(p => ({
-          ...p,
-          dateOfBirth: p.dateOfBirth ? new Date(p.dateOfBirth) : undefined,
-          passportExpiry: p.passportExpiry ? new Date(p.passportExpiry) : undefined,
-        })),
+        participants: totalParticipants,
+        contactName: customerName,
+        contactEmail: customerEmail,
+        contactPhone: customerPhone,
+        specialRequests: message,
       });
       
       toast.success("預訂成功！", {

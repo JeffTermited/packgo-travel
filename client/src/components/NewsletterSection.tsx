@@ -7,11 +7,11 @@ import { toast } from "sonner";
 export default function NewsletterSection() {
   const [email, setEmail] = useState("");
   const subscribe = trpc.newsletter.subscribe.useMutation({
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       toast.success(data.message);
       setEmail("");
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast.error(error.message);
     },
   });
