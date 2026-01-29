@@ -5,7 +5,8 @@ import {
 } from "./queue";
 import { MasterAgent } from "./agents/masterAgent";
 import { createTour } from "./db";
-import { supplementImages } from "./services/unsplashService";
+// Image supplementation removed for speed optimization
+// import { supplementImages } from "./services/unsplashService";
 
 /**
  * Internal tour generation function called by worker
@@ -56,33 +57,8 @@ export async function generateTourFromUrlInternal(
     
     const tourData = result.data;
     
-    // Supplement images if needed (minimum 6 images)
-    await job.updateProgress({
-      step: "supplementing_images",
-      percentage: 90,
-      message: "Checking and supplementing images...",
-    });
-    
-    const destination = tourData.destinationCity || tourData.destinationCountry || "travel";
-    
-    // Parse featureImages (could be string or array)
-    let currentImages: string[] = [];
-    if (typeof tourData.featureImages === 'string') {
-      try {
-        currentImages = JSON.parse(tourData.featureImages);
-      } catch {
-        currentImages = [];
-      }
-    } else if (Array.isArray(tourData.featureImages)) {
-      currentImages = tourData.featureImages;
-    }
-    
-    const supplementedImages = await supplementImages(currentImages, destination, 6);
-    
-    console.log(`[TourGenerator] Image supplement: ${currentImages.length} -> ${supplementedImages.length}`);
-    
-    // Update tourData with supplemented images (convert to JSON string)
-    tourData.featureImages = JSON.stringify(supplementedImages);
+    // Image supplementation skipped - editors will manage images manually
+    console.log('[TourGenerator] Skipping image supplement - editors will manage images');
     
     // Save to database
     await job.updateProgress({

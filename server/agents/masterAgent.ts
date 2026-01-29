@@ -298,17 +298,18 @@ export class MasterAgent {
       console.log("[MasterAgent] Lion Travel title:", lionTravelTitle);
       
       // ========================================================================
-      // Phase 3: ColorTheme + ImagePrompt (Parallel)
-      // These two agents can run in parallel as they don't depend on each other
+      // Phase 3: ColorTheme ONLY (ImagePrompt removed for speed optimization)
+      // Image generation is skipped - editors will manage images manually
       // ========================================================================
       onProgress?.("generating_themes", 40);
-      console.log("[MasterAgent] Starting Phase 3: ColorTheme + ImagePrompt (parallel)");
+      console.log("[MasterAgent] Starting Phase 3: ColorTheme only (image generation disabled)");
       
       this.monitor.startAgent('ColorThemeAgent');
-      this.monitor.startAgent('ImagePromptAgent');
       if (taskId) {
         progressTracker.startPhase(taskId, 'color_theme');
+        // Skip image_prompt phase - mark as complete immediately
         progressTracker.startPhase(taskId, 'image_prompt');
+        progressTracker.completePhase(taskId, 'image_prompt');
       }
       
       // Check for cached color palette first
@@ -316,29 +317,17 @@ export class MasterAgent {
       let colorTheme;
       const cachedPalette = await generationCache.getColorPalette(destination);
       
-      // Run ColorTheme (with cache check) and ImagePrompt in parallel
-      const [colorThemeResult, promptResult] = await Promise.all([
-        cachedPalette 
-          ? Promise.resolve({ success: true, data: cachedPalette })
-          : this.retryManager.executeWithRetry(
-              () => this.colorThemeAgent.execute(
-                rawData.location?.destinationCountry || "",
-                rawData.location?.destinationCity
-              ),
-              this.retryConfig,
-              'ColorThemeAgent'
+      // Run ColorTheme only
+      const colorThemeResult = cachedPalette 
+        ? { success: true, data: cachedPalette }
+        : await this.retryManager.executeWithRetry(
+            () => this.colorThemeAgent.execute(
+              rawData.location?.destinationCountry || "",
+              rawData.location?.destinationCity
             ),
-        this.retryManager.executeWithRetry(
-          () => this.imagePromptAgent.execute(
-            rawData.location?.destinationCountry || "",
-            rawData.location?.destinationCity || "",
-            analyzedContent.highlights,
-            analyzedContent.keyFeatures
-          ),
-          this.retryConfig,
-          'ImagePromptAgent'
-        )
-      ]);
+            this.retryConfig,
+            'ColorThemeAgent'
+          );
       
       // Handle ColorThemeAgent result
       if (!colorThemeResult.success || !colorThemeResult.data) {
@@ -365,28 +354,23 @@ export class MasterAgent {
         });
       }
       
-      // Handle ImagePromptAgent result
-      if (!promptResult.success || !promptResult.data) {
-        this.monitor.failAgent('ImagePromptAgent', new Error(promptResult.error || "Image prompt generation failed"));
-        throw new Error(promptResult.error || "Image prompt generation failed");
-      }
-      this.monitor.completeAgent('ImagePromptAgent', promptResult);
-      if (taskId) progressTracker.completePhase(taskId, 'image_prompt');
-      const { heroPrompt, highlightPrompts, featurePrompts, styleGuide } = promptResult.data;
+      // Skip ImagePromptAgent - editors will manage images
+      console.log("[MasterAgent] Skipping ImagePromptAgent - editors will manage images");
       
-      console.log("[MasterAgent] ✓ Phase 3 completed: ColorTheme + ImagePrompt");
+      console.log("[MasterAgent] ✓ Phase 3 completed: ColorTheme only");
       
       // ========================================================================
-      // Phase 4: MEGA PARALLEL EXECUTION
-      // ImageGeneration + Itinerary + 5 Detail Agents (7 agents in parallel!)
-      // This is the key optimization - running 7 agents simultaneously
+      // Phase 4: PARALLEL EXECUTION (6 agents - Image generation removed)
+      // Itinerary + 5 Detail Agents running in parallel
       // ========================================================================
       onProgress?.("generating_content", 55);
-      console.log("[MasterAgent] Starting Phase 4: MEGA PARALLEL (7 agents)");
-      console.log("[MasterAgent] Running: ImageGeneration, Itinerary, Cost, Notice, Hotel, Meal, Flight");
+      console.log("[MasterAgent] Starting Phase 4: PARALLEL (6 agents - no image generation)");
+      console.log("[MasterAgent] Running: Itinerary, Cost, Notice, Hotel, Meal, Flight");
       
-      // Start all agents
-      this.monitor.startAgent('ImageGenerationAgent');
+      // Skip image generation - editors will manage images
+      console.log("[MasterAgent] Skipping ImageGenerationAgent - editors will manage images");
+      
+      // Start all agents (except ImageGenerationAgent)
       this.monitor.startAgent('ItineraryAgent');
       this.monitor.startAgent('CostAgent');
       this.monitor.startAgent('NoticeAgent');
@@ -394,7 +378,9 @@ export class MasterAgent {
       this.monitor.startAgent('MealAgent');
       this.monitor.startAgent('FlightAgent');
       if (taskId) {
+        // Skip image_generation phase - mark as complete immediately
         progressTracker.startPhase(taskId, 'image_generation');
+        progressTracker.completePhase(taskId, 'image_generation');
         progressTracker.startPhase(taskId, 'itinerary');
         progressTracker.startPhase(taskId, 'cost_agent');
         progressTracker.startPhase(taskId, 'notice_agent');
@@ -404,49 +390,37 @@ export class MasterAgent {
       }
       
       const megaParallelResults = await Promise.allSettled([
-        // Image Generation
-        this.retryManager.executeWithRetry(
-          () => this.imageGenerationAgent.execute(
-            heroPrompt,
-            highlightPrompts,
-            featurePrompts,
-            styleGuide,
-            userId || 1
-          ),
-          this.retryConfig,
-          'ImageGenerationAgent'
-        ),
-        // Itinerary Generation
+        // Itinerary Generation (now index 0)
         this.retryManager.executeWithRetry(
           () => this.itineraryAgent.execute(rawData),
           this.retryConfig,
           'ItineraryAgent'
         ),
-        // Cost Agent
+        // Cost Agent (now index 1)
         this.retryManager.executeWithRetry(
           () => this.costAgent.execute(rawData),
           this.retryConfig,
           'CostAgent'
         ),
-        // Notice Agent
+        // Notice Agent (now index 2)
         this.retryManager.executeWithRetry(
           () => this.noticeAgent.execute(rawData),
           this.retryConfig,
           'NoticeAgent'
         ),
-        // Hotel Agent
+        // Hotel Agent (now index 3)
         this.retryManager.executeWithRetry(
           () => this.hotelAgent.execute(rawData),
           this.retryConfig,
           'HotelAgent'
         ),
-        // Meal Agent
+        // Meal Agent (now index 4)
         this.retryManager.executeWithRetry(
           () => this.mealAgent.execute(rawData),
           this.retryConfig,
           'MealAgent'
         ),
-        // Flight Agent
+        // Flight Agent (now index 5)
         this.retryManager.executeWithRetry(
           () => this.flightAgent.execute(rawData),
           this.retryConfig,
@@ -454,49 +428,14 @@ export class MasterAgent {
         )
       ]);
       
-      // Process Image Generation result
-      let heroImage = { url: "", alt: "Hero image" };
+      // Set empty images - editors will manage images manually
+      let heroImage = { url: "", alt: "" };
       let highlightImages: any[] = [];
       let featureImages: any[] = [];
       
-      const imageResult = megaParallelResults[0];
-      if (imageResult.status === 'fulfilled' && imageResult.value.success && imageResult.value.data) {
-        heroImage = imageResult.value.data.heroImage;
-        highlightImages = imageResult.value.data.highlightImages;
-        featureImages = imageResult.value.data.featureImages;
-        this.monitor.completeAgent('ImageGenerationAgent', imageResult.value);
-        if (taskId) progressTracker.completePhase(taskId, 'image_generation');
-        console.log("[MasterAgent] ✓ ImageGenerationAgent completed");
-      } else {
-        const error = imageResult.status === 'rejected' 
-          ? imageResult.reason 
-          : new Error(imageResult.value?.error || "Image generation failed");
-        this.monitor.failAgent('ImageGenerationAgent', error);
-        if (taskId) progressTracker.failPhase(taskId, 'image_generation', error.message);
-        console.warn("[MasterAgent] ⚠ ImageGenerationAgent failed, using placeholder images");
-        
-        // Use placeholder images
-        heroImage = { url: "/placeholder-hero.jpg", alt: "Placeholder hero image" };
-        highlightImages = analyzedContent.highlights.map((_: any, index: number) => ({
-          url: `/placeholder-highlight-${index + 1}.jpg`,
-          alt: `Placeholder highlight image ${index + 1}`
-        }));
-        featureImages = analyzedContent.keyFeatures.map((_: any, index: number) => ({
-          url: `/placeholder-feature-${index + 1}.jpg`,
-          alt: `Placeholder feature image ${index + 1}`
-        }));
-      }
-      
-      // 漸進式結果：更新 Hero 圖片
-      if (taskId && heroImage.url) {
-        progressTracker.updatePartialResults(taskId, {
-          heroImage: heroImage.url,
-        });
-      }
-      
-      // Process Itinerary result
+      // Process Itinerary result (now index 0)
       let itineraryData = "";
-      const itineraryResult = megaParallelResults[1];
+      const itineraryResult = megaParallelResults[0];
       if (itineraryResult.status === 'fulfilled' && itineraryResult.value.success && itineraryResult.value.data) {
         itineraryData = JSON.stringify(itineraryResult.value.data.dailyItineraries);
         this.monitor.completeAgent('ItineraryAgent', itineraryResult.value);
@@ -513,8 +452,10 @@ export class MasterAgent {
       }
       
       // Process Detail Agents results (Cost, Notice, Hotel, Meal, Flight)
+      // Note: After removing ImageGenerationAgent, indices shifted:
+      // Index 0 = Itinerary, Index 1-5 = Detail Agents
       const detailAgentNames = ['CostAgent', 'NoticeAgent', 'HotelAgent', 'MealAgent', 'FlightAgent'];
-      const detailResults = megaParallelResults.slice(2).map((result, index) => {
+      const detailResults = megaParallelResults.slice(1).map((result, index) => {
         const agentName = detailAgentNames[index];
         
         // Map agent names to progress phase IDs
@@ -546,7 +487,7 @@ export class MasterAgent {
       
       const [costData, noticeData, hotelData, mealData, flightData] = detailResults;
       
-      console.log("[MasterAgent] ✓ Phase 4 completed: MEGA PARALLEL (7 agents)");
+      console.log("[MasterAgent] ✓ Phase 4 completed: PARALLEL (6 agents - no image generation)");
       
       // Extract feature image URLs
       const featureImageUrls = featureImages.map(img => img.url).filter(url => url !== "");
