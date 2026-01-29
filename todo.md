@@ -754,3 +754,32 @@
 ### 24.4 儲存 Checkpoint
 - [ ] 儲存 checkpoint
 - [ ] 驗證功能正常
+
+
+---
+
+## Phase 25: React Error #31 修復（2026-01-29）
+
+### 25.1 問題分析
+- [x] 分析錯誤原因：React Error #31 表示「Objects are not valid as a React child」
+- [x] 定位問題代碼：`GenerationProgress.tsx` 中的 partialResults 渲染邏輯
+- [x] 識別問題欄位：highlights, title, poeticTitle, destination, colorTheme, heroImage, error
+
+### 25.2 修復實作
+- [x] 修復 highlights 渲染：確保只渲染字串，物件轉為 JSON
+- [x] 修復 title/poeticTitle/destination：添加 typeof 檢查
+- [x] 修復 colorTheme：確保 color 值是字串，否則使用 fallback
+- [x] 修復 heroImage：添加 typeof 檢查和 onError 處理
+- [x] 修復 error 訊息：支援字串和物件格式
+- [x] 修復 phase.error：添加 typeof 檢查
+
+### 25.3 測試驗證
+- [x] 撰寫 26 個單元測試驗證類型安全處理邏輯
+- [x] 所有測試通過（26/26）
+- [x] TypeScript 編譯無錯誤
+
+### 25.4 部署與驗證
+- [ ] 保存 checkpoint
+- [ ] 發佈到生產環境
+- [ ] 在生產環境測試 AI 生成功能
+- [ ] 驗證進度顯示不再崩潰

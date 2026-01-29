@@ -323,63 +323,85 @@ export function GenerationProgressComponent({
               <div className="space-y-1">
                 {progress.partialResults.title && (
                   <p className="text-base font-bold text-gray-900">
-                    {progress.partialResults.title}
+                    {typeof progress.partialResults.title === 'string' 
+                      ? progress.partialResults.title 
+                      : String(progress.partialResults.title)}
                   </p>
                 )}
                 {progress.partialResults.poeticTitle && (
                   <p className="text-sm text-gray-600 italic">
-                    {progress.partialResults.poeticTitle}
+                    {typeof progress.partialResults.poeticTitle === 'string' 
+                      ? progress.partialResults.poeticTitle 
+                      : String(progress.partialResults.poeticTitle)}
                   </p>
                 )}
                 {progress.partialResults.destination && (
                   <p className="text-xs text-gray-500 flex items-center gap-1">
                     <MapPin className="h-3 w-3" />
-                    {progress.partialResults.destination}
+                    {typeof progress.partialResults.destination === 'string' 
+                      ? progress.partialResults.destination 
+                      : String(progress.partialResults.destination)}
                   </p>
                 )}
               </div>
             )}
             
             {/* 配色方案 */}
-            {progress.partialResults.colorTheme && (
+            {progress.partialResults.colorTheme && typeof progress.partialResults.colorTheme === 'object' && (
               <div className="flex items-center gap-2">
                 <span className="text-xs text-gray-500">配色：</span>
                 <div className="flex gap-1">
-                  {Object.entries(progress.partialResults.colorTheme).slice(0, 5).map(([key, color]) => (
-                    <div
-                      key={key}
-                      className="w-5 h-5 rounded-full border border-gray-200 shadow-sm"
-                      style={{ backgroundColor: color as string }}
-                      title={`${key}: ${color}`}
-                    />
-                  ))}
+                  {Object.entries(progress.partialResults.colorTheme).slice(0, 5).map(([key, color]) => {
+                    // 確保 color 是字串
+                    const colorValue = typeof color === 'string' ? color : '#cccccc';
+                    return (
+                      <div
+                        key={key}
+                        className="w-5 h-5 rounded-full border border-gray-200 shadow-sm"
+                        style={{ backgroundColor: colorValue }}
+                        title={`${key}: ${colorValue}`}
+                      />
+                    );
+                  })}
                 </div>
               </div>
             )}
             
             {/* Hero 圖片 */}
-            {progress.partialResults.heroImage && (
+            {progress.partialResults.heroImage && typeof progress.partialResults.heroImage === 'string' && (
               <div className="relative w-full h-24 rounded-md overflow-hidden">
                 <img
                   src={progress.partialResults.heroImage}
                   alt="Hero preview"
                   className="w-full h-full object-cover"
+                  onError={(e) => {
+                    // 隱藏無法載入的圖片
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
               </div>
             )}
             
             {/* 亮點 */}
-            {progress.partialResults.highlights && progress.partialResults.highlights.length > 0 && (
+            {progress.partialResults.highlights && Array.isArray(progress.partialResults.highlights) && progress.partialResults.highlights.length > 0 && (
               <div className="space-y-1">
                 <span className="text-xs text-gray-500">行程亮點：</span>
                 <ul className="text-xs text-gray-700 space-y-0.5">
-                  {progress.partialResults.highlights.map((highlight, idx) => (
-                    <li key={idx} className="flex items-start gap-1">
-                      <span className="text-blue-500">•</span>
-                      <span className="line-clamp-1">{highlight}</span>
-                    </li>
-                  ))}
+                  {progress.partialResults.highlights.map((highlight, idx) => {
+                    // 確保 highlight 是字串，避免 React Error #31
+                    const highlightText = typeof highlight === 'string' 
+                      ? highlight 
+                      : (typeof highlight === 'object' && highlight !== null)
+                        ? JSON.stringify(highlight)
+                        : String(highlight);
+                    return (
+                      <li key={idx} className="flex items-start gap-1">
+                        <span className="text-blue-500">•</span>
+                        <span className="line-clamp-1">{highlightText}</span>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             )}
@@ -420,7 +442,11 @@ export function GenerationProgressComponent({
                 </div>
                 <p className="text-xs text-gray-500 truncate">{phase.description}</p>
                 {phase.error && (
-                  <p className="text-xs text-red-500 mt-1 truncate">{phase.error}</p>
+                  <p className="text-xs text-red-500 mt-1 truncate">
+                    {typeof phase.error === 'string' 
+                      ? phase.error 
+                      : String(phase.error)}
+                  </p>
                 )}
               </div>
 
@@ -435,7 +461,13 @@ export function GenerationProgressComponent({
         {/* 錯誤訊息 */}
         {progress?.error && (
           <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-sm text-red-600">{progress.error}</p>
+            <p className="text-sm text-red-600">
+              {typeof progress.error === 'string' 
+                ? progress.error 
+                : (typeof progress.error === 'object' && progress.error !== null)
+                  ? JSON.stringify(progress.error)
+                  : String(progress.error)}
+            </p>
           </div>
         )}
 
