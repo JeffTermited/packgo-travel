@@ -80,6 +80,7 @@ export default function TourDetailMinimal() {
     overview: useRef<HTMLElement>(null),
     itinerary: useRef<HTMLElement>(null),
     hotels: useRef<HTMLElement>(null),
+    transport: useRef<HTMLElement>(null),
     pricing: useRef<HTMLElement>(null),
     notes: useRef<HTMLElement>(null),
   };
@@ -176,10 +177,23 @@ export default function TourDetailMinimal() {
   const noticeDetailed = parseJSON(tour.noticeDetailed, null);
 
   // 導覽項目
+  // 根據交通類型動態生成導覽項目
+  const getTransportLabel = () => {
+    if (!transportationInfo?.type) return null;
+    switch (transportationInfo.type) {
+      case 'TRAIN': return '列車';
+      case 'CRUISE': return '郵輪';
+      case 'FLIGHT': return '航班';
+      default: return '交通';
+    }
+  };
+
+  const transportLabel = getTransportLabel();
   const navItems = [
     { id: "overview", label: "概覽" },
     { id: "itinerary", label: "行程" },
     { id: "hotels", label: "住宿" },
+    ...(transportationInfo?.type && transportationInfo.type !== 'FLIGHT' ? [{ id: "transport", label: transportLabel }] : []),
     { id: "pricing", label: "費用" },
     { id: "notes", label: "須知" },
   ];
@@ -230,8 +244,15 @@ export default function TourDetailMinimal() {
         </div>
       </nav>
 
+      {/* Print Header - 列印時顯示 */}
+      <div className="print-only print-header">
+        <h1>{tour.title}</h1>
+        <p>{tour.destinationCountry} {tour.destinationCity && `· ${tour.destinationCity}`} | {tour.duration || "多日行程"}</p>
+        <p className="text-sm mt-2">PACK&GO 旅行社 | www.packgo-travel.com</p>
+      </div>
+
       {/* Hero Section - Full Width */}
-      <section className="relative h-[70vh] min-h-[500px] max-h-[800px]">
+      <section className="relative h-[70vh] min-h-[500px] max-h-[800px] no-print">
         <div 
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url(${heroImage})` }}
@@ -574,6 +595,153 @@ export default function TourDetailMinimal() {
         </section>
       )}
 
+      {/* Transportation Section - 火車/郵輪專屬區塊 */}
+      {transportationInfo?.type && transportationInfo.type !== 'FLIGHT' && (
+        <section ref={sectionRefs.transport} id="transport" className="py-20 lg:py-32">
+          <div className="max-w-4xl mx-auto px-6">
+            <h2 className="text-3xl lg:text-4xl font-light mb-4">
+              {transportationInfo.type === 'TRAIN' ? '列車資訊' : 
+               transportationInfo.type === 'CRUISE' ? '郵輪資訊' : '交通資訊'}
+            </h2>
+            <p className="text-gray-500 mb-12">
+              {transportationInfo.type === 'TRAIN' ? '本行程採用與別不同的鐵道之旅' : 
+               transportationInfo.type === 'CRUISE' ? '豪華郵輪之旅，感受海上風光' : '詳細交通資訊'}
+            </p>
+
+            {/* 火車資訊 */}
+            {transportationInfo.type === 'TRAIN' && (
+              <div className="bg-gray-50 p-8">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-16 h-16 bg-black flex items-center justify-center">
+                    <Train className="h-8 w-8 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-medium">{transportationInfo.typeName || '觀光列車'}</h3>
+                    <p className="text-gray-500">台灣鐵道觀光列車</p>
+                  </div>
+                </div>
+
+                {transportationInfo.trainInfo && (
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {transportationInfo.trainInfo.trainName && (
+                      <div className="border-l-2 border-black pl-4">
+                        <p className="text-sm text-gray-400 mb-1">列車名稱</p>
+                        <p className="font-medium">{transportationInfo.trainInfo.trainName}</p>
+                      </div>
+                    )}
+                    {transportationInfo.trainInfo.route && (
+                      <div className="border-l-2 border-black pl-4">
+                        <p className="text-sm text-gray-400 mb-1">行駛路線</p>
+                        <p className="font-medium">{transportationInfo.trainInfo.route}</p>
+                      </div>
+                    )}
+                    {transportationInfo.trainInfo.duration && (
+                      <div className="border-l-2 border-black pl-4">
+                        <p className="text-sm text-gray-400 mb-1">行駛時間</p>
+                        <p className="font-medium">{transportationInfo.trainInfo.duration}</p>
+                      </div>
+                    )}
+                    {transportationInfo.trainInfo.seatClass && (
+                      <div className="border-l-2 border-black pl-4">
+                        <p className="text-sm text-gray-400 mb-1">座位等級</p>
+                        <p className="font-medium">{transportationInfo.trainInfo.seatClass}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {transportationInfo.trainInfo?.features && transportationInfo.trainInfo.features.length > 0 && (
+                  <div className="mt-8 pt-8 border-t border-gray-200">
+                    <h4 className="text-lg font-medium mb-4">列車特色</h4>
+                    <ul className="grid md:grid-cols-2 gap-3">
+                      {transportationInfo.trainInfo.features.map((feature: string, index: number) => (
+                        <li key={index} className="flex items-center gap-2 text-gray-600">
+                          <Check className="h-4 w-4 text-green-600" />
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* 郵輪資訊 */}
+            {transportationInfo.type === 'CRUISE' && (
+              <div className="bg-gray-50 p-8">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-16 h-16 bg-black flex items-center justify-center">
+                    <Ship className="h-8 w-8 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-medium">{transportationInfo.typeName || '豪華郵輪'}</h3>
+                    <p className="text-gray-500">海上宮殿之旅</p>
+                  </div>
+                </div>
+
+                {transportationInfo.cruiseInfo && (
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {transportationInfo.cruiseInfo.shipName && (
+                      <div className="border-l-2 border-black pl-4">
+                        <p className="text-sm text-gray-400 mb-1">郵輪名稱</p>
+                        <p className="font-medium">{transportationInfo.cruiseInfo.shipName}</p>
+                      </div>
+                    )}
+                    {transportationInfo.cruiseInfo.route && (
+                      <div className="border-l-2 border-black pl-4">
+                        <p className="text-sm text-gray-400 mb-1">航線</p>
+                        <p className="font-medium">{transportationInfo.cruiseInfo.route}</p>
+                      </div>
+                    )}
+                    {transportationInfo.cruiseInfo.cabinClass && (
+                      <div className="border-l-2 border-black pl-4">
+                        <p className="text-sm text-gray-400 mb-1">船艙等級</p>
+                        <p className="font-medium">{transportationInfo.cruiseInfo.cabinClass}</p>
+                      </div>
+                    )}
+                    {transportationInfo.cruiseInfo.company && (
+                      <div className="border-l-2 border-black pl-4">
+                        <p className="text-sm text-gray-400 mb-1">郵輪公司</p>
+                        <p className="font-medium">{transportationInfo.cruiseInfo.company}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {transportationInfo.cruiseInfo?.amenities && transportationInfo.cruiseInfo.amenities.length > 0 && (
+                  <div className="mt-8 pt-8 border-t border-gray-200">
+                    <h4 className="text-lg font-medium mb-4">船上設施</h4>
+                    <ul className="grid md:grid-cols-2 gap-3">
+                      {transportationInfo.cruiseInfo.amenities.map((amenity: string, index: number) => (
+                        <li key={index} className="flex items-center gap-2 text-gray-600">
+                          <Check className="h-4 w-4 text-green-600" />
+                          {amenity}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* 其他交通方式 */}
+            {transportationInfo.type !== 'TRAIN' && transportationInfo.type !== 'CRUISE' && (
+              <div className="bg-gray-50 p-8">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 bg-black flex items-center justify-center">
+                    <TransportIcon type={transportationInfo.type} />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-medium">{transportationInfo.typeName || '交通方式'}</h3>
+                    <p className="text-gray-500">詳細資訊請洽客服</p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
       {/* Pricing Section */}
       {costExplanation && (
         <section ref={sectionRefs.pricing} id="pricing" className="py-20 lg:py-32">
@@ -761,6 +929,12 @@ export default function TourDetailMinimal() {
           </div>
         </div>
       </section>
+
+      {/* Print Footer - 列印時顯示 */}
+      <div className="print-only print-footer">
+        <p>本行程由 PACK&GO 旅行社提供 | 聯絡電話: +1 (510) 634-2307 | Email: Jeffhsieh09@gmail.com</p>
+        <p className="mt-1">列印日期: {new Date().toLocaleDateString('zh-TW')}</p>
+      </div>
 
       <Footer />
 

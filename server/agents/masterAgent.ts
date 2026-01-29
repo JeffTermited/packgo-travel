@@ -488,10 +488,30 @@ export class MasterAgent {
         )
       ]);
       
-      // Set empty images - editors will manage images manually
+      // Dynamic Hero Image: Search from Unsplash based on destination
       let heroImage = { url: "", alt: "" };
       let highlightImages: any[] = [];
       let featureImages: any[] = [];
+      
+      // Try to get hero image from Unsplash based on destination
+      try {
+        const { searchUnsplashPhotos } = await import("../services/unsplashService");
+        const destination = rawData.location?.destinationCity || rawData.location?.destinationCountry || "travel";
+        console.log(`[MasterAgent] Searching hero image for destination: ${destination}`);
+        
+        const heroImages = await searchUnsplashPhotos(destination, 1);
+        if (heroImages.length > 0) {
+          heroImage = {
+            url: heroImages[0],
+            alt: `${destination} travel destination`
+          };
+          console.log(`[MasterAgent] ✓ Found hero image from Unsplash: ${heroImage.url.substring(0, 50)}...`);
+        } else {
+          console.log(`[MasterAgent] No hero image found, will use default`);
+        }
+      } catch (error) {
+        console.warn(`[MasterAgent] Failed to search hero image:`, error);
+      }
       
       // Process Detail Agents results (Cost, Notice, Hotel, Meal, Transportation)
       const detailAgentNames = ['CostAgent', 'NoticeAgent', 'HotelAgent', 'MealAgent', 'TransportationAgent'];
