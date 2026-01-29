@@ -93,19 +93,59 @@ async function captureScreenshots(url: string): Promise<{ screenshots: Buffer[];
       timeout: 60000,
     });
     
-    // 優化：減少等待時間 8秒 → 3秒
-    console.log('[PuppeteerVision] Waiting for page content to load (3s)...');
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    // 等待頁面內容載入（增加等待時間以確保動態內容載入）
+    console.log('[PuppeteerVision] Waiting for page content to load (5s)...');
+    await new Promise(resolve => setTimeout(resolve, 5000));
 
-    // 嘗試關閉可能的彈窗
+    // 嘗試關閉 Cookie 同意橫幅和其他彈窗
     try {
       await page.evaluate(() => {
+        // 關閉 Cookie 同意橫幅
+        const cookieButtons = document.querySelectorAll(
+          'button[class*="cookie"], button[class*="consent"], button[class*="agree"], ' +
+          'button[class*="accept"], a[class*="agree"], a[class*="accept"], ' +
+          '[class*="cookie"] button, [class*="consent"] button, ' +
+          'button:contains("同意"), button:contains("接受"), button:contains("我知道了")'
+        );
+        cookieButtons.forEach((btn: any) => {
+          if (btn.textContent?.includes('同意') || btn.textContent?.includes('接受') || 
+              btn.textContent?.includes('我知道了') || btn.textContent?.includes('OK') ||
+              btn.textContent?.includes('Accept') || btn.textContent?.includes('Agree')) {
+            btn.click?.();
+          }
+        });
+        
+        // 關閉其他彈窗
         const closeButtons = document.querySelectorAll('[class*="close"], [class*="dismiss"], [aria-label="Close"]');
         closeButtons.forEach((btn: any) => btn.click?.());
       });
+      
+      // 等待彈窗關閉動畫
+      await new Promise(resolve => setTimeout(resolve, 1000));
     } catch (e) {
       // 忽略彈窗關閉錯誤
     }
+    
+    // 嘗試點擊「同意」按鈕（針對雄獅旅遊的 Cookie 橫幅）
+    try {
+      const agreeButton = await page.$('button.btn-primary, button.agree-btn, button:has-text("同意")');
+      if (agreeButton) {
+        await agreeButton.click();
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+    } catch (e) {
+      // 忽略
+    }
+    
+    // 等待主要內容區域載入
+    try {
+      await page.waitForSelector('[class*="tour"], [class*="product"], [class*="detail"], main, article', { timeout: 5000 });
+    } catch (e) {
+      console.log('[PuppeteerVision] Main content selector not found, continuing anyway...');
+    }
+    
+    // 再等待一下確保圖片載入
+    await new Promise(resolve => setTimeout(resolve, 2000));
 
     const screenshots: Buffer[] = [];
 
@@ -235,20 +275,25 @@ async function analyzeWithVision(screenshotUrls: string[]): Promise<PuppeteerVis
 3. 不要使用 \`\`\`json 或 \`\`\` 包裹
 4. 直接以 { 開始，以 } 結束
 
+**最重要：天數提取**
+- 必須從標題或頁面中提取正確的天數（例如：「台東2日」表示 2 天，「5日4夜」表示 5 天）
+- 如果標題顯示「2日」，則 duration 必須是「2天1夜」，並且 dailyItinerary 只能有 2 天
+- 絕對不要自行擴充天數，必須嚴格按照原始資料
+
 請提取：
 1. 行程標題（完整名稱）- title
 2. 副標題 - subtitle
 3. 目的地（國家和城市）- destination
-4. 行程天數 - duration
+4. 行程天數（必須從標題提取，例如「台東2日」就是 2 天）- duration
 5. 價格 - price
 6. 行程亮點 - highlights
-7. 每日行程 - dailyItinerary
+7. 每日行程（天數必須與 duration 一致）- dailyItinerary
 8. 費用包含項目 - includes
 9. 費用不包含項目 - excludes
 10. 住宿資訊 - hotels
 
 JSON 格式範例（直接回傳這種格式）：
-{"title":"新馬旅遊5日","subtitle":"描述","destination":"新加坡,馬來西亞","duration":"5天4夜","price":"NT$26999","highlights":["亮點1","亮點2"],"dailyItinerary":[{"day":1,"title":"第一天","description":"描述","activities":["活動1"],"meals":"早/午/晚","accommodation":"飯店"}],"includes":["包含1"],"excludes":["不包含1"],"hotels":[{"name":"飯店名","description":"描述","rating":"4星"}]}`;
+{"title":"台東縱谷旅遊2日","subtitle":"描述","destination":"台灣,台東","duration":"2天1夜","price":"NT$14000","highlights":["亮點1","亮點2"],"dailyItinerary":[{"day":1,"title":"第一天","description":"描述","activities":["活動1"],"meals":"早/午/晚","accommodation":"飯店"},{"day":2,"title":"第二天","description":"描述","activities":["活動2"],"meals":"早/午","accommodation":""}],"includes":["包含1"],"excludes":["不包含1"],"hotels":[{"name":"飯店名","description":"描述","rating":"4星"}]}`;
 
   try {
     const response = await invokeLLM({

@@ -584,3 +584,149 @@
 - 目的地：台灣 台東
 - 價格：NT$ 14,000
 - 行程 ID：90002
+
+
+---
+
+## Phase 23: AI 行程生成速度優化 Phase 2（2026-01-29）
+
+### 23.1 Redis 快取機制
+
+#### 23.1.1 WebScraperAgent 快取
+- [ ] 實作 URL 正規化函數（移除追蹤參數）
+- [ ] 實作 Firecrawl 結果快取（TTL: 24 小時）
+- [ ] 實作快取命中時直接返回結果
+- [ ] 記錄快取命中率統計
+
+#### 23.1.2 ContentAnalyzerAgent 快取
+- [ ] 實作內容分析結果快取（基於 markdown hash）
+- [ ] 實作快取命中時直接返回結果
+
+#### 23.1.3 完整結果快取
+- [ ] 實作完整行程生成結果快取
+- [ ] 相同 URL 第二次請求直接返回快取結果
+- [ ] 快取 TTL: 7 天
+
+### 23.2 Firecrawl 提取能力優化
+
+#### 23.2.1 雄獅旅遊專屬解析規則
+- [ ] 分析雄獅旅遊網頁結構
+- [ ] 實作專屬 CSS 選擇器提取規則
+- [ ] 實作每日行程提取邏輯（Day 1, Day 2...）
+- [ ] 實作價格和日期提取邏輯
+- [ ] 實作住宿和餐食提取邏輯
+
+#### 23.2.2 減少 Vision 救援觸發
+- [ ] 優化 Markdown 結構化提取邏輯
+- [ ] 增加更多 fallback 提取策略
+- [ ] 記錄 Vision 救援觸發率
+
+### 23.3 測試與驗證
+- [ ] 測試相同 URL 第二次請求的快取命中
+- [ ] 測試雄獅旅遊專屬解析規則
+- [ ] 驗證生成時間是否達到 60-90 秒目標
+- [ ] 記錄優化前後的時間對比
+
+
+---
+
+## Phase 23: AI 行程生成速度優化 Phase 2（2026-01-29）
+
+### 23.1 Redis 快取機制確認
+- [x] 確認現有快取機制已完善（LLM 快取 24h、完整結果快取 3d、爬取結果快取 1d）
+- [x] 確認 Redis 服務正常運作
+
+### 23.2 Firecrawl 提取能力優化
+- [x] 創建雄獅旅遊專屬解析器 `lionTravelParser.ts`
+- [x] 針對雄獅旅遊 HTML 結構實作專屬 CSS 選擇器
+- [x] 在 WebScraperAgent 中優先使用專屬解析器
+
+### 23.3 測試與驗證
+- [ ] 測試雄獅旅遊專屬解析器是否正確提取資料
+- [ ] 驗證是否減少 Vision 救援觸發頻率
+- [ ] 記錄優化後的生成時間
+
+
+
+---
+
+## Phase 21: 漸進式結果顯示優化（2026-01-29）
+
+### 21.1 後端漸進式結果追蹤
+- [x] 修改 `server/agents/progressTracker.ts` 添加 `partialResults` 欄位
+- [x] 修改 `server/agents/masterAgent.ts` 在各階段完成後更新漸進式結果
+- [x] 修改 `server/queue.ts` 的 `TourGenerationProgress` 類型包含 `partialResults`
+
+### 21.2 前端漸進式結果顯示
+- [x] 修改 `client/src/components/admin/GenerationProgress.tsx` 添加漸進式結果預覽區域
+- [x] 顯示標題、配色方案、Hero 圖片等漸進式結果
+- [x] 添加動畫效果提升使用者體驗
+
+### 21.3 測試與驗證
+- [x] 測試漸進式結果是否正確顯示
+- [x] 驗證各階段結果的更新時機
+- [x] 確認前端 UI 動畫效果流暢
+- [x] 端到端測試完整生成流程
+
+### 21.4 測試結果（2026-01-29）
+- 測試 URL：https://travel.liontravel.com/detail?NormGroupID=972eecc0-3da1-4b60-bb1e-f600b5d6dc78
+- 生成時間：約 420 秒（7 分鐘）
+- 生成結果：「柬埔寨神奇吳哥窟 5 日探索之旅」
+- Agent 執行時間：
+  - WebScraperAgent: 142 秒
+  - ContentAnalyzerAgent: 8.8 秒
+  - ColorThemeAgent + ImagePromptAgent: 8.4 秒（並行）
+  - ImageGenerationAgent + ItineraryAgent + 其他: 36 秒（並行）
+- 輪詢機制成功避免 Cloudflare 100 秒超時
+- 漸進式結果顯示功能正常運作
+
+---
+
+## Phase 22: AI 行程生成速度優化 Phase 1（2026-01-29）
+
+### 22.1 優化項目
+- [x] 減少截圖數量：15張 → 3張（Hero + 行程 + 費用）
+- [x] 並行上傳截圖：順序 → Promise.all()
+- [x] 壓縮截圖格式：PNG → JPEG (quality: 80)
+- [x] 視窗解析度：1920x1080 → 1280x720
+- [x] 減少頁面等待時間：8秒 → 3秒
+- [x] 增強 JSON 解析容錯（修復 Vision API 返回格式問題）
+
+### 22.2 測試結果（2026-01-29）
+- 測試 URL：https://travel.liontravel.com/detail?NormGroupID=eb339557-2a25-432d-b9db-d20f1ad1bd9f
+- 總耗時：122 秒（優化前 570 秒，提升 78%）
+- 截圖時間：~2.4 秒（優化前 ~45 秒，提升 95%）
+- 上傳時間：180ms（優化前 ~275 秒，提升 99.9%）
+
+---
+
+## Phase 23: AI 行程生成速度優化 Phase 2（2026-01-29）
+
+### 23.1 Redis 快取機制確認
+- [x] 確認現有快取機制已完善（LLM 快取 24h、完整結果快取 3d、爬取結果快取 1d）
+- [x] 確認 Redis 服務正常運作
+
+### 23.2 Firecrawl 提取能力優化
+- [x] 創建雄獅旅遊專屬解析器 `lionTravelParser.ts`
+- [x] 針對雄獅旅遊 HTML 結構實作專屬 CSS 選擇器
+- [x] 在 WebScraperAgent 中優先使用專屬解析器
+
+### 23.3 天數提取邏輯修復
+- [x] 優先從 `duration` 欄位提取天數
+- [x] 從標題提取天數（如「台東2日」）
+- [x] 從 `dailyItinerary` 長度推斷
+- [x] 移除錯誤的預設值 5 天
+
+### 23.4 測試結果（2026-01-29）
+- 測試 URL：https://travel.liontravel.com/detail?NormGroupID=eb339557-2a25-432d-b9db-d20f1ad1bd9f&GroupID=26TR217CNY3-T&Platform=APP&fr=cg3972C0701C0201M01
+- 總耗時：**84 秒**（目標 90 秒，達成！）
+- 天數：**2 天**（正確，修復成功！）
+- 行程 ID：120003
+- 目的地：台灣 台東, 花蓮
+
+### 23.5 優化效果總結
+| 指標 | Phase 1 前 | Phase 1 後 | Phase 2 後 |
+|------|------------|------------|------------|
+| 總耗時 | 570 秒 | 122 秒 | **84 秒** |
+| 天數準確度 | ❌ 5 天 | ❌ 5 天 | ✅ **2 天** |
+| 改善幅度 | - | 78% | **85%** |

@@ -13,6 +13,7 @@ import { getKeyInstructions } from "./skillLoader";
 import { PrintFriendlyAgent } from "./printFriendlyAgent";
 import { scrapeWithPuppeteerVision } from "./puppeteerVisionAgent";
 import { FirecrawlAgent } from "./firecrawlAgent";
+import { LionTravelParser, parseLionTravel } from "./parsers/lionTravelParser";
 
 export interface WebScraperResult {
   success: boolean;
@@ -568,31 +569,67 @@ ${markdown.substring(0, 15000)}
    * 轉換 Puppeteer Vision 資料為標準格式
    */
   private convertPuppeteerVisionData(extractedData: any): any {
-    // 解析天數
+    // 解析天數 - 優先從 duration 欄位提取，然後從標題提取
     let days = 0;
     let nights = 0;
+    
+    // 嘗試從 duration 欄位提取
     if (extractedData.duration) {
       console.log("[WebScraperAgent] 解析 duration:", extractedData.duration);
-      const durationMatch = extractedData.duration.match(/(\d+)\s*天/i);
+      // 支援多種格式："2天", "2日", "2天1夜", "2日1夜"
+      const durationMatch = extractedData.duration.match(/(\d+)\s*[天日]/i);
       if (durationMatch) {
         days = parseInt(durationMatch[1]);
-        console.log("[WebScraperAgent] 提取到天數:", days);
+        console.log("[WebScraperAgent] 從 duration 提取到天數:", days);
       }
       const nightsMatch = extractedData.duration.match(/(\d+)\s*夜/i);
       if (nightsMatch) {
         nights = parseInt(nightsMatch[1]);
-        console.log("[WebScraperAgent] 提取到晚數:", nights);
+        console.log("[WebScraperAgent] 從 duration 提取到晚數:", nights);
       }
     }
     
-    // 確保 days 和 nights 都有值
+    // 如果還沒有天數，嘗試從標題提取
+    if (!days && extractedData.title) {
+      console.log("[WebScraperAgent] 嘗試從標題提取天數:", extractedData.title);
+      // 支援多種格式："台東2日", "台東5天", "5日4夜"
+      const titleDaysMatch = extractedData.title.match(/(\d+)\s*[天日]/i);
+      if (titleDaysMatch) {
+        days = parseInt(titleDaysMatch[1]);
+        console.log("[WebScraperAgent] 從標題提取到天數:", days);
+      }
+    }
+    
+    // 如果還沒有晚數，嘗試從標題提取
+    if (!nights && extractedData.title) {
+      const titleNightsMatch = extractedData.title.match(/(\d+)\s*夜/i);
+      if (titleNightsMatch) {
+        nights = parseInt(titleNightsMatch[1]);
+        console.log("[WebScraperAgent] 從標題提取到晚數:", nights);
+      }
+    }
+    
+    // 如果有天數但沒有晚數，計算晚數
+    if (days > 0 && !nights) {
+      nights = days - 1;
+      console.log("[WebScraperAgent] 計算晚數:", nights);
+    }
+    
+    // 如果還是沒有天數，嘗試從 dailyItinerary 的長度推斷
+    if (!days && extractedData.dailyItinerary && extractedData.dailyItinerary.length > 0) {
+      days = extractedData.dailyItinerary.length;
+      nights = days - 1;
+      console.log("[WebScraperAgent] 從 dailyItinerary 長度推斷天數:", days);
+    }
+    
+    // 最後才使用預設值（但使用 3 天而非 5 天，更合理）
     if (!days || days === 0) {
-      days = 5;
-      console.log("[WebScraperAgent] 使用預設天數:", days);
+      days = 3;
+      console.log("[WebScraperAgent] 無法提取天數，使用預設值:", days);
     }
     if (!nights || nights === 0) {
       nights = days - 1;
-      console.log("[WebScraperAgent] 使用預設晚數:", nights);
+      console.log("[WebScraperAgent] 計算預設晚數:", nights);
     }
     
     // 解析價格
@@ -701,30 +738,61 @@ ${markdown.substring(0, 15000)}
   private async executeWithFirecrawl(url: string): Promise<WebScraperResult> {
     console.log("[WebScraperAgent] === Firecrawl 模式開始 ===");
     
+    // 檢查是否為雄獅旅遊網站，優先使用專屬解析器
+    const isLionTravel = LionTravelParser.isLionTravelUrl(url);
+    if (isLionTravel) {
+      console.log("[WebScraperAgent] 偵測到雄獅旅遊網站，優先使用專屬解析器");
+    }
+    
     // 嘗試使用 Firecrawl
     if (this.firecrawlAgent) {
       try {
         console.log("[WebScraperAgent] 使用 Firecrawl API 爬取...");
         const firecrawlResult = await this.firecrawlAgent.scrape(url);
         
-        if (firecrawlResult.success && firecrawlResult.markdown) {
+        if (firecrawlResult.success && firecrawlResult.html) {
           console.log("[WebScraperAgent] Firecrawl 爬取成功");
           
-          // 使用 LLM 從 Markdown 提取結構化資料
-          const extractedData = await this.extractFromMarkdownWithLLM(firecrawlResult.markdown, url);
+          // 如果是雄獅旅遊，優先使用專屬解析器
+          if (isLionTravel) {
+            console.log("[WebScraperAgent] 使用雄獅旅遊專屬解析器...");
+            const lionTravelData = await parseLionTravel(firecrawlResult.html, url);
+            
+            if (lionTravelData && this.validateData(lionTravelData)) {
+              console.log("[WebScraperAgent] 雄獅旅遊專屬解析器成功！");
+              console.log("[WebScraperAgent] === Firecrawl 模式完成（雄獅專屬解析）===");
+              return {
+                success: true,
+                data: lionTravelData,
+                method: 'three-stage',
+                extractionDetails: {
+                  jsonLdFound: false,
+                  markdownExtracted: true,
+                  visionFallbackUsed: false,
+                },
+              };
+            } else {
+              console.log("[WebScraperAgent] 雄獅旅遊專屬解析器未能提取完整資料，fallback 到 LLM");
+            }
+          }
           
-          if (extractedData && this.validateData(extractedData)) {
-            console.log("[WebScraperAgent] === Firecrawl 模式完成（成功）===");
-            return {
-              success: true,
-              data: extractedData,
-              method: 'three-stage',
-              extractionDetails: {
-                jsonLdFound: false,
-                markdownExtracted: true,
-                visionFallbackUsed: false,
-              },
-            };
+          // 使用 LLM 從 Markdown 提取結構化資料
+          if (firecrawlResult.markdown) {
+            const extractedData = await this.extractFromMarkdownWithLLM(firecrawlResult.markdown, url);
+            
+            if (extractedData && this.validateData(extractedData)) {
+              console.log("[WebScraperAgent] === Firecrawl 模式完成（成功）===");
+              return {
+                success: true,
+                data: extractedData,
+                method: 'three-stage',
+                extractionDetails: {
+                  jsonLdFound: false,
+                  markdownExtracted: true,
+                  visionFallbackUsed: false,
+                },
+              };
+            }
           }
         }
         
