@@ -730,3 +730,27 @@
 | 總耗時 | 570 秒 | 122 秒 | **84 秒** |
 | 天數準確度 | ❌ 5 天 | ❌ 5 天 | ✅ **2 天** |
 | 改善幅度 | - | 78% | **85%** |
+
+
+---
+
+## Phase 24: Upstash Redis 設置（2026-01-29）
+
+### 24.1 修改 Redis 連接配置
+- [x] 修改 `server/redis.ts` 支援 Upstash TLS 連接
+- [x] 使用 UPSTASH_REDIS_URL 環境變數
+- [x] 測試本地開發環境連接
+
+### 24.2 請求用戶提供 Upstash 憑證
+- [x] 引導用戶註冊 Upstash 帳號
+- [x] 引導用戶創建 Redis 資料庫
+- [x] 獲取 UPSTASH_REDIS_URL
+
+### 24.3 測試與驗證
+- [x] 測試本地開發環境 Redis 連接
+- [ ] 部署到生產環境
+- [ ] 測試生產環境 AI 行程生成功能
+
+### 24.4 儲存 Checkpoint
+- [ ] 儲存 checkpoint
+- [ ] 驗證功能正常
