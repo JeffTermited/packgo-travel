@@ -14,6 +14,7 @@ import TourDetail from "./pages/TourDetail";
 import TourDetailSipin from "./pages/TourDetailSipin";
 import TourDetailSipinTest from "./pages/TourDetailSipinTest";
 import TourDetailV2 from "./pages/TourDetailV2";
+import TourDetailMinimal from "./pages/TourDetailMinimal";
 import BookTour from "./pages/BookTour";
 import BookingDetail from "./pages/BookingDetail";
 import QuickInquiry from "./pages/QuickInquiry";
@@ -46,10 +47,11 @@ function Router() {
       <Route path={"/reset-password"} component={ResetPassword} />
       <Route path={"/admin"} component={Admin} />
       <Route path={"/profile"} component={Profile} />
-      <Route path={"/tours/:id"} component={TourDetailSipin} />
+      <Route path={"/tours/:id"} component={TourDetailMinimal} />
       <Route path={"/tours-v2/:id"} component={TourDetailV2} />
       <Route path={"/tours-sipin-test/:id"} component={TourDetailSipinTest} />
       <Route path={"/tours-sipin/:id"} component={TourDetailSipin} />
+      <Route path={"/tours-minimal/:id"} component={TourDetailMinimal} />
       <Route path={"/book/:id"} component={BookTour} />
       <Route path={"/bookings/:id"} component={BookingDetail} />
       <Route path={"/payment/success"} component={PaymentSuccess} />
