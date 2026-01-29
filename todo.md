@@ -391,9 +391,9 @@
 - [ ] 驗證 .git 資料夾大小
 
 ### 17.2 更新 .gitignore 並重試 Checkpoint
-- [ ] 更新 .gitignore 確保 dist/ 和 node_modules/ 被忽略
-- [ ] 提交變更並重試 Git push
-- [ ] 儲存 webdev checkpoint
+- [x] 更新 .gitignore 確保 dist/ 和 node_modules/ 被忽略
+- [x] 提交變更並重試 Git push
+- [x] 儲存 webdev checkpoint
 
 ### 17.3 執行端到端驗收測試
 - [ ] 啟動開發伺服器
@@ -407,3 +407,28 @@
 - [ ] 從官方源安裝 Redis 7.x
 - [ ] 測試 BullMQ 功能
 - [ ] 更新部署文件
+
+
+---
+
+## Phase 18: Redis 升級到 7.x
+
+### 18.1 檢查當前 Redis 版本並備份資料
+- [x] 檢查當前 Redis 版本 (6.0.16)
+- [x] 備份 Redis 資料（RDB dump）
+- [x] 記錄當前 Redis 設定
+
+### 18.2 從官方源安裝 Redis 8.x
+- [x] 停止當前 Redis 服務
+- [x] 新增 Redis 官方 APT 源
+- [x] 安裝 Redis 8.4.0
+- [x] 啟動 Redis 8.4.0 服務
+
+### 18.3 測試 Redis 功能並驗證 BullMQ
+- [x] 測試 Redis 基本功能（PING, SET, GET）
+- [x] 測試 BullMQ Queue 功能
+- [x] 驗證 Worker 初始化正常
+
+### 18.4 更新文檔並儲存 checkpoint
+- [x] 更新部署文檔記錄 Redis 版本
+- [ ] 儲存 checkpoint
