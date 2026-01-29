@@ -734,6 +734,10 @@ ${markdown.substring(0, 15000)}
   
   /**
    * Firecrawl 模式（優先使用 Firecrawl API，失敗時 fallback 到 Puppeteer）
+   * 
+   * 優化版本 (2026-01-29):
+   * - 優先使用 QuickInfo 從 metadata 快速提取關鍵資訊
+   * - 使用 onlyMainContent: false 獲取完整頁面內容
    */
   private async executeWithFirecrawl(url: string): Promise<WebScraperResult> {
     console.log("[WebScraperAgent] === Firecrawl 模式開始 ===");
@@ -747,30 +751,50 @@ ${markdown.substring(0, 15000)}
     // 嘗試使用 Firecrawl
     if (this.firecrawlAgent) {
       try {
-        console.log("[WebScraperAgent] 使用 Firecrawl API 爬取...");
+        console.log("[WebScraperAgent] 使用 Firecrawl API 爬取（優化配置）...");
         const firecrawlResult = await this.firecrawlAgent.scrape(url);
         
         if (firecrawlResult.success && firecrawlResult.html) {
           console.log("[WebScraperAgent] Firecrawl 爬取成功");
+          console.log(`[WebScraperAgent] 內容長度: ${firecrawlResult.markdown?.length || 0} chars (markdown)`);
+          
+          // 🆕 優先使用 QuickInfo（從 metadata 快速提取）
+          const quickInfo = firecrawlResult.quickInfo;
+          if (quickInfo) {
+            console.log("[WebScraperAgent] 使用 QuickInfo 快速提取:");
+            console.log(`  - 列車名稱: ${quickInfo.trainName || 'N/A'}`);
+            console.log(`  - 天數: ${quickInfo.days || 'N/A'}`);
+            console.log(`  - 目的地: ${quickInfo.destination || 'N/A'}`);
+            console.log(`  - 價格: ${quickInfo.price || 'N/A'}`);
+          }
           
           // 如果是雄獅旅遊，優先使用專屬解析器
           if (isLionTravel) {
             console.log("[WebScraperAgent] 使用雄獅旅遊專屬解析器...");
-            const lionTravelData = await parseLionTravel(firecrawlResult.html, url);
+            let lionTravelData = await parseLionTravel(firecrawlResult.html, url);
             
-            if (lionTravelData && this.validateData(lionTravelData)) {
-              console.log("[WebScraperAgent] 雄獅旅遊專屬解析器成功！");
-              console.log("[WebScraperAgent] === Firecrawl 模式完成（雄獅專屬解析）===");
-              return {
-                success: true,
-                data: lionTravelData,
-                method: 'three-stage',
-                extractionDetails: {
-                  jsonLdFound: false,
-                  markdownExtracted: true,
-                  visionFallbackUsed: false,
-                },
-              };
+            if (lionTravelData) {
+              // 🆕 使用 QuickInfo 補充缺失資訊
+              if (quickInfo) {
+                lionTravelData = this.enrichWithQuickInfo(lionTravelData, quickInfo);
+              }
+              
+              if (this.validateData(lionTravelData)) {
+                console.log("[WebScraperAgent] 雄獅旅遊專屬解析器成功！");
+                console.log("[WebScraperAgent] === Firecrawl 模式完成（雄獅專屬解析）===");
+                return {
+                  success: true,
+                  data: lionTravelData,
+                  method: 'three-stage',
+                  extractionDetails: {
+                    jsonLdFound: false,
+                    markdownExtracted: true,
+                    visionFallbackUsed: false,
+                  },
+                };
+              } else {
+                console.log("[WebScraperAgent] 雄獅旅遊專屬解析器未能提取完整資料，fallback 到 LLM");
+              }
             } else {
               console.log("[WebScraperAgent] 雄獅旅遊專屬解析器未能提取完整資料，fallback 到 LLM");
             }
@@ -778,20 +802,27 @@ ${markdown.substring(0, 15000)}
           
           // 使用 LLM 從 Markdown 提取結構化資料
           if (firecrawlResult.markdown) {
-            const extractedData = await this.extractFromMarkdownWithLLM(firecrawlResult.markdown, url);
+            let extractedData = await this.extractFromMarkdownWithLLM(firecrawlResult.markdown, url);
             
-            if (extractedData && this.validateData(extractedData)) {
-              console.log("[WebScraperAgent] === Firecrawl 模式完成（成功）===");
-              return {
-                success: true,
-                data: extractedData,
-                method: 'three-stage',
-                extractionDetails: {
-                  jsonLdFound: false,
-                  markdownExtracted: true,
-                  visionFallbackUsed: false,
-                },
-              };
+            if (extractedData) {
+              // 🆕 使用 QuickInfo 補充缺失資訊
+              if (quickInfo) {
+                extractedData = this.enrichWithQuickInfo(extractedData, quickInfo);
+              }
+              
+              if (this.validateData(extractedData)) {
+                console.log("[WebScraperAgent] === Firecrawl 模式完成（成功）===");
+                return {
+                  success: true,
+                  data: extractedData,
+                  method: 'three-stage',
+                  extractionDetails: {
+                    jsonLdFound: false,
+                    markdownExtracted: true,
+                    visionFallbackUsed: false,
+                  },
+                };
+              }
             }
           }
         }
@@ -806,6 +837,51 @@ ${markdown.substring(0, 15000)}
     // Fallback: 使用三階段策略（Puppeteer）
     console.log("[WebScraperAgent] 使用 Puppeteer 三階段策略作為 fallback");
     return await this.executeThreeStage(url);
+  }
+  
+  /**
+   * 🆕 使用 QuickInfo 補充缺失資訊
+   * 優先使用 QuickInfo 的資料（從 metadata 提取，更準確）
+   */
+  private enrichWithQuickInfo(data: any, quickInfo: any): any {
+    const enriched = { ...data };
+    
+    // 補充列車名稱（火車行程專用）
+    if (quickInfo.trainName) {
+      if (!enriched.transportation) {
+        enriched.transportation = { type: '火車', trainName: quickInfo.trainName };
+      } else if (!enriched.transportation.trainName) {
+        enriched.transportation.trainName = quickInfo.trainName;
+      }
+      console.log(`[WebScraperAgent] QuickInfo 補充列車名稱: ${quickInfo.trainName}`);
+    }
+    
+    // 補充天數
+    if (quickInfo.days && (!enriched.duration || !enriched.duration.days)) {
+      enriched.duration = enriched.duration || {};
+      enriched.duration.days = quickInfo.days;
+      enriched.duration.nights = quickInfo.days - 1;
+      console.log(`[WebScraperAgent] QuickInfo 補充天數: ${quickInfo.days}`);
+    }
+    
+    // 補充目的地
+    if (quickInfo.destination && (!enriched.location || !enriched.location.destinationCity)) {
+      enriched.location = enriched.location || {};
+      enriched.location.destinationCountry = '台灣';
+      enriched.location.destinationCity = quickInfo.destination;
+      console.log(`[WebScraperAgent] QuickInfo 補充目的地: ${quickInfo.destination}`);
+    }
+    
+    // 補充價格
+    if (quickInfo.price && (!enriched.pricing || (!enriched.pricing.price && !enriched.pricing.basePrice))) {
+      enriched.pricing = enriched.pricing || {};
+      enriched.pricing.price = quickInfo.price;
+      enriched.pricing.basePrice = quickInfo.price;
+      enriched.pricing.currency = 'TWD';
+      console.log(`[WebScraperAgent] QuickInfo 補充價格: ${quickInfo.price}`);
+    }
+    
+    return enriched;
   }
   
   /**
