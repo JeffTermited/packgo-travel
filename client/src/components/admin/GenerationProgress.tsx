@@ -1,6 +1,10 @@
 /**
  * AI 自動生成進度條組件
- * 使用 Server-Sent Events (SSE) 即時顯示各 Agent 的執行狀態
+ * 使用輪詢機制（3秒間隔）即時顯示各 Agent 的執行狀態
+ * 
+ * 優化說明：
+ * - 移除 SSE 連接，改用輪詢以避免 Cloudflare 100 秒超時問題
+ * - 輪詢間隔 3 秒，平衡即時性和伺服器負載
  */
 
 import { useEffect, useState, useRef } from "react";
@@ -52,13 +56,6 @@ interface GenerationProgress {
   error?: string;
 }
 
-// 進度事件類型
-interface ProgressEvent {
-  type: 'connected' | 'initial_state' | 'phase_start' | 'phase_progress' | 'phase_complete' | 'phase_error' | 'overall_progress' | 'generation_complete' | 'generation_error';
-  taskId: string;
-  data?: GenerationProgress;
-}
-
 // Agent 圖標映射
 const AGENT_ICONS: Record<string, React.ReactNode> = {
   web_scraper: <Globe className="h-4 w-4" />,
@@ -75,14 +72,6 @@ const AGENT_ICONS: Record<string, React.ReactNode> = {
   finalize: <Package className="h-4 w-4" />,
 };
 
-// 狀態顏色映射
-const STATUS_COLORS: Record<string, string> = {
-  pending: "bg-gray-100 text-gray-600",
-  running: "bg-blue-100 text-blue-600",
-  completed: "bg-green-100 text-green-600",
-  failed: "bg-red-100 text-red-600",
-};
-
 // 狀態圖標映射
 const STATUS_ICONS: Record<string, React.ReactNode> = {
   pending: <Clock className="h-4 w-4 text-gray-400" />,
@@ -91,9 +80,37 @@ const STATUS_ICONS: Record<string, React.ReactNode> = {
   failed: <XCircle className="h-4 w-4 text-red-500" />,
 };
 
+// 根據後端進度步驟映射到階段
+const STEP_TO_PHASE_MAP: Record<string, string> = {
+  'starting': 'web_scraper',
+  'scraping': 'web_scraper',
+  'analyzing': 'content_analyzer',
+  'generating_themes': 'color_theme',
+  'generating_hero_image': 'image_generation',
+  'generating_highlight_images': 'image_generation',
+  'generating_color_theme': 'color_theme',
+  'generating_content': 'itinerary',
+  'supplementing_images': 'image_generation',
+  'saving': 'finalize',
+  'completed': 'finalize',
+  'failed': 'finalize',
+};
+
 interface GenerationProgressProps {
   taskId: string | null;
   isGenerating: boolean;
+  // 從父組件傳入的輪詢狀態
+  pollingStatus?: {
+    status: string;
+    progress?: number;
+    progressDetails?: {
+      step: string;
+      progress: number;
+      message: string;
+      timestamp: number;
+    } | null;
+    failedReason?: string;
+  } | null;
   onComplete?: () => void;
   onError?: (error: string) => void;
 }
@@ -101,109 +118,109 @@ interface GenerationProgressProps {
 export function GenerationProgressComponent({ 
   taskId, 
   isGenerating,
+  pollingStatus,
   onComplete,
   onError 
 }: GenerationProgressProps) {
   const [progress, setProgress] = useState<GenerationProgress | null>(null);
-  const [connected, setConnected] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
-  const [reconnectAttempts, setReconnectAttempts] = useState(0);
-  const eventSourceRef = useRef<EventSource | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const reconnectTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const maxReconnectAttempts = 10; // 最多重連 10 次
+  const startTimeRef = useRef<number>(Date.now());
 
-  // 連接 SSE
+  // 根據輪詢狀態更新進度
   useEffect(() => {
-    if (!taskId || !isGenerating) {
-      return;
+    if (!pollingStatus || !isGenerating) return;
+
+    const currentStep = pollingStatus.progressDetails?.step || 'starting';
+    const currentProgress = pollingStatus.progressDetails?.progress || pollingStatus.progress || 0;
+    const currentPhaseId = STEP_TO_PHASE_MAP[currentStep] || 'web_scraper';
+
+    // 構建階段列表
+    const phases: AgentPhase[] = [
+      { id: 'web_scraper', name: '網頁爬取', description: '從來源網站提取行程資訊', status: 'pending', progress: 0 },
+      { id: 'content_analyzer', name: '內容分析', description: '分析並結構化行程資料', status: 'pending', progress: 0 },
+      { id: 'color_theme', name: '配色主題', description: '生成行程配色方案', status: 'pending', progress: 0 },
+      { id: 'image_prompt', name: '圖片提示', description: '生成圖片搜尋關鍵字', status: 'pending', progress: 0 },
+      { id: 'image_generation', name: '圖片生成', description: '搜尋並生成行程圖片', status: 'pending', progress: 0 },
+      { id: 'itinerary', name: '行程規劃', description: '生成詳細每日行程', status: 'pending', progress: 0 },
+      { id: 'cost_agent', name: '費用說明', description: '生成費用包含/不包含項目', status: 'pending', progress: 0 },
+      { id: 'notice_agent', name: '注意事項', description: '生成旅遊注意事項', status: 'pending', progress: 0 },
+      { id: 'hotel_agent', name: '住宿資訊', description: '生成住宿詳細資訊', status: 'pending', progress: 0 },
+      { id: 'meal_agent', name: '餐飲資訊', description: '生成餐飲詳細資訊', status: 'pending', progress: 0 },
+      { id: 'flight_agent', name: '航班資訊', description: '生成航班詳細資訊', status: 'pending', progress: 0 },
+      { id: 'finalize', name: '完成組裝', description: '組裝最終行程資料', status: 'pending', progress: 0 },
+    ];
+
+    // 根據當前進度更新階段狀態
+    const phaseOrder = phases.map(p => p.id);
+    const currentPhaseIndex = phaseOrder.indexOf(currentPhaseId);
+
+    phases.forEach((phase, index) => {
+      if (index < currentPhaseIndex) {
+        phase.status = 'completed';
+        phase.progress = 100;
+      } else if (index === currentPhaseIndex) {
+        phase.status = pollingStatus.status === 'failed' ? 'failed' : 'running';
+        phase.progress = currentProgress;
+        if (pollingStatus.status === 'failed') {
+          phase.error = pollingStatus.failedReason;
+        }
+      } else {
+        phase.status = 'pending';
+        phase.progress = 0;
+      }
+    });
+
+    // 如果已完成，標記所有階段為完成
+    if (pollingStatus.status === 'completed') {
+      phases.forEach(phase => {
+        phase.status = 'completed';
+        phase.progress = 100;
+      });
     }
 
-    // 創建 EventSource 連接
-    const eventSource = new EventSource(`/api/progress/${taskId}`);
-    eventSourceRef.current = eventSource;
+    setProgress({
+      taskId: taskId || '',
+      status: pollingStatus.status as any,
+      currentPhase: currentPhaseId,
+      overallProgress: currentProgress,
+      phases,
+      startTime: startTimeRef.current,
+      error: pollingStatus.failedReason,
+    });
 
-    eventSource.onopen = () => {
-      console.log('[GenerationProgress] SSE connected');
-      setConnected(true);
-    };
+    // 處理完成和錯誤回調
+    if (pollingStatus.status === 'completed') {
+      onComplete?.();
+    } else if (pollingStatus.status === 'failed' && pollingStatus.failedReason) {
+      onError?.(pollingStatus.failedReason);
+    }
+  }, [pollingStatus, isGenerating, taskId, onComplete, onError]);
 
-    eventSource.onmessage = (event) => {
-      try {
-        const data: ProgressEvent = JSON.parse(event.data);
-        console.log('[GenerationProgress] Received event:', data.type);
-
-        if (data.type === 'connected') {
-          setConnected(true);
-        } else if (data.type === 'initial_state' || data.data) {
-          setProgress(data.data || null);
-        }
-
-        // 處理完成事件
-        if (data.type === 'generation_complete') {
-          onComplete?.();
-        }
-
-        // 處理錯誤事件
-        if (data.type === 'generation_error' && data.data?.error) {
-          onError?.(data.data.error);
-        }
-      } catch (error) {
-        console.error('[GenerationProgress] Failed to parse event:', error);
-      }
-    };
-
-    eventSource.onerror = (error) => {
-      console.error('[GenerationProgress] SSE error:', error);
-      setConnected(false);
-      
-      // 實作自動重連機制
-      if (reconnectAttempts < maxReconnectAttempts) {
-        const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000); // 指數退缩，最多 30 秒
-        console.log(`[GenerationProgress] Reconnecting in ${delay}ms (attempt ${reconnectAttempts + 1}/${maxReconnectAttempts})...`);
-        
-        reconnectTimerRef.current = setTimeout(() => {
-          setReconnectAttempts(prev => prev + 1);
-          // 關閉舊連線並重新建立
-          eventSource.close();
-          const newEventSource = new EventSource(`/api/progress/${taskId}`);
-          eventSourceRef.current = newEventSource;
-          
-          // 重新設定事件監聽器
-          newEventSource.onopen = () => {
-            console.log('[GenerationProgress] SSE reconnected');
-            setConnected(true);
-            setReconnectAttempts(0); // 重連成功，重置計數器
-          };
-          
-          newEventSource.onmessage = eventSource.onmessage;
-          newEventSource.onerror = eventSource.onerror;
-        }, delay);
-      } else {
-        console.error('[GenerationProgress] Max reconnect attempts reached');
-        onError?.('SSE 連線失敗，請重新整理頁面並重試');
-      }
-    };
-
-    // 啟動計時器
-    const startTime = Date.now();
-    timerRef.current = setInterval(() => {
-      setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
-    }, 1000);
-
-    return () => {
-      eventSource.close();
-      eventSourceRef.current = null;
+  // 計時器
+  useEffect(() => {
+    if (!isGenerating) {
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
       }
-      if (reconnectTimerRef.current) {
-        clearTimeout(reconnectTimerRef.current);
-        reconnectTimerRef.current = null;
+      return;
+    }
+
+    startTimeRef.current = Date.now();
+    setElapsedTime(0);
+
+    timerRef.current = setInterval(() => {
+      setElapsedTime(Math.floor((Date.now() - startTimeRef.current) / 1000));
+    }, 1000);
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
       }
     };
-  }, [taskId, isGenerating, onComplete, onError, reconnectAttempts]);
+  }, [isGenerating]);
 
   // 格式化時間
   const formatTime = (seconds: number): string => {
@@ -223,7 +240,7 @@ export function GenerationProgressComponent({
     return null;
   }
 
-  // 預設進度狀態（當 SSE 尚未連接時）
+  // 預設進度狀態
   const defaultPhases: AgentPhase[] = [
     { id: 'web_scraper', name: '網頁爬取', description: '從來源網站提取行程資訊', status: 'pending', progress: 0 },
     { id: 'content_analyzer', name: '內容分析', description: '分析並結構化行程資料', status: 'pending', progress: 0 },
@@ -258,11 +275,9 @@ export function GenerationProgressComponent({
               <Clock className="h-4 w-4" />
               {formatTime(elapsedTime)}
             </span>
-            {connected && (
-              <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200">
-                即時連線
-              </Badge>
-            )}
+            <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-200">
+              輪詢中
+            </Badge>
           </div>
         </div>
       </CardHeader>
@@ -332,7 +347,7 @@ export function GenerationProgressComponent({
         {/* 提示訊息 */}
         {currentStatus === 'running' && (
           <p className="text-xs text-gray-400 text-center">
-            AI 正在生成行程內容，預計需要 2-3 分鐘，請耐心等候...
+            AI 正在生成行程內容，預計需要 60-90 秒，請耐心等候...
           </p>
         )}
       </CardContent>

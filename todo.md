@@ -469,3 +469,37 @@
 - [ ] 分析效能指標
 - [ ] 對比預期與實際結果
 - [ ] 記錄問題和改進建議
+
+
+---
+
+## Phase 20: AI 生成系統優化 - 一次性完整解決方案（2026-01-28）
+
+### 20.1 將 SSE 改為輪詢機制（3秒間隔）
+- [x] 修改 `client/src/components/admin/ToursTab.tsx` 輪詢間隔改為 3 秒
+- [x] 修改 `client/src/components/admin/GenerationProgress.tsx` 移除 SSE（EventSource）
+- [x] 實作輪詢機制查詢生成狀態
+- [x] `server/routers.ts` 的 `getGenerationStatus` API 已正常運作
+
+### 20.2 優化 Agent 並行執行（目標：130s → 70s）
+- [x] 分析 `server/agents/masterAgent.ts` 中的 Agent 依賴關係
+- [x] 確認已實作 MEGA PARALLEL 執行（7 個 Agent 同時執行）
+- [x] Phase 3: ColorTheme + ImagePrompt 並行
+- [x] Phase 4: ImageGeneration + Itinerary + Cost + Notice + Hotel + Meal + Flight 並行
+
+### 20.3 優化 Claude API 調用
+- [x] 確認使用 Claude 3 Haiku（最快的模型）
+- [x] ContentAnalyzerAgent 已整合 Claude API
+- [x] 結構化提取使用低溫度（0.3）確保一致性
+
+### 20.4 端到端測試驗證
+- [ ] 部署最新代碼到生產環境
+- [ ] 測試生成時間是否 < 100 秒
+- [ ] 驗證超時問題是否解決（Cloudflare 524 錯誤）
+- [ ] 驗證進度顯示是否流暢
+- [ ] 驗證生成結果的準確性
+
+### 20.5 創建 Checkpoint 並部署
+- [ ] 儲存 checkpoint
+- [ ] 部署到生產環境
+- [ ] 驗證生產環境功能正常

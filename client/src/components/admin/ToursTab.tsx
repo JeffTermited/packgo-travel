@@ -180,7 +180,7 @@ export default function ToursTab() {
     { jobId: currentTaskId || "" },
     {
       enabled: !!currentTaskId && isGenerating,
-      refetchInterval: 2000, // 每 2 秒輪詢一次
+      refetchInterval: 3000, // 每 3 秒輪詢一次（避免 Cloudflare 超時）
     }
   );
 
@@ -846,6 +846,7 @@ export default function ToursTab() {
               <GenerationProgressComponent
                 taskId={currentTaskId}
                 isGenerating={isGenerating}
+                pollingStatus={generationStatus}
                 onComplete={() => {
                   console.log('[ToursTab] Generation complete callback');
                 }}
