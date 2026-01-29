@@ -354,3 +354,25 @@
 - [ ] 撰寫測試報告
 - [ ] 更新 README.md
 - [ ] 儲存 checkpoint
+
+
+### 16.6 Phase 3: ContentAnalyzerAgent 整合
+- [x] 改寫 server/agents/contentAnalyzerAgent.ts 使用 Claude
+- [x] 設計 JSON Schema（對應資料庫 schema）
+- [x] 調整 prompt 以適應 Claude 風格
+- [ ] 測試結構化提取準確率
+- [ ] 記錄測試結果
+
+### 16.7 Phase 4: SSE 超時修復
+- [x] 延長 server/progressRouter.ts 的 SSE 超時設定
+- [x] 增加 SSE 心跳頻率（從 30s 改為 15s）
+- [x] 前端實作 SSE 自動重連機制
+- [ ] 測試 SSE 連接穩定性
+
+### 16.8 Phase 5: 端到端測試
+- [ ] 啟動 Redis 服務
+- [ ] 重新啟動開發伺服器
+- [ ] 登入管理後台
+- [ ] 測試完整 AI 生成流程
+- [ ] 記錄生成時間、成功率、錯誤訊息
+- [ ] 驗證資料是否正確儲存到資料庫

@@ -1,9 +1,10 @@
 /**
  * Content Analyzer Agent
  * Responsible for analyzing content and copyright cleansing
+ * Now using Claude API for better performance and cost-effectiveness
  */
 
-import { invokeLLM } from "../_core/llm";
+import { ClaudeAgent } from './claudeAgent';
 import { COPYWRITER_SKILL } from "./skillLibrary";
 import { getKeyInstructions, extractJsonSchema } from "./skillLoader";
 
@@ -34,12 +35,15 @@ export interface ContentAnalyzerResult {
 export class ContentAnalyzerAgent {
   private skillInstructions: string;
   private jsonSchema: any;
+  private claudeAgent: ClaudeAgent;
 
   constructor() {
     // Load SKILL.md instructions (only key sections for token optimization)
     this.skillInstructions = getKeyInstructions('ContentAnalyzerAgent');
     this.jsonSchema = extractJsonSchema('ContentAnalyzerAgent');
+    this.claudeAgent = new ClaudeAgent();
     console.log('[ContentAnalyzerAgent] SKILL loaded:', this.skillInstructions.length, 'chars');
+    console.log('[ContentAnalyzerAgent] Using Claude API for content generation');
   }
   /**
    * Execute content analysis and copyright cleansing
@@ -141,7 +145,7 @@ export class ContentAnalyzerAgent {
 - "托斯卡尼艷陽下 品味義式慢活" (強調生活方式)
 
 禁用詞彙 (Negative Constraints):
-- 禁止使用：靈魂、洗滞、光影、呵喃、心靈、深度對話、完美融合
+- 禁止使用：靈魂、洗滯、光影、呵喃、心靈、深度對話、完美融合
 - 避免過於哲學化或抽象的詞彙
 
 請根據行程資訊,生成一個符合上述風格的詩意化標題。`;
@@ -157,81 +161,53 @@ export class ContentAnalyzerAgent {
 
 範例風格:
 - "北海道二世谷雅奢6日" (強調奢華)
-- "秘境尋蹤 中島漫遊" (強調探索
+- "秘境尋蹤 中島漫遊" (強調探索)
 
-請生成:
-1. 一個 15-25 個中文字的詩意化標題
-2. 6-10 個行程亮點 (每個 10-30 個中文字的純文字描述)`;
+請以 JSON 格式回傳:
+{
+  "poeticTitle": "詩意化的行程標題,15-25 個中文字",
+  "highlights": ["亮點1", "亮點2", ...],  // 6-10 個行程亮點,每個 10-30 個中文字
+  "reasoning": "標題設計的理由",
+  "keywords": ["關鍵詞1", "關鍵詞2", ...]
+}`;
     
     try {
-      const response = await invokeLLM({
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt }
-        ],
-        response_format: {
-          type: "json_schema",
-          json_schema: {
-            name: "poetic_title_response",
-            strict: true,
-            schema: {
-              type: "object",
-              properties: {
-                poeticTitle: {
-                  type: "string",
-                  description: "詩意化的行程標題,15-25 個中文字"
-                },
-                highlights: {
-                  type: "array",
-                  description: "6-10 個行程亮點,每個是 10-30 個中文字的純文字描述",
-                  items: {
-                    type: "string"
-                  },
-                  minItems: 6,
-                  maxItems: 10
-                },
-                reasoning: {
-                  type: "string",
-                  description: "標題設計的理由"
-                },
-                keywords: {
-                  type: "array",
-                  description: "標題中使用的關鍵詞",
-                  items: {
-                    type: "string"
-                  }
-                }
-              },
-              required: ["poeticTitle", "highlights", "reasoning", "keywords"],
-              additionalProperties: false
-            }
-          }
+      const result = await this.claudeAgent.extractStructuredData(
+        userPrompt,
+        {
+          description: '從旅遊行程資訊中生成詩意化標題和亮點',
+          fields: {
+            poeticTitle: { type: 'string', description: '詩意化的行程標題,15-25 個中文字' },
+            highlights: { type: 'array', description: '6-10 個行程亮點,每個 10-30 個中文字的純文字描述' },
+            reasoning: { type: 'string', description: '標題設計的理由' },
+            keywords: { type: 'array', description: '標題中使用的關鍵詞' },
+          },
+        },
+        {
+          systemPrompt,
+          maxTokens: 2000,
         }
-      });
+      );
       
-      const content = response.choices[0]?.message?.content;
-      if (!content) {
-        throw new Error("Empty response from LLM");
+      if (!result.success || !result.data) {
+        throw new Error(result.error || 'Failed to generate poetic title');
       }
       
-      // Convert content to string if it's an array
-      const contentStr = typeof content === 'string' ? content : JSON.stringify(content);
-      const result = JSON.parse(contentStr);
-      const poeticTitle = result.poeticTitle;
-      const highlights = result.highlights || [];
+      const poeticTitle = result.data.poeticTitle;
+      const highlightsArray = result.data.highlights || [];
       
       // Validate length (寬容檢查：±30% 誤差，15-30 字 → 10-39 字)
       if (poeticTitle && poeticTitle.length >= 10 && poeticTitle.length <= 39) {
         console.log(`[ContentAnalyzerAgent] Poetic title generated: ${poeticTitle}`);
-        console.log(`[ContentAnalyzerAgent] Highlights count: ${highlights.length}`);
-        console.log(`[ContentAnalyzerAgent] Reasoning: ${result.reasoning}`);
-        return { poeticTitle, highlights };
+        console.log(`[ContentAnalyzerAgent] Highlights count: ${highlightsArray.length}`);
+        console.log(`[ContentAnalyzerAgent] Reasoning: ${result.data.reasoning}`);
+        return { poeticTitle, highlights: highlightsArray };
       }
       
       // If too long, truncate
       if (poeticTitle && poeticTitle.length > 39) {
         console.warn(`[ContentAnalyzerAgent] Poetic title too long (${poeticTitle.length} chars), truncating...`);
-        return { poeticTitle: poeticTitle.substring(0, 30), highlights };
+        return { poeticTitle: poeticTitle.substring(0, 30), highlights: highlightsArray };
       }
       
       // If too short, use fallback
@@ -278,15 +254,17 @@ export class ContentAnalyzerAgent {
     // Retry up to 2 times
     for (let attempt = 1; attempt <= 2; attempt++) {
       try {
-        const response = await invokeLLM({
-          messages: [
-            { role: "system", content: COPYWRITER_SKILL },
-            { role: "user", content: userPrompt }
-          ],
+        const result = await this.claudeAgent.sendMessage(userPrompt, {
+          systemPrompt: COPYWRITER_SKILL,
+          maxTokens: 200,
+          temperature: 0.7,
         });
         
-        const content = response.choices[0]?.message?.content;
-        const title = typeof content === "string" ? content.trim() : null;
+        if (!result.success || !result.content) {
+          throw new Error(result.error || 'Failed to generate title');
+        }
+        
+        const title = result.content.trim();
         
         // Validate word count (寬容檢查：±30% 誤差，20-30 字 → 14-39 字)
         if (title && title.length >= 14 && title.length <= 39) {
@@ -336,7 +314,7 @@ export class ContentAnalyzerAgent {
 4. 長度控制在 100-120 字
 
 禁用詞彙 (Negative Constraints):
-- 禁止使用：靈魂、洗滞、光影、呵喃、心靈、深度對話、完美融合
+- 禁止使用：靈魂、洗滯、光影、呵喃、心靈、深度對話、完美融合
 - 避免過於哲學化或抽象的詞彙
 
 範例：「在北海道的雪白世界中，踩著雪地吱吱作響。入住洞爺湖米其林一星鑰旅宿，泡在露天溫泉看雪花飄落。搭乘遊船探索中島，欣賞湖光山色。前往二世谷滑雪度假村，體驗粉雪飄落的刺激。參觀札幌市區，品嚐剛捕撈的海膽在舌尖融化。」
@@ -346,15 +324,17 @@ export class ContentAnalyzerAgent {
     // Retry up to 2 times
     for (let attempt = 1; attempt <= 2; attempt++) {
       try {
-        const response = await invokeLLM({
-          messages: [
-            { role: "system", content: COPYWRITER_SKILL },
-            { role: "user", content: userPrompt }
-          ],
+        const result = await this.claudeAgent.sendMessage(userPrompt, {
+          systemPrompt: COPYWRITER_SKILL,
+          maxTokens: 500,
+          temperature: 0.7,
         });
         
-        const content = response.choices[0]?.message?.content;
-        const description = typeof content === "string" ? content.trim() : null;
+        if (!result.success || !result.content) {
+          throw new Error(result.error || 'Failed to generate description');
+        }
+        
+        const description = result.content.trim();
         
         // Validate word count (寬容檢查：±30% 誤差，100-120 字 → 70-156 字)
         if (description && description.length >= 70 && description.length <= 156) {
@@ -407,15 +387,17 @@ export class ContentAnalyzerAgent {
     // Retry up to 2 times
     for (let attempt = 1; attempt <= 2; attempt++) {
       try {
-        const response = await invokeLLM({
-          messages: [
-            { role: "system", content: COPYWRITER_SKILL },
-            { role: "user", content: userPrompt }
-          ],
+        const result = await this.claudeAgent.sendMessage(userPrompt, {
+          systemPrompt: COPYWRITER_SKILL,
+          maxTokens: 200,
+          temperature: 0.7,
         });
         
-        const content = response.choices[0]?.message?.content;
-        const subtitle = typeof content === "string" ? content.trim() : null;
+        if (!result.success || !result.content) {
+          throw new Error(result.error || 'Failed to generate hero subtitle');
+        }
+        
+        const subtitle = result.content.trim();
         
         // Validate word count (寬容檢查：±30% 誤差，30-40 字 → 21-52 字)
         if (subtitle && subtitle.length >= 21 && subtitle.length <= 52) {

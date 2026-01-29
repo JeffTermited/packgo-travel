@@ -107,8 +107,11 @@ export function GenerationProgressComponent({
   const [progress, setProgress] = useState<GenerationProgress | null>(null);
   const [connected, setConnected] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
+  const [reconnectAttempts, setReconnectAttempts] = useState(0);
   const eventSourceRef = useRef<EventSource | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const reconnectTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const maxReconnectAttempts = 10; // 最多重連 10 次
 
   // 連接 SSE
   useEffect(() => {
@@ -153,6 +156,33 @@ export function GenerationProgressComponent({
     eventSource.onerror = (error) => {
       console.error('[GenerationProgress] SSE error:', error);
       setConnected(false);
+      
+      // 實作自動重連機制
+      if (reconnectAttempts < maxReconnectAttempts) {
+        const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000); // 指數退缩，最多 30 秒
+        console.log(`[GenerationProgress] Reconnecting in ${delay}ms (attempt ${reconnectAttempts + 1}/${maxReconnectAttempts})...`);
+        
+        reconnectTimerRef.current = setTimeout(() => {
+          setReconnectAttempts(prev => prev + 1);
+          // 關閉舊連線並重新建立
+          eventSource.close();
+          const newEventSource = new EventSource(`/api/progress/${taskId}`);
+          eventSourceRef.current = newEventSource;
+          
+          // 重新設定事件監聽器
+          newEventSource.onopen = () => {
+            console.log('[GenerationProgress] SSE reconnected');
+            setConnected(true);
+            setReconnectAttempts(0); // 重連成功，重置計數器
+          };
+          
+          newEventSource.onmessage = eventSource.onmessage;
+          newEventSource.onerror = eventSource.onerror;
+        }, delay);
+      } else {
+        console.error('[GenerationProgress] Max reconnect attempts reached');
+        onError?.('SSE 連線失敗，請重新整理頁面並重試');
+      }
     };
 
     // 啟動計時器
@@ -168,8 +198,12 @@ export function GenerationProgressComponent({
         clearInterval(timerRef.current);
         timerRef.current = null;
       }
+      if (reconnectTimerRef.current) {
+        clearTimeout(reconnectTimerRef.current);
+        reconnectTimerRef.current = null;
+      }
     };
-  }, [taskId, isGenerating, onComplete, onError]);
+  }, [taskId, isGenerating, onComplete, onError, reconnectAttempts]);
 
   // 格式化時間
   const formatTime = (seconds: number): string => {

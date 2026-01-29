@@ -18,6 +18,10 @@ const activeConnections: Map<string, Response[]> = new Map();
 router.get('/progress/:taskId', (req: Request, res: Response) => {
   const { taskId } = req.params;
   
+  // 延長超時設定到 10 分鐘（600000 ms）
+  req.setTimeout(600000); // 10 minutes
+  res.setTimeout(600000); // 10 minutes
+  
   // 設定 SSE headers
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
@@ -64,10 +68,10 @@ router.get('/progress/:taskId', (req: Request, res: Response) => {
     }
   });
   
-  // 保持連線活躍（每 30 秒發送心跳）
+  // 保持連線活躍（每 15 秒發送心跳，增加頻率以防止超時）
   const heartbeat = setInterval(() => {
     res.write(`: heartbeat\n\n`);
-  }, 30000);
+  }, 15000); // 從 30s 改為 15s
   
   req.on('close', () => {
     clearInterval(heartbeat);
