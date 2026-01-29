@@ -307,3 +307,50 @@
 - [ ] 測試優化後的生成時間
 - [ ] 驗證生成品質沒有下降
 - [ ] 記錄優化前後的時間對比
+
+
+---
+
+## Phase 16: Firecrawl + Claude 整合優化（2026-01-28）
+
+### 16.1 環境準備
+- [x] 安裝 @mendable/firecrawl-js
+- [x] 安裝 @anthropic-ai/sdk
+- [x] 設定 FIRECRAWL_API_KEY 環境變數
+- [x] 設定 ANTHROPIC_API_KEY 環境變數
+- [x] 測試 Firecrawl API 連線
+- [x] 測試 Claude API 連線
+
+### 16.2 Phase 1: Firecrawl 整合
+- [x] 建立 server/agents/firecrawlAgent.ts
+- [x] 改寫 server/agents/webScraperAgent.ts 使用 Firecrawl
+- [x] 實作 Puppeteer fallback 機制
+- [x] 測試爬取雄獅旅遊頁面
+- [x] 對比 Puppeteer vs Firecrawl 結果（速度、成功率）
+- [x] 記錄測試結果
+
+### 16.3 Phase 2: Claude 整合
+- [x] 建立 server/agents/claudeAgent.ts
+- [ ] 改寫 server/agents/contentAnalyzerAgent.ts 使用 Claude
+- [ ] 設計 JSON Schema（對應資料庫 schema）
+- [ ] 調整 prompt 以適應 Claude 風格
+- [x] 測試結構化提取準確率
+- [x] 記錄測試結果
+
+### 16.4 Phase 3: 系統優化
+- [ ] 確認 Queue + Worker 正確運作
+- [ ] 修改 server/routers.ts 使用 enqueue
+- [ ] 延長 SSE 超時設定
+- [ ] 增加 SSE 心跳頻率
+- [ ] 前端實作 SSE 自動重連
+- [ ] 實作並行處理（ImageGenerator, ThemeGenerator）
+- [ ] 測試完整流程
+
+### 16.5 Phase 4: 端到端測試
+- [ ] 測試 5-10 個不同旅遊網站
+- [ ] 確認成功率 >90%
+- [ ] 確認平均處理時間 <60 秒
+- [ ] 處理邊緣案例（無價格、非標準格式）
+- [ ] 撰寫測試報告
+- [ ] 更新 README.md
+- [ ] 儲存 checkpoint

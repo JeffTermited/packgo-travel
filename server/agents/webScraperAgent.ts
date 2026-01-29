@@ -12,6 +12,7 @@ import { fetchWebPage, extractTourInfoWithLLM } from "../webScraper";
 import { getKeyInstructions } from "./skillLoader";
 import { PrintFriendlyAgent } from "./printFriendlyAgent";
 import { scrapeWithPuppeteerVision } from "./puppeteerVisionAgent";
+import { FirecrawlAgent } from "./firecrawlAgent";
 
 export interface WebScraperResult {
   success: boolean;
@@ -25,20 +26,30 @@ export interface WebScraperResult {
   };
 }
 
-export type ScraperMode = 'three-stage' | 'printfriendly' | 'traditional' | 'auto';
+export type ScraperMode = 'three-stage' | 'firecrawl' | 'printfriendly' | 'traditional' | 'auto';
 
 export class WebScraperAgent {
   private skillInstructions: string;
   private printFriendlyAgent: PrintFriendlyAgent;
+  private firecrawlAgent: FirecrawlAgent | null;
   private mode: ScraperMode;
 
   constructor(options?: { mode?: ScraperMode }) {
     this.skillInstructions = getKeyInstructions('WebScraperAgent');
     console.log('[WebScraperAgent] SKILL loaded:', this.skillInstructions.length, 'chars');
     
-    // 預設模式：three-stage（三階段提取策略）
-    this.mode = options?.mode ?? 'three-stage';
+    // 預設模式：firecrawl（使用 Firecrawl API）
+    this.mode = options?.mode ?? 'firecrawl';
     this.printFriendlyAgent = new PrintFriendlyAgent();
+    
+    // 初始化 Firecrawl Agent（如果 API Key 存在）
+    try {
+      this.firecrawlAgent = new FirecrawlAgent();
+      console.log('[WebScraperAgent] Firecrawl Agent initialized');
+    } catch (error) {
+      console.warn('[WebScraperAgent] Firecrawl Agent initialization failed, will use Puppeteer fallback');
+      this.firecrawlAgent = null;
+    }
     
     console.log(`[WebScraperAgent] Mode: ${this.mode}`);
   }
@@ -52,6 +63,9 @@ export class WebScraperAgent {
     
     // 根據模式執行
     switch (this.mode) {
+      case 'firecrawl':
+        return await this.executeWithFirecrawl(url);
+        
       case 'three-stage':
         return await this.executeThreeStage(url);
         
@@ -63,8 +77,12 @@ export class WebScraperAgent {
         
       case 'auto':
       default:
-        // Auto 模式：優先嘗試三階段策略
-        return await this.executeThreeStage(url);
+        // Auto 模式：優先嘗試 Firecrawl
+        if (this.firecrawlAgent) {
+          return await this.executeWithFirecrawl(url);
+        } else {
+          return await this.executeThreeStage(url);
+        }
     }
   }
   
@@ -675,6 +693,51 @@ ${markdown.substring(0, 15000)}
         method: 'printfriendly',
       };
     }
+  }
+  
+  /**
+   * Firecrawl 模式（優先使用 Firecrawl API，失敗時 fallback 到 Puppeteer）
+   */
+  private async executeWithFirecrawl(url: string): Promise<WebScraperResult> {
+    console.log("[WebScraperAgent] === Firecrawl 模式開始 ===");
+    
+    // 嘗試使用 Firecrawl
+    if (this.firecrawlAgent) {
+      try {
+        console.log("[WebScraperAgent] 使用 Firecrawl API 爬取...");
+        const firecrawlResult = await this.firecrawlAgent.scrape(url);
+        
+        if (firecrawlResult.success && firecrawlResult.markdown) {
+          console.log("[WebScraperAgent] Firecrawl 爬取成功");
+          
+          // 使用 LLM 從 Markdown 提取結構化資料
+          const extractedData = await this.extractFromMarkdownWithLLM(firecrawlResult.markdown, url);
+          
+          if (extractedData && this.validateData(extractedData)) {
+            console.log("[WebScraperAgent] === Firecrawl 模式完成（成功）===");
+            return {
+              success: true,
+              data: extractedData,
+              method: 'three-stage',
+              extractionDetails: {
+                jsonLdFound: false,
+                markdownExtracted: true,
+                visionFallbackUsed: false,
+              },
+            };
+          }
+        }
+        
+        console.warn("[WebScraperAgent] Firecrawl 提取失敗，fallback 到 Puppeteer");
+      } catch (error) {
+        console.error("[WebScraperAgent] Firecrawl 錯誤：", error);
+        console.warn("[WebScraperAgent] Fallback 到 Puppeteer");
+      }
+    }
+    
+    // Fallback: 使用三階段策略（Puppeteer）
+    console.log("[WebScraperAgent] 使用 Puppeteer 三階段策略作為 fallback");
+    return await this.executeThreeStage(url);
   }
   
   /**
