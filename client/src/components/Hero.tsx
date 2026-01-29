@@ -45,7 +45,7 @@ export default function Hero() {
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
         <img 
-          src="/images/hero-sakura.jpg" 
+          src="/images/hero-sakura.webp" 
           alt="Cherry Blossoms Travel" 
           className="w-full h-full object-cover"
         />
