@@ -49,6 +49,7 @@ export class TrainAgent {
 
 ## 專業知識
 - 鳴日號：台鐵觀光列車，提供頂級服務，車廂設計融合台灣文化元素
+- 山嵐號：花東縱谷旬味觀光列車，以「列車共鳴室」香氛體驗為特色
 - 普悠瑪號：傾斜式列車，東部幹線主力
 - 太魯閣號：傾斜式列車，花東線主力
 - 自強號：傳統自強號列車
@@ -221,10 +222,17 @@ ${this.taiwanTourTypes}
     if (tourType === 'MINGRI_TRAIN') {
       return '鳴日號';
     }
+    if (tourType === 'SHANLAN_TRAIN') {
+      return '山嵐號';
+    }
 
     // 從原始資料中識別
     const searchText = JSON.stringify(rawData).toLowerCase();
     
+    // 山嵐號優先檢測（因為山嵐號行程可能也會提到鳴日號）
+    if (searchText.includes('山嵐') || searchText.includes('shanlan') || searchText.includes('旬味觀光列車') || searchText.includes('列車共鳴室')) {
+      return '山嵐號';
+    }
     if (searchText.includes('鳴日') || searchText.includes('mingri')) {
       return '鳴日號';
     }
@@ -275,10 +283,11 @@ ${this.taiwanTourTypes}
     const destination = rawData?.location?.destinationCity || '目的地';
     
     const isMingri = trainType === '鳴日號';
+    const isShanlan = trainType === '山嵐號';
     
     return {
       trainType: trainType,
-      trainName: isMingri ? '鳴日號觀光列車' : `台鐵${trainType}`,
+      trainName: isMingri ? '鳴日號觀光列車' : isShanlan ? '山嵐號觀光列車' : `台鐵${trainType}`,
       outbound: {
         trainNo: 'TBA',
         departureTime: '請依實際訂位為準',
@@ -297,12 +306,18 @@ ${this.taiwanTourTypes}
       },
       description: isMingri
         ? `搭乘台鐵最頂級的鳴日號觀光列車，沿著東部幹線飽覽台灣最美的山海風光。鳴日號以「移動的五星級飯店」為設計理念，車廂內部融合台灣原住民文化元素，提供頂級的乘車體驗。沿途經過壯麗的太平洋海岸線，讓您在舒適的環境中享受鐵道旅行的樂趣。`
+        : isShanlan
+        ? `搭乘花東縱谷旬味觀光列車「山嵐號」，穿越林木蒼翠的鐵道。車廂內設有全台首創「列車共鳴室」香氛體驗，透過精心調配的在地香氛，讓嗅覺與窗外的自然景致產生深度連結。沿途欣賞花東縱谷壯麗的山海風光，感受物換星移的魔幻氛圍。`
         : `搭乘台鐵${trainType}，沿著東部幹線前往${destination}。沿途欣賞台灣東部壯麗的山海風光，體驗鐵道旅行的獨特魅力。具體車次資訊將於訂位確認後提供。`,
       features: isMingri
         ? ['頂級觀光列車', '原住民文化車廂', '專屬餐飲服務', '沿途導覽解說']
+        : isShanlan
+        ? ['花東縱谷旬味觀光列車', '列車共鳴室香氛體驗', '在地青創甜點', '貼心管家服務']
         : ['舒適座位', '沿途風景', '便捷交通'],
       route: isMingri
         ? ['南港站', '石城站', '大里站', '東里站', '台東站', '花蓮站']
+        : isShanlan
+        ? ['南港站', '花蓮站', '台東站']
         : ['南港站', `${destination}站`],
     };
   }

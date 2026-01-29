@@ -11,7 +11,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Edit, Loader2, Plus, Trash2, GripVertical } from "lucide-react";
+import { Edit, Loader2, Plus, Trash2, GripVertical, Plane, Train, Ship, Bus, Car, Upload, Image, X } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useState, useEffect } from "react";
 
 interface TourEditDialogProps {
@@ -73,6 +80,30 @@ export function TourEditDialog({
         parsed.noticeDetailed = { preparation: [], culturalNotes: [], healthSafety: [], emergency: [] };
       }
       
+      // 解析 flights (交通資訊)
+      if (typeof parsed.flights === 'string') {
+        try {
+          parsed.flights = JSON.parse(parsed.flights);
+        } catch {
+          parsed.flights = { type: 'FLIGHT', typeName: '' };
+        }
+      }
+      if (!parsed.flights || typeof parsed.flights !== 'object') {
+        parsed.flights = { type: 'FLIGHT', typeName: '' };
+      }
+      
+      // 解析 images (照片陣列)
+      if (typeof parsed.images === 'string') {
+        try {
+          parsed.images = JSON.parse(parsed.images);
+        } catch {
+          parsed.images = [];
+        }
+      }
+      if (!Array.isArray(parsed.images)) {
+        parsed.images = [];
+      }
+      
       setEditedData(parsed);
     }
   }, [tourData]);
@@ -86,6 +117,8 @@ export function TourEditDialog({
       itineraryDetailed: JSON.stringify(editedData.itineraryDetailed || []),
       costExplanation: JSON.stringify(editedData.costExplanation || {}),
       noticeDetailed: JSON.stringify(editedData.noticeDetailed || {}),
+      flights: JSON.stringify(editedData.flights || {}),
+      images: JSON.stringify(editedData.images || []),
     };
     onSave(dataToSave);
   };
@@ -210,11 +243,13 @@ export function TourEditDialog({
         </DialogHeader>
 
         <Tabs defaultValue="basic" className="flex-1 overflow-hidden flex flex-col">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="basic">基本資訊</TabsTrigger>
             <TabsTrigger value="itinerary">每日行程</TabsTrigger>
             <TabsTrigger value="cost">費用說明</TabsTrigger>
             <TabsTrigger value="notice">注意事項</TabsTrigger>
+            <TabsTrigger value="transport">交通資訊</TabsTrigger>
+            <TabsTrigger value="photos">照片管理</TabsTrigger>
           </TabsList>
 
           <div className="flex-1 overflow-y-auto py-4">
@@ -836,6 +871,451 @@ export function TourEditDialog({
                     </Button>
                   </div>
                 ))}
+              </div>
+            </TabsContent>
+
+            {/* 交通資訊 Tab */}
+            <TabsContent value="transport" className="mt-0 space-y-6">
+              <div className="bg-sky-50 rounded-2xl p-6 space-y-6">
+                <h3 className="font-semibold text-sky-900 mb-4">交通資訊設定</h3>
+                
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <Label className="text-sm font-medium">交通類型</Label>
+                    <Select
+                      value={editedData.flights?.type || 'FLIGHT'}
+                      onValueChange={(value) => setEditedData({
+                        ...editedData,
+                        flights: { ...editedData.flights, type: value }
+                      })}
+                    >
+                      <SelectTrigger className="mt-2">
+                        <SelectValue placeholder="選擇交通類型" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="FLIGHT">
+                          <div className="flex items-center gap-2">
+                            <Plane className="h-4 w-4" />
+                            飛機
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="TRAIN">
+                          <div className="flex items-center gap-2">
+                            <Train className="h-4 w-4" />
+                            火車
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="CRUISE">
+                          <div className="flex items-center gap-2">
+                            <Ship className="h-4 w-4" />
+                            郵輪
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="BUS">
+                          <div className="flex items-center gap-2">
+                            <Bus className="h-4 w-4" />
+                            巴士
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="CAR">
+                          <div className="flex items-center gap-2">
+                            <Car className="h-4 w-4" />
+                            自駕
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label className="text-sm font-medium">交通工具名稱</Label>
+                    <Input
+                      value={editedData.flights?.typeName || ''}
+                      onChange={(e) => setEditedData({
+                        ...editedData,
+                        flights: { ...editedData.flights, typeName: e.target.value }
+                      })}
+                      className="mt-2"
+                      placeholder="例如：鳴日號、山嵐號、長榮航空..."
+                    />
+                  </div>
+                </div>
+
+                {/* 火車詳細資訊 */}
+                {editedData.flights?.type === 'TRAIN' && (
+                  <div className="bg-white rounded-xl p-4 space-y-4 border border-sky-200">
+                    <h4 className="font-medium text-sky-800">列車詳細資訊</h4>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-sm font-medium">列車名稱</Label>
+                        <Input
+                          value={editedData.flights?.trainName || ''}
+                          onChange={(e) => setEditedData({
+                            ...editedData,
+                            flights: { ...editedData.flights, trainName: e.target.value }
+                          })}
+                          className="mt-2"
+                          placeholder="例如：鳴日號觀光列車"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium">列車類型</Label>
+                        <Input
+                          value={editedData.flights?.trainType || ''}
+                          onChange={(e) => setEditedData({
+                            ...editedData,
+                            flights: { ...editedData.flights, trainType: e.target.value }
+                          })}
+                          className="mt-2"
+                          placeholder="例如：觀光列車、普悠瑪號、自強號"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label className="text-sm font-medium">列車介紹</Label>
+                      <Textarea
+                        value={editedData.flights?.description || ''}
+                        onChange={(e) => setEditedData({
+                          ...editedData,
+                          flights: { ...editedData.flights, description: e.target.value }
+                        })}
+                        className="mt-2"
+                        rows={3}
+                        placeholder="詳細介紹列車特色..."
+                      />
+                    </div>
+
+                    <div>
+                      <Label className="text-sm font-medium">列車特色（每行一個）</Label>
+                      <Textarea
+                        value={editedData.flights?.features?.join('\n') || ''}
+                        onChange={(e) => setEditedData({
+                          ...editedData,
+                          flights: { ...editedData.flights, features: e.target.value.split('\n').filter((f: string) => f.trim()) }
+                        })}
+                        className="mt-2"
+                        rows={4}
+                        placeholder="頂級觀光列車\n原住民文化車廂\n專屬餐飲服務"
+                      />
+                    </div>
+
+                    <div>
+                      <Label className="text-sm font-medium">行駛路線（每行一個站）</Label>
+                      <Textarea
+                        value={editedData.flights?.route?.join('\n') || ''}
+                        onChange={(e) => setEditedData({
+                          ...editedData,
+                          flights: { ...editedData.flights, route: e.target.value.split('\n').filter((r: string) => r.trim()) }
+                        })}
+                        className="mt-2"
+                        rows={4}
+                        placeholder="南港站\n花蓮站\n台東站"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* 郵輪詳細資訊 */}
+                {editedData.flights?.type === 'CRUISE' && (
+                  <div className="bg-white rounded-xl p-4 space-y-4 border border-sky-200">
+                    <h4 className="font-medium text-sky-800">郵輪詳細資訊</h4>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-sm font-medium">船名</Label>
+                        <Input
+                          value={editedData.flights?.shipName || ''}
+                          onChange={(e) => setEditedData({
+                            ...editedData,
+                            flights: { ...editedData.flights, shipName: e.target.value }
+                          })}
+                          className="mt-2"
+                          placeholder="例如：黃金公主號"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium">航線</Label>
+                        <Input
+                          value={editedData.flights?.cruiseRoute || ''}
+                          onChange={(e) => setEditedData({
+                            ...editedData,
+                            flights: { ...editedData.flights, cruiseRoute: e.target.value }
+                          })}
+                          className="mt-2"
+                          placeholder="例如：基隆-那霸-石垣島"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label className="text-sm font-medium">郵輪介紹</Label>
+                      <Textarea
+                        value={editedData.flights?.description || ''}
+                        onChange={(e) => setEditedData({
+                          ...editedData,
+                          flights: { ...editedData.flights, description: e.target.value }
+                        })}
+                        className="mt-2"
+                        rows={3}
+                        placeholder="詳細介紹郵輪特色..."
+                      />
+                    </div>
+
+                    <div>
+                      <Label className="text-sm font-medium">船上設施（每行一個）</Label>
+                      <Textarea
+                        value={editedData.flights?.features?.join('\n') || ''}
+                        onChange={(e) => setEditedData({
+                          ...editedData,
+                          flights: { ...editedData.flights, features: e.target.value.split('\n').filter((f: string) => f.trim()) }
+                        })}
+                        className="mt-2"
+                        rows={4}
+                        placeholder="無邊際泳池\n全天候自助餐廳\nSPA水療中心"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* 飛機詳細資訊 */}
+                {editedData.flights?.type === 'FLIGHT' && (
+                  <div className="bg-white rounded-xl p-4 space-y-4 border border-sky-200">
+                    <h4 className="font-medium text-sky-800">航班詳細資訊</h4>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-sm font-medium">航空公司</Label>
+                        <Input
+                          value={editedData.flights?.airline || ''}
+                          onChange={(e) => setEditedData({
+                            ...editedData,
+                            flights: { ...editedData.flights, airline: e.target.value }
+                          })}
+                          className="mt-2"
+                          placeholder="例如：長榮航空、華航"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium">航班號碼</Label>
+                        <Input
+                          value={editedData.flights?.flightNumber || ''}
+                          onChange={(e) => setEditedData({
+                            ...editedData,
+                            flights: { ...editedData.flights, flightNumber: e.target.value }
+                          })}
+                          className="mt-2"
+                          placeholder="例如：BR123"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-sm font-medium">去程出發時間</Label>
+                        <Input
+                          value={editedData.flights?.outbound?.departureTime || ''}
+                          onChange={(e) => setEditedData({
+                            ...editedData,
+                            flights: { 
+                              ...editedData.flights, 
+                              outbound: { ...editedData.flights?.outbound, departureTime: e.target.value }
+                            }
+                          })}
+                          className="mt-2"
+                          placeholder="例如：08:30"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium">去程抵達時間</Label>
+                        <Input
+                          value={editedData.flights?.outbound?.arrivalTime || ''}
+                          onChange={(e) => setEditedData({
+                            ...editedData,
+                            flights: { 
+                              ...editedData.flights, 
+                              outbound: { ...editedData.flights?.outbound, arrivalTime: e.target.value }
+                            }
+                          })}
+                          className="mt-2"
+                          placeholder="例如：12:30"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-sm font-medium">回程出發時間</Label>
+                        <Input
+                          value={editedData.flights?.inbound?.departureTime || ''}
+                          onChange={(e) => setEditedData({
+                            ...editedData,
+                            flights: { 
+                              ...editedData.flights, 
+                              inbound: { ...editedData.flights?.inbound, departureTime: e.target.value }
+                            }
+                          })}
+                          className="mt-2"
+                          placeholder="例如：14:00"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium">回程抵達時間</Label>
+                        <Input
+                          value={editedData.flights?.inbound?.arrivalTime || ''}
+                          onChange={(e) => setEditedData({
+                            ...editedData,
+                            flights: { 
+                              ...editedData.flights, 
+                              inbound: { ...editedData.flights?.inbound, arrivalTime: e.target.value }
+                            }
+                          })}
+                          className="mt-2"
+                          placeholder="例如：18:00"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+
+            {/* 照片管理 Tab */}
+            <TabsContent value="photos" className="mt-0 space-y-6">
+              <div className="bg-violet-50 rounded-2xl p-6 space-y-6">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold text-violet-900">行程照片</h3>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const newImage = { url: '', alt: '', caption: '' };
+                      setEditedData({
+                        ...editedData,
+                        images: [...(editedData.images || []), newImage]
+                      });
+                    }}
+                    className="rounded-full"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    新增照片
+                  </Button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  {editedData.images?.map((image: any, index: number) => (
+                    <div key={index} className="bg-white rounded-xl p-4 space-y-3 border border-violet-200">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-sm font-medium text-violet-800">照片 {index + 1}</Label>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            const updated = [...editedData.images];
+                            updated.splice(index, 1);
+                            setEditedData({ ...editedData, images: updated });
+                          }}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 h-6 w-6 p-0"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+
+                      {image.url && (
+                        <div className="relative rounded-lg overflow-hidden">
+                          <img 
+                            src={image.url} 
+                            alt={image.alt || '行程照片'} 
+                            className="w-full h-32 object-cover"
+                          />
+                        </div>
+                      )}
+
+                      <div>
+                        <Label className="text-xs font-medium">圖片網址</Label>
+                        <Input
+                          value={image.url || ''}
+                          onChange={(e) => {
+                            const updated = [...editedData.images];
+                            updated[index] = { ...updated[index], url: e.target.value };
+                            setEditedData({ ...editedData, images: updated });
+                          }}
+                          className="mt-1 h-8 text-sm"
+                          placeholder="https://..."
+                        />
+                      </div>
+
+                      <div>
+                        <Label className="text-xs font-medium">替代文字 (Alt)</Label>
+                        <Input
+                          value={image.alt || ''}
+                          onChange={(e) => {
+                            const updated = [...editedData.images];
+                            updated[index] = { ...updated[index], alt: e.target.value };
+                            setEditedData({ ...editedData, images: updated });
+                          }}
+                          className="mt-1 h-8 text-sm"
+                          placeholder="描述圖片內容..."
+                        />
+                      </div>
+
+                      <div>
+                        <Label className="text-xs font-medium">圖片說明</Label>
+                        <Input
+                          value={image.caption || ''}
+                          onChange={(e) => {
+                            const updated = [...editedData.images];
+                            updated[index] = { ...updated[index], caption: e.target.value };
+                            setEditedData({ ...editedData, images: updated });
+                          }}
+                          className="mt-1 h-8 text-sm"
+                          placeholder="例如：東京鐵塔夜景"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {(!editedData.images || editedData.images.length === 0) && (
+                  <div className="text-center py-12 text-gray-500">
+                    <Image className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                    <p>尚未新增行程照片</p>
+                    <p className="text-sm mt-2">點擊上方「新增照片」按鈕開始新增</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Hero 圖片設定 */}
+              <div className="bg-amber-50 rounded-2xl p-6 space-y-4">
+                <h3 className="font-semibold text-amber-900">Hero 圖片（主視覺）</h3>
+                
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="heroImage" className="text-sm font-medium">
+                      Hero 圖片網址
+                    </Label>
+                    <Input
+                      id="heroImage"
+                      value={editedData.heroImage || ''}
+                      onChange={(e) => setEditedData({ ...editedData, heroImage: e.target.value })}
+                      className="mt-2"
+                      placeholder="https://..."
+                    />
+                  </div>
+
+                  {editedData.heroImage && (
+                    <div className="relative rounded-xl overflow-hidden">
+                      <img 
+                        src={editedData.heroImage} 
+                        alt="Hero Preview" 
+                        className="w-full h-48 object-cover"
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             </TabsContent>
           </div>
