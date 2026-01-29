@@ -43,6 +43,22 @@ interface AgentPhase {
   error?: string;
 }
 
+// 漸進式結果類型
+interface PartialResults {
+  title?: string;
+  poeticTitle?: string;
+  destination?: string;
+  colorTheme?: {
+    primary: string;
+    secondary: string;
+    accent: string;
+    background: string;
+    text: string;
+  };
+  heroImage?: string;
+  highlights?: string[];
+}
+
 // 整體進度狀態
 interface GenerationProgress {
   taskId: string;
@@ -54,6 +70,7 @@ interface GenerationProgress {
   endTime?: number;
   totalDuration?: number;
   error?: string;
+  partialResults?: PartialResults;
 }
 
 // Agent 圖標映射
@@ -108,6 +125,7 @@ interface GenerationProgressProps {
       progress: number;
       message: string;
       timestamp: number;
+      partialResults?: PartialResults;
     } | null;
     failedReason?: string;
   } | null;
@@ -187,6 +205,7 @@ export function GenerationProgressComponent({
       phases,
       startTime: startTimeRef.current,
       error: pollingStatus.failedReason,
+      partialResults: pollingStatus.progressDetails?.partialResults,
     });
 
     // 處理完成和錯誤回調
@@ -291,8 +310,84 @@ export function GenerationProgressComponent({
           <Progress value={overallProgress} className="h-3" />
         </div>
 
+        {/* 漸進式結果預覽 */}
+        {progress?.partialResults && Object.keys(progress.partialResults).length > 0 && (
+          <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-100 space-y-3 animate-in fade-in duration-500">
+            <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+              <Package className="h-4 w-4 text-blue-500" />
+              即時預覽
+            </h4>
+            
+            {/* 標題和目的地 */}
+            {(progress.partialResults.title || progress.partialResults.destination) && (
+              <div className="space-y-1">
+                {progress.partialResults.title && (
+                  <p className="text-base font-bold text-gray-900">
+                    {progress.partialResults.title}
+                  </p>
+                )}
+                {progress.partialResults.poeticTitle && (
+                  <p className="text-sm text-gray-600 italic">
+                    {progress.partialResults.poeticTitle}
+                  </p>
+                )}
+                {progress.partialResults.destination && (
+                  <p className="text-xs text-gray-500 flex items-center gap-1">
+                    <MapPin className="h-3 w-3" />
+                    {progress.partialResults.destination}
+                  </p>
+                )}
+              </div>
+            )}
+            
+            {/* 配色方案 */}
+            {progress.partialResults.colorTheme && (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-500">配色：</span>
+                <div className="flex gap-1">
+                  {Object.entries(progress.partialResults.colorTheme).slice(0, 5).map(([key, color]) => (
+                    <div
+                      key={key}
+                      className="w-5 h-5 rounded-full border border-gray-200 shadow-sm"
+                      style={{ backgroundColor: color as string }}
+                      title={`${key}: ${color}`}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Hero 圖片 */}
+            {progress.partialResults.heroImage && (
+              <div className="relative w-full h-24 rounded-md overflow-hidden">
+                <img
+                  src={progress.partialResults.heroImage}
+                  alt="Hero preview"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+              </div>
+            )}
+            
+            {/* 亮點 */}
+            {progress.partialResults.highlights && progress.partialResults.highlights.length > 0 && (
+              <div className="space-y-1">
+                <span className="text-xs text-gray-500">行程亮點：</span>
+                <ul className="text-xs text-gray-700 space-y-0.5">
+                  {progress.partialResults.highlights.map((highlight, idx) => (
+                    <li key={idx} className="flex items-start gap-1">
+                      <span className="text-blue-500">•</span>
+                      <span className="line-clamp-1">{highlight}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Agent 階段列表 */}
-        <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2">
+        <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
           {displayPhases.map((phase) => (
             <div 
               key={phase.id}

@@ -503,3 +503,32 @@
 - [ ] 儲存 checkpoint
 - [ ] 部署到生產環境
 - [ ] 驗證生產環境功能正常
+
+
+---
+
+## Phase 21: 漸進式結果顯示優化（2026-01-29）
+
+### 21.1 後端漸進式結果實作
+- [x] 更新 `server/agents/progressTracker.ts` 添加 `updatePartialResults` 方法
+- [x] 更新 `server/queue.ts` 添加 `PartialResults` 類型定義
+- [x] 修改 `server/agents/masterAgent.ts` 在各階段完成後更新漸進式結果
+  - Phase 2 完成後：更新標題、詩意標題、目的地、亮點
+  - Phase 3 完成後：更新配色方案
+  - Phase 4 完成後：更新 Hero 圖片
+- [x] 修改 `server/tourGenerator.ts` 傳遞 taskId 並獲取漸進式結果
+
+### 21.2 前端漸進式結果顯示
+- [x] 更新 `client/src/components/admin/GenerationProgress.tsx` 添加 `PartialResults` 類型
+- [x] 實作漸進式結果預覽區域（即時預覽卡片）
+  - 顯示標題和詩意標題
+  - 顯示目的地
+  - 顯示配色方案（色塊預覽）
+  - 顯示 Hero 圖片縮圖
+  - 顯示行程亮點
+
+### 21.3 測試與驗證
+- [ ] 測試漸進式結果是否正確顯示
+- [ ] 驗證各階段結果的更新時機
+- [ ] 確認前端 UI 動畫效果流暢
+- [ ] 端到端測試完整生成流程

@@ -11,6 +11,24 @@ export interface TourGenerationJobData {
 }
 
 /**
+ * 漸進式結果類型
+ */
+export interface PartialResults {
+  title?: string;
+  poeticTitle?: string;
+  destination?: string;
+  colorTheme?: {
+    primary: string;
+    secondary: string;
+    accent: string;
+    background: string;
+    text: string;
+  };
+  heroImage?: string;
+  highlights?: string[];
+}
+
+/**
  * Job progress structure
  */
 export interface TourGenerationProgress {
@@ -18,6 +36,7 @@ export interface TourGenerationProgress {
   progress: number; // 0-100
   message: string;
   timestamp: number;
+  partialResults?: PartialResults;
 }
 
 /**

@@ -38,6 +38,7 @@ import {
   type RetryConfig
 } from "./agentOrchestration";
 import { progressTracker } from "./progressTracker";
+import generationCache from "../cache/generation-cache";
 
 export interface MasterAgentResult {
   success: boolean;
@@ -198,6 +199,27 @@ export class MasterAgent {
     
     try {
       // ========================================================================
+      // Phase 0: Check Cache for Full Result
+      // If we have a cached result for this URL, return it immediately
+      // ========================================================================
+      onProgress?.("checking_cache", 5);
+      console.log("[MasterAgent] Checking cache for URL:", url);
+      
+      const cachedFullResult = await generationCache.getFullResult(url);
+      if (cachedFullResult) {
+        console.log("[MasterAgent] 🎯 Cache HIT! Returning cached result");
+        const elapsedTime = Date.now() - startTime;
+        console.log(`[MasterAgent] Total time (from cache): ${elapsedTime}ms`);
+        
+        return {
+          success: true,
+          data: cachedFullResult,
+          executionReport: `Cache hit - returned in ${elapsedTime}ms`,
+        };
+      }
+      console.log("[MasterAgent] Cache MISS, proceeding with generation...");
+      
+      // ========================================================================
       // Phase 1: Web Scraping (Critical, Sequential)
       // Must complete first as all other agents depend on rawData
       // ========================================================================
@@ -205,20 +227,33 @@ export class MasterAgent {
       this.monitor.startAgent('WebScraperAgent');
       if (taskId) progressTracker.startPhase(taskId, 'web_scraper');
       
-      const scrapingResult = await this.retryManager.executeWithRetry(
-        () => this.webScraperAgent.execute(url),
-        this.retryConfig,
-        'WebScraperAgent'
-      );
-      
-      if (!scrapingResult.success || !scrapingResult.data) {
-        this.monitor.failAgent('WebScraperAgent', new Error(scrapingResult.error || "Web scraping failed"));
-        throw new Error(scrapingResult.error || "Web scraping failed");
+      // Check for cached scrape result first
+      let rawData;
+      const cachedScrape = await generationCache.getScrapeResult(url);
+      if (cachedScrape) {
+        console.log("[MasterAgent] 🎯 Scrape cache HIT!");
+        rawData = cachedScrape;
+        this.monitor.completeAgent('WebScraperAgent', { success: true, data: cachedScrape });
+      } else {
+        const scrapingResult = await this.retryManager.executeWithRetry(
+          () => this.webScraperAgent.execute(url),
+          this.retryConfig,
+          'WebScraperAgent'
+        );
+        
+        if (!scrapingResult.success || !scrapingResult.data) {
+          this.monitor.failAgent('WebScraperAgent', new Error(scrapingResult.error || "Web scraping failed"));
+          throw new Error(scrapingResult.error || "Web scraping failed");
+        }
+        
+        this.monitor.completeAgent('WebScraperAgent', scrapingResult);
+        rawData = scrapingResult.data;
+        
+        // Cache the scrape result (1 day TTL)
+        await generationCache.cacheScrapeResult(url, rawData);
       }
       
-      this.monitor.completeAgent('WebScraperAgent', scrapingResult);
       if (taskId) progressTracker.completePhase(taskId, 'web_scraper');
-      const rawData = scrapingResult.data;
       console.log("[MasterAgent] ✓ Phase 1 completed: Web scraping");
       
       // ========================================================================
@@ -247,6 +282,17 @@ export class MasterAgent {
       this.monitor.completeAgent('ContentAnalyzerAgent', analysisResult);
       if (taskId) progressTracker.completePhase(taskId, 'content_analyzer');
       const analyzedContent = analysisResult.data;
+      
+      // 漸進式結果：更新標題和目的地
+      if (taskId) {
+        progressTracker.updatePartialResults(taskId, {
+          title: lionTravelTitle,
+          poeticTitle: analyzedContent.poeticTitle,
+          destination: `${rawData.location?.destinationCity || ''}, ${rawData.location?.destinationCountry || ''}`,
+          highlights: analyzedContent.highlights?.slice(0, 3),
+        });
+      }
+      
       console.log("[MasterAgent] ✓ Phase 2 completed: Content analysis + Lion title");
       console.log("[MasterAgent] Originality score:", analyzedContent.originalityScore);
       console.log("[MasterAgent] Lion Travel title:", lionTravelTitle);
@@ -265,15 +311,23 @@ export class MasterAgent {
         progressTracker.startPhase(taskId, 'image_prompt');
       }
       
+      // Check for cached color palette first
+      const destination = rawData.location?.destinationCity || rawData.location?.destinationCountry || "";
+      let colorTheme;
+      const cachedPalette = await generationCache.getColorPalette(destination);
+      
+      // Run ColorTheme (with cache check) and ImagePrompt in parallel
       const [colorThemeResult, promptResult] = await Promise.all([
-        this.retryManager.executeWithRetry(
-          () => this.colorThemeAgent.execute(
-            rawData.location?.destinationCountry || "",
-            rawData.location?.destinationCity
-          ),
-          this.retryConfig,
-          'ColorThemeAgent'
-        ),
+        cachedPalette 
+          ? Promise.resolve({ success: true, data: cachedPalette })
+          : this.retryManager.executeWithRetry(
+              () => this.colorThemeAgent.execute(
+                rawData.location?.destinationCountry || "",
+                rawData.location?.destinationCity
+              ),
+              this.retryConfig,
+              'ColorThemeAgent'
+            ),
         this.retryManager.executeWithRetry(
           () => this.imagePromptAgent.execute(
             rawData.location?.destinationCountry || "",
@@ -288,12 +342,28 @@ export class MasterAgent {
       
       // Handle ColorThemeAgent result
       if (!colorThemeResult.success || !colorThemeResult.data) {
-        this.monitor.failAgent('ColorThemeAgent', new Error(colorThemeResult.error || "Color theme generation failed"));
-        throw new Error(colorThemeResult.error || "Color theme generation failed");
+        const errorMsg = (colorThemeResult as any).error || "Color theme generation failed";
+        this.monitor.failAgent('ColorThemeAgent', new Error(errorMsg));
+        throw new Error(errorMsg);
       }
+      
+      if (cachedPalette) {
+        console.log("[MasterAgent] 🎯 Color palette cache HIT!");
+      } else {
+        // Cache the color palette (7 days TTL)
+        await generationCache.cacheColorPalette(destination, colorThemeResult.data);
+      }
+      
       this.monitor.completeAgent('ColorThemeAgent', colorThemeResult);
       if (taskId) progressTracker.completePhase(taskId, 'color_theme');
-      const colorTheme = colorThemeResult.data;
+      colorTheme = colorThemeResult.data;
+      
+      // 漸進式結果：更新配色方案
+      if (taskId) {
+        progressTracker.updatePartialResults(taskId, {
+          colorTheme: colorTheme,
+        });
+      }
       
       // Handle ImagePromptAgent result
       if (!promptResult.success || !promptResult.data) {
@@ -415,6 +485,13 @@ export class MasterAgent {
           url: `/placeholder-feature-${index + 1}.jpg`,
           alt: `Placeholder feature image ${index + 1}`
         }));
+      }
+      
+      // 漸進式結果：更新 Hero 圖片
+      if (taskId && heroImage.url) {
+        progressTracker.updatePartialResults(taskId, {
+          heroImage: heroImage.url,
+        });
       }
       
       // Process Itinerary result
@@ -553,6 +630,10 @@ export class MasterAgent {
       console.log("[MasterAgent] Total execution time:", totalDuration, "ms");
       console.log("[MasterAgent] Time saved by parallel execution: ~40-60 seconds");
       console.log(executionReport);
+      
+      // Cache the full result (3 days TTL)
+      await generationCache.cacheFullResult(url, finalData);
+      console.log("[MasterAgent] 💾 Full result cached for URL:", url);
       
       onProgress?.("completed", 100);
       if (taskId) {

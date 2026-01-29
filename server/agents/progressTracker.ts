@@ -18,6 +18,17 @@ export interface AgentPhase {
   error?: string;
 }
 
+// 漸進式結果類型
+export interface PartialResults {
+  title?: string;
+  poeticTitle?: string;
+  destination?: string;
+  colorTheme?: any;
+  heroImage?: string;
+  highlights?: string[];
+  itinerary?: any[];
+}
+
 // 整體進度狀態
 export interface GenerationProgress {
   taskId: string;
@@ -29,6 +40,7 @@ export interface GenerationProgress {
   endTime?: number;
   totalDuration?: number;
   error?: string;
+  partialResults?: PartialResults; // 漸進式結果
 }
 
 // 進度事件類型
@@ -93,10 +105,26 @@ export class ProgressTracker extends EventEmitter {
       overallProgress: 0,
       phases,
       startTime: Date.now(),
+      partialResults: {}, // 初始化漸進式結果
     };
     
     this.progresses.set(taskId, progress);
     return progress;
+  }
+  
+  /**
+   * 更新漸進式結果
+   */
+  updatePartialResults(taskId: string, results: Partial<PartialResults>): void {
+    const progress = this.progresses.get(taskId);
+    if (!progress) return;
+    
+    progress.partialResults = {
+      ...progress.partialResults,
+      ...results,
+    };
+    
+    this.emitProgress(taskId, 'phase_progress');
   }
   
   /**

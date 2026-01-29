@@ -28,15 +28,27 @@ export async function generateTourFromUrlInternal(
     // Create Master Agent
     const masterAgent = new MasterAgent();
     
+    // Generate taskId for progress tracking
+    const taskId = `gen_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+    
+    // Import progressTracker for getting partial results
+    const { progressTracker } = await import("./agents/progressTracker");
+    
     // Execute tour generation with progress tracking
-    const result = await masterAgent.execute(url, userId, (step, percentage) => {
-      // Update job progress
-      job.updateProgress({
+    const result = await masterAgent.execute(url, userId, async (step, percentage) => {
+      // Get partial results from progressTracker
+      const progressData = progressTracker.getProgress(taskId);
+      const partialResults = progressData?.partialResults;
+      
+      // Update job progress with partial results
+      await job.updateProgress({
         step,
-        percentage,
+        progress: percentage,
         message: `Processing: ${step}`,
+        timestamp: Date.now(),
+        partialResults: partialResults || undefined,
       });
-    });
+    }, taskId);
     
     if (!result.success || !result.data) {
       throw new Error(result.error || "Tour generation failed");
