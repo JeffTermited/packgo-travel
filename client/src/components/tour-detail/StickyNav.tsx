@@ -12,15 +12,36 @@ export interface StickyNavProps {
     secondary: string;
     accent: string;
   };
+  transportationType?: 'FLIGHT' | 'TRAIN' | 'CAR' | 'CRUISE' | 'BUS' | 'UNKNOWN' | null;
 }
 
-export const StickyNav: React.FC<StickyNavProps> = ({ tourTitle, colorTheme }) => {
+export const StickyNav: React.FC<StickyNavProps> = ({ tourTitle, colorTheme, transportationType }) => {
+  // 根據交通類型決定是否顯示航班資訊標籤
+  const shouldShowFlightTab = !transportationType || transportationType === 'FLIGHT';
+  
+  // 根據交通類型決定標籤名稱
+  const getTransportLabel = () => {
+    switch (transportationType) {
+      case 'TRAIN':
+        return '交通資訊';
+      case 'CRUISE':
+        return '船班資訊';
+      case 'CAR':
+        return '交通資訊';
+      case 'BUS':
+        return '交通資訊';
+      default:
+        return '航班資訊';
+    }
+  };
+
   const navItems = [
     { label: "行程特色", href: "#features" },
     { label: "每日行程", href: "#itinerary" },
     { label: "飯店介紹", href: "#hotels" },
     { label: "費用說明", href: "#cost" },
-    { label: "航班資訊", href: "#flights" },
+    // 只有飛機行程才顯示航班資訊標籤，其他類型不顯示獨立的交通區塊
+    ...(shouldShowFlightTab ? [{ label: getTransportLabel(), href: "#flights" }] : []),
     { label: "注意事項", href: "#notice" },
     { label: "出發日期", href: "#departures" },
   ];

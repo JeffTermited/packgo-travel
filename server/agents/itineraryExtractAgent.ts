@@ -1,7 +1,17 @@
 /**
  * Itinerary Extract Agent
  * 從原始網頁資料中提取每日行程（不使用 LLM，純資料解析）
+ * 
+ * Phase 1 優化：
+ * - 加入行程類型識別（鳴日號、郵輪、自駕等）
+ * - 動態載入參考文件
+ * - 強化資料忠實度約束
  */
+
+import { loadReference, loadReferenceSections } from './skillLoader';
+
+// 行程類型枚舉
+export type TourType = 'MINGRI_TRAIN' | 'TRAIN' | 'CRUISE' | 'SELF_DRIVE' | 'FLIGHT' | 'GENERAL';
 
 export interface ExtractedItinerary {
   day: number;
@@ -28,6 +38,10 @@ export interface ItineraryExtractResult {
   data?: {
     extractedItineraries: ExtractedItinerary[];
     extractionMethod: 'structured' | 'markdown' | 'fallback';
+    tourType: TourType;
+    originalTransportation: string;
+    originalHotels: string[];
+    originalAttractions: string[];
   };
   error?: string;
 }
@@ -36,20 +50,224 @@ export interface ItineraryExtractResult {
  * ItineraryExtractAgent
  * 專門從原始網頁資料中提取每日行程
  * 不修改內容，只做資料結構化
+ * 
+ * Phase 1 新增功能：
+ * - 識別行程類型（鳴日號、郵輪、自駕等）
+ * - 提取原始資料快照（用於後續驗證）
+ * - 動態載入相關參考文件
  */
 export class ItineraryExtractAgent {
+  private dataFidelityRules: string = '';
+  private tourTypesKnowledge: string = '';
+  
   constructor() {
-    console.log('[ItineraryExtractAgent] Initialized');
+    console.log('[ItineraryExtractAgent] Initialized with Phase 1 optimizations');
+    
+    // 載入參考文件
+    this.loadReferenceDocuments();
+  }
+
+  /**
+   * 載入參考文件
+   */
+  private loadReferenceDocuments(): void {
+    try {
+      // 總是載入資料忠實度規則
+      this.dataFidelityRules = loadReference('Data-Fidelity-Rules');
+      console.log(`[ItineraryExtractAgent] Loaded Data-Fidelity-Rules (${this.dataFidelityRules.length} chars)`);
+    } catch (error) {
+      console.warn('[ItineraryExtractAgent] Failed to load Data-Fidelity-Rules:', error);
+    }
+  }
+
+  /**
+   * 識別行程類型
+   */
+  private identifyTourType(rawData: any): TourType {
+    const title = rawData?.title || rawData?.basicInfo?.title || '';
+    const content = JSON.stringify(rawData).toLowerCase();
+    const searchText = (title + ' ' + content).toLowerCase();
+    
+    // 鳴日號火車行程（最高優先級）
+    if (searchText.includes('鳴日號') || searchText.includes('鳴日') || 
+        (searchText.includes('觀光列車') && (searchText.includes('台東') || searchText.includes('花蓮')))) {
+      console.log('[ItineraryExtractAgent] Identified tour type: MINGRI_TRAIN');
+      
+      // 動態載入台灣行程類型知識
+      try {
+        this.tourTypesKnowledge = loadReferenceSections('Taiwan-Tour-Types', ['鳴日號火車行程']);
+        console.log(`[ItineraryExtractAgent] Loaded Taiwan-Tour-Types (鳴日號) (${this.tourTypesKnowledge.length} chars)`);
+      } catch (error) {
+        console.warn('[ItineraryExtractAgent] Failed to load Taiwan-Tour-Types:', error);
+      }
+      
+      return 'MINGRI_TRAIN';
+    }
+    
+    // 郵輪行程
+    if (searchText.includes('郵輪') || searchText.includes('遊輪') || searchText.includes('cruise')) {
+      console.log('[ItineraryExtractAgent] Identified tour type: CRUISE');
+      return 'CRUISE';
+    }
+    
+    // 自駕行程
+    if (searchText.includes('自駕') || searchText.includes('租車') || searchText.includes('開車')) {
+      console.log('[ItineraryExtractAgent] Identified tour type: SELF_DRIVE');
+      return 'SELF_DRIVE';
+    }
+    
+    // 一般火車行程
+    if (searchText.includes('火車') || searchText.includes('鐵路') || searchText.includes('高鐵') || searchText.includes('台鐵')) {
+      console.log('[ItineraryExtractAgent] Identified tour type: TRAIN');
+      return 'TRAIN';
+    }
+    
+    // 飛機行程
+    if (searchText.includes('飛機') || searchText.includes('航班') || searchText.includes('機票')) {
+      console.log('[ItineraryExtractAgent] Identified tour type: FLIGHT');
+      return 'FLIGHT';
+    }
+    
+    console.log('[ItineraryExtractAgent] Identified tour type: GENERAL');
+    return 'GENERAL';
+  }
+
+  /**
+   * 提取原始交通方式
+   */
+  private extractOriginalTransportation(rawData: any, tourType: TourType): string {
+    // 從 rawData 中提取交通方式
+    const transportation = rawData?.transportation || rawData?.basicInfo?.transportation || '';
+    
+    if (transportation) {
+      return transportation;
+    }
+    
+    // 根據行程類型推斷
+    switch (tourType) {
+      case 'MINGRI_TRAIN':
+        return '火車（鳴日號觀光列車）';
+      case 'TRAIN':
+        return '火車';
+      case 'CRUISE':
+        return '郵輪';
+      case 'SELF_DRIVE':
+        return '自駕';
+      case 'FLIGHT':
+        return '飛機';
+      default:
+        return '';
+    }
+  }
+
+  /**
+   * 提取原始飯店列表
+   */
+  private extractOriginalHotels(rawData: any): string[] {
+    const hotels: string[] = [];
+    
+    // 從 hotels 欄位提取
+    const hotelData = rawData?.hotels || rawData?.accommodation?.hotels || [];
+    if (Array.isArray(hotelData)) {
+      for (const hotel of hotelData) {
+        const name = typeof hotel === 'string' ? hotel : (hotel.name || hotel.hotelName || '');
+        if (name) {
+          hotels.push(name);
+        }
+      }
+    }
+    
+    // 從 dailyItinerary 提取
+    const itinerary = rawData?.itinerary || rawData?.dailyItinerary || [];
+    if (Array.isArray(itinerary)) {
+      for (const day of itinerary) {
+        const accommodation = day.accommodation || day.hotel || '';
+        if (accommodation && !hotels.includes(accommodation)) {
+          hotels.push(accommodation);
+        }
+      }
+    }
+    
+    // 從單一住宿欄位提取
+    const singleHotel = rawData?.accommodation?.hotelName || rawData?.hotelName || '';
+    if (singleHotel && !hotels.includes(singleHotel)) {
+      hotels.push(singleHotel);
+    }
+    
+    console.log(`[ItineraryExtractAgent] Extracted ${hotels.length} original hotels:`, hotels);
+    return hotels;
+  }
+
+  /**
+   * 提取原始景點列表
+   */
+  private extractOriginalAttractions(rawData: any): string[] {
+    const attractions: string[] = [];
+    
+    // 從 highlights 提取
+    const highlights = rawData?.highlights || [];
+    if (Array.isArray(highlights)) {
+      for (const h of highlights) {
+        const name = typeof h === 'string' ? h : (h.title || h.name || '');
+        if (name) {
+          attractions.push(name);
+        }
+      }
+    }
+    
+    // 從 attractions 提取
+    const attractionData = rawData?.attractions || [];
+    if (Array.isArray(attractionData)) {
+      for (const a of attractionData) {
+        const name = typeof a === 'string' ? a : (a.name || a.title || '');
+        if (name && !attractions.includes(name)) {
+          attractions.push(name);
+        }
+      }
+    }
+    
+    // 從 dailyItinerary 的 activities 提取
+    const itinerary = rawData?.itinerary || rawData?.dailyItinerary || [];
+    if (Array.isArray(itinerary)) {
+      for (const day of itinerary) {
+        const activities = day.activities || day.schedule || [];
+        if (Array.isArray(activities)) {
+          for (const activity of activities) {
+            const name = typeof activity === 'string' ? activity : (activity.title || activity.name || '');
+            if (name && !attractions.includes(name)) {
+              attractions.push(name);
+            }
+          }
+        }
+      }
+    }
+    
+    console.log(`[ItineraryExtractAgent] Extracted ${attractions.length} original attractions`);
+    return attractions;
   }
 
   /**
    * 執行行程提取
    */
   async execute(rawData: any): Promise<ItineraryExtractResult> {
-    console.log("[ItineraryExtractAgent] Starting itinerary extraction...");
+    console.log("[ItineraryExtractAgent] Starting itinerary extraction with Phase 1 optimizations...");
     
     try {
-      // 嘗試多種提取方式
+      // Step 1: 識別行程類型
+      const tourType = this.identifyTourType(rawData);
+      
+      // Step 2: 提取原始資料快照（用於後續驗證）
+      const originalTransportation = this.extractOriginalTransportation(rawData, tourType);
+      const originalHotels = this.extractOriginalHotels(rawData);
+      const originalAttractions = this.extractOriginalAttractions(rawData);
+      
+      console.log(`[ItineraryExtractAgent] Original data snapshot:`);
+      console.log(`  - Tour Type: ${tourType}`);
+      console.log(`  - Transportation: ${originalTransportation}`);
+      console.log(`  - Hotels: ${originalHotels.length} found`);
+      console.log(`  - Attractions: ${originalAttractions.length} found`);
+      
+      // Step 3: 嘗試多種提取方式
       let extractedItineraries: ExtractedItinerary[] = [];
       let extractionMethod: 'structured' | 'markdown' | 'fallback' = 'fallback';
       
@@ -73,7 +291,7 @@ export class ItineraryExtractAgent {
       
       // 方法 3: 從 highlights 和 attractions 建立基本框架
       if (extractedItineraries.length === 0) {
-        const fallbackResult = this.createFallbackItinerary(rawData);
+        const fallbackResult = this.createFallbackItinerary(rawData, tourType, originalTransportation);
         if (fallbackResult.length > 0) {
           console.log(`[ItineraryExtractAgent] Created ${fallbackResult.length} days from fallback`);
           extractedItineraries = fallbackResult;
@@ -88,6 +306,10 @@ export class ItineraryExtractAgent {
         data: {
           extractedItineraries,
           extractionMethod,
+          tourType,
+          originalTransportation,
+          originalHotels,
+          originalAttractions,
         },
       };
     } catch (error) {
@@ -120,13 +342,24 @@ export class ItineraryExtractAgent {
       
       if (Array.isArray(rawActivities)) {
         for (const activity of rawActivities) {
-          activities.push({
-            time: activity.time || activity.timeSlot || '',
-            title: activity.title || activity.name || activity.activity || '',
-            description: activity.description || activity.details || activity.content || '',
-            transportation: activity.transportation || activity.transport || '',
-            location: activity.location || activity.place || activity.venue || '',
-          });
+          // 如果 activity 是字串，直接使用
+          if (typeof activity === 'string') {
+            activities.push({
+              time: '',
+              title: activity,
+              description: activity,
+              transportation: '',
+              location: '',
+            });
+          } else {
+            activities.push({
+              time: activity.time || activity.timeSlot || '',
+              title: activity.title || activity.name || activity.activity || '',
+              description: activity.description || activity.details || activity.content || '',
+              transportation: activity.transportation || activity.transport || '',
+              location: activity.location || activity.place || activity.venue || '',
+            });
+          }
         }
       }
       
@@ -137,7 +370,15 @@ export class ItineraryExtractAgent {
         dinner: dayData.meals?.dinner || dayData.dinner || '',
       };
       
-      // 提取住宿
+      // 處理 meals 字串格式（如 "早/午/晚"）
+      if (dayData.meals && typeof dayData.meals === 'string') {
+        const mealStr = dayData.meals;
+        meals.breakfast = mealStr.includes('早') ? '飯店早餐' : '';
+        meals.lunch = mealStr.includes('午') ? '當地特色餐' : '';
+        meals.dinner = mealStr.includes('晚') ? '精選餐廳' : '';
+      }
+      
+      // 提取住宿（保持原始名稱）
       const accommodation = dayData.accommodation || dayData.hotel || dayData.stay || '';
       
       // 提取標題
@@ -149,7 +390,7 @@ export class ItineraryExtractAgent {
       }
       
       result.push({
-        day: i + 1,
+        day: dayData.day || i + 1,
         title,
         activities,
         meals,
@@ -189,6 +430,17 @@ export class ItineraryExtractAgent {
     
     // 按位置排序
     matches.sort((a, b) => a.startIndex - b.startIndex);
+    
+    // 去重（相同天數只保留第一個）
+    const uniqueMatches: typeof matches = [];
+    const seenDays = new Set<number>();
+    for (const match of matches) {
+      if (!seenDays.has(match.day)) {
+        seenDays.add(match.day);
+        uniqueMatches.push(match);
+      }
+    }
+    matches = uniqueMatches;
     
     // 設定結束位置
     for (let i = 0; i < matches.length; i++) {
@@ -271,12 +523,13 @@ export class ItineraryExtractAgent {
 
   /**
    * 建立 Fallback 行程框架
+   * Phase 1 優化：根據行程類型調整內容
    */
-  private createFallbackItinerary(rawData: any): ExtractedItinerary[] {
+  private createFallbackItinerary(rawData: any, tourType: TourType, transportation: string): ExtractedItinerary[] {
     const days = rawData?.duration?.days || 5;
     const highlights = rawData?.highlights || [];
     const attractions = rawData?.attractions || [];
-    const destinationCity = rawData?.location?.destinationCity || '';
+    const destinationCity = rawData?.location?.destinationCity || rawData?.destination || '';
     const hotelName = rawData?.accommodation?.hotelName || '';
     
     if (!destinationCity && highlights.length === 0 && attractions.length === 0) {
@@ -302,14 +555,20 @@ export class ItineraryExtractAgent {
         time: `${9 + idx * 3}:00-${12 + idx * 3}:00`,
         title: point,
         description: `探索${point}`,
-        transportation: '',
+        transportation: transportation, // 使用識別出的交通方式
         location: point,
       }));
       
-      // 設定標題
+      // 設定標題（根據行程類型調整）
       let title = `Day ${i + 1}`;
       if (i === 0) {
-        title += `：抵達${destinationCity}`;
+        if (tourType === 'MINGRI_TRAIN') {
+          title += `：搭乘鳴日號出發`;
+        } else if (tourType === 'CRUISE') {
+          title += `：登船出發`;
+        } else {
+          title += `：抵達${destinationCity}`;
+        }
       } else if (i === days - 1) {
         title += `：返程`;
       } else if (dayPoints.length > 0) {

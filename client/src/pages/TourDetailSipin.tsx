@@ -20,7 +20,7 @@ import { ImageTextBlock } from "@/components/tour-detail/ImageTextBlock";
 import { FullWidthSection } from "@/components/tour-detail/FullWidthSection";
 import { DailyItinerarySection } from "@/components/tour-detail/DailyItinerarySection";
 import { CostExplanationSection } from "@/components/tour-detail/CostExplanationSection";
-import { FlightInfoSection } from "@/components/tour-detail/FlightInfoSection";
+import { TransportationInfoSection } from "@/components/tour-detail/TransportationInfoSection";
 import { NoticeSection } from "@/components/tour-detail/NoticeSection";
 import { BackToTop } from "@/components/tour-detail/BackToTop";
 
@@ -169,11 +169,16 @@ export default function TourDetailSipin() {
     console.warn('[TourDetailSipin] costExplanation is not an object');
   }
 
-  // 準備航班資訊（加入錯誤處理）
-  const flightInfo = parseJSON(tour.flights, null);
-  if (flightInfo && typeof flightInfo !== 'object') {
-    console.warn('[TourDetailSipin] flightInfo is not an object');
+  // 準備交通資訊（加入錯誤處理）
+  const transportationInfo = parseJSON(tour.flights, null);
+  if (transportationInfo && typeof transportationInfo !== 'object') {
+    console.warn('[TourDetailSipin] transportationInfo is not an object');
   }
+  
+  // 判斷是否需要顯示獨立的航班資訊區塊
+  // 只有飛機行程才需要顯示獨立的航班資訊
+  const shouldShowFlightSection = transportationInfo && 
+    (transportationInfo.type === 'FLIGHT' || !transportationInfo.type);
 
   // 準備注意事項資料（加入錯誤處理）
   const noticeDetailed = parseJSON(tour.noticeDetailed, null);
@@ -186,7 +191,11 @@ export default function TourDetailSipin() {
       <Header />
 
       {/* Sticky Navigation */}
-      <StickyNav tourTitle={tour.title} colorTheme={colorTheme} />
+      <StickyNav 
+        tourTitle={tour.title} 
+        colorTheme={colorTheme} 
+        transportationType={transportationInfo?.type || null}
+      />
 
       {/* Hero Section */}
       <HeroSection
@@ -258,10 +267,10 @@ export default function TourDetailSipin() {
         />
       )}
 
-      {/* 航班資訊區塊 */}
-      {flightInfo && (
-        <FlightInfoSection
-          flightInfo={flightInfo}
+      {/* 航班資訊區塊 - 只有飛機行程才顯示 */}
+      {shouldShowFlightSection && (
+        <TransportationInfoSection
+          transportationInfo={transportationInfo}
           colorTheme={colorTheme}
         />
       )}

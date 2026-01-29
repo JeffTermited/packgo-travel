@@ -808,3 +808,90 @@
 - [ ] 測試新的行程生成流程
 - [ ] 確認每日行程正確生成
 - [ ] 保存檢查點
+
+
+---
+
+## Phase 28: 清除快取並重新測試鳴日號行程（2026-01-29）
+
+### 28.1 清除快取
+- [ ] 清除鳴日號行程的 Redis 快取
+- [ ] 確認快取已成功清除
+
+### 28.2 重新測試生成
+- [ ] 使用鳴日號 URL 重新生成行程
+- [ ] 監控 Phase 1 優化的執行情況
+- [ ] 驗證行程類型識別是否正確（應識別為 MINGRI_TRAIN）
+- [ ] 驗證 fidelityCheck 結果
+
+### 28.3 驗證生成結果
+- [ ] 交通方式應為「鳴日號火車」而非「飛機」
+- [ ] 飯店應為「The GAYA Hotel 潮渡假酒店」和「花蓮潔西艾美渡假酒店」
+- [ ] 景點應包含原始資料中的景點（普悠瑪部落、如豐琢玉工坊等）
+
+
+---
+
+## Phase 29: 交通資訊 Agent 架構重構（2026-01-29）
+
+### 29.1 創建新的交通 Agent
+- [ ] 創建 TrainAgent 處理火車行程（包含鳴日號）
+- [ ] 創建 CarAgent 處理自駕/租車行程
+- [ ] 創建 CruiseAgent 處理郵輪行程
+- [ ] 保留 FlightAgent 處理飛機行程
+
+### 29.2 創建 TransportationAgent 主控制器
+- [ ] 創建 TransportationAgent 作為統一入口
+- [ ] 根據行程類型自動選擇對應的子 Agent
+- [ ] 實作統一的輸出格式
+
+### 29.3 更新 MasterAgent 整合
+- [ ] 修改 MasterAgent 使用 TransportationAgent
+- [ ] 傳遞行程類型參數
+- [ ] 更新進度追蹤
+
+### 29.4 更新前端顯示
+- [ ] 修改行程詳情頁面支援不同交通類型
+- [ ] 火車行程顯示車次資訊
+- [ ] 郵輪行程顯示航線資訊
+- [ ] 自駕行程顯示租車資訊
+
+### 29.5 測試驗證
+- [ ] 測試鳴日號行程（火車）
+- [ ] 測試一般國外行程（飛機）
+- [ ] 驗證交通資訊正確顯示
+
+
+---
+
+## Phase 27: TransportationAgent 架構優化（2026-01-29）
+
+### 27.1 架構設計
+- [x] 建立 TransportationAgent 統一交通處理架構
+- [x] 建立 TrainAgent 專門處理火車行程（鳴日號等）
+- [x] 保留 FlightAgent 處理飛機行程
+- [x] 設計統一的 TransportationInfo 輸出格式
+
+### 27.2 後端實作
+- [x] 建立 `server/agents/transportationAgent.ts`
+- [x] 建立 `server/agents/trainAgent.ts`
+- [x] 修改 `server/agents/masterAgent.ts` 使用 TransportationAgent
+- [x] 實作交通類型自動識別（FLIGHT, TRAIN, CRUISE, CAR, BUS）
+- [x] 修復 TrainAgent JSON Schema 強制 LLM 返回正確格式
+
+### 27.3 前端實作
+- [x] 修改 `StickyNav.tsx` 支援條件顯示航班/交通資訊標籤
+- [x] 修改 `TourDetailSipin.tsx` 傳遞 transportationType 到 StickyNav
+- [x] 當 transportationType 為 TRAIN 時隱藏「航班資訊」標籤
+
+### 27.4 測試驗證
+- [x] 清除 Redis 快取和資料庫舊資料
+- [x] 重新生成鳴日號行程
+- [x] 確認資料庫中 flights 欄位正確存儲 type: "TRAIN"
+- [x] 確認前端導覽列正確隱藏「航班資訊」標籤
+- [x] 確認瀏覽器控制台日誌顯示正確的 transportationType
+
+### 27.5 已知問題
+- [ ] TrainAgent LLM 回應有時會返回非 JSON 格式（已添加 JSON Schema 強制）
+- [ ] 部署版本需要重新部署才能生效
+

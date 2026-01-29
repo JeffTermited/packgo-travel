@@ -88,9 +88,10 @@ async function captureScreenshots(url: string): Promise<{ screenshots: Buffer[];
     console.log('[PuppeteerVision] Navigating to URL:', url);
     
     // 使用 domcontentloaded 而不是 networkidle2
+    // Phase 1 優化：增加超時時間到 90 秒
     await page.goto(url, {
       waitUntil: 'domcontentloaded',
-      timeout: 60000,
+      timeout: 90000,
     });
     
     // 等待頁面內容載入（增加等待時間以確保動態內容載入）
@@ -280,6 +281,30 @@ async function analyzeWithVision(screenshotUrls: string[]): Promise<PuppeteerVis
 - 如果標題顯示「2日」，則 duration 必須是「2天1夜」，並且 dailyItinerary 只能有 2 天
 - 絕對不要自行擴充天數，必須嚴格按照原始資料
 
+🚨 **關鍵提取要求（資料忠實度）**：
+1. **交通方式識別**（最高優先級）：
+   - 如果看到「鳴日號」「觀光列車」「火車」→ 記錄 transportation 為「火車」
+   - 如果看到「郵輪」「遊輪」→ 記錄 transportation 為「郵輪」
+   - 如果看到飛機、航班 → 記錄 transportation 為「飛機」
+   - ⚠️ 鳴日號是火車行程，絕對不是飛機！
+
+2. **飯店名稱**：
+   - 必須保留完整名稱，例如：「The GAYA Hotel 潮渡假酒店」
+   - 不要簡化或更改飯店名稱
+   - 每天的住宿飯店必須準確記錄在 accommodation 欄位
+
+3. **景點名稱**：
+   - 保持原始名稱，例如：「普悠瑪部落」「成功海光走讀」
+   - 不要替換為其他景點
+   - 必須提取每一天的詳細行程，包括時間點和活動描述
+
+4. **每日行程**：必須提取每一天的詳細行程，包括：
+   - 時間點（如果有顯示）
+   - 景點名稱（保持原始名稱，不要更改）
+   - 活動描述
+   - 餐食安排（早餐、午餐、晚餐）
+   - 住宿飯店（保持完整名稱，包含飯店級別）
+
 請提取：
 1. 行程標題（完整名稱）- title
 2. 副標題 - subtitle
@@ -291,9 +316,10 @@ async function analyzeWithVision(screenshotUrls: string[]): Promise<PuppeteerVis
 8. 費用包含項目 - includes
 9. 費用不包含項目 - excludes
 10. 住宿資訊 - hotels
+11. 交通方式 - transportation（火車/飛機/郵輪/巴士）
 
 JSON 格式範例（直接回傳這種格式）：
-{"title":"台東縱谷旅遊2日","subtitle":"描述","destination":"台灣,台東","duration":"2天1夜","price":"NT$14000","highlights":["亮點1","亮點2"],"dailyItinerary":[{"day":1,"title":"第一天","description":"描述","activities":["活動1"],"meals":"早/午/晚","accommodation":"飯店"},{"day":2,"title":"第二天","description":"描述","activities":["活動2"],"meals":"早/午","accommodation":""}],"includes":["包含1"],"excludes":["不包含1"],"hotels":[{"name":"飯店名","description":"描述","rating":"4星"}]}`;
+{"title":"鳴日號台東縱谷雲海漫遊3日","subtitle":"描述","destination":"台灣,台東","duration":"3天2夜","price":"NT$14000","transportation":"火車","highlights":["亮點1","亮點2"],"dailyItinerary":[{"day":1,"title":"第一天","description":"描述","activities":["普悠瑪部落","成功海光走讀"],"meals":"早/午/晚","accommodation":"The GAYA Hotel 潮渡假酒店"},{"day":2,"title":"第二天","description":"描述","activities":["如豐琢玉工坊"],"meals":"早/午/晚","accommodation":"花蓮潔西艾美渡假酒店"},{"day":3,"title":"第三天","description":"描述","activities":["返程"],"meals":"早/午","accommodation":""}],"includes":["包含1"],"excludes":["不包含1"],"hotels":[{"name":"The GAYA Hotel 潮渡假酒店","description":"描述","rating":"5星"},{"name":"花蓮潔西艾美渡假酒店","description":"描述","rating":"5星"}]}`;
 
   try {
     const response = await invokeLLM({

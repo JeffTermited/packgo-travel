@@ -28,6 +28,7 @@ import { NoticeAgent } from "./noticeAgent";
 import { HotelAgent } from "./hotelAgent";
 import { MealAgent } from "./mealAgent";
 import { FlightAgent } from "./flightAgent";
+import { TransportationAgent } from "./transportationAgent";
 import { generateLionTravelTitle } from "./lionTitleGenerator";
 import { getKeyInstructions } from "./skillLoader";
 import {
@@ -137,6 +138,7 @@ export class MasterAgent {
   private hotelAgent: HotelAgent;
   private mealAgent: MealAgent;
   private flightAgent: FlightAgent;
+  private transportationAgent: TransportationAgent;
 
   constructor() {
     // Load SKILL.md instructions
@@ -167,6 +169,7 @@ export class MasterAgent {
     this.hotelAgent = new HotelAgent();
     this.mealAgent = new MealAgent();
     this.flightAgent = new FlightAgent();
+    this.transportationAgent = new TransportationAgent();
     
     console.log('[MasterAgent] Initialized with optimized parallel execution');
   }
@@ -378,7 +381,7 @@ export class MasterAgent {
       this.monitor.startAgent('NoticeAgent');
       this.monitor.startAgent('HotelAgent');
       this.monitor.startAgent('MealAgent');
-      this.monitor.startAgent('FlightAgent');
+      this.monitor.startAgent('TransportationAgent');
       if (taskId) {
         // Skip image_generation phase - mark as complete immediately
         progressTracker.startPhase(taskId, 'image_generation');
@@ -392,7 +395,9 @@ export class MasterAgent {
       }
       
       // Execute Itinerary Extract + Polish sequentially first
+      // Phase 1 優化：傳遞原始資料快照給 ItineraryPolishAgent
       let itineraryData = "";
+      let tourType = 'GENERAL'; // 預設行程類型
       try {
         // Step 1: Extract raw itinerary from scraped data
         this.monitor.startAgent('ItineraryExtractAgent');
@@ -402,19 +407,35 @@ export class MasterAgent {
         
         if (extractResult.success && extractResult.data && extractResult.data.extractedItineraries.length > 0) {
           console.log(`[MasterAgent] ✓ ItineraryExtractAgent completed: ${extractResult.data.extractedItineraries.length} days, method: ${extractResult.data.extractionMethod}`);
+          console.log(`[MasterAgent] Tour Type: ${extractResult.data.tourType}, Transportation: ${extractResult.data.originalTransportation}`);
+          // 保存 tourType 供 TransportationAgent 使用
+          tourType = extractResult.data.tourType || 'GENERAL';
           this.monitor.completeAgent('ItineraryExtractAgent', extractResult);
           
           // Step 2: Polish the extracted itinerary
+          // Phase 1 優化：傳遞原始資料快照
           this.monitor.startAgent('ItineraryPolishAgent');
           
           const polishResult = await this.itineraryPolishAgent.execute(
             extractResult.data.extractedItineraries,
-            { country: rawData?.location?.destinationCountry, city: rawData?.location?.destinationCity }
+            { country: rawData?.location?.destinationCountry, city: rawData?.location?.destinationCity },
+            // Phase 1 新增：傳遞原始資料快照
+            {
+              tourType: extractResult.data.tourType,
+              originalTransportation: extractResult.data.originalTransportation,
+              originalHotels: extractResult.data.originalHotels,
+              originalAttractions: extractResult.data.originalAttractions,
+            }
           );
           
           if (polishResult.success && polishResult.data) {
             itineraryData = JSON.stringify(polishResult.data.polishedItineraries);
             console.log(`[MasterAgent] ✓ ItineraryPolishAgent completed: ${polishResult.data.polishedItineraries.length} days polished`);
+            // Phase 1 新增：輸出忠實度檢查結果
+            console.log(`[MasterAgent] Fidelity Check: Score=${polishResult.data.fidelityCheck.overallScore}, Transportation=${polishResult.data.fidelityCheck.transportationMatch}, Hotel=${polishResult.data.fidelityCheck.hotelMatch}`);
+            if (polishResult.data.fidelityCheck.issues.length > 0) {
+              console.warn(`[MasterAgent] Fidelity Issues: ${polishResult.data.fidelityCheck.issues.join(', ')}`);
+            }
             this.monitor.completeAgent('ItineraryPolishAgent', polishResult);
           } else {
             // Use extracted data without polish if polish fails
@@ -459,11 +480,11 @@ export class MasterAgent {
           this.retryConfig,
           'MealAgent'
         ),
-        // Flight Agent (now index 5)
+        // Transportation Agent (now index 5) - 根據行程類型選擇交通方式
         this.retryManager.executeWithRetry(
-          () => this.flightAgent.execute(rawData),
+          () => this.transportationAgent.execute(rawData, tourType),
           this.retryConfig,
-          'FlightAgent'
+          'TransportationAgent'
         )
       ]);
       
@@ -472,8 +493,8 @@ export class MasterAgent {
       let highlightImages: any[] = [];
       let featureImages: any[] = [];
       
-      // Process Detail Agents results (Cost, Notice, Hotel, Meal, Flight)
-      const detailAgentNames = ['CostAgent', 'NoticeAgent', 'HotelAgent', 'MealAgent', 'FlightAgent'];
+      // Process Detail Agents results (Cost, Notice, Hotel, Meal, Transportation)
+      const detailAgentNames = ['CostAgent', 'NoticeAgent', 'HotelAgent', 'MealAgent', 'TransportationAgent'];
       const detailResults = megaParallelResults.map((result, index) => {
         const agentName = detailAgentNames[index];
         
@@ -483,7 +504,7 @@ export class MasterAgent {
           'NoticeAgent': 'notice_agent',
           'HotelAgent': 'hotel_agent',
           'MealAgent': 'meal_agent',
-          'FlightAgent': 'flight_agent'
+          'TransportationAgent': 'flight_agent' // 保持 phase ID 不變以相容前端
         };
         
         if (result.status === 'fulfilled' && result.value.success && result.value.data) {
@@ -504,7 +525,7 @@ export class MasterAgent {
         }
       });
       
-      const [costData, noticeData, hotelData, mealData, flightData] = detailResults;
+      const [costData, noticeData, hotelData, mealData, transportationData] = detailResults;
       
       console.log("[MasterAgent] ✓ Phase 4 completed: PARALLEL (6 agents - no image generation)");
       
@@ -572,8 +593,11 @@ export class MasterAgent {
         // Meals
         meals: JSON.stringify(mealData?.meals || []),
         
-        // Flights
-        flights: JSON.stringify(flightData),
+        // Transportation (交通資訊 - 只有飛機行程才生成)
+        // 火車、巴士等行程的交通資訊已整合到每日行程中
+        flights: (transportationData?.type === 'FLIGHT' || !transportationData?.type) 
+          ? JSON.stringify(transportationData) 
+          : JSON.stringify({ type: transportationData?.type, typeName: transportationData?.typeName }),
         
         // Metadata
         originalityScore: analyzedContent.originalityScore,
