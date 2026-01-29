@@ -783,3 +783,28 @@
 - [ ] 發佈到生產環境
 - [ ] 在生產環境測試 AI 生成功能
 - [ ] 驗證進度顯示不再崩潰
+
+
+---
+
+## Phase 27: ItineraryAgent 重構（2026-01-29）
+
+### 27.1 創建 ItineraryExtractAgent
+- [ ] 創建 `server/agents/itineraryExtractAgent.ts`
+- [ ] 實作從原始網頁資料提取每日行程的邏輯
+- [ ] 支援多種網站格式（雄獅旅遊、易遊網等）
+
+### 27.2 創建 ItineraryPolishAgent
+- [ ] 創建 `server/agents/itineraryPolishAgent.ts`
+- [ ] 實作使用 LLM 美化行程措辭的邏輯
+- [ ] 保持原始資訊不變，只改善表達方式
+
+### 27.3 修改 MasterAgent
+- [ ] 整合新的 Agent 流程
+- [ ] 先執行 Extract，再執行 Polish
+- [ ] 更新進度追蹤
+
+### 27.4 測試與驗證
+- [ ] 測試新的行程生成流程
+- [ ] 確認每日行程正確生成
+- [ ] 保存檢查點

@@ -21,7 +21,8 @@ import { ContentAnalyzerAgent } from "./contentAnalyzerAgent";
 import { ImagePromptAgent } from "./imagePromptAgent";
 import { ImageGenerationAgent } from "./imageGenerationAgent";
 import { ColorThemeAgent } from "./colorThemeAgent";
-import { ItineraryAgent } from "./itineraryAgent";
+import { ItineraryExtractAgent } from "./itineraryExtractAgent";
+import { ItineraryPolishAgent } from "./itineraryPolishAgent";
 import { CostAgent } from "./costAgent";
 import { NoticeAgent } from "./noticeAgent";
 import { HotelAgent } from "./hotelAgent";
@@ -129,7 +130,8 @@ export class MasterAgent {
   private imagePromptAgent: ImagePromptAgent;
   private imageGenerationAgent: ImageGenerationAgent;
   private colorThemeAgent: ColorThemeAgent;
-  private itineraryAgent: ItineraryAgent;
+  private itineraryExtractAgent: ItineraryExtractAgent;
+  private itineraryPolishAgent: ItineraryPolishAgent;
   private costAgent: CostAgent;
   private noticeAgent: NoticeAgent;
   private hotelAgent: HotelAgent;
@@ -158,7 +160,8 @@ export class MasterAgent {
     this.imagePromptAgent = new ImagePromptAgent();
     this.imageGenerationAgent = new ImageGenerationAgent();
     this.colorThemeAgent = new ColorThemeAgent();
-    this.itineraryAgent = new ItineraryAgent();
+    this.itineraryExtractAgent = new ItineraryExtractAgent();
+    this.itineraryPolishAgent = new ItineraryPolishAgent();
     this.costAgent = new CostAgent();
     this.noticeAgent = new NoticeAgent();
     this.hotelAgent = new HotelAgent();
@@ -370,8 +373,7 @@ export class MasterAgent {
       // Skip image generation - editors will manage images
       console.log("[MasterAgent] Skipping ImageGenerationAgent - editors will manage images");
       
-      // Start all agents (except ImageGenerationAgent)
-      this.monitor.startAgent('ItineraryAgent');
+      // Start all agents (except ImageGenerationAgent and ItineraryAgent which runs separately)
       this.monitor.startAgent('CostAgent');
       this.monitor.startAgent('NoticeAgent');
       this.monitor.startAgent('HotelAgent');
@@ -389,13 +391,50 @@ export class MasterAgent {
         progressTracker.startPhase(taskId, 'flight_agent');
       }
       
+      // Execute Itinerary Extract + Polish sequentially first
+      let itineraryData = "";
+      try {
+        // Step 1: Extract raw itinerary from scraped data
+        this.monitor.startAgent('ItineraryExtractAgent');
+        if (taskId) progressTracker.startPhase(taskId, 'itinerary');
+        
+        const extractResult = await this.itineraryExtractAgent.execute(rawData);
+        
+        if (extractResult.success && extractResult.data && extractResult.data.extractedItineraries.length > 0) {
+          console.log(`[MasterAgent] ✓ ItineraryExtractAgent completed: ${extractResult.data.extractedItineraries.length} days, method: ${extractResult.data.extractionMethod}`);
+          this.monitor.completeAgent('ItineraryExtractAgent', extractResult);
+          
+          // Step 2: Polish the extracted itinerary
+          this.monitor.startAgent('ItineraryPolishAgent');
+          
+          const polishResult = await this.itineraryPolishAgent.execute(
+            extractResult.data.extractedItineraries,
+            { country: rawData?.location?.destinationCountry, city: rawData?.location?.destinationCity }
+          );
+          
+          if (polishResult.success && polishResult.data) {
+            itineraryData = JSON.stringify(polishResult.data.polishedItineraries);
+            console.log(`[MasterAgent] ✓ ItineraryPolishAgent completed: ${polishResult.data.polishedItineraries.length} days polished`);
+            this.monitor.completeAgent('ItineraryPolishAgent', polishResult);
+          } else {
+            // Use extracted data without polish if polish fails
+            itineraryData = JSON.stringify(extractResult.data.extractedItineraries);
+            console.warn("[MasterAgent] ⚠ ItineraryPolishAgent failed, using extracted data");
+          }
+        } else {
+          console.warn("[MasterAgent] ⚠ ItineraryExtractAgent returned no data");
+          itineraryData = JSON.stringify([]);
+        }
+        
+        if (taskId) progressTracker.completePhase(taskId, 'itinerary');
+      } catch (error) {
+        console.error("[MasterAgent] Itinerary generation error:", error);
+        if (taskId) progressTracker.failPhase(taskId, 'itinerary', error instanceof Error ? error.message : 'Unknown error');
+        itineraryData = JSON.stringify([]);
+      }
+      
+      // Execute remaining Detail Agents in parallel
       const megaParallelResults = await Promise.allSettled([
-        // Itinerary Generation (now index 0)
-        this.retryManager.executeWithRetry(
-          () => this.itineraryAgent.execute(rawData),
-          this.retryConfig,
-          'ItineraryAgent'
-        ),
         // Cost Agent (now index 1)
         this.retryManager.executeWithRetry(
           () => this.costAgent.execute(rawData),
@@ -433,29 +472,9 @@ export class MasterAgent {
       let highlightImages: any[] = [];
       let featureImages: any[] = [];
       
-      // Process Itinerary result (now index 0)
-      let itineraryData = "";
-      const itineraryResult = megaParallelResults[0];
-      if (itineraryResult.status === 'fulfilled' && itineraryResult.value.success && itineraryResult.value.data) {
-        itineraryData = JSON.stringify(itineraryResult.value.data.dailyItineraries);
-        this.monitor.completeAgent('ItineraryAgent', itineraryResult.value);
-        if (taskId) progressTracker.completePhase(taskId, 'itinerary');
-        console.log("[MasterAgent] ✓ ItineraryAgent completed");
-      } else {
-        const error = itineraryResult.status === 'rejected' 
-          ? itineraryResult.reason 
-          : new Error(itineraryResult.value?.error || "Itinerary generation failed");
-        this.monitor.failAgent('ItineraryAgent', error);
-        if (taskId) progressTracker.failPhase(taskId, 'itinerary', error.message);
-        console.warn("[MasterAgent] ⚠ ItineraryAgent failed, using empty data");
-        itineraryData = JSON.stringify([]);
-      }
-      
       // Process Detail Agents results (Cost, Notice, Hotel, Meal, Flight)
-      // Note: After removing ImageGenerationAgent, indices shifted:
-      // Index 0 = Itinerary, Index 1-5 = Detail Agents
       const detailAgentNames = ['CostAgent', 'NoticeAgent', 'HotelAgent', 'MealAgent', 'FlightAgent'];
-      const detailResults = megaParallelResults.slice(1).map((result, index) => {
+      const detailResults = megaParallelResults.map((result, index) => {
         const agentName = detailAgentNames[index];
         
         // Map agent names to progress phase IDs
