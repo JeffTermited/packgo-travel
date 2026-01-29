@@ -87,6 +87,7 @@ export class ItineraryAgent {
       }
       
       const dailyItineraries: DailyItinerary[] = [];
+      let failedDays = 0;
       
       // Generate itinerary for each day
       for (let i = 0; i < itineraryData.length; i++) {
@@ -98,10 +99,28 @@ export class ItineraryAgent {
         
         if (itinerary) {
           dailyItineraries.push(itinerary);
+        } else {
+          failedDays++;
         }
       }
       
-      console.log(`[ItineraryAgent] Generated ${dailyItineraries.length} daily itineraries`);
+      console.log(`[ItineraryAgent] Generated ${dailyItineraries.length} daily itineraries (${failedDays} failed)`);
+      
+      // If most days failed, try generating from scratch as fallback
+      if (dailyItineraries.length === 0 || failedDays > dailyItineraries.length) {
+        console.log("[ItineraryAgent] Most days failed, trying fallback generation from scratch...");
+        const fallbackItineraries = await this.generateItineraryFromScratch(rawData, days);
+        
+        if (fallbackItineraries.length > 0) {
+          console.log(`[ItineraryAgent] Fallback generated ${fallbackItineraries.length} daily itineraries`);
+          return {
+            success: true,
+            data: {
+              dailyItineraries: fallbackItineraries,
+            },
+          };
+        }
+      }
       
       return {
         success: true,
@@ -160,7 +179,8 @@ ${JSON.stringify(dayData, null, 2)}
 2. 每個活動描述不超過 80 字（寬容檢查：±30% 誤差，即不超過 104 字）
 3. 時間安排要合理（考慮交通、用餐、休息）
 4. 景點串聯要有邏輯（按照地理位置安排順序）
-5. 如果資料不足，請回傳 null`;
+5. 即使資料不完整，也請根據目的地和行程主題，發揮創意生成合理的行程安排
+6. 絕對不要回傳 null，必須生成有效的 JSON`;
 
       const response = await invokeLLM({
         messages: [
@@ -175,8 +195,9 @@ ${JSON.stringify(dayData, null, 2)}
       let contentStr = typeof content === 'string' ? content : JSON.stringify(content);
       
       if (!contentStr || contentStr.trim().toLowerCase() === "null") {
-        console.warn(`[ItineraryAgent] Insufficient data for Day ${dayNumber}, returning null`);
-        return null;
+        console.warn(`[ItineraryAgent] LLM returned null for Day ${dayNumber}, will use fallback generation`);
+        // Don't return null here - throw error to trigger fallback
+        throw new Error(`Insufficient data for Day ${dayNumber}`);
       }
       
       // Remove markdown code blocks if present
