@@ -184,9 +184,51 @@ ${JSON.stringify(dayData, null, 2)}
 
       const response = await invokeLLM({
         messages: [
-          { role: "system", content: ITINERARY_SKILL },
+          { role: "system", content: ITINERARY_SKILL + "\n\n重要：你必須只返回有效的 JSON 格式，不要包含任何解釋性文字。" },
           { role: "user", content: prompt },
         ],
+        response_format: {
+          type: "json_schema",
+          json_schema: {
+            name: "daily_itinerary",
+            strict: true,
+            schema: {
+              type: "object",
+              properties: {
+                day: { type: "integer", description: "Day number" },
+                title: { type: "string", description: "Day title" },
+                activities: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      time: { type: "string" },
+                      title: { type: "string" },
+                      description: { type: "string" },
+                      transportation: { type: "string" },
+                      location: { type: "string" }
+                    },
+                    required: ["time", "title", "description", "transportation", "location"],
+                    additionalProperties: false
+                  }
+                },
+                meals: {
+                  type: "object",
+                  properties: {
+                    breakfast: { type: "string" },
+                    lunch: { type: "string" },
+                    dinner: { type: "string" }
+                  },
+                  required: ["breakfast", "lunch", "dinner"],
+                  additionalProperties: false
+                },
+                accommodation: { type: "string" }
+              },
+              required: ["day", "title", "activities", "meals", "accommodation"],
+              additionalProperties: false
+            }
+          }
+        }
       });
       
       const content = response.choices[0].message.content;
