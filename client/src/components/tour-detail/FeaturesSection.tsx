@@ -1,9 +1,12 @@
 /**
  * FeaturesSection Component (Sipincollection Style)
- * 特色區塊：三圖並排 + 金色標籤
+ * 特色區塊：大圖展示 + 支援 Inline Editing
  */
 
 import React from "react";
+import { EditableText } from "./EditableText";
+import { EditableImage } from "./EditableImage";
+import { useEditMode } from "@/contexts/EditModeContext";
 
 export interface Feature {
   label: string;
@@ -20,61 +23,135 @@ export interface FeaturesSectionProps {
     secondary: string;
     accent: string;
   };
+  tourId?: number;
+  onUpdate?: (field: string, value: string) => Promise<void>;
+  onImageUpload?: (file: File, path: string) => Promise<string>;
 }
 
 export const FeaturesSection: React.FC<FeaturesSectionProps> = ({
   features,
   colorTheme,
+  tourId,
+  onUpdate,
+  onImageUpload,
 }) => {
+  const { isEditMode } = useEditMode();
+  
   // 只顯示前 3 個特色
   const displayFeatures = features.slice(0, 3);
 
+  if (displayFeatures.length === 0 && !isEditMode) {
+    return null;
+  }
+
   return (
-    <section id="features" className="w-full py-12 lg:py-16 bg-white">
+    <section id="features" className="w-full py-12 lg:py-20 bg-gray-50">
       <div className="container mx-auto px-4">
         {/* 標題 */}
-        <h2
-          className="text-3xl lg:text-4xl font-serif font-bold text-center mb-8 lg:mb-12"
-          style={{ color: colorTheme.primary }}
-        >
-          行程特色
-        </h2>
+        <div className="text-center mb-10 lg:mb-14">
+          <h2
+            className="text-3xl lg:text-4xl font-serif font-bold mb-3"
+            style={{ color: colorTheme.primary }}
+          >
+            行程特色
+          </h2>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            精心安排的獨特體驗，讓您的旅程與眾不同
+          </p>
+        </div>
 
-        {/* 三圖並排 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+        {/* 特色卡片 - Bento Grid 風格 */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {displayFeatures.map((feature, index) => (
-            <div key={index} className="flex flex-col gap-4">
-              {/* 圖片 (4:3 Aspect Ratio) */}
-              <div className="relative w-full aspect-[4/3] overflow-hidden rounded-lg shadow-md">
-                <img
-                  src={feature.image}
-                  alt={feature.imageAlt}
-                  className="w-full h-full object-cover"
-                />
+            <div
+              key={index}
+              className={`
+                relative group overflow-hidden rounded-2xl shadow-lg
+                ${index === 0 ? 'lg:col-span-2 lg:row-span-2' : ''}
+              `}
+            >
+              {/* 圖片 */}
+              <div className={`
+                relative w-full overflow-hidden
+                ${index === 0 ? 'aspect-[16/9] lg:aspect-[4/3]' : 'aspect-[4/3]'}
+              `}>
+                {isEditMode && onImageUpload ? (
+                  <EditableImage
+                    src={feature.image}
+                    alt={feature.imageAlt}
+                    onUpload={async (file) => {
+                      const url = await onImageUpload(file, `feature-${index}`);
+                      // 更新 attractions 陣列
+                      const updatedFeatures = [...features];
+                      updatedFeatures[index].image = url;
+                      await onUpdate?.('attractions', JSON.stringify(updatedFeatures));
+                      return url;
+                    }}
+                    isEditable={isEditMode}
+                    aspectRatio={index === 0 ? "16/9" : "4/3"}
+                    className="w-full h-full"
+                  />
+                ) : (
+                  <img
+                    src={feature.image}
+                    alt={feature.imageAlt}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                )}
+                
+                {/* Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+              </div>
 
-                {/* 金色標籤 */}
+              {/* 內容覆蓋層 */}
+              <div className="absolute inset-0 flex flex-col justify-end p-6">
+                {/* 標籤 */}
                 <div
-                  className="absolute top-4 left-4 px-4 py-2 rounded text-white font-bold text-sm"
-                  style={{
-                    backgroundColor: colorTheme.accent,
-                  }}
+                  className="inline-flex self-start px-3 py-1 rounded-full text-sm font-bold text-white mb-3"
+                  style={{ backgroundColor: colorTheme.accent }}
                 >
                   {feature.label}
                 </div>
+
+                {/* 標題 */}
+                {isEditMode && onUpdate ? (
+                  <EditableText
+                    value={feature.title}
+                    onSave={async (newValue) => {
+                      const updatedFeatures = [...features];
+                      updatedFeatures[index].title = newValue;
+                      await onUpdate('attractions', JSON.stringify(updatedFeatures));
+                    }}
+                    isEditable={isEditMode}
+                    className={`font-bold text-white mb-2 ${index === 0 ? 'text-2xl lg:text-3xl' : 'text-xl'}`}
+                    as="h3"
+                  />
+                ) : (
+                  <h3 className={`font-bold text-white mb-2 ${index === 0 ? 'text-2xl lg:text-3xl' : 'text-xl'}`}>
+                    {feature.title}
+                  </h3>
+                )}
+
+                {/* 描述 */}
+                {isEditMode && onUpdate ? (
+                  <EditableText
+                    value={feature.description}
+                    onSave={async (newValue) => {
+                      const updatedFeatures = [...features];
+                      updatedFeatures[index].description = newValue;
+                      await onUpdate('attractions', JSON.stringify(updatedFeatures));
+                    }}
+                    isEditable={isEditMode}
+                    multiline
+                    className={`text-white/90 ${index === 0 ? 'text-base lg:text-lg line-clamp-4' : 'text-sm line-clamp-3'}`}
+                    as="p"
+                  />
+                ) : (
+                  <p className={`text-white/90 ${index === 0 ? 'text-base lg:text-lg line-clamp-4' : 'text-sm line-clamp-3'}`}>
+                    {feature.description}
+                  </p>
+                )}
               </div>
-
-              {/* 標題 */}
-              <h3
-                className="text-xl lg:text-2xl font-bold"
-                style={{ color: colorTheme.primary }}
-              >
-                {feature.title}
-              </h3>
-
-              {/* 描述 */}
-              <p className="text-sm lg:text-base text-gray-700 line-clamp-3">
-                {feature.description}
-              </p>
             </div>
           ))}
         </div>

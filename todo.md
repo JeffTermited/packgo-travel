@@ -1349,3 +1349,65 @@
 - [x] 天數：5 天
 - [x] 價格：NT$39,900
 - [x] 狀態：上架中
+
+
+---
+
+## Phase 22: 詳情頁面 Inline Editing 系統（2026-01-30）
+
+### 22.1 分析現有詳情頁面結構
+- [ ] 讀取 TourDetailSipin.tsx 了解現有結構
+- [ ] 識別所有可編輯的文字區塊
+- [ ] 設計 Inline Editing 的 UI/UX 流程
+
+### 22.2 實作 Inline Editing 組件
+- [ ] 創建 EditableText 組件（點擊即可編輯）
+- [ ] 創建 EditableTextarea 組件（多行文字編輯）
+- [ ] 實作自動儲存或「儲存」按鈕機制
+- [ ] 實作管理員權限檢查（只有管理員可編輯）
+
+### 22.3 優化詳情頁面設計
+- [ ] 簡化文字內容，讓大家更容易讀懂
+- [ ] 增加更多照片展示區域
+- [ ] 優化每日行程的照片展示
+- [ ] 優化飯店和餐飲區塊的照片展示
+
+### 22.4 實作時間和價格編輯
+- [ ] 創建獨立的時間/價格編輯對話框
+- [ ] 在頁面上顯示編輯按鈕（管理員可見）
+
+### 22.5 實作照片上傳功能
+- [ ] 支援 JPG 格式上傳
+- [ ] 整合 S3 儲存
+- [ ] 實作照片預覽和替換功能
+
+### 22.6 測試與驗證
+- [ ] 測試 Inline Editing 功能
+- [ ] 測試照片上傳功能
+- [ ] 測試自動儲存功能
+- [ ] 驗證管理員權限控制
+
+
+---
+
+## Phase 21: 架構簡化 - 移除 LionTravelParser（2026-01-30）
+- [x] 刪除 LionTravelParser 檔案
+- [x] 更新 WebScraperAgent 移除 LionTravelParser 引用
+- [x] 更新診斷工具移除 LionTravelParser 步驟
+- [x] 測試驗證系統正常運作（Puppeteer Vision 模式成功）
+
+---
+
+## Phase 22: 詳情頁面 Inline Editing 系統（2026-01-30）
+- [x] 創建 EditableText 組件
+- [x] 創建 EditableImage 組件
+- [x] 創建 EditModeContext
+- [x] 創建 EditModeToolbar
+- [x] 創建 PriceEditDialog
+- [x] 更新 HeroSection 支援編輯
+- [x] 更新 DailyItinerarySection 支援編輯
+- [x] 更新 FeaturesSection 支援編輯
+- [x] 實作圖片上傳 API
+- [x] 添加 /sipin/:id 路由
+- [ ] 測試 Inline Editing 實際編輯流程
+- [ ] 測試圖片上傳功能

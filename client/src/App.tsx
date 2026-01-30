@@ -52,6 +52,7 @@ function Router() {
       <Route path={"/tours/:id"} component={TourDetailMinimal} />
       <Route path={"/tours-v2/:id"} component={TourDetailV2} />
       <Route path={"/tours-sipin-test/:id"} component={TourDetailSipinTest} />
+      <Route path={"/sipin/:id"} component={TourDetailSipin} />
       <Route path={"/tours-sipin/:id"} component={TourDetailSipin} />
       <Route path={"/tours-minimal/:id"} component={TourDetailMinimal} />
       <Route path={"/book/:id"} component={BookTour} />

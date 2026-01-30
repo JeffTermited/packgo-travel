@@ -1,9 +1,12 @@
 /**
  * HeroSection Component (Sipincollection Style)
- * 第一屏：左側直式標題 + 右側大圖
+ * 第一屏：大圖背景 + 標題疊加 - 支援 Inline Editing
  */
 
 import React from "react";
+import { EditableText } from "./EditableText";
+import { EditableImage } from "./EditableImage";
+import { useEditMode } from "@/contexts/EditModeContext";
 
 export interface HeroSectionProps {
   title: string;
@@ -15,6 +18,9 @@ export interface HeroSectionProps {
     secondary: string;
     accent: string;
   };
+  tourId?: number;
+  onUpdate?: (field: string, value: string) => Promise<void>;
+  onImageUpload?: (file: File, path: string) => Promise<string>;
 }
 
 export const HeroSection: React.FC<HeroSectionProps> = ({
@@ -23,62 +29,97 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   keywords,
   heroImage,
   colorTheme,
+  tourId,
+  onUpdate,
+  onImageUpload,
 }) => {
+  const { isEditMode } = useEditMode();
+
   return (
-    <section className="w-full py-6 lg:py-10 bg-gray-50">
-      <div className="container mx-auto px-4 flex flex-col lg:flex-row items-center gap-6 lg:gap-8">
-        {/* 左側：直式標題 + 副標題 + 關鍵詞 */}
-        <div className="w-full lg:w-1/3 flex flex-col lg:flex-row items-start gap-6 lg:gap-8">
-          {/* 直式標題（桌面版直排，手機版橫排） */}
-          <h1
-            className="vertical-title text-xl lg:text-2xl xl:text-3xl font-serif font-bold max-w-[180px] lg:max-w-[250px]"
-            style={{
-              color: colorTheme.primary,
-              lineHeight: '1.6',
-              letterSpacing: '0.12em',
+    <section className="relative w-full">
+      {/* Hero Image - Full Width */}
+      <div className="relative w-full aspect-[21/9] lg:aspect-[21/7] overflow-hidden">
+        {isEditMode && onImageUpload ? (
+          <EditableImage
+            src={heroImage}
+            alt={title}
+            onUpload={async (file) => {
+              const url = await onImageUpload(file, "hero");
+              await onUpdate?.("heroImage", url);
+              return url;
             }}
-          >
-            {title.length > 30 ? title.slice(0, 30) + '...' : title}
-          </h1>
-
-          {/* 副標題 + 關鍵詞 */}
-          <div className="flex flex-col gap-4">
-            {subtitle && (
-              <h2
-                className="text-lg lg:text-xl font-bold"
-                style={{ color: colorTheme.primary }}
-              >
-                {subtitle}
-              </h2>
-            )}
-
+            isEditable={isEditMode}
+            aspectRatio="16/9"
+            className="w-full h-full"
+          />
+        ) : (
+          <img
+            src={heroImage}
+            alt={title}
+            className="w-full h-full object-cover"
+          />
+        )}
+        
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+        
+        {/* Content Overlay */}
+        <div className="absolute inset-0 flex flex-col justify-end p-6 lg:p-12">
+          <div className="container mx-auto">
+            {/* Keywords */}
             {keywords && keywords.length > 0 && (
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 mb-4">
                 {keywords.map((keyword, index) => (
                   <span
                     key={index}
-                    className="px-3 py-1 text-sm font-medium rounded"
-                    style={{
-                      backgroundColor: colorTheme.accent + "20",
-                      color: colorTheme.primary,
-                    }}
+                    className="px-3 py-1 text-sm font-medium rounded-full bg-white/20 text-white backdrop-blur-sm"
                   >
                     {keyword}
                   </span>
                 ))}
               </div>
             )}
-          </div>
-        </div>
-
-        {/* 右側：大圖 (16:9 Aspect Ratio) */}
-        <div className="w-full lg:w-2/3">
-          <div className="relative w-full" style={{ paddingBottom: '56.25%' /* 16:9 aspect ratio */ }}>
-            <img
-              src={heroImage}
-              alt={title}
-              className="absolute top-0 left-0 w-full h-full object-cover rounded-lg shadow-lg"
-            />
+            
+            {/* Title */}
+            <div className="max-w-4xl">
+              {isEditMode && onUpdate ? (
+                <EditableText
+                  value={title}
+                  onSave={async (newValue) => {
+                    await onUpdate("title", newValue);
+                  }}
+                  isEditable={isEditMode}
+                  className="text-3xl lg:text-5xl xl:text-6xl font-serif font-bold text-white drop-shadow-lg"
+                  as="h1"
+                />
+              ) : (
+                <h1 className="text-3xl lg:text-5xl xl:text-6xl font-serif font-bold text-white drop-shadow-lg">
+                  {title}
+                </h1>
+              )}
+              
+              {/* Subtitle */}
+              {(subtitle || isEditMode) && (
+                <div className="mt-4">
+                  {isEditMode && onUpdate ? (
+                    <EditableText
+                      value={subtitle || ""}
+                      onSave={async (newValue) => {
+                        await onUpdate("heroSubtitle", newValue);
+                      }}
+                      isEditable={isEditMode}
+                      placeholder="輸入副標題..."
+                      className="text-lg lg:text-xl text-white/90"
+                      as="p"
+                    />
+                  ) : subtitle ? (
+                    <p className="text-lg lg:text-xl text-white/90">
+                      {subtitle}
+                    </p>
+                  ) : null}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

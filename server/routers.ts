@@ -423,27 +423,55 @@ Important guidelines:
         return tour;
       }),
 
-    // Update tour (admin only)
+    // Update tour (admin only) - Supports inline editing
     update: protectedProcedure
       .input(
         z.object({
           id: z.number(),
+          // Basic Information
           title: z.string().min(1).optional(),
           destination: z.string().min(1).optional(),
           description: z.string().min(1).optional(),
           duration: z.number().min(1).optional(),
           price: z.number().min(0).optional(),
+          
+          // Images
           imageUrl: z.string().optional(),
+          heroImage: z.string().optional(),
+          heroSubtitle: z.string().optional(),
+          
+          // Location
+          destinationCountry: z.string().optional(),
+          destinationCity: z.string().optional(),
+          
+          // Category & Status
           category: z.enum(["group", "custom", "package", "cruise", "theme"]).optional(),
           status: z.enum(["active", "inactive", "soldout"]).optional(),
           featured: z.number().min(0).max(1).optional(),
+          
+          // Dates
           startDate: z.date().optional(),
           endDate: z.date().optional(),
+          
+          // Capacity
           maxParticipants: z.number().optional(),
           currentParticipants: z.number().optional(),
+          
+          // Content (JSON strings)
           highlights: z.string().optional(),
           includes: z.string().optional(),
           excludes: z.string().optional(),
+          keyFeatures: z.string().optional(),
+          attractions: z.string().optional(),
+          hotels: z.string().optional(),
+          meals: z.string().optional(),
+          flights: z.string().optional(),
+          itineraryDetailed: z.string().optional(),
+          costExplanation: z.string().optional(),
+          noticeDetailed: z.string().optional(),
+          poeticContent: z.string().optional(),
+          colorTheme: z.string().optional(),
+          galleryImages: z.string().optional(),
         })
       )
       .mutation(async ({ ctx, input }) => {
@@ -458,6 +486,42 @@ Important guidelines:
         const { id, ...updates } = input;
         const tour = await db.updateTour(id, updates);
 
+        return tour;
+      }),
+
+    // Partial update for inline editing (admin only)
+    // Allows updating a single field at a time
+    patchField: adminProcedure
+      .input(
+        z.object({
+          id: z.number(),
+          field: z.string(),
+          value: z.union([z.string(), z.number(), z.null()]),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const { id, field, value } = input;
+        
+        // Whitelist of allowed fields for inline editing
+        const allowedFields = [
+          'title', 'description', 'heroSubtitle', 'heroImage',
+          'destinationCountry', 'destinationCity', 'price', 'duration',
+          'keyFeatures', 'attractions', 'hotels', 'meals', 'flights',
+          'itineraryDetailed', 'costExplanation', 'noticeDetailed',
+          'poeticContent', 'colorTheme', 'galleryImages', 'imageUrl',
+          'highlights', 'includes', 'excludes', 'startDate', 'endDate'
+        ];
+        
+        if (!allowedFields.includes(field)) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `Field '${field}' is not allowed for inline editing`,
+          });
+        }
+        
+        const updates: Record<string, any> = { [field]: value };
+        const tour = await db.updateTour(id, updates);
+        
         return tour;
       }),
 
