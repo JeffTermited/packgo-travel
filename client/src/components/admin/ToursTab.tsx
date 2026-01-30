@@ -388,10 +388,12 @@ export default function ToursTab() {
         includes: tour.includes || "",
         excludes: tour.excludes || "",
         itinerary: (tour as any).itinerary || [],
+        itineraryDetailed: (tour as any).itineraryDetailed || "",  // 加入 itineraryDetailed 欄位
         hotels: tour.hotels || [],
         flights: tour.flights || null,
         images: (tour as any).images || [],
         costExplanation: tour.costExplanation || null,
+        noticeDetailed: (tour as any).noticeDetailed || "",  // 加入 noticeDetailed 欄位
         notes: tour.notes || null,
         colorTheme: tour.colorTheme || null,
         sourceUrl: tour.sourceUrl || "",

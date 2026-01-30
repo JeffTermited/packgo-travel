@@ -1481,3 +1481,20 @@
 - [x] 更新前端 AI 生成對話框支援 PDF 上傳（URL/PDF 模式切換）
 - [x] 整合 PDF 解析到行程生成流程（MasterAgent、Worker）
 - [ ] 測試完整 PDF 上傳生成流程（待發布後測試）
+
+
+---
+
+## Phase 27: PDF 解析每日行程修復（2026-01-30）
+
+### 27.1 問題分析
+- [x] 確認 PDF 解析成功提取 itineraryDetailed 資料（1740 字元）
+- [x] 確認資料庫中 itineraryDetailed 欄位有正確儲存
+- [x] 發現前端 handleEdit 函數沒有傳遞 itineraryDetailed 給 TourEditDialog
+
+### 27.2 修復前端資料傳遞
+- [x] 修改 ToursTab.tsx 的 handleEdit 函數，加入 itineraryDetailed 欄位
+- [x] 修改 ToursTab.tsx 的 handleEdit 函數，加入 noticeDetailed 欄位
+- [ ] 部署修復到生產環境
+- [ ] 驗證每日行程在編輯對話框中正確顯示
+
