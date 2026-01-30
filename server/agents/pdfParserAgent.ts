@@ -473,24 +473,79 @@ export class PdfParserAgent {
       const result = await parsePdf(pdfUrl);
       
       // 將 PdfParseResult 轉換為 WebScraperAgent 相容的格式
+      // 確保資料結構與 WebScraperAgent 完全一致
+      const destinationCity = result.destinations?.join(', ') || '';
+      const destinationCountry = result.country || '台灣';
+      const days = result.duration || 1;
+      const nights = days > 1 ? days - 1 : 0;
+      
       const webScraperCompatibleData = {
-        title: result.title,
-        subtitle: result.subtitle,
-        productCode: result.productCode,
-        departureDate: result.departureDate,
-        duration: result.duration,
-        price: result.price,
-        priceNote: result.priceNote,
-        destinations: result.destinations,
-        country: result.country,
-        highlights: result.highlights,
-        dailyItinerary: result.dailyItinerary,
-        costDetails: result.costDetails,
-        notices: result.notices,
-        hotelInfo: result.hotelInfo,
-        images: result.images,
+        // basicInfo - 與 WebScraperAgent 相同的結構
+        basicInfo: {
+          title: result.title || '未命名行程',
+          subtitle: result.subtitle || '',
+          description: result.subtitle || '',
+          productCode: result.productCode || '',
+        },
+        // location - 與 WebScraperAgent 相同的結構
+        location: {
+          destinationCountry,
+          destinationCity,
+        },
+        // duration - 與 WebScraperAgent 相同的結構
+        duration: {
+          days,
+          nights,
+        },
+        // pricing - 與 WebScraperAgent 相同的結構
+        pricing: {
+          price: result.price || 0,
+          basePrice: result.price || 0,
+          currency: 'TWD',
+          priceNote: result.priceNote || '',
+        },
+        // highlights - 行程亮點
+        highlights: result.highlights || [],
+        // dailyItinerary - 每日行程（轉換為 WebScraperAgent 格式）
+        dailyItinerary: (result.dailyItinerary || []).map((day: any) => ({
+          day: day.day,
+          title: day.title || `第 ${day.day} 天`,
+          activities: (day.activities || []).map((act: any) => ({
+            time: act.time || '',
+            title: act.title || '',
+            description: act.description || '',
+            location: act.location || '',
+            transportation: act.transportation || '',
+          })),
+          meals: {
+            breakfast: day.meals?.breakfast || '',
+            lunch: day.meals?.lunch || '',
+            dinner: day.meals?.dinner || '',
+          },
+          accommodation: day.hotel || '',
+        })),
+        // includes/excludes - 費用包含/不包含
+        includes: result.costDetails?.included || [],
+        excludes: result.costDetails?.excluded || [],
+        // accommodation - 住宿資訊
+        accommodation: (result.hotelInfo || []).map((hotel: any) => hotel.name),
+        // hotels - 飯店詳細資訊
+        hotels: (result.hotelInfo || []).map((hotel: any) => ({
+          name: hotel.name || '',
+          description: hotel.description || '',
+          imageUrl: hotel.imageUrl || '',
+        })),
+        // meals - 餐食資訊
+        meals: [],
+        // flights - 航班資訊
+        flights: [],
+        // notices - 注意事項
+        notices: result.notices?.beforeTrip || [],
+        // images - 提取的圖片
+        images: result.images || [],
+        // 原始資料
         rawContent: result.rawContent,
-        // 添加 WebScraperAgent 需要的額外欄位
+        // PDF 來源標記
         sourceUrl: pdfUrl,
         isPdfSource: true,
       };
