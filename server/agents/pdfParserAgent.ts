@@ -151,33 +151,39 @@ async function analyzePageWithVision(
 ): Promise<any> {
   const prompt = `你是一位專業的旅遊行程分析師。請仔細分析這張旅遊行程 PDF 的第 ${pageNumber}/${totalPages} 頁圖片，並提取所有相關資訊。
 
+## 特別注意（雄獅旅遊 PDF 格式）：
+- 價格通常在頁面右上角或標題下方，格式如：NT$ 18,000、$24,000 等
+- 每日行程通常以「DAY 1」、「第一天」、「第1天」開頭
+- 行程中的景點、餐廳、飯店通常有粗體標題
+- 注意提取筐頭後的文字內容，這些是行程亮點
+
 請以 JSON 格式回傳以下資訊（只回傳在這一頁中找到的資訊，沒有的欄位請省略）：
 
 {
   "pageType": "cover|features|itinerary|hotel|cost|notice|other",
-  "title": "行程標題（如果這頁有）",
+  "title": "行程標題（通常在封面或頁首，如：縱谷旬味山嵐號）",
   "subtitle": "行程副標題",
   "productCode": "產品代碼",
   "departureDate": "出發日期",
-  "duration": 天數（數字）,
-  "price": 價格（數字，不含逗號）,
+  "duration": 天數（數字，如 2天1夜 → 2）,
+  "price": 價格（數字，如 NT$18,000 → 18000，注意看清楚每個數字）,
   "priceNote": "價格備註（如：每人費用、不含機票等）",
   "destinations": ["目的地1", "目的地2"],
-  "country": "國家",
+  "country": "國家（如：台灣、日本、馬來西亞）",
   "highlights": ["行程亮點1", "行程亮點2"],
   "dailyItinerary": [{
     "day": 1,
-    "title": "第一天標題",
-    "description": "行程描述",
+    "title": "第一天標題（如：台北→台東）",
+    "description": "當天行程總覽",
     "activities": [{
       "time": "08:00",
-      "title": "活動名稱",
-      "description": "活動描述",
+      "title": "活動/景點名稱",
+      "description": "詳細描述（越詳細越好）",
       "location": "地點",
       "transportation": "交通方式"
     }],
-    "meals": { "breakfast": "早餐", "lunch": "午餐", "dinner": "晚餐" },
-    "hotel": "住宿飯店"
+    "meals": { "breakfast": "早餐內容", "lunch": "午餐內容", "dinner": "晚餐內容" },
+    "hotel": "住宿飯店名稱"
   }],
   "costIncluded": ["費用包含項目1", "費用包含項目2"],
   "costExcluded": ["費用不包含項目1"],
@@ -191,12 +197,15 @@ async function analyzePageWithVision(
   ]
 }
 
-重要：
+## 重要提取規則：
 1. 只回傳 JSON，不要有其他文字
-2. 價格請轉換為數字（例如 24,000 → 24000）
-3. 天數請轉換為數字（例如 2天1夜 → 2）
-4. 仔細閱讀每日行程的詳細內容，包括時間、地點、活動描述
-5. 注意提取圖片的描述，這些圖片將用於行程展示`;
+2. **價格提取**：仔細尋找 NT$、$、元 等價格標記，轉換為純數字（例如 NT$18,000 → 18000）
+3. **天數提取**：尋找「X天Y夜」、「X日」等格式，轉換為數字
+4. **每日行程**：這是最重要的部分！請仔細閱讀每一天的內容，包括：
+   - 每個景點/活動的名稱和描述
+   - 餐食安排（早、中、晚餐）
+   - 住宿飯店
+5. **圖片描述**：描述頁面中的圖片內容，這些將用於行程展示`;
 
   try {
     const response = await invokeLLM({
