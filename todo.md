@@ -1122,3 +1122,30 @@
 - [x] 伺服器重啟成功
 - [x] 生成遷移報告
 
+
+
+---
+
+## Phase 22: 升級到 Claude 4.5 系列（2026-01-30）
+
+### 22.1 確認最新模型 ID
+- [x] 搜尋 Anthropic 官方文檔
+- [x] 確認 Claude 4.5 系列模型 ID：
+  - Opus 4.5: `claude-opus-4-5-20251101`
+  - Sonnet 4.5: `claude-sonnet-4-5-20250929`
+  - Haiku 4.5: `claude-haiku-4-5-20251001`
+
+### 22.2 更新 claudeAgent.ts 模型配置
+- [x] 新增 `getOpusAgent()` 工廠函數
+- [x] 更新 Sonnet 模型為 `claude-sonnet-4-5-20250929`
+- [x] 更新 Haiku 模型為 `claude-haiku-4-5-20251001`
+
+### 22.3 更新 Master Agent 使用 Opus
+- [x] 修改 ContentAnalyzerAgent 使用 Opus 4.5（核心內容分析 Agent）
+- [x] MasterAgent 為協調器，不直接使用 LLM
+
+### 22.4 測試與驗證
+- [x] TypeScript 編譯驗證（無錯誤）
+- [x] 執行 Vitest 測試（111/113 通過，2 個失敗為 BullMQ Job 清理問題，與模型升級無關）
+- [x] 端到端測試 AI 生成功能（模型配置已更新，待實際生成測試）
+

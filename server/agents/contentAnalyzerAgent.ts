@@ -4,7 +4,7 @@
  * Now using Claude API for better performance and cost-effectiveness
  */
 
-import { ClaudeAgent } from './claudeAgent';
+import { getOpusAgent, ClaudeAgent } from './claudeAgent';
 import { COPYWRITER_SKILL } from "./skillLibrary";
 import { getKeyInstructions, extractJsonSchema } from "./skillLoader";
 
@@ -41,9 +41,10 @@ export class ContentAnalyzerAgent {
     // Load SKILL.md instructions (only key sections for token optimization)
     this.skillInstructions = getKeyInstructions('ContentAnalyzerAgent');
     this.jsonSchema = extractJsonSchema('ContentAnalyzerAgent');
-    this.claudeAgent = new ClaudeAgent();
+    // Use Opus 4.5 for complex content analysis and creative writing
+    this.claudeAgent = getOpusAgent();
     console.log('[ContentAnalyzerAgent] SKILL loaded:', this.skillInstructions.length, 'chars');
-    console.log('[ContentAnalyzerAgent] Using Claude API for content generation');
+    console.log('[ContentAnalyzerAgent] Using Claude Opus 4.5 for content generation');
   }
   /**
    * Execute content analysis and copyright cleansing

@@ -7,20 +7,32 @@
  * - Excellent structured output with native JSON Schema support
  * - Strong reasoning capabilities
  * - Better multilingual support (Chinese + English)
- * - Cost-effective (Haiku: $0.25/1M input, $1.25/1M output)
+ * - Cost-effective (Haiku 4.5: $1/1M input, $5/1M output)
  * 
- * Claude Hybrid Architecture:
- * - Brain (Complex Logic): Claude 3.5 Sonnet for itinerary planning
- * - Hands (Simple Tasks): Claude 3 Haiku for extraction and formatting
+ * Claude Hybrid Architecture (Upgraded to 4.5 Series):
+ * - Master (Orchestration): Claude Opus 4.5 for complex orchestration
+ * - Brain (Complex Logic): Claude Sonnet 4.5 for itinerary planning
+ * - Hands (Simple Tasks): Claude Haiku 4.5 for extraction and formatting
  */
 
 import Anthropic from '@anthropic-ai/sdk';
 
-// Model constants
+// Model constants - Upgraded to Claude 4.5 Series (2026-01-30)
 export const CLAUDE_MODELS = {
-  HAIKU: 'claude-3-haiku-20240307',      // Fast, cost-effective ($0.25/1M input)
-  SONNET: 'claude-3-5-sonnet-20241022',  // Balanced quality/speed ($3/1M input)
-  OPUS: 'claude-3-opus-20240229',        // Highest quality ($15/1M input)
+  // Claude 4.5 Series (Latest)
+  HAIKU_45: 'claude-haiku-4-5-20251001',      // Fast, cost-effective ($1/1M input, $5/1M output)
+  SONNET_45: 'claude-sonnet-4-5-20250929',    // Balanced quality/speed ($3/1M input, $15/1M output)
+  OPUS_45: 'claude-opus-4-5-20251101',        // Highest quality ($15/1M input, $75/1M output)
+  
+  // Legacy aliases (for backward compatibility)
+  HAIKU: 'claude-haiku-4-5-20251001',
+  SONNET: 'claude-sonnet-4-5-20250929',
+  OPUS: 'claude-opus-4-5-20251101',
+  
+  // Deprecated models (kept for reference)
+  HAIKU_3: 'claude-3-haiku-20240307',
+  SONNET_35: 'claude-3-5-sonnet-20241022',
+  OPUS_3: 'claude-3-opus-20240229',
 } as const;
 
 export type ClaudeModel = typeof CLAUDE_MODELS[keyof typeof CLAUDE_MODELS];
@@ -107,8 +119,8 @@ export class ClaudeAgent {
     }
 
     this.client = new Anthropic({ apiKey });
-    // Default to Haiku for cost-effectiveness
-    this.model = options?.model || CLAUDE_MODELS.HAIKU;
+    // Default to Haiku 4.5 for cost-effectiveness
+    this.model = options?.model || CLAUDE_MODELS.HAIKU_45;
     
     // Initialize usage stats
     this.usageStats = {
@@ -148,26 +160,26 @@ export class ClaudeAgent {
     this.usageStats.totalOutputTokens += outputTokens;
     this.usageStats.totalCalls += 1;
 
-    // Calculate cost based on model
+    // Calculate cost based on model (Claude 4.5 pricing)
     let inputCostPer1M: number;
     let outputCostPer1M: number;
 
-    switch (this.model) {
-      case CLAUDE_MODELS.HAIKU:
-        inputCostPer1M = 0.25;
-        outputCostPer1M = 1.25;
-        break;
-      case CLAUDE_MODELS.SONNET:
-        inputCostPer1M = 3.0;
-        outputCostPer1M = 15.0;
-        break;
-      case CLAUDE_MODELS.OPUS:
-        inputCostPer1M = 15.0;
-        outputCostPer1M = 75.0;
-        break;
-      default:
-        inputCostPer1M = 0.25;
-        outputCostPer1M = 1.25;
+    if (this.model.includes('haiku')) {
+      // Haiku 4.5 pricing
+      inputCostPer1M = 1.0;
+      outputCostPer1M = 5.0;
+    } else if (this.model.includes('sonnet')) {
+      // Sonnet 4.5 pricing
+      inputCostPer1M = 3.0;
+      outputCostPer1M = 15.0;
+    } else if (this.model.includes('opus')) {
+      // Opus 4.5 pricing
+      inputCostPer1M = 15.0;
+      outputCostPer1M = 75.0;
+    } else {
+      // Default to Haiku pricing
+      inputCostPer1M = 1.0;
+      outputCostPer1M = 5.0;
     }
 
     const inputCost = (inputTokens / 1_000_000) * inputCostPer1M;
@@ -346,7 +358,7 @@ export class ClaudeAgent {
           {
             name: schemaName,
             description: schemaDescription,
-            input_schema: schema as Anthropic.Tool.InputSchema,
+            input_schema: schema as any,
           },
         ],
         tool_choice: { type: 'tool', name: schemaName },
@@ -476,23 +488,37 @@ ${text}
 // Export singleton instances for different use cases
 let haikuInstance: ClaudeAgent | null = null;
 let sonnetInstance: ClaudeAgent | null = null;
+let opusInstance: ClaudeAgent | null = null;
 
 /**
- * Get a shared Haiku instance (for simple extraction tasks)
+ * Get a shared Haiku 4.5 instance (for simple extraction tasks)
+ * Cost: $1/1M input, $5/1M output
  */
 export function getHaikuAgent(): ClaudeAgent {
   if (!haikuInstance) {
-    haikuInstance = new ClaudeAgent({ model: CLAUDE_MODELS.HAIKU });
+    haikuInstance = new ClaudeAgent({ model: CLAUDE_MODELS.HAIKU_45 });
   }
   return haikuInstance;
 }
 
 /**
- * Get a shared Sonnet instance (for complex reasoning tasks)
+ * Get a shared Sonnet 4.5 instance (for complex reasoning tasks)
+ * Cost: $3/1M input, $15/1M output
  */
 export function getSonnetAgent(): ClaudeAgent {
   if (!sonnetInstance) {
-    sonnetInstance = new ClaudeAgent({ model: CLAUDE_MODELS.SONNET });
+    sonnetInstance = new ClaudeAgent({ model: CLAUDE_MODELS.SONNET_45 });
   }
   return sonnetInstance;
+}
+
+/**
+ * Get a shared Opus 4.5 instance (for master orchestration tasks)
+ * Cost: $15/1M input, $75/1M output
+ */
+export function getOpusAgent(): ClaudeAgent {
+  if (!opusInstance) {
+    opusInstance = new ClaudeAgent({ model: CLAUDE_MODELS.OPUS_45 });
+  }
+  return opusInstance;
 }
