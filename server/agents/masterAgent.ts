@@ -29,7 +29,7 @@ import { HotelAgent } from "./hotelAgent";
 import { MealAgent } from "./mealAgent";
 import { FlightAgent } from "./flightAgent";
 import { TransportationAgent } from "./transportationAgent";
-import { generateLionTravelTitle } from "./lionTitleGenerator";
+// LionTitleGenerator removed - using ContentAnalyzerAgent.poeticTitle instead
 import { getKeyInstructions } from "./skillLoader";
 import {
   RetryManager,
@@ -270,15 +270,12 @@ export class MasterAgent {
       this.monitor.startAgent('ContentAnalyzerAgent');
       if (taskId) progressTracker.startPhase(taskId, 'content_analyzer');
       
-      // Run Content Analysis and Lion Title in parallel
-      const [analysisResult, lionTravelTitle] = await Promise.all([
-        this.retryManager.executeWithRetry(
-          () => this.contentAnalyzerAgent.execute(rawData),
-          this.retryConfig,
-          'ContentAnalyzerAgent'
-        ),
-        generateLionTravelTitle(rawData)
-      ]);
+      // Run Content Analysis (includes poeticTitle generation)
+      const analysisResult = await this.retryManager.executeWithRetry(
+        () => this.contentAnalyzerAgent.execute(rawData),
+        this.retryConfig,
+        'ContentAnalyzerAgent'
+      );
       
       if (!analysisResult.success || !analysisResult.data) {
         this.monitor.failAgent('ContentAnalyzerAgent', new Error(analysisResult.error || "Content analysis failed"));
@@ -292,7 +289,7 @@ export class MasterAgent {
       // 漸進式結果：更新標題和目的地
       if (taskId) {
         progressTracker.updatePartialResults(taskId, {
-          title: lionTravelTitle,
+          title: analyzedContent.poeticTitle,
           poeticTitle: analyzedContent.poeticTitle,
           destination: `${rawData.location?.destinationCity || ''}, ${rawData.location?.destinationCountry || ''}`,
           highlights: analyzedContent.highlights?.slice(0, 3),
@@ -301,7 +298,7 @@ export class MasterAgent {
       
       console.log("[MasterAgent] ✓ Phase 2 completed: Content analysis + Lion title");
       console.log("[MasterAgent] Originality score:", analyzedContent.originalityScore);
-      console.log("[MasterAgent] Lion Travel title:", lionTravelTitle);
+      console.log("[MasterAgent] Poetic title:", analyzedContent.poeticTitle);
       
       // ========================================================================
       // Phase 3: ColorTheme ONLY (ImagePrompt removed for speed optimization)
@@ -560,7 +557,7 @@ export class MasterAgent {
       
       const finalData = {
         // Basic info
-        poeticTitle: lionTravelTitle, // Use Lion Travel style title (40-80 chars)
+        poeticTitle: analyzedContent.poeticTitle, // Use ContentAnalyzerAgent's poetic title
         title: analyzedContent.title,
         description: analyzedContent.description,
         productCode: rawData.basicInfo?.productCode || "",

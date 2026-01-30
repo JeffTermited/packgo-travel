@@ -1149,3 +1149,34 @@
 - [x] 執行 Vitest 測試（111/113 通過，2 個失敗為 BullMQ Job 清理問題，與模型升級無關）
 - [x] 端到端測試 AI 生成功能（模型配置已更新，待實際生成測試）
 
+
+
+---
+
+## Phase 23: Agent Skills 架構升級（2026-01-30）
+
+### Phase C: 捨棄冗餘 Agent（3 個）
+- [x] 刪除 LionTitleGenerator（功能與 ContentAnalyzerAgent 重疊）
+- [x] 刪除 PrintFriendlyAgent（使用率極低）
+- [x] 刪除 PriceAgent（功能與 WebScraperAgent 重疊）
+- [x] 更新 masterAgent.ts 移除 LionTitleGenerator 引用
+- [x] 更新 webScraperAgent.ts 移除 PrintFriendlyAgent 引用
+- [x] 刪除相關測試檔案
+- [x] TypeScript 編譯驗證（無錯誤）
+
+### Phase A: 實施 details Skill
+- [ ] 創建 server/skills/ 目錄結構
+- [ ] 創建 details/SKILL.md
+- [ ] 創建 details/meals.md
+- [ ] 創建 details/hotels.md
+- [ ] 創建 details/costs.md
+- [ ] 創建 details/notices.md
+- [ ] 創建 DetailsSkill 類別整合 4 個 Agent 功能
+- [ ] 更新 MasterAgent 使用 DetailsSkill
+
+### Phase B: 重構 MasterAgent + SkillLoader
+- [x] 創建 SkillLoader v2 類別（server/skills/skillLoader.ts）
+- [x] 實現 Progressive Disclosure 機制（metadata → full → sections）
+- [x] 創建 8 個 Skill SKILL.md 檔案
+- [ ] 更新 MasterAgent 動態載入 Skills
+- [ ] 端到端測試

@@ -10,7 +10,7 @@
 
 import { fetchWebPage, extractTourInfoWithLLM } from "../webScraper";
 import { getKeyInstructions } from "./skillLoader";
-import { PrintFriendlyAgent } from "./printFriendlyAgent";
+// PrintFriendlyAgent removed - using Firecrawl as primary scraping method
 import { scrapeWithPuppeteerVision } from "./puppeteerVisionAgent";
 import { FirecrawlAgent } from "./firecrawlAgent";
 import { LionTravelParser, parseLionTravel } from "./parsers/lionTravelParser";
@@ -19,7 +19,7 @@ export interface WebScraperResult {
   success: boolean;
   data?: any;
   error?: string;
-  method?: 'three-stage' | 'printfriendly' | 'traditional';
+  method?: 'three-stage' | 'firecrawl' | 'traditional';
   extractionDetails?: {
     jsonLdFound: boolean;
     markdownExtracted: boolean;
@@ -27,11 +27,11 @@ export interface WebScraperResult {
   };
 }
 
-export type ScraperMode = 'three-stage' | 'firecrawl' | 'printfriendly' | 'traditional' | 'auto';
+export type ScraperMode = 'three-stage' | 'firecrawl' | 'traditional' | 'auto';
 
 export class WebScraperAgent {
   private skillInstructions: string;
-  private printFriendlyAgent: PrintFriendlyAgent;
+  // PrintFriendlyAgent removed
   private firecrawlAgent: FirecrawlAgent | null;
   private mode: ScraperMode;
 
@@ -41,7 +41,7 @@ export class WebScraperAgent {
     
     // 預設模式：firecrawl（使用 Firecrawl API）
     this.mode = options?.mode ?? 'firecrawl';
-    this.printFriendlyAgent = new PrintFriendlyAgent();
+    // PrintFriendlyAgent removed - Firecrawl is now the primary method
     
     // 初始化 Firecrawl Agent（如果 API Key 存在）
     try {
@@ -70,8 +70,7 @@ export class WebScraperAgent {
       case 'three-stage':
         return await this.executeThreeStage(url);
         
-      case 'printfriendly':
-        return await this.executeWithPrintFriendly(url);
+      // 'printfriendly' mode removed - use 'firecrawl' instead
         
       case 'traditional':
         return await this.executeTraditional(url);
@@ -676,40 +675,6 @@ ${STRICT_DATA_FIDELITY_RULES}`;
       meals: meals.length > 0 ? meals : [],
       flights: [],
     };
-  }
-  
-  /**
-   * 使用 PrintFriendly API 執行爬取
-   */
-  private async executeWithPrintFriendly(url: string): Promise<WebScraperResult> {
-    console.log("[WebScraperAgent] Using PrintFriendly mode");
-    
-    try {
-      const result = await this.printFriendlyAgent.execute(url);
-      
-      if (!result.success || !result.data) {
-        return {
-          success: false,
-          error: result.error || "PrintFriendly extraction failed",
-          method: 'printfriendly',
-        };
-      }
-      
-      console.log("[WebScraperAgent] PrintFriendly extraction successful");
-      
-      return {
-        success: true,
-        data: result.data,
-        method: 'printfriendly',
-      };
-    } catch (error) {
-      console.error("[WebScraperAgent] PrintFriendly error:", error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
-        method: 'printfriendly',
-      };
-    }
   }
   
   /**
