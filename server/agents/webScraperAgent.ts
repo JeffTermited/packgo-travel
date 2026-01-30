@@ -340,11 +340,29 @@ export class WebScraperAgent {
       
       const prompt = `你是一個專業的旅遊行程資料提取專家。請從以下 Markdown 格式的網頁內容中提取旅遊行程資訊。
 
+🔴 **最重要的任務**：提取每日行程的「詳細活動內容」
+
+每日行程必須包含：
+1. **activities 陣列**：每天的所有活動，包括：
+   - time: 活動時間（如 "07:40", "08:30-10:00", "上午", "下午"）
+   - title: 活動名稱（如 "阿里山森林遊樂區", "奮起湖老街"）
+   - description: 活動描述（50-150字，包含景點特色、體驗內容）
+   - location: 地點（如 "嘉義縣阿里山鄉"）
+   - transportation: 交通方式（如 "遊覽車", "步行", "火車"）
+
+2. **meals 物件**：
+   - breakfast: 早餐安排（如 "飯店自助早餐", "X" 表示不含）
+   - lunch: 午餐安排（如 "奮起湖便當", "阿里山風味餐"）
+   - dinner: 晚餐安排（如 "飯店晚餐", "中式合菜"）
+
+3. **accommodation**: 住宿飯店名稱（如 "阿里山賓館", "嘉義耐斯王子大飯店"）
+
 重要提示：
 1. 請仔細識別「每日行程」的標題層級（例如 "Day 1", "第一天", "DAY 1", "第1天" 等）
 2. 提取所有天數的行程，不要遺漏任何一天
-3. 如果找不到明確的每日行程，請返回空陣列
-4. 對於台灣國內行程，請正確識別目的地（如阿里山→嘉義、日月潭→南投）
+3. 每天至少要有 2-5 個 activities
+4. 如果原文有時間資訊，必須提取（如 "07:40 集合"）
+5. 對於台灣國內行程，請正確識別目的地（如阿里山→嘉義、日月潭→南投）
 
 Markdown 內容：
 \`\`\`markdown
@@ -356,7 +374,7 @@ ${truncatedMarkdown}
 - location: 目的地資訊（國家、城市）
 - duration: 行程天數（天數、夜數）
 - highlights: 行程亮點
-- dailyItinerary: 每日行程（天數、標題、描述、餐食、住宿）
+- dailyItinerary: 每日行程（天數、標題、activities 陣列、meals 物件、住宿）
 - includes: 包含項目
 - excludes: 不包含項目`;
 
@@ -400,11 +418,32 @@ ${truncatedMarkdown}
               properties: {
                 day: { type: "number" },
                 title: { type: "string" },
-                description: { type: "string" },
-                meals: { type: "string" },
+                activities: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      time: { type: "string" },
+                      title: { type: "string" },
+                      description: { type: "string" },
+                      location: { type: "string" },
+                      transportation: { type: "string" },
+                    },
+                    required: ["title", "description"],
+                  },
+                },
+                meals: {
+                  type: "object",
+                  properties: {
+                    breakfast: { type: "string" },
+                    lunch: { type: "string" },
+                    dinner: { type: "string" },
+                  },
+                  required: ["breakfast", "lunch", "dinner"],
+                },
                 accommodation: { type: "string" },
               },
-              required: ["day", "title", "description"],
+              required: ["day", "title", "activities", "meals", "accommodation"],
             },
           },
           includes: {
@@ -429,7 +468,7 @@ ${STRICT_DATA_FIDELITY_RULES}`;
         tourSchema,
         {
           systemPrompt,
-          maxTokens: 4096,
+          maxTokens: 8192,
           temperature: 0.3,
           schemaName: 'tour_extraction_output',
           schemaDescription: '旅遊行程提取結構化輸出',
@@ -744,6 +783,20 @@ ${STRICT_DATA_FIDELITY_RULES}`;
               // 🆕 使用 QuickInfo 補充缺失資訊
               if (quickInfo) {
                 lionTravelData = this.enrichWithQuickInfo(lionTravelData, quickInfo);
+              }
+              
+              // 🆕 檢查 dailyItinerary 是否有內容，如果沒有則使用 LLM 補充
+              const hasDailyItinerary = lionTravelData?.dailyItinerary && 
+                                        Array.isArray(lionTravelData?.dailyItinerary) && 
+                                        lionTravelData?.dailyItinerary.length > 0;
+              
+              if (!hasDailyItinerary && firecrawlResult.markdown && lionTravelData) {
+                console.log("[WebScraperAgent] 雄獅專屬解析器未提取到每日行程，使用 LLM 補充...");
+                const llmData = await this.extractFromMarkdownWithLLM(firecrawlResult.markdown, url);
+                if (llmData?.dailyItinerary && llmData.dailyItinerary.length > 0) {
+                  console.log(`[WebScraperAgent] LLM 成功提取 ${llmData.dailyItinerary.length} 天每日行程`);
+                  (lionTravelData as any).dailyItinerary = llmData.dailyItinerary;
+                }
               }
               
               if (this.validateData(lionTravelData)) {

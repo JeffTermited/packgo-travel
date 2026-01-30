@@ -1049,6 +1049,20 @@ Important guidelines:
           message: `行程已${newFeatured === 1 ? "設為精選" : "取消精選"}`,
         };
       }),
+
+    // 診斷工具 API (admin only)
+    diagnose: adminProcedure
+      .input(z.object({ 
+        url: z.string().url(),
+      }))
+      .mutation(async ({ input }) => {
+        console.log("[Diagnostics] Starting diagnosis for URL:", input.url);
+        
+        const { agentDiagnostics } = await import('./agents/diagnostics');
+        const report = await agentDiagnostics.runFullDiagnostics(input.url);
+        
+        return report;
+      }),
   }),
 
   // Booking management router

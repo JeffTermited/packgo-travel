@@ -414,27 +414,108 @@ export default function TourDetail() {
                   <Card className="border-0 shadow-lg">
                     <CardContent className="p-6">
                       <h3 className="text-lg font-bold text-gray-900 mb-6">每日行程</h3>
-                      <div className="space-y-6">
+                      <div className="space-y-8">
                         {dailyItinerary.map((day: any, index: number) => (
-                          <div key={index} className="relative pl-8 pb-6 border-l-2 border-primary/20 last:border-l-0 last:pb-0">
-                            <div className="absolute -left-3 top-0 w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center text-sm font-bold">
-                              {index + 1}
+                          <div key={index} className="relative">
+                            {/* Day Header */}
+                            <div className="flex items-center gap-3 mb-4">
+                              <div className="flex items-center justify-center w-12 h-12 bg-primary text-white rounded-full font-bold text-lg">
+                                Day {index + 1}
+                              </div>
+                              <div className="flex-1">
+                                <h4 className="text-xl font-bold text-gray-900">
+                                  {typeof day === 'string' ? day : day.title}
+                                </h4>
+                              </div>
                             </div>
-                            <div className="bg-gray-50 rounded-lg p-4">
-                              <h4 className="font-bold text-gray-900 mb-2">
-                                第 {index + 1} 天：{typeof day === 'string' ? day : day.title}
-                              </h4>
-                              {typeof day === 'object' && day.description && (
-                                <p className="text-gray-700 text-sm whitespace-pre-line">{day.description}</p>
-                              )}
+
+                            {/* Activities Timeline */}
+                            {typeof day === 'object' && day.activities && day.activities.length > 0 && (
+                              <div className="ml-6 border-l-2 border-primary/20 pl-6 space-y-4">
+                                {day.activities.map((activity: any, actIndex: number) => (
+                                  <div key={actIndex} className="relative pb-4 last:pb-0">
+                                    {/* Timeline Dot */}
+                                    <div className="absolute -left-[29px] top-2 w-3 h-3 bg-primary rounded-full border-2 border-white" />
+                                    
+                                    {/* Activity Content */}
+                                    <div className="bg-gray-50 rounded-lg p-4 hover:shadow-md transition-shadow">
+                                      {/* Time & Title */}
+                                      <div className="flex items-start gap-2 mb-2">
+                                        <Clock className="h-4 w-4 text-primary flex-shrink-0 mt-1" />
+                                        <div className="flex-1">
+                                          {activity.time && (
+                                            <p className="text-xs font-medium text-gray-600 mb-1">{activity.time}</p>
+                                          )}
+                                          <h5 className="text-base font-bold text-gray-900">{activity.title}</h5>
+                                        </div>
+                                      </div>
+                                      
+                                      {/* Description */}
+                                      {activity.description && (
+                                        <p className="text-sm text-gray-700 mb-3 leading-relaxed">{activity.description}</p>
+                                      )}
+                                      
+                                      {/* Location & Transportation */}
+                                      <div className="flex flex-wrap gap-4 text-sm">
+                                        {activity.location && (
+                                          <div className="flex items-center gap-2 text-gray-600">
+                                            <MapPin className="h-4 w-4 text-primary" />
+                                            <span>{activity.location}</span>
+                                          </div>
+                                        )}
+                                        {activity.transportation && (
+                                          <div className="flex items-center gap-2 text-gray-600">
+                                            <Plane className="h-4 w-4 text-primary" />
+                                            <span>{activity.transportation}</span>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+
+                            {/* Fallback: Show description if no activities */}
+                            {typeof day === 'object' && (!day.activities || day.activities.length === 0) && day.description && (
+                              <div className="ml-6 pl-6">
+                                <div className="bg-gray-50 rounded-lg p-4">
+                                  <p className="text-gray-700 text-sm whitespace-pre-line">{day.description}</p>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Meals & Accommodation */}
+                            <div className="mt-4 ml-6 grid grid-cols-1 md:grid-cols-2 gap-3">
+                              {/* Meals */}
                               {typeof day === 'object' && day.meals && (
-                                <div className="mt-3 pt-3 border-t border-gray-200">
-                                  <span className="text-sm text-gray-500">餐食：{day.meals}</span>
+                                <div className="bg-gray-50 rounded-lg p-4">
+                                  <h5 className="font-bold text-gray-900 mb-3">餐食安排</h5>
+                                  <div className="space-y-2 text-sm text-gray-700">
+                                    {typeof day.meals === 'object' ? (
+                                      <>
+                                        {day.meals.breakfast && (
+                                          <p><span className="font-medium">早餐：</span>{day.meals.breakfast}</p>
+                                        )}
+                                        {day.meals.lunch && (
+                                          <p><span className="font-medium">午餐：</span>{day.meals.lunch}</p>
+                                        )}
+                                        {day.meals.dinner && (
+                                          <p><span className="font-medium">晚餐：</span>{day.meals.dinner}</p>
+                                        )}
+                                      </>
+                                    ) : (
+                                      <p>{day.meals}</p>
+                                    )}
+                                  </div>
                                 </div>
                               )}
+
+                              {/* Accommodation */}
                               {typeof day === 'object' && day.accommodation && (
-                                <div className="mt-2">
-                                  <span className="text-sm text-gray-500">住宿：{day.accommodation}</span>
+                                <div className="bg-gray-50 rounded-lg p-4">
+                                  <h5 className="font-bold text-gray-900 mb-3">住宿安排</h5>
+                                  <p className="text-sm text-gray-700">{day.accommodation}</p>
                                 </div>
                               )}
                             </div>

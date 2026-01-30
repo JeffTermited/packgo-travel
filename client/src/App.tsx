@@ -9,6 +9,7 @@ import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Admin from "./pages/Admin";
+import DiagnosticsPage from "./pages/admin/DiagnosticsPage";
 import Profile from "./pages/Profile";
 import TourDetail from "./pages/TourDetail";
 import TourDetailSipin from "./pages/TourDetailSipin";
@@ -45,6 +46,7 @@ function Router() {
       <Route path={"/login"} component={Login} />
       <Route path={"/forgot-password"} component={ForgotPassword} />
       <Route path={"/reset-password"} component={ResetPassword} />
+      <Route path={"/admin/diagnostics"} component={DiagnosticsPage} />
       <Route path={"/admin"} component={Admin} />
       <Route path={"/profile"} component={Profile} />
       <Route path={"/tours/:id"} component={TourDetailMinimal} />
