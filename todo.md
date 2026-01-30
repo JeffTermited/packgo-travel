@@ -1080,3 +1080,45 @@
 - [ ] 驗證數據忠實度（無幻覺）
 - [ ] 監控 API 成本（預期節省 60-80%）
 - [ ] 儲存 checkpoint
+
+
+---
+
+## Phase 21: Claude Hybrid 架構遷移（2026-01-30）
+
+### 21.1 建立 Claude API 統一介面
+- [x] 建立 `server/agents/claudeAgent.ts`
+- [x] 實作 `getSonnetAgent()` 工廠函數（複雜推理任務）
+- [x] 實作 `getHaikuAgent()` 工廠函數（簡單提取任務）
+- [x] 實作 `sendMessage()` 方法（一般對話）
+- [x] 實作 `sendStructuredMessage<T>()` 方法（JSON Schema 結構化輸出）
+- [x] 定義 `STRICT_DATA_FIDELITY_RULES` 資料忠實度規則
+
+### 21.2 遷移複雜推理 Agent 到 Claude 3.5 Sonnet
+- [x] 遷移 WebScraperAgent（網頁內容提取與分析）
+- [x] 遷移 ItineraryPolishAgent（行程文案美化）
+- [x] 遷移 ItineraryAgent（行程結構化提取）
+- [x] 遷移 ContentAnalyzerAgent（內容分析與分類）
+
+### 21.3 遷移簡單提取 Agent 到 Claude 3 Haiku
+- [x] 遷移 MealAgent（餐食資訊提取）
+- [x] 遷移 HotelAgent（飯店資訊提取）
+- [x] 遷移 FlightAgent（航班資訊提取）
+- [x] 遷移 TrainAgent（火車資訊提取）
+- [x] 遷移 CostAgent（費用資訊提取）
+- [x] 遷移 NoticeAgent（注意事項提取）
+- [x] 遷移 ImagePromptAgent（圖片提示詞生成）
+- [x] 遷移 LionTitleGenerator（雄獅風格標題生成）
+- [x] 遷移 PrintFriendlyAgent（PDF 文字分析）
+
+### 21.4 保留 invokeLLM 的 Agent（Vision API 需求）
+- [x] PuppeteerVisionAgent（需要分析網頁截圖）
+- [x] ScreenshotAgent（需要分析截圖內容）
+- [x] PrintFriendlyAgent（PDF Vision 備用方案）
+
+### 21.5 測試與驗證
+- [x] TypeScript 編譯無錯誤
+- [x] Vitest 測試通過率 98.2%（111/113）
+- [x] 伺服器重啟成功
+- [x] 生成遷移報告
+

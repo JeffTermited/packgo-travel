@@ -1,4 +1,11 @@
-import { invokeLLM } from "../_core/llm";
+/**
+ * TrainAgent
+ * Generates professional train information for tours
+ * 
+ * Claude Hybrid Architecture: Uses Claude 3 Haiku for simple extraction
+ */
+
+import { getHaikuAgent, JSONSchema, STRICT_DATA_FIDELITY_RULES } from "./claudeAgent";
 import { getKeyInstructions, loadReference } from "./skillLoader";
 
 export interface TrainAgentResult {
@@ -36,7 +43,7 @@ export class TrainAgent {
   constructor() {
     this.skillInstructions = getKeyInstructions('TrainAgent') || this.getDefaultSkill();
     this.taiwanTourTypes = loadReference('Taiwan-Tour-Types') || '';
-    console.log('[TrainAgent] Initialized');
+    console.log('[TrainAgent] Initialized with Claude 3 Haiku');
     console.log('[TrainAgent] Loaded Taiwan-Tour-Types:', this.taiwanTourTypes.length, 'chars');
   }
 
@@ -81,7 +88,44 @@ export class TrainAgent {
         };
       }
 
-      // 使用 LLM 生成專業描述
+      // Define JSON Schema for train output
+      const trainSchema: JSONSchema = {
+        type: "object",
+        properties: {
+          trainType: { type: "string", description: "火車類型" },
+          trainName: { type: "string", description: "火車名稱" },
+          outbound: {
+            type: "object",
+            properties: {
+              trainNo: { type: "string" },
+              departureTime: { type: "string" },
+              arrivalTime: { type: "string" },
+              duration: { type: "string" },
+              departureStation: { type: "string" },
+              arrivalStation: { type: "string" },
+            },
+            required: ["trainNo", "departureTime", "arrivalTime", "duration", "departureStation", "arrivalStation"],
+          },
+          inbound: {
+            type: "object",
+            properties: {
+              trainNo: { type: "string" },
+              departureTime: { type: "string" },
+              arrivalTime: { type: "string" },
+              duration: { type: "string" },
+              departureStation: { type: "string" },
+              arrivalStation: { type: "string" },
+            },
+            required: ["trainNo", "departureTime", "arrivalTime", "duration", "departureStation", "arrivalStation"],
+          },
+          description: { type: "string", description: "火車旅遊描述" },
+          features: { type: "array", items: { type: "string" }, description: "特色列表" },
+          route: { type: "array", items: { type: "string" }, description: "停靠站列表" },
+        },
+        required: ["trainType", "trainName", "outbound", "inbound", "description", "features", "route"],
+      };
+
+      // Build prompt
       const prompt = `
 請根據以下火車行程資訊，生成專業的火車旅遊介紹：
 
@@ -91,30 +135,14 @@ ${JSON.stringify(trainData, null, 2)}
 
 ${this.taiwanTourTypes}
 
-請以 JSON 格式回傳，包含以下欄位：
-{
-  "trainType": "火車類型（鳴日號/普悠瑪/太魯閣/自強號等）",
-  "trainName": "火車名稱（如：鳴日號觀光列車）",
-  "outbound": {
-    "trainNo": "去程車次（如無則填 TBA）",
-    "departureTime": "去程出發時間",
-    "arrivalTime": "去程抵達時間",
-    "duration": "去程行車時長",
-    "departureStation": "出發車站",
-    "arrivalStation": "抵達車站"
-  },
-  "inbound": {
-    "trainNo": "回程車次（如無則填 TBA）",
-    "departureTime": "回程出發時間",
-    "arrivalTime": "回程抵達時間",
-    "duration": "回程行車時長",
-    "departureStation": "出發車站",
-    "arrivalStation": "抵達車站"
-  },
-  "description": "火車旅遊描述（150-200字，包含火車特色、沿途風景、車廂服務）",
-  "features": ["特色1", "特色2", "特色3"],
-  "route": ["停靠站1", "停靠站2", "停靠站3"]
-}
+請生成包含以下欄位的火車資訊：
+- trainType: 火車類型（鳴日號/普悠瑪/太魯閣/自強號等）
+- trainName: 火車名稱（如：鳴日號觀光列車）
+- outbound: 去程資訊（車次、出發時間、抵達時間、行車時長、出發車站、抵達車站）
+- inbound: 回程資訊（車次、出發時間、抵達時間、行車時長、出發車站、抵達車站）
+- description: 火車旅遊描述（150-200字，包含火車特色、沿途風景、車廂服務）
+- features: 特色列表
+- route: 停靠站列表
 
 **重要約束**：
 1. 必須根據原始資料填寫，不得創造不存在的資訊
@@ -122,78 +150,22 @@ ${this.taiwanTourTypes}
 3. 車站名稱必須使用正式名稱（如：南港站、台東站、花蓮站）
 `;
 
-      const response = await invokeLLM({
-        messages: [
-          { role: "system", content: this.skillInstructions },
-          { role: "user", content: prompt },
-        ],
-        response_format: {
-          type: "json_schema",
-          json_schema: {
-            name: "train_info",
-            strict: true,
-            schema: {
-              type: "object",
-              properties: {
-                trainType: { type: "string", description: "火車類型" },
-                trainName: { type: "string", description: "火車名稱" },
-                outbound: {
-                  type: "object",
-                  properties: {
-                    trainNo: { type: "string" },
-                    departureTime: { type: "string" },
-                    arrivalTime: { type: "string" },
-                    duration: { type: "string" },
-                    departureStation: { type: "string" },
-                    arrivalStation: { type: "string" }
-                  },
-                  required: ["trainNo", "departureTime", "arrivalTime", "duration", "departureStation", "arrivalStation"],
-                  additionalProperties: false
-                },
-                inbound: {
-                  type: "object",
-                  properties: {
-                    trainNo: { type: "string" },
-                    departureTime: { type: "string" },
-                    arrivalTime: { type: "string" },
-                    duration: { type: "string" },
-                    departureStation: { type: "string" },
-                    arrivalStation: { type: "string" }
-                  },
-                  required: ["trainNo", "departureTime", "arrivalTime", "duration", "departureStation", "arrivalStation"],
-                  additionalProperties: false
-                },
-                description: { type: "string", description: "火車旅遊描述" },
-                features: { type: "array", items: { type: "string" }, description: "特色列表" },
-                route: { type: "array", items: { type: "string" }, description: "停靠站列表" }
-              },
-              required: ["trainType", "trainName", "outbound", "inbound", "description", "features", "route"],
-              additionalProperties: false
-            }
-          }
+      // Call Claude with structured output
+      const claudeAgent = getHaikuAgent();
+      const response = await claudeAgent.sendStructuredMessage<TrainAgentResult['data']>(
+        prompt,
+        trainSchema,
+        {
+          systemPrompt: `${this.skillInstructions}\n\n${STRICT_DATA_FIDELITY_RULES}`,
+          maxTokens: 2048,
+          temperature: 0.5,
+          schemaName: 'train_output',
+          schemaDescription: '火車資訊結構化輸出',
         }
-      });
+      );
 
-      const content = typeof response.choices[0].message.content === 'string'
-        ? response.choices[0].message.content.trim()
-        : null;
-
-      if (!content) {
-        console.warn("[TrainAgent] LLM returned empty content, using default");
-        return {
-          success: true,
-          data: this.generateDefaultTrain(rawData, trainType),
-        };
-      }
-
-      // 解析 JSON
-      let parsedData;
-      try {
-        // 移除可能的 markdown 標記
-        const jsonContent = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-        parsedData = JSON.parse(jsonContent);
-      } catch (parseError) {
-        console.error("[TrainAgent] Failed to parse LLM response:", parseError);
+      if (!response.success || !response.data) {
+        console.warn("[TrainAgent] Claude returned no data, using default");
         return {
           success: true,
           data: this.generateDefaultTrain(rawData, trainType),
@@ -203,7 +175,7 @@ ${this.taiwanTourTypes}
       console.log("[TrainAgent] Train information generated successfully");
       return {
         success: true,
-        data: parsedData,
+        data: response.data,
       };
     } catch (error) {
       console.error("[TrainAgent] Error:", error);

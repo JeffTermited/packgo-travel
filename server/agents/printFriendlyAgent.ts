@@ -1,11 +1,16 @@
 /**
  * PrintFriendly Agent - 網頁轉 PDF 並分析內容
  * 
+ * Claude Hybrid Architecture:
+ * - 文字分析使用 Claude 3 Haiku
+ * - Vision API 分析保留使用 invokeLLM（因為 Claude API 不支援 PDF 文件）
+ * 
  * 使用 PrintFriendly API 將網頁轉換成乾淨的 PDF，
  * 然後提取文字內容並使用 LLM 分析行程資訊
  */
 
 import { invokeLLM } from '../_core/llm';
+import { getHaikuAgent, JSONSchema, STRICT_DATA_FIDELITY_RULES } from './claudeAgent';
 import * as fs from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
@@ -32,7 +37,7 @@ export class PrintFriendlyAgent {
     if (!this.apiKey) {
       console.warn('[PrintFriendlyAgent] API Key not configured');
     }
-    console.log('[PrintFriendlyAgent] Initialized');
+    console.log('[PrintFriendlyAgent] Initialized with Claude Hybrid Architecture');
   }
   
   /**
@@ -133,10 +138,10 @@ export class PrintFriendlyAgent {
   }
   
   /**
-   * 使用 LLM 分析提取的文字內容
+   * 使用 Claude 分析提取的文字內容
    */
   async analyzeTextContent(textContent: string, originalUrl: string): Promise<AnalysisResult> {
-    console.log(`[PrintFriendlyAgent] Analyzing text content (${textContent.length} chars)...`);
+    console.log(`[PrintFriendlyAgent] Analyzing text content with Claude (${textContent.length} chars)...`);
     
     if (!textContent || textContent.length < 100) {
       return {
@@ -148,99 +153,130 @@ export class PrintFriendlyAgent {
     try {
       const systemPrompt = `你是一位專業的旅遊行程分析師。請仔細分析以下從旅遊網站提取的文字內容，提取所有重要的行程資訊。
 
-請以 JSON 格式回傳以下資訊（注意：只回傳 JSON，不要有其他文字）：
-
-{
-  "basicInfo": {
-    "title": "行程標題",
-    "productCode": "產品代碼",
-    "description": "行程描述（100-200字）"
-  },
-  "location": {
-    "destinationCountry": "目的地國家（用逗號分隔多個國家）",
-    "destinationCity": "目的地城市（用逗號分隔多個城市）",
-    "departureCity": "出發城市"
-  },
-  "duration": {
-    "days": 天數（數字）,
-    "nights": 夜數（數字）
-  },
-  "pricing": {
-    "basePrice": 基本價格（數字，無貨幣符號）,
-    "currency": "貨幣（TWD/USD等）",
-    "includes": ["包含項目1", "包含項目2"],
-    "excludes": ["不包含項目1", "不包含項目2"]
-  },
-  "dailyItinerary": [
-    {
-      "day": 1,
-      "title": "Day 1 標題",
-      "description": "當日行程描述",
-      "highlights": ["景點1", "景點2"],
-      "meals": {
-        "breakfast": "早餐安排",
-        "lunch": "午餐安排",
-        "dinner": "晚餐安排"
-      },
-      "accommodation": "住宿飯店名稱"
-    }
-  ],
-  "highlights": ["行程亮點1", "行程亮點2", "行程亮點3"],
-  "hotels": [
-    {
-      "name": "飯店名稱",
-      "rating": "星級（5星/4星等）",
-      "location": "位置"
-    }
-  ],
-  "flights": {
-    "airline": "航空公司",
-    "departureTime": "出發時間",
-    "returnTime": "回程時間"
-  },
-  "notices": ["注意事項1", "注意事項2"]
-}
+${STRICT_DATA_FIDELITY_RULES}
 
 注意：
 1. 請仔細閱讀所有文字內容，提取所有可用資訊
 2. 如果某些資訊找不到，請填入 null 或空陣列
 3. 每日行程請盡量詳細，包含所有景點和活動
-4. 價格請只填數字，不要包含貨幣符號或逗號
-5. 只回傳 JSON，不要有 markdown 格式或其他文字`;
+4. 價格請只填數字，不要包含貨幣符號或逗號`;
 
-      const response = await invokeLLM({
-        messages: [
-          { role: "system", content: systemPrompt },
-          { 
-            role: "user", 
-            content: `請分析以下旅遊行程內容，提取所有行程資訊：
+      const userPrompt = `請分析以下旅遊行程內容，提取所有行程資訊：
 
 來源網址：${originalUrl}
 
 內容：
-${textContent.substring(0, 15000)}` // 限制長度避免超過 token 限制
+${textContent.substring(0, 15000)}`;
+
+      // Define JSON Schema for analysis result
+      const analysisSchema: JSONSchema = {
+        type: "object",
+        properties: {
+          basicInfo: {
+            type: "object",
+            properties: {
+              title: { type: "string" },
+              productCode: { type: "string" },
+              description: { type: "string" },
+            },
+            required: ["title"],
           },
-        ],
-      });
+          location: {
+            type: "object",
+            properties: {
+              destinationCountry: { type: "string" },
+              destinationCity: { type: "string" },
+              departureCity: { type: "string" },
+            },
+            required: ["destinationCountry", "destinationCity"],
+          },
+          duration: {
+            type: "object",
+            properties: {
+              days: { type: "number" },
+              nights: { type: "number" },
+            },
+            required: ["days", "nights"],
+          },
+          pricing: {
+            type: "object",
+            properties: {
+              basePrice: { type: "number" },
+              currency: { type: "string" },
+              includes: { type: "array", items: { type: "string" } },
+              excludes: { type: "array", items: { type: "string" } },
+            },
+          },
+          dailyItinerary: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                day: { type: "number" },
+                title: { type: "string" },
+                description: { type: "string" },
+                highlights: { type: "array", items: { type: "string" } },
+                meals: {
+                  type: "object",
+                  properties: {
+                    breakfast: { type: "string" },
+                    lunch: { type: "string" },
+                    dinner: { type: "string" },
+                  },
+                },
+                accommodation: { type: "string" },
+              },
+              required: ["day", "title"],
+            },
+          },
+          highlights: { type: "array", items: { type: "string" } },
+          hotels: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                name: { type: "string" },
+                rating: { type: "string" },
+                location: { type: "string" },
+              },
+            },
+          },
+          flights: {
+            type: "object",
+            properties: {
+              airline: { type: "string" },
+              departureTime: { type: "string" },
+              returnTime: { type: "string" },
+            },
+          },
+          notices: { type: "array", items: { type: "string" } },
+        },
+        required: ["basicInfo", "location", "duration", "dailyItinerary"],
+      };
+
+      const claudeAgent = getHaikuAgent();
+      const response = await claudeAgent.sendStructuredMessage<any>(
+        userPrompt,
+        analysisSchema,
+        {
+          systemPrompt,
+          maxTokens: 4096,
+          temperature: 0.3,
+          schemaName: 'tour_analysis_output',
+          schemaDescription: '旅遊行程分析結構化輸出',
+          strictDataFidelity: true,
+        }
+      );
       
-      const content = response.choices[0]?.message?.content;
-      let contentStr = typeof content === 'string' ? content : JSON.stringify(content);
-      
-      // 移除 markdown 格式
-      contentStr = contentStr.trim();
-      if (contentStr.startsWith("```json")) {
-        contentStr = contentStr.replace(/^```json\s*/, "").replace(/\s*```$/, "");
-      } else if (contentStr.startsWith("```")) {
-        contentStr = contentStr.replace(/^```\s*/, "").replace(/\s*```$/, "");
+      if (!response.success || !response.data) {
+        throw new Error('Claude returned no data');
       }
-      
-      const analysisResult = JSON.parse(contentStr);
       
       console.log("[PrintFriendlyAgent] Analysis completed successfully");
       
       return {
         success: true,
-        data: analysisResult,
+        data: response.data,
       };
     } catch (error) {
       console.error("[PrintFriendlyAgent] Error analyzing content:", error);
@@ -253,6 +289,7 @@ ${textContent.substring(0, 15000)}` // 限制長度避免超過 token 限制
   
   /**
    * 使用 LLM Vision 分析 PDF（當文字提取失敗時的備用方案）
+   * 注意：保留使用 invokeLLM，因為 Claude API 不支援 PDF 文件
    */
   async analyzePdfWithVision(pdfUrl: string, originalUrl: string): Promise<AnalysisResult> {
     console.log(`[PrintFriendlyAgent] Analyzing PDF with Vision API: ${pdfUrl}`);
@@ -382,11 +419,11 @@ ${textContent.substring(0, 15000)}` // 限制長度避免超過 token 限制
       
       // 步驟 3: 分析內容
       if (textContent && textContent.length > 500) {
-        // 如果成功提取文字，使用文字分析
-        console.log('[PrintFriendlyAgent] Using text-based analysis');
+        // 如果成功提取文字，使用 Claude 文字分析
+        console.log('[PrintFriendlyAgent] Using Claude text-based analysis');
         return await this.analyzeTextContent(textContent, url);
       } else {
-        // 如果文字提取失敗，使用 Vision API 分析 PDF
+        // 如果文字提取失敗，使用 Vision API 分析 PDF（保留 invokeLLM）
         console.log('[PrintFriendlyAgent] Text extraction insufficient, using Vision API');
         return await this.analyzePdfWithVision(pdfResult.pdfUrl, url);
       }

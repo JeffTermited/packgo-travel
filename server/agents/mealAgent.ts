@@ -1,4 +1,11 @@
-import { invokeLLM } from "../_core/llm";
+/**
+ * MealAgent
+ * Generates professional meal information for tours
+ * 
+ * Claude Hybrid Architecture: Uses Claude 3 Haiku for simple extraction
+ */
+
+import { getHaikuAgent, JSONSchema, STRICT_DATA_FIDELITY_RULES } from "./claudeAgent";
 import { MEAL_SKILL } from "./skillLibrary";
 import { getKeyInstructions } from "./skillLoader";
 
@@ -22,6 +29,7 @@ export class MealAgent {
   constructor() {
     this.skillInstructions = getKeyInstructions('MealAgent');
     console.log('[MealAgent] SKILL loaded:', this.skillInstructions.length, 'chars');
+    console.log('[MealAgent] Using Claude 3 Haiku with JSON Schema');
   }
 
   async execute(rawData: any): Promise<MealAgentResult> {
@@ -53,43 +61,61 @@ export class MealAgent {
         };
       }
 
-      // Build prompt for LLM
+      // Define JSON Schema for meal output
+      const mealSchema: JSONSchema = {
+        type: "object",
+        properties: {
+          meals: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                name: { type: "string", description: "餐點名稱" },
+                type: { type: "string", description: "餐點類型（breakfast/lunch/dinner）" },
+                description: { type: "string", description: "餐點描述（100-150字）" },
+                cuisine: { type: "string", description: "料理類型" },
+                restaurant: { type: "string", description: "餐廳名稱" },
+              },
+              required: ["name", "type", "description", "cuisine"],
+            },
+          },
+        },
+        required: ["meals"],
+      };
+
+      // Build prompt
       const prompt = `
 請根據以下餐飲資訊，生成專業的餐飲介紹：
 
 餐飲資訊：
 ${JSON.stringify(rawData.meals, null, 2)}
 
-請以 JSON 格式回傳，包含以下欄位：
-{
-  "meals": [
-    {
-      "name": "餐點名稱",
-      "type": "餐點類型（breakfast/lunch/dinner）",
-      "description": "餐點描述（100-150字，包含菜餚特色、食材來源、烹飪方式、用餐體驗）",
-      "cuisine": "料理類型（例如：日式料理、法式料理、當地特色料理）",
-      "restaurant": "餐廳名稱（如有）"
-    }
-  ]
-}
+請生成包含以下欄位的餐飲資訊：
+- name: 餐點名稱
+- type: 餐點類型（breakfast/lunch/dinner）
+- description: 餐點描述（100-150字，包含菜餚特色、食材來源、烹飪方式、用餐體驗）
+- cuisine: 料理類型（例如：日式料理、法式料理、當地特色料理）
+- restaurant: 餐廳名稱（如有）
 
-**重要：如果提供的餐飲資訊不足以生成完整的餐飲介紹，請回傳 null。**
+**重要：如果提供的餐飲資訊不足，請根據目的地生成合理的預設餐飲資訊。**
 `;
 
-      // Call LLM with MEAL_SKILL
-      const response = await invokeLLM({
-        messages: [
-          { role: "system", content: MEAL_SKILL },
-          { role: "user", content: prompt },
-        ],
-      });
+      // Call Claude with structured output
+      const claudeAgent = getHaikuAgent();
+      const response = await claudeAgent.sendStructuredMessage<{ meals: any[] }>(
+        prompt,
+        mealSchema,
+        {
+          systemPrompt: `${MEAL_SKILL}\n\n${STRICT_DATA_FIDELITY_RULES}`,
+          maxTokens: 2048,
+          temperature: 0.5,
+          schemaName: 'meal_output',
+          schemaDescription: '餐飲資訊結構化輸出',
+        }
+      );
 
-      const content = typeof response.choices[0].message.content === 'string' 
-        ? response.choices[0].message.content.trim() 
-        : null;
-
-      if (!content || content === "null") {
-        console.warn("[MealAgent] LLM returned null (insufficient data), using default meals");
+      if (!response.success || !response.data) {
+        console.warn("[MealAgent] Claude returned no data, using default meals");
         return {
           success: true,
           data: {
@@ -98,17 +124,7 @@ ${JSON.stringify(rawData.meals, null, 2)}
         };
       }
 
-      // Parse JSON response
-      let parsedMealData;
-      try {
-        parsedMealData = JSON.parse(content);
-      } catch (parseError) {
-        console.error("[MealAgent] Failed to parse LLM response:", parseError);
-        return {
-          success: false,
-          error: "Failed to parse meal information",
-        };
-      }
+      const parsedMealData = response.data;
 
       // Validate word count for each meal description
       if (parsedMealData.meals) {

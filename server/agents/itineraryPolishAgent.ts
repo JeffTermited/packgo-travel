@@ -2,13 +2,15 @@
  * Itinerary Polish Agent
  * 美化行程措辭，保持原始資訊不變
  * 
+ * Claude Hybrid Architecture: Uses Claude 3.5 Sonnet for complex reasoning
+ * 
  * Phase 1 優化：
  * - 加入 fidelityCheck 機制
  * - 加入自動修復功能
  * - 強化資料忠實度約束
  */
 
-import { invokeLLM } from "../_core/llm";
+import { getSonnetAgent, JSONSchema, STRICT_DATA_FIDELITY_RULES } from "./claudeAgent";
 import { ExtractedItinerary, ExtractedActivity, TourType } from "./itineraryExtractAgent";
 import { loadReference } from "./skillLoader";
 
@@ -73,7 +75,7 @@ export class ItineraryPolishAgent {
   private dataFidelityRules: string = '';
   
   constructor() {
-    console.log('[ItineraryPolishAgent] Initialized with Phase 1 optimizations');
+    console.log('[ItineraryPolishAgent] Initialized with Claude 3.5 Sonnet (Phase 2 optimization)');
     
     // 載入資料忠實度規則
     try {
@@ -251,64 +253,36 @@ export class ItineraryPolishAgent {
             hotel.toLowerCase().includes(accommodationLower)
           );
           
-          if (!matchedHotel && !accommodationLower.includes('溫暖的家') && !accommodationLower.includes('返程')) {
-            // 檢查是否是常見的錯誤替換
-            const commonWrongHotels = ['娜路彎', '理想大地', '桂田', '遠雄'];
-            for (const wrongHotel of commonWrongHotels) {
-              if (accommodationLower.includes(wrongHotel.toLowerCase())) {
-                const isInOriginal = originalDataSnapshot.originalHotels.some(h => 
-                  h.toLowerCase().includes(wrongHotel.toLowerCase())
-                );
-                if (!isInOriginal) {
-                  hotelMatch = false;
-                  issues.push(`Day ${day.day}: 飯店名稱可能被替換 - "${day.accommodation}" 不在原始飯店列表中`);
-                  score -= 15;
-                }
-              }
+          if (!matchedHotel && day.accommodation !== '敬請期待' && day.accommodation !== '待確認') {
+            // 檢查是否是完全不同的飯店名稱
+            const isGenericName = ['飯店', '酒店', 'hotel', '旅館'].some(term => 
+              accommodationLower === term || accommodationLower.length < 5
+            );
+            
+            if (!isGenericName) {
+              hotelMatch = false;
+              issues.push(`Day ${day.day}: 飯店名稱可能被更改 - ${day.accommodation}`);
+              score -= 10;
             }
           }
         }
       }
     }
     
-    // 統計活動來源
-    let activitiesFromSource = 0;
-    let activitiesAdded = 0;
+    // 計算活動來源
+    const originalActivitiesCount = originalItineraries.reduce((sum, day) => sum + day.activities.length, 0);
+    const polishedActivitiesCount = polishedItineraries.reduce((sum, day) => sum + day.activities.length, 0);
+    const activitiesAdded = Math.max(0, polishedActivitiesCount - originalActivitiesCount);
     
-    if (originalDataSnapshot?.originalAttractions && originalDataSnapshot.originalAttractions.length > 0) {
-      for (const day of polishedItineraries) {
-        for (const activity of day.activities) {
-          const activityTitle = activity.title.toLowerCase();
-          const isFromSource = originalDataSnapshot.originalAttractions.some(attr =>
-            activityTitle.includes(attr.toLowerCase()) ||
-            attr.toLowerCase().includes(activityTitle)
-          );
-          
-          if (isFromSource) {
-            activitiesFromSource++;
-          } else {
-            // 排除通用活動（入住、退房、用餐等）
-            const genericActivities = ['入住', '退房', '早餐', '午餐', '晚餐', '抵達', '返程', '出發', '集合'];
-            const isGeneric = genericActivities.some(g => activityTitle.includes(g));
-            
-            if (!isGeneric) {
-              activitiesAdded++;
-            }
-          }
-        }
-      }
-      
-      // 如果新增了太多活動，扣分
-      if (activitiesAdded > 3) {
-        issues.push(`新增了 ${activitiesAdded} 個不在原始資料中的活動`);
-        score -= Math.min(activitiesAdded * 5, 25);
-      }
+    if (activitiesAdded > originalActivitiesCount * 0.2) {
+      issues.push(`新增了過多活動：${activitiesAdded} 個（原始 ${originalActivitiesCount} 個）`);
+      score -= 20;
     }
     
     return {
       transportationMatch,
       hotelMatch,
-      activitiesFromSource,
+      activitiesFromSource: originalActivitiesCount,
       activitiesAdded,
       overallScore: Math.max(0, score),
       issues,
@@ -328,21 +302,15 @@ export class ItineraryPolishAgent {
     const repaired = polishedItineraries.map((day, index) => {
       const originalDay = originalItineraries[index];
       
-      // 修復住宿
+      // 修復飯店名稱
       let accommodation = day.accommodation;
       if (originalDay?.accommodation) {
         accommodation = originalDay.accommodation;
-        console.log(`[ItineraryPolishAgent] Repaired Day ${day.day} accommodation: ${accommodation}`);
-      } else if (originalDataSnapshot.originalHotels.length > 0) {
-        // 使用原始飯店列表中的飯店
-        const hotelIndex = Math.min(index, originalDataSnapshot.originalHotels.length - 1);
-        if (index < originalDataSnapshot.originalHotels.length) {
-          accommodation = originalDataSnapshot.originalHotels[hotelIndex];
-          console.log(`[ItineraryPolishAgent] Repaired Day ${day.day} accommodation from snapshot: ${accommodation}`);
-        }
+      } else if (originalDataSnapshot.originalHotels[index]) {
+        accommodation = originalDataSnapshot.originalHotels[index];
       }
       
-      // 修復活動中的交通方式
+      // 修復交通方式
       const activities = day.activities.map(activity => {
         let transportation = activity.transportation;
         let description = activity.description;
@@ -350,6 +318,7 @@ export class ItineraryPolishAgent {
         
         // 如果是火車行程，移除飛機相關描述
         if (originalDataSnapshot.tourType === 'MINGRI_TRAIN' || 
+            originalDataSnapshot.tourType === 'TRAIN' ||
             originalDataSnapshot.originalTransportation.includes('火車')) {
           if (transportation.includes('飛機') || transportation.includes('航班')) {
             transportation = '火車';
@@ -379,7 +348,7 @@ export class ItineraryPolishAgent {
 
   /**
    * 批次美化所有天數的行程
-   * Phase 1 優化：加入嚴格的資料忠實度約束
+   * Phase 2 優化：使用 Claude 3.5 Sonnet 進行複雜推理
    */
   private async polishAllDays(
     itineraries: ExtractedItinerary[],
@@ -412,6 +381,8 @@ ${originalDataSnapshot.originalAttractions.slice(0, 10).map(a => `   - ${a}`).jo
 
 ${fidelityConstraints}
 
+${STRICT_DATA_FIDELITY_RULES}
+
 重要規則：
 1. **保持原始資訊不變**：景點名稱、時間、地點、飯店名稱等資訊必須完全保留
 2. **只改善表達方式**：讓描述更生動、更有畫面感
@@ -423,28 +394,7 @@ ${fidelityConstraints}
 - 禁止創造原始資料中不存在的景點
 - 禁止更改交通方式（火車不能變飛機）
 - 禁止替換飯店名稱
-- 禁止添加虛構的活動
-
-輸出格式：JSON 陣列，每天的格式如下：
-{
-  "day": 1,
-  "title": "Day 1：[美化後的標題]",
-  "activities": [
-    {
-      "time": "[保持原始時間]",
-      "title": "[美化後的活動標題，保持原始景點名稱]",
-      "description": "[美化後的描述，50-80字]",
-      "transportation": "[保持原始交通方式]",
-      "location": "[保持原始地點]"
-    }
-  ],
-  "meals": {
-    "breakfast": "[美化後的早餐描述]",
-    "lunch": "[美化後的午餐描述]",
-    "dinner": "[美化後的晚餐描述]"
-  },
-  "accommodation": "[保持原始飯店名稱，不可更改]"
-}`;
+- 禁止添加虛構的活動`;
 
     const userPrompt = `請美化以下行程的措辭：
 
@@ -453,79 +403,75 @@ ${fidelityConstraints}
 原始行程資料：
 ${JSON.stringify(itineraries, null, 2)}
 
-請以 JSON 陣列格式回傳美化後的行程，確保：
+請以 JSON 格式回傳美化後的行程，確保：
 1. 保持所有原始資訊（時間、地點、景點名稱、飯店名稱）不變
 2. 只改善文字表達方式
 3. 每個活動描述控制在 50-80 字
 4. 絕對不要更改交通方式或飯店名稱`;
 
-    try {
-      const response = await invokeLLM({
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt }
-        ],
-        response_format: {
-          type: "json_schema",
-          json_schema: {
-            name: "polished_itineraries",
-            strict: true,
-            schema: {
-              type: "object",
-              properties: {
-                itineraries: {
-                  type: "array",
-                  items: {
-                    type: "object",
-                    properties: {
-                      day: { type: "integer" },
-                      title: { type: "string" },
-                      activities: {
-                        type: "array",
-                        items: {
-                          type: "object",
-                          properties: {
-                            time: { type: "string" },
-                            title: { type: "string" },
-                            description: { type: "string" },
-                            transportation: { type: "string" },
-                            location: { type: "string" }
-                          },
-                          required: ["time", "title", "description", "transportation", "location"],
-                          additionalProperties: false
-                        }
-                      },
-                      meals: {
-                        type: "object",
-                        properties: {
-                          breakfast: { type: "string" },
-                          lunch: { type: "string" },
-                          dinner: { type: "string" }
-                        },
-                        required: ["breakfast", "lunch", "dinner"],
-                        additionalProperties: false
-                      },
-                      accommodation: { type: "string" }
-                    },
-                    required: ["day", "title", "activities", "meals", "accommodation"],
-                    additionalProperties: false
-                  }
-                }
+    // Define JSON Schema for polished itineraries
+    const polishedSchema: JSONSchema = {
+      type: "object",
+      properties: {
+        itineraries: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              day: { type: "integer" },
+              title: { type: "string" },
+              activities: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    time: { type: "string" },
+                    title: { type: "string" },
+                    description: { type: "string" },
+                    transportation: { type: "string" },
+                    location: { type: "string" },
+                  },
+                  required: ["time", "title", "description", "transportation", "location"],
+                },
               },
-              required: ["itineraries"],
-              additionalProperties: false
-            }
-          }
-        }
-      });
+              meals: {
+                type: "object",
+                properties: {
+                  breakfast: { type: "string" },
+                  lunch: { type: "string" },
+                  dinner: { type: "string" },
+                },
+                required: ["breakfast", "lunch", "dinner"],
+              },
+              accommodation: { type: "string" },
+            },
+            required: ["day", "title", "activities", "meals", "accommodation"],
+          },
+        },
+      },
+      required: ["itineraries"],
+    };
 
-      const content = response.choices[0]?.message?.content;
-      if (!content) {
-        throw new Error("Empty response from LLM");
+    try {
+      const claudeAgent = getSonnetAgent();
+      const response = await claudeAgent.sendStructuredMessage<{ itineraries: PolishedItinerary[] }>(
+        userPrompt,
+        polishedSchema,
+        {
+          systemPrompt,
+          maxTokens: 8192,
+          temperature: 0.5,
+          schemaName: 'polished_itineraries_output',
+          schemaDescription: '美化後的行程結構化輸出',
+          strictDataFidelity: true,
+        }
+      );
+
+      if (!response.success || !response.data) {
+        throw new Error("Empty response from Claude");
       }
 
-      const parsed = JSON.parse(typeof content === "string" ? content : JSON.stringify(content));
-      const polishedItineraries = parsed.itineraries || parsed;
+      const polishedItineraries = response.data.itineraries || [];
 
       if (!Array.isArray(polishedItineraries)) {
         throw new Error("Invalid response format");
@@ -533,7 +479,7 @@ ${JSON.stringify(itineraries, null, 2)}
 
       return polishedItineraries;
     } catch (error) {
-      console.error("[ItineraryPolishAgent] LLM error:", error);
+      console.error("[ItineraryPolishAgent] Claude error:", error);
       throw error;
     }
   }

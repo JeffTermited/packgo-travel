@@ -1,9 +1,11 @@
 /**
  * Lion Travel Title Generator
  * 生成符合雄獅旅遊風格的行程標題 (40-80 字)
+ * 
+ * Claude Hybrid Architecture: Uses Claude 3 Haiku for simple generation
  */
 
-import { invokeLLM } from "../_core/llm";
+import { getHaikuAgent } from "./claudeAgent";
 
 /**
  * Generate Lion Travel style title (40-80 characters)
@@ -59,15 +61,14 @@ export async function generateLionTravelTitle(rawData: any): Promise<string> {
   // Retry up to 2 times
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
-      const response = await invokeLLM({
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt }
-        ],
+      const claudeAgent = getHaikuAgent();
+      const response = await claudeAgent.sendMessage(userPrompt, {
+        systemPrompt,
+        maxTokens: 256,
+        temperature: 0.7,
       });
       
-      const content = response.choices[0]?.message?.content;
-      const title = typeof content === "string" ? content.trim() : null;
+      const title = response.content?.trim() || null;
       
       // Validate length (寬容檢查：±30% 誤差，40-80 字 → 28-104 字)
       if (title && title.length >= 28 && title.length <= 104) {

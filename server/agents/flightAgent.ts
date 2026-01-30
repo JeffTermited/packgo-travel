@@ -1,4 +1,11 @@
-import { invokeLLM } from "../_core/llm";
+/**
+ * FlightAgent
+ * Generates professional flight information for tours
+ * 
+ * Claude Hybrid Architecture: Uses Claude 3 Haiku for simple extraction
+ */
+
+import { getHaikuAgent, JSONSchema, STRICT_DATA_FIDELITY_RULES } from "./claudeAgent";
 import { FLIGHT_SKILL } from "./skillLibrary";
 import { getKeyInstructions } from "./skillLoader";
 
@@ -34,6 +41,7 @@ export class FlightAgent {
   constructor() {
     this.skillInstructions = getKeyInstructions('FlightAgent');
     console.log('[FlightAgent] SKILL loaded:', this.skillInstructions.length, 'chars');
+    console.log('[FlightAgent] Using Claude 3 Haiku with JSON Schema');
   }
 
   async execute(rawData: any): Promise<FlightAgentResult> {
@@ -52,70 +60,85 @@ export class FlightAgent {
         };
       }
 
-      // Build prompt for LLM
+      // Define JSON Schema for flight output
+      const flightSchema: JSONSchema = {
+        type: "object",
+        properties: {
+          airline: { type: "string", description: "航空公司名稱" },
+          outbound: {
+            type: "object",
+            properties: {
+              flightNo: { type: "string", description: "去程航班號" },
+              departureTime: { type: "string", description: "去程出發時間" },
+              arrivalTime: { type: "string", description: "去程抵達時間" },
+              duration: { type: "string", description: "去程飛行時長" },
+              departureAirport: { type: "string", description: "出發機場" },
+              arrivalAirport: { type: "string", description: "抵達機場" },
+            },
+            required: ["flightNo", "departureTime", "arrivalTime", "duration", "departureAirport", "arrivalAirport"],
+          },
+          inbound: {
+            type: "object",
+            properties: {
+              flightNo: { type: "string", description: "回程航班號" },
+              departureTime: { type: "string", description: "回程出發時間" },
+              arrivalTime: { type: "string", description: "回程抵達時間" },
+              duration: { type: "string", description: "回程飛行時長" },
+              departureAirport: { type: "string", description: "出發機場" },
+              arrivalAirport: { type: "string", description: "抵達機場" },
+            },
+            required: ["flightNo", "departureTime", "arrivalTime", "duration", "departureAirport", "arrivalAirport"],
+          },
+          description: { type: "string", description: "航班描述（150-200字）" },
+          features: {
+            type: "array",
+            items: { type: "string" },
+            description: "航班特色列表",
+          },
+        },
+        required: ["airline", "outbound", "inbound", "description", "features"],
+      };
+
+      // Build prompt
       const prompt = `
 請根據以下航班資訊，生成專業的航班介紹：
 
 航班資訊：
 ${JSON.stringify(rawData.flight, null, 2)}
 
-請以 JSON 格式回傳，包含以下欄位：
-{
-  "airline": "航空公司名稱",
-  "outbound": {
-    "flightNo": "去程航班號",
-    "departureTime": "去程出發時間",
-    "arrivalTime": "去程抵達時間",
-    "duration": "去程飛行時長",
-    "departureAirport": "出發機場",
-    "arrivalAirport": "抵達機場"
-  },
-  "inbound": {
-    "flightNo": "回程航班號",
-    "departureTime": "回程出發時間",
-    "arrivalTime": "回程抵達時間",
-    "duration": "回程飛行時長",
-    "departureAirport": "出發機場",
-    "arrivalAirport": "抵達機場"
-  },
-  "description": "航班描述（150-200字，包含航空公司、航班時間、飛行時長、機上服務）",
-  "features": ["特色1", "特色2", "特色3"]
-}
+請生成包含以下欄位的航班資訊：
+- airline: 航空公司名稱
+- outbound: 去程航班資訊（航班號、出發時間、抵達時間、飛行時長、出發機場、抵達機場）
+- inbound: 回程航班資訊（航班號、出發時間、抵達時間、飛行時長、出發機場、抵達機場）
+- description: 航班描述（150-200字，包含航空公司、航班時間、飛行時長、機上服務）
+- features: 航班特色列表
 
-**重要：如果提供的航班資訊不足以生成完整的航班介紹，請回傳 null。**
+**重要：如果提供的航班資訊不足，請根據目的地生成合理的預設航班資訊。**
 `;
 
-      // Call LLM with FLIGHT_SKILL
-      const response = await invokeLLM({
-        messages: [
-          { role: "system", content: FLIGHT_SKILL },
-          { role: "user", content: prompt },
-        ],
-      });
+      // Call Claude with structured output
+      const claudeAgent = getHaikuAgent();
+      const response = await claudeAgent.sendStructuredMessage<FlightAgentResult['data']>(
+        prompt,
+        flightSchema,
+        {
+          systemPrompt: `${FLIGHT_SKILL}\n\n${STRICT_DATA_FIDELITY_RULES}`,
+          maxTokens: 2048,
+          temperature: 0.5,
+          schemaName: 'flight_output',
+          schemaDescription: '航班資訊結構化輸出',
+        }
+      );
 
-      const content = typeof response.choices[0].message.content === 'string' 
-        ? response.choices[0].message.content.trim() 
-        : null;
-
-      if (!content || content === "null") {
-        console.warn("[FlightAgent] LLM returned null (insufficient data), using default flight");
+      if (!response.success || !response.data) {
+        console.warn("[FlightAgent] Claude returned no data, using default flight");
         return {
           success: true,
           data: this.generateDefaultFlight(rawData),
         };
       }
 
-      // Parse JSON response
-      let parsedFlightData;
-      try {
-        parsedFlightData = JSON.parse(content);
-      } catch (parseError) {
-        console.error("[FlightAgent] Failed to parse LLM response:", parseError);
-        return {
-          success: false,
-          error: "Failed to parse flight information",
-        };
-      }
+      let parsedFlightData = response.data;
 
       // Regex 補強：從 Markdown 中提取 HH:MM 格式的時間
       if (flightData && typeof flightData === 'string') {

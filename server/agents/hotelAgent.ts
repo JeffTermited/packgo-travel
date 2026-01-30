@@ -1,4 +1,11 @@
-import { invokeLLM } from "../_core/llm";
+/**
+ * HotelAgent
+ * Generates professional hotel information for tours
+ * 
+ * Claude Hybrid Architecture: Uses Claude 3 Haiku for simple extraction
+ */
+
+import { getHaikuAgent, JSONSchema, STRICT_DATA_FIDELITY_RULES } from "./claudeAgent";
 import { HOTEL_SKILL } from "./skillLibrary";
 import { getKeyInstructions } from "./skillLoader";
 
@@ -22,6 +29,7 @@ export class HotelAgent {
   constructor() {
     this.skillInstructions = getKeyInstructions('HotelAgent');
     console.log('[HotelAgent] SKILL loaded:', this.skillInstructions.length, 'chars');
+    console.log('[HotelAgent] Using Claude 3 Haiku with JSON Schema');
   }
 
   async execute(rawData: any): Promise<HotelAgentResult> {
@@ -42,60 +50,74 @@ export class HotelAgent {
         };
       }
 
-      // Build prompt for LLM
+      // Define JSON Schema for hotel output
+      const hotelSchema: JSONSchema = {
+        type: "object",
+        properties: {
+          hotels: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                name: { type: "string", description: "飯店名稱" },
+                stars: { type: "string", description: "星級（例如：五星級）" },
+                description: { type: "string", description: "飯店描述（150-200字）" },
+                facilities: {
+                  type: "array",
+                  items: { type: "string" },
+                  description: "飯店設施列表",
+                },
+                location: { type: "string", description: "地理位置描述" },
+              },
+              required: ["name", "stars", "description", "facilities", "location"],
+            },
+          },
+        },
+        required: ["hotels"],
+      };
+
+      // Build prompt
       const prompt = `
 請根據以下住宿資訊，生成專業的飯店介紹：
 
 住宿資訊：
 ${JSON.stringify(accommodationData, null, 2)}
 
-請以 JSON 格式回傳，包含以下欄位：
-{
-  "hotels": [
-    {
-      "name": "飯店名稱",
-      "stars": "星級（例如：五星級）",
-      "description": "飯店描述（150-200字，包含設施、房型、地理位置、服務品質）",
-      "facilities": ["設施1", "設施2", "設施3"],
-      "location": "地理位置描述"
-    }
-  ]
-}
+請生成包含以下欄位的飯店資訊：
+- name: 飯店名稱
+- stars: 星級（例如：五星級）
+- description: 飯店描述（150-200字，包含設施、房型、地理位置、服務品質）
+- facilities: 設施列表
+- location: 地理位置描述
 
-**重要：如果提供的住宿資訊不足以生成完整的飯店介紹，請回傳 null。**
+**重要：如果提供的住宿資訊不足，請根據目的地生成合理的預設飯店資訊。**
 `;
 
-      // Call LLM with HOTEL_SKILL
-      const response = await invokeLLM({
-        messages: [
-          { role: "system", content: HOTEL_SKILL },
-          { role: "user", content: prompt },
-        ],
-      });
+      // Call Claude with structured output
+      const claudeAgent = getHaikuAgent();
+      const response = await claudeAgent.sendStructuredMessage<{ hotels: any[] }>(
+        prompt,
+        hotelSchema,
+        {
+          systemPrompt: `${HOTEL_SKILL}\n\n${STRICT_DATA_FIDELITY_RULES}`,
+          maxTokens: 2048,
+          temperature: 0.5,
+          schemaName: 'hotel_output',
+          schemaDescription: '飯店資訊結構化輸出',
+        }
+      );
 
-      const content = typeof response.choices[0].message.content === 'string' 
-        ? response.choices[0].message.content.trim() 
-        : null;
-
-      if (!content || content === "null") {
-        console.warn("[HotelAgent] LLM returned null (insufficient data)");
+      if (!response.success || !response.data) {
+        console.warn("[HotelAgent] Claude returned no data, using default hotels");
         return {
-          success: false,
-          error: "Insufficient data to generate hotel information",
+          success: true,
+          data: {
+            hotels: this.generateDefaultHotels(rawData),
+          },
         };
       }
 
-      // Parse JSON response
-      let hotelData;
-      try {
-        hotelData = JSON.parse(content);
-      } catch (parseError) {
-        console.error("[HotelAgent] Failed to parse LLM response:", parseError);
-        return {
-          success: false,
-          error: "Failed to parse hotel information",
-        };
-      }
+      const hotelData = response.data;
 
       // Validate word count for each hotel description
       if (hotelData.hotels) {

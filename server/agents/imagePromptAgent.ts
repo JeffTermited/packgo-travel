@@ -1,9 +1,11 @@
 /**
  * Image Prompt Agent
- * Responsible for generating optimized image prompts using LLM
+ * Responsible for generating optimized image prompts using Claude
+ * 
+ * Claude Hybrid Architecture: Uses Claude 3 Haiku for simple prompt generation
  */
 
-import { invokeLLM } from "../_core/llm";
+import { getHaikuAgent, STRICT_DATA_FIDELITY_RULES } from "./claudeAgent";
 import { StyleGuide, ImageGenerationRequest } from "../../shared/tourTypes";
 import { getStyleGuideForDestination } from "../styleGuide";
 import { PHOTOGRAPHER_SKILL } from "./skillLibrary";
@@ -30,7 +32,9 @@ export class ImagePromptAgent {
   constructor() {
     this.skillInstructions = getKeyInstructions('ImagePromptAgent');
     console.log('[ImagePromptAgent] SKILL loaded:', this.skillInstructions.length, 'chars');
+    console.log('[ImagePromptAgent] Using Claude 3 Haiku');
   }
+  
   /**
    * Execute prompt generation
    */
@@ -89,7 +93,7 @@ export class ImagePromptAgent {
   }
   
   /**
-   * Generate hero image prompt with LLM optimization and validation
+   * Generate hero image prompt with Claude optimization and validation
    */
   private async generateHeroPrompt(
     destination: string,
@@ -126,15 +130,14 @@ Example format:
     // Retry up to 2 times
     for (let attempt = 1; attempt <= 2; attempt++) {
       try {
-        const response = await invokeLLM({
-          messages: [
-            { role: "system", content: PHOTOGRAPHER_SKILL },
-            { role: "user", content: userPrompt }
-          ],
+        const claudeAgent = getHaikuAgent();
+        const response = await claudeAgent.sendMessage(userPrompt, {
+          systemPrompt: PHOTOGRAPHER_SKILL,
+          maxTokens: 512,
+          temperature: 0.7,
         });
         
-        const content = response.choices[0]?.message?.content;
-        const prompt = typeof content === "string" ? content.trim() : null;
+        const prompt = response.content?.trim() || null;
         
         // Validate prompt (should not be too short or contain generic phrases)
         if (prompt && prompt.length >= 50 && !prompt.includes("beautiful") && !prompt.includes("amazing")) {
@@ -191,16 +194,14 @@ Requirements:
       
       // Single attempt (no retry for highlights to save time)
       try {
-        const response = await invokeLLM({
-          messages: [
-            { role: "system", content: PHOTOGRAPHER_SKILL },
-            { role: "user", content: userPrompt }
-          ],
+        const claudeAgent = getHaikuAgent();
+        const response = await claudeAgent.sendMessage(userPrompt, {
+          systemPrompt: PHOTOGRAPHER_SKILL,
+          maxTokens: 512,
+          temperature: 0.7,
         });
         
-        const content = response.choices[0]?.message?.content;
-        const prompt = typeof content === "string" ? content.trim() : basePrompt;
-        
+        const prompt = response.content?.trim() || basePrompt;
         prompts.push(prompt);
       } catch (error) {
         console.error("[ImagePromptAgent] Highlight prompt generation failed, using fallback:", error);
@@ -248,14 +249,19 @@ Requirements:
 5. 長度控制在 80-100 個單詞
 6. 只回傳提示詞本身，不要其他說明`;
 
-      const response = await invokeLLM({
-        messages: [{ role: "user", content: optimizationPrompt }],
-      });
-      
-      const content = response.choices[0]?.message?.content;
-      const optimizedPrompt = typeof content === "string" ? content.trim() : basePrompt;
-      
-      prompts.push(optimizedPrompt);
+      try {
+        const claudeAgent = getHaikuAgent();
+        const response = await claudeAgent.sendMessage(optimizationPrompt, {
+          maxTokens: 512,
+          temperature: 0.7,
+        });
+        
+        const optimizedPrompt = response.content?.trim() || basePrompt;
+        prompts.push(optimizedPrompt);
+      } catch (error) {
+        console.error("[ImagePromptAgent] Feature prompt generation failed, using fallback:", error);
+        prompts.push(basePrompt);
+      }
     }
     
     console.log("[ImagePromptAgent] Generated", prompts.filter(p => p).length, "feature prompts");

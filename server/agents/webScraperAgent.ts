@@ -321,11 +321,13 @@ export class WebScraperAgent {
   }
   
   /**
-   * 使用 LLM 從 Markdown 提取結構化資料
+   * 使用 Claude 從 Markdown 提取結構化資料
+   * Claude Hybrid Architecture: Uses Claude 3.5 Sonnet for complex extraction
    */
   private async extractFromMarkdownWithLLM(markdown: string, url: string): Promise<any | null> {
     try {
-      const { invokeLLM } = await import("../_core/llm");
+      const { getSonnetAgent, STRICT_DATA_FIDELITY_RULES } = await import("./claudeAgent");
+      type JSONSchema = import("./claudeAgent").JSONSchema;
       
       const prompt = `你是一個專業的旅遊行程資料提取專家。請從以下 Markdown 格式的網頁內容中提取旅遊行程資訊。
 
@@ -339,120 +341,98 @@ Markdown 內容：
 ${markdown.substring(0, 15000)} 
 \`\`\`
 
-請以 JSON 格式返回以下資訊：
-{
-  "basicInfo": {
-    "title": "行程標題",
-    "subtitle": "副標題或促銷文字",
-    "description": "行程描述"
-  },
-  "location": {
-    "destinationCountry": "目的地國家",
-    "destinationCity": "目的地城市"
-  },
-  "duration": {
-    "days": 5,
-    "nights": 4
-  },
-  "highlights": ["特色1", "特色2"],
-  "dailyItinerary": [
-    {
-      "day": 1,
-      "title": "第一天標題",
-      "description": "第一天行程描述",
-      "meals": "早餐：X / 午餐：X / 晚餐：X",
-      "accommodation": "住宿飯店名稱"
-    }
-  ],
-  "includes": ["包含項目1", "包含項目2"],
-  "excludes": ["不包含項目1", "不包含項目2"]
-}`;
+請提取以下資訊：
+- basicInfo: 行程基本資訊（標題、副標題、描述）
+- location: 目的地資訊（國家、城市）
+- duration: 行程天數（天數、夜數）
+- highlights: 行程亮點
+- dailyItinerary: 每日行程（天數、標題、描述、餐食、住宿）
+- includes: 包含項目
+- excludes: 不包含項目`;
 
-      const response = await invokeLLM({
-        messages: [
-          { role: "system", content: "你是一個專業的旅遊行程資料提取專家。" },
-          { role: "user", content: prompt },
-        ],
-        response_format: {
-          type: "json_schema",
-          json_schema: {
-            name: "tour_extraction",
-            strict: true,
-            schema: {
+      // Define JSON Schema for tour extraction
+      const tourSchema: JSONSchema = {
+        type: "object",
+        properties: {
+          basicInfo: {
+            type: "object",
+            properties: {
+              title: { type: "string" },
+              subtitle: { type: "string" },
+              description: { type: "string" },
+            },
+            required: ["title"],
+          },
+          location: {
+            type: "object",
+            properties: {
+              destinationCountry: { type: "string" },
+              destinationCity: { type: "string" },
+            },
+            required: ["destinationCountry", "destinationCity"],
+          },
+          duration: {
+            type: "object",
+            properties: {
+              days: { type: "number" },
+              nights: { type: "number" },
+            },
+            required: ["days", "nights"],
+          },
+          highlights: {
+            type: "array",
+            items: { type: "string" },
+          },
+          dailyItinerary: {
+            type: "array",
+            items: {
               type: "object",
               properties: {
-                basicInfo: {
-                  type: "object",
-                  properties: {
-                    title: { type: "string" },
-                    subtitle: { type: "string" },
-                    description: { type: "string" },
-                  },
-                  required: ["title"],
-                  additionalProperties: false,
-                },
-                location: {
-                  type: "object",
-                  properties: {
-                    destinationCountry: { type: "string" },
-                    destinationCity: { type: "string" },
-                  },
-                  required: ["destinationCountry", "destinationCity"],
-                  additionalProperties: false,
-                },
-                duration: {
-                  type: "object",
-                  properties: {
-                    days: { type: "number" },
-                    nights: { type: "number" },
-                  },
-                  required: ["days", "nights"],
-                  additionalProperties: false,
-                },
-                highlights: {
-                  type: "array",
-                  items: { type: "string" },
-                },
-                dailyItinerary: {
-                  type: "array",
-                  items: {
-                    type: "object",
-                    properties: {
-                      day: { type: "number" },
-                      title: { type: "string" },
-                      description: { type: "string" },
-                      meals: { type: "string" },
-                      accommodation: { type: "string" },
-                    },
-                    required: ["day", "title", "description"],
-                    additionalProperties: false,
-                  },
-                },
-                includes: {
-                  type: "array",
-                  items: { type: "string" },
-                },
-                excludes: {
-                  type: "array",
-                  items: { type: "string" },
-                },
+                day: { type: "number" },
+                title: { type: "string" },
+                description: { type: "string" },
+                meals: { type: "string" },
+                accommodation: { type: "string" },
               },
-              required: ["basicInfo", "location", "duration", "dailyItinerary"],
-              additionalProperties: false,
+              required: ["day", "title", "description"],
             },
           },
+          includes: {
+            type: "array",
+            items: { type: "string" },
+          },
+          excludes: {
+            type: "array",
+            items: { type: "string" },
+          },
         },
-      });
+        required: ["basicInfo", "location", "duration", "dailyItinerary"],
+      };
+
+      const systemPrompt = `你是一個專業的旅遊行程資料提取專家。
+
+${STRICT_DATA_FIDELITY_RULES}`;
+
+      const claudeAgent = getSonnetAgent();
+      const response = await claudeAgent.sendStructuredMessage<any>(
+        prompt,
+        tourSchema,
+        {
+          systemPrompt,
+          maxTokens: 4096,
+          temperature: 0.3,
+          schemaName: 'tour_extraction_output',
+          schemaDescription: '旅遊行程提取結構化輸出',
+          strictDataFidelity: true,
+        }
+      );
       
-      const content = response.choices[0].message.content;
-      if (!content) {
-        console.log("[WebScraperAgent] LLM 未返回內容");
+      if (!response.success || !response.data) {
+        console.log("[WebScraperAgent] Claude 未返回內容");
         return null;
       }
       
-      // Convert content to string if it's an array
-      const contentStr = typeof content === 'string' ? content : JSON.stringify(content);
-      const extractedData = JSON.parse(contentStr);
+      const extractedData = response.data;
       
       // 驗證每日行程是否有效
       if (!extractedData.dailyItinerary || extractedData.dailyItinerary.length === 0) {
@@ -460,11 +440,11 @@ ${markdown.substring(0, 15000)}
         return null;
       }
       
-      console.log("[WebScraperAgent] LLM 提取成功，每日行程天數：", extractedData.dailyItinerary.length);
+      console.log("[WebScraperAgent] Claude 提取成功，每日行程天數：", extractedData.dailyItinerary.length);
       
       return extractedData;
     } catch (error) {
-      console.error("[WebScraperAgent] LLM 提取錯誤：", error);
+      console.error("[WebScraperAgent] Claude 提取錯誤：", error);
       return null;
     }
   }
