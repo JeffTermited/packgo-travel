@@ -1180,3 +1180,30 @@
 - [x] 創建 8 個 Skill SKILL.md 檔案
 - [ ] 更新 MasterAgent 動態載入 Skills
 - [ ] 端到端測試
+
+
+---
+
+## Phase 23: Agent Skills 架構升級（2026-01-30）
+
+### Phase C: 捨棄冗餘 Agent（3 個）
+- [x] 刪除 LionTitleGenerator（功能與 ContentAnalyzerAgent 重疊）
+- [x] 刪除 PrintFriendlyAgent（使用率極低）
+- [x] 刪除 PriceAgent（功能與 WebScraperAgent 重疊）
+- [x] 更新 masterAgent.ts 移除 LionTitleGenerator 引用
+- [x] 更新 webScraperAgent.ts 移除 PrintFriendlyAgent 引用
+- [x] 更新 webScraper.ts 移除 PriceAgent 引用
+- [x] TypeScript 編譯驗證（無錯誤）
+
+### Phase B: 重構 SkillLoader
+- [x] 創建 server/skills/ 目錄結構（8 個 Skill 目錄）
+- [x] 設計 SKILL.md 格式規範（YAML frontmatter + Markdown）
+- [x] 實作 SkillLoader v2（server/skills/skillLoader.ts）
+- [x] 支援 Progressive Disclosure（metadata → full → sections）
+- [x] 創建 8 個 Skill SKILL.md 檔案
+
+### Phase A: 實施 details Skill
+- [x] 創建 DetailsSkill 類別（server/skills/details/detailsSkill.ts）
+- [x] 整合 MealAgent, HotelAgent, CostAgent, NoticeAgent 功能
+- [x] 更新 MasterAgent 使用 DetailsSkill
+- [ ] 端到端測試

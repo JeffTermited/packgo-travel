@@ -23,10 +23,8 @@ import { ImageGenerationAgent } from "./imageGenerationAgent";
 import { ColorThemeAgent } from "./colorThemeAgent";
 import { ItineraryExtractAgent } from "./itineraryExtractAgent";
 import { ItineraryPolishAgent } from "./itineraryPolishAgent";
-import { CostAgent } from "./costAgent";
-import { NoticeAgent } from "./noticeAgent";
-import { HotelAgent } from "./hotelAgent";
-import { MealAgent } from "./mealAgent";
+// CostAgent, NoticeAgent, HotelAgent, MealAgent replaced by DetailsSkill
+import { getDetailsSkill, DetailsSkill } from "../skills/details/detailsSkill";
 import { FlightAgent } from "./flightAgent";
 import { TransportationAgent } from "./transportationAgent";
 // LionTitleGenerator removed - using ContentAnalyzerAgent.poeticTitle instead
@@ -133,10 +131,8 @@ export class MasterAgent {
   private colorThemeAgent: ColorThemeAgent;
   private itineraryExtractAgent: ItineraryExtractAgent;
   private itineraryPolishAgent: ItineraryPolishAgent;
-  private costAgent: CostAgent;
-  private noticeAgent: NoticeAgent;
-  private hotelAgent: HotelAgent;
-  private mealAgent: MealAgent;
+  // DetailsSkill replaces CostAgent, NoticeAgent, HotelAgent, MealAgent
+  private detailsSkill: DetailsSkill;
   private flightAgent: FlightAgent;
   private transportationAgent: TransportationAgent;
 
@@ -164,10 +160,8 @@ export class MasterAgent {
     this.colorThemeAgent = new ColorThemeAgent();
     this.itineraryExtractAgent = new ItineraryExtractAgent();
     this.itineraryPolishAgent = new ItineraryPolishAgent();
-    this.costAgent = new CostAgent();
-    this.noticeAgent = new NoticeAgent();
-    this.hotelAgent = new HotelAgent();
-    this.mealAgent = new MealAgent();
+    // DetailsSkill replaces CostAgent, NoticeAgent, HotelAgent, MealAgent
+    this.detailsSkill = getDetailsSkill();
     this.flightAgent = new FlightAgent();
     this.transportationAgent = new TransportationAgent();
     
@@ -374,10 +368,8 @@ export class MasterAgent {
       console.log("[MasterAgent] Skipping ImageGenerationAgent - editors will manage images");
       
       // Start all agents (except ImageGenerationAgent and ItineraryAgent which runs separately)
-      this.monitor.startAgent('CostAgent');
-      this.monitor.startAgent('NoticeAgent');
-      this.monitor.startAgent('HotelAgent');
-      this.monitor.startAgent('MealAgent');
+      // DetailsSkill replaces CostAgent, NoticeAgent, HotelAgent, MealAgent
+      this.monitor.startAgent('DetailsSkill');
       this.monitor.startAgent('TransportationAgent');
       if (taskId) {
         // Skip image_generation phase - mark as complete immediately
@@ -451,33 +443,16 @@ export class MasterAgent {
         itineraryData = JSON.stringify([]);
       }
       
-      // Execute remaining Detail Agents in parallel
-      const megaParallelResults = await Promise.allSettled([
-        // Cost Agent (now index 1)
+      // Execute DetailsSkill (replaces CostAgent, NoticeAgent, HotelAgent, MealAgent)
+      // and TransportationAgent in parallel
+      const [detailsSkillResult, transportationResult] = await Promise.allSettled([
+        // DetailsSkill - handles costs, notices, hotels, meals in parallel internally
         this.retryManager.executeWithRetry(
-          () => this.costAgent.execute(rawData),
+          () => this.detailsSkill.executeAll(rawData),
           this.retryConfig,
-          'CostAgent'
+          'DetailsSkill'
         ),
-        // Notice Agent (now index 2)
-        this.retryManager.executeWithRetry(
-          () => this.noticeAgent.execute(rawData),
-          this.retryConfig,
-          'NoticeAgent'
-        ),
-        // Hotel Agent (now index 3)
-        this.retryManager.executeWithRetry(
-          () => this.hotelAgent.execute(rawData),
-          this.retryConfig,
-          'HotelAgent'
-        ),
-        // Meal Agent (now index 4)
-        this.retryManager.executeWithRetry(
-          () => this.mealAgent.execute(rawData),
-          this.retryConfig,
-          'MealAgent'
-        ),
-        // Transportation Agent (now index 5) - 根據行程類型選擇交通方式
+        // Transportation Agent - 根據行程類型選擇交通方式
         this.retryManager.executeWithRetry(
           () => this.transportationAgent.execute(rawData, tourType),
           this.retryConfig,
@@ -510,39 +485,74 @@ export class MasterAgent {
         console.warn(`[MasterAgent] Failed to search hero image:`, error);
       }
       
-      // Process Detail Agents results (Cost, Notice, Hotel, Meal, Transportation)
-      const detailAgentNames = ['CostAgent', 'NoticeAgent', 'HotelAgent', 'MealAgent', 'TransportationAgent'];
-      const detailResults = megaParallelResults.map((result, index) => {
-        const agentName = detailAgentNames[index];
-        
-        // Map agent names to progress phase IDs
-        const agentToPhaseId: Record<string, string> = {
-          'CostAgent': 'cost_agent',
-          'NoticeAgent': 'notice_agent',
-          'HotelAgent': 'hotel_agent',
-          'MealAgent': 'meal_agent',
-          'TransportationAgent': 'flight_agent' // 保持 phase ID 不變以相容前端
-        };
-        
-        if (result.status === 'fulfilled' && result.value.success && result.value.data) {
-          this.monitor.completeAgent(agentName, result.value);
-          if (taskId) progressTracker.completePhase(taskId, agentToPhaseId[agentName]);
-          console.log(`[MasterAgent] ✓ ${agentName} completed`);
-          return result.value.data;
-        } else {
-          const error = result.status === 'rejected' 
-            ? result.reason 
-            : new Error(result.value?.error || `${agentName} failed`);
-          
-          this.monitor.failAgent(agentName, error);
-          if (taskId) progressTracker.failPhase(taskId, agentToPhaseId[agentName], error.message);
-          console.warn(`[MasterAgent] ⚠ ${agentName} failed, using fallback`);
-          
-          return this.fallbackManager.handleFailure(agentName, error);
-        }
-      });
+      // Process DetailsSkill results (replaces CostAgent, NoticeAgent, HotelAgent, MealAgent)
+      let costData: any = {};
+      let noticeData: any = {};
+      let hotelData: any = {};
+      let mealData: any = {};
+      let transportationData: any = {};
       
-      const [costData, noticeData, hotelData, mealData, transportationData] = detailResults;
+      // Handle DetailsSkill result
+      if (detailsSkillResult.status === 'fulfilled') {
+        const result = detailsSkillResult.value as any;
+        if (result.success && result.data) {
+          costData = result.data.costs || {};
+          noticeData = result.data.notices || {};
+          hotelData = result.data.hotels || [];
+          mealData = result.data.meals || [];
+          
+          // Complete all detail phases
+          this.monitor.completeAgent('DetailsSkill', result);
+          if (taskId) {
+            progressTracker.completePhase(taskId, 'cost_agent');
+            progressTracker.completePhase(taskId, 'notice_agent');
+            progressTracker.completePhase(taskId, 'hotel_agent');
+            progressTracker.completePhase(taskId, 'meal_agent');
+          }
+          console.log(`[MasterAgent] ✓ DetailsSkill completed (costs, notices, hotels, meals)`);
+          console.log(`[MasterAgent] Token usage - Input: ${result.usage?.inputTokens}, Output: ${result.usage?.outputTokens}`);
+        } else {
+          console.warn(`[MasterAgent] ⚠ DetailsSkill returned error, using fallbacks`);
+          costData = this.fallbackManager.handleFailure('CostAgent', new Error('DetailsSkill failed'));
+          noticeData = this.fallbackManager.handleFailure('NoticeAgent', new Error('DetailsSkill failed'));
+          hotelData = this.fallbackManager.handleFailure('HotelAgent', new Error('DetailsSkill failed'));
+          mealData = this.fallbackManager.handleFailure('MealAgent', new Error('DetailsSkill failed'));
+        }
+      } else {
+        const error = detailsSkillResult.reason;
+        console.warn(`[MasterAgent] ⚠ DetailsSkill failed:`, error);
+        this.monitor.failAgent('DetailsSkill', error);
+        if (taskId) {
+          progressTracker.failPhase(taskId, 'cost_agent', error?.message || 'DetailsSkill failed');
+          progressTracker.failPhase(taskId, 'notice_agent', error?.message || 'DetailsSkill failed');
+          progressTracker.failPhase(taskId, 'hotel_agent', error?.message || 'DetailsSkill failed');
+          progressTracker.failPhase(taskId, 'meal_agent', error?.message || 'DetailsSkill failed');
+        }
+        costData = this.fallbackManager.handleFailure('CostAgent', error);
+        noticeData = this.fallbackManager.handleFailure('NoticeAgent', error);
+        hotelData = this.fallbackManager.handleFailure('HotelAgent', error);
+        mealData = this.fallbackManager.handleFailure('MealAgent', error);
+      }
+      
+      // Handle TransportationAgent result
+      if (transportationResult.status === 'fulfilled') {
+        const result = transportationResult.value as any;
+        if (result.success && result.data) {
+          transportationData = result.data;
+          this.monitor.completeAgent('TransportationAgent', result);
+          if (taskId) progressTracker.completePhase(taskId, 'flight_agent');
+          console.log(`[MasterAgent] ✓ TransportationAgent completed`);
+        } else {
+          console.warn(`[MasterAgent] ⚠ TransportationAgent returned error, using fallback`);
+          transportationData = this.fallbackManager.handleFailure('TransportationAgent', new Error(result?.error || 'TransportationAgent failed'));
+        }
+      } else {
+        const error = transportationResult.reason;
+        this.monitor.failAgent('TransportationAgent', error);
+        if (taskId) progressTracker.failPhase(taskId, 'flight_agent', error?.message || 'TransportationAgent failed');
+        console.warn(`[MasterAgent] ⚠ TransportationAgent failed, using fallback`);
+        transportationData = this.fallbackManager.handleFailure('TransportationAgent', error);
+      }
       
       console.log("[MasterAgent] ✓ Phase 4 completed: PARALLEL (6 agents - no image generation)");
       
