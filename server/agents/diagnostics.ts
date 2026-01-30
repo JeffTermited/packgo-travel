@@ -14,7 +14,7 @@ import { ItineraryExtractAgent, ExtractedItinerary } from './itineraryExtractAge
 import { ItineraryPolishAgent } from './itineraryPolishAgent';
 import { ContentAnalyzerAgent } from './contentAnalyzerAgent';
 import { ColorThemeAgent } from './colorThemeAgent';
-import { LionTravelParser, parseLionTravel } from './parsers/lionTravelParser';
+import { LionTravelPrintParser } from './parsers/lionTravelPrintParser';
 import { FirecrawlAgent } from './firecrawlAgent';
 
 // 診斷結果類型
@@ -99,15 +99,8 @@ export class AgentDiagnostics {
       recommendations.push('檢查 FIRECRAWL_API_KEY 是否有效');
     }
 
-    // Step 3: LionTravelParser 測試（如果是雄獅旅遊）
-    if (LionTravelParser.isLionTravelUrl(url) && firecrawlStep.output?.html) {
-      const lionTravelStep = await this.testLionTravelParser(firecrawlStep.output.html, url);
-      steps.push(lionTravelStep);
-      if (lionTravelStep.status === 'error' || lionTravelStep.status === 'warning') {
-        problemSummary.push('LionTravelParser 無法提取每日行程');
-        recommendations.push('需要更新 LionTravelParser 的 CSS 選擇器以適應新版網站');
-      }
-    }
+    // Step 3 (已移除): LionTravelParser 已移除，直接使用 Puppeteer Vision 模式
+    // 雄獅旅遊現在直接使用 WebScraperAgent 的 Puppeteer Vision 模式處理
 
     // Step 4: WebScraperAgent 完整測試
     const webScraperStep = await this.testWebScraperAgent(url);
@@ -207,7 +200,7 @@ export class AgentDiagnostics {
     
     try {
       const urlObj = new URL(url);
-      const isLionTravel = LionTravelParser.isLionTravelUrl(url);
+      const isLionTravel = LionTravelPrintParser.isLionTravelUrl(url);
       
       return {
         name: 'URL 分析',
@@ -282,62 +275,8 @@ export class AgentDiagnostics {
     }
   }
 
-  /**
-   * Step 3: LionTravelParser 測試
-   */
-  private async testLionTravelParser(html: string, url: string): Promise<DiagnosticStep> {
-    const startTime = Date.now();
-    
-    try {
-      console.log('[診斷] 測試 LionTravelParser...');
-      const result = await parseLionTravel(html, url);
-      
-      const hasDailyItinerary = result?.dailyItinerary && 
-                                Array.isArray(result.dailyItinerary) && 
-                                result.dailyItinerary.length > 0;
-      
-      const output = {
-        success: !!result,
-        hasDailyItinerary,
-        dailyItineraryCount: result?.dailyItinerary?.length || 0,
-        hasBasicInfo: !!result?.basicInfo?.title,
-        hasPricing: !!result?.pricing?.price,
-        basicInfo: result?.basicInfo,
-        pricing: result?.pricing,
-        dailyItinerary: result?.dailyItinerary,
-      };
-
-      let status: 'success' | 'warning' | 'error' = 'success';
-      let details = '';
-
-      if (!result) {
-        status = 'error';
-        details = '❌ LionTravelParser 返回 null';
-      } else if (!hasDailyItinerary) {
-        status = 'warning';
-        details = `⚠️ LionTravelParser 未提取到每日行程（dailyItinerary: ${output.dailyItineraryCount} 天）`;
-      } else {
-        details = `✅ 成功提取 ${output.dailyItineraryCount} 天行程`;
-      }
-
-      return {
-        name: 'LionTravelParser 專屬解析',
-        status,
-        duration: Date.now() - startTime,
-        input: { htmlLength: html.length, url },
-        output,
-        details,
-      };
-    } catch (error) {
-      return {
-        name: 'LionTravelParser 專屬解析',
-        status: 'error',
-        duration: Date.now() - startTime,
-        input: { htmlLength: html.length, url },
-        error: `LionTravelParser 錯誤: ${error}`,
-      };
-    }
-  }
+  // LionTravelParser 已移除 (2026-01-30)
+  // 雄獅旅遊現在直接使用 WebScraperAgent 的 Puppeteer Vision 模式處理
 
   /**
    * Step 4: WebScraperAgent 完整測試

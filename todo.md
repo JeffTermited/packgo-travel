@@ -1292,3 +1292,60 @@
 - [ ] 添加收藏行程功能
 - [ ] 添加行程比較功能
 - [ ] 添加永續旅遊指南（SDG）
+
+
+---
+
+## Phase 25: Firecrawl 配置修復與 PDF 解析功能（2026-01-30）
+
+### 25.1 修復 Firecrawl 配置
+- [ ] 增加 waitFor 參數等待 JavaScript 動態內容載入
+- [ ] 調整 timeout 時間以適應 SPA 網站
+- [ ] 測試雄獅旅遊頁面爬取結果
+
+### 25.2 PDF 解析功能
+- [ ] 建立 PDF 解析器 `server/agents/parsers/pdfParser.ts`
+- [ ] 實作 PDF 文字提取功能
+- [ ] 實作 PDF 圖片提取功能
+- [ ] 實作每日行程結構化解析
+- [ ] 整合到 WebScraperAgent
+
+### 25.3 測試與驗證
+- [ ] 測試 Firecrawl 修復後的爬取結果
+- [ ] 測試 PDF 解析功能
+- [ ] 使用診斷工具驗證修復效果
+
+---
+
+## Phase 27: 架構簡化 - 移除 LionTravelParser（2026-01-30）
+
+### 27.1 移除 LionTravelParser
+- [ ] 刪除 LionTravelParser 檔案
+- [ ] 更新 WebScraperAgent 移除 LionTravelParser 引用
+- [ ] 更新診斷工具移除 LionTravelParser 步驟
+- [ ] 測試驗證系統正常運作
+
+
+---
+
+## Phase 21: 架構簡化 - 移除 LionTravelParser（2026-01-30）
+
+### 21.1 移除 LionTravelParser
+- [x] 刪除 server/agents/parsers/lionTravelParser.ts 檔案
+- [x] 更新 WebScraperAgent 移除 LionTravelParser 引用
+- [x] 更新 diagnostics.ts 移除 LionTravelParser 步驟
+- [x] 改用 LionTravelPrintParser.isLionTravelUrl() 判斷雄獅旅遊 URL
+
+### 21.2 測試驗證
+- [x] TypeScript 編譯通過
+- [x] 重啟開發伺服器成功
+- [x] 測試雄獅旅遊 URL 生成（馬來西亞 5 日遊）
+- [x] 驗證 Puppeteer Vision 模式正常運作（30 秒完成爬取）
+- [x] 驗證完整生成流程（111 秒完成）
+
+### 21.3 生成結果驗證
+- [x] 行程標題：馬來西亞經典5日｜雙子星塔夜景×馬六甲古城漫遊
+- [x] 目的地：馬來西亞 / 吉隆坡 馬六甲 布城
+- [x] 天數：5 天
+- [x] 價格：NT$39,900
+- [x] 狀態：上架中

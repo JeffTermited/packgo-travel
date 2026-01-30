@@ -9,10 +9,11 @@
  * - No Chrome instance maintenance
  * - Distributed architecture
  * 
- * 優化版本 (2026-01-29):
+ * 優化版本 (2026-01-30):
  * - onlyMainContent: false - 獲取完整頁面內容
- * - waitFor: 15000 - 等待動態內容載入
- * - timeout: 60000 - 增加總超時時間
+ * - waitFor: 30000 - 等待 30 秒讓 SPA 完全載入
+ * - timeout: 90000 - 增加總超時時間到 90 秒
+ * - 新增 actions 參數模擬用戶互動觸發動態內容
  * - 新增 QuickInfo 從 metadata 快速提取關鍵資訊
  */
 
@@ -57,7 +58,7 @@ export class FirecrawlAgent {
 
     this.client = new Firecrawl({ apiKey });
     console.log('[FirecrawlAgent] Initialized with optimized config');
-    console.log('[FirecrawlAgent] Config: onlyMainContent=false, waitFor=15s, timeout=60s');
+    console.log('[FirecrawlAgent] Config: onlyMainContent=false, waitFor=30s, timeout=90s');
   }
 
   /**
@@ -68,11 +69,22 @@ export class FirecrawlAgent {
     const startTime = Date.now();
 
     try {
+      // 針對 SPA 網站（如雄獅旅遊）的優化配置
+      const isLionTravel = url.includes('liontravel.com');
+      
       const result = await this.client.scrape(url, {
         formats: ['markdown', 'html'] as ('markdown' | 'html')[],
-        waitFor: 15000,        // 15 秒等待動態內容
-        timeout: 60000,        // 60 秒總超時
-        onlyMainContent: false // 關鍵：獲取完整頁面內容
+        waitFor: isLionTravel ? 30000 : 15000,  // SPA 網站等待更長時間
+        timeout: 90000,        // 90 秒總超時
+        onlyMainContent: false, // 關鍵：獲取完整頁面內容
+        // 模擬用戶互動，觸發動態內容載入
+        actions: isLionTravel ? [
+          { type: 'wait', milliseconds: 3000 },
+          { type: 'scroll', direction: 'down', amount: 500 },
+          { type: 'wait', milliseconds: 2000 },
+          { type: 'scroll', direction: 'down', amount: 1000 },
+          { type: 'wait', milliseconds: 2000 },
+        ] : undefined,
       });
 
       const duration = Date.now() - startTime;

@@ -13,7 +13,7 @@ import { getKeyInstructions } from "./skillLoader";
 // PrintFriendlyAgent removed - using Firecrawl as primary scraping method
 import { scrapeWithPuppeteerVision } from "./puppeteerVisionAgent";
 import { FirecrawlAgent } from "./firecrawlAgent";
-import { LionTravelParser, parseLionTravel } from "./parsers/lionTravelParser";
+import { LionTravelPrintParser, parseLionTravelPrint } from "./parsers/lionTravelPrintParser";
 
 export interface WebScraperResult {
   success: boolean;
@@ -739,26 +739,137 @@ ${STRICT_DATA_FIDELITY_RULES}`;
   }
   
   /**
+   * 🆕 轉換雄獅旅遊列印版解析器資料為標準格式
+   * 2026-01-30: 新增列印版 Markdown 解析器支援
+   */
+  private convertPrintDataToStandard(printData: any): any {
+    const days = printData.duration?.days || printData.dailyItinerary?.length || 2;
+    const nights = days - 1;
+    
+    // 轉換 dailyItinerary 為標準格式（確保有 activities）
+    const dailyItinerary = (printData.dailyItinerary || []).map((day: any) => ({
+      day: day.day,
+      title: day.title || `第 ${day.day} 天`,
+      description: day.description || '',
+      activities: day.activities || [],
+      meals: day.meals || { breakfast: '', lunch: '', dinner: '' },
+      accommodation: day.accommodation || '',
+    }));
+    
+    return {
+      basicInfo: {
+        title: printData.basicInfo?.title || '',
+        subtitle: printData.basicInfo?.subtitle || '',
+        description: printData.basicInfo?.description || '',
+        productCode: printData.basicInfo?.productCode || '',
+      },
+      location: {
+        destinationCountry: '台灣',
+        destinationCity: printData.location?.destinationCity || '',
+      },
+      duration: {
+        days,
+        nights,
+      },
+      pricing: {
+        price: printData.pricing?.price || 0,
+        basePrice: printData.pricing?.price || 0,
+        currency: 'TWD',
+        priceOptions: printData.pricing?.priceOptions || [],
+        includes: printData.includes || [],
+        excludes: printData.excludes || [],
+      },
+      highlights: printData.highlights || [],
+      dailyItinerary,
+      itinerary: dailyItinerary,
+      includes: printData.includes || [],
+      excludes: printData.excludes || [],
+      accommodation: printData.accommodation || [],
+      hotels: printData.accommodation || [],
+      meals: dailyItinerary.map((day: any) => ({
+        day: day.day,
+        breakfast: day.meals?.breakfast || '',
+        lunch: day.meals?.lunch || '',
+        dinner: day.meals?.dinner || '',
+      })),
+      flights: [],
+      notes: printData.notes || [],
+    };
+  }
+  
+  /**
    * Firecrawl 模式（優先使用 Firecrawl API，失敗時 fallback 到 Puppeteer）
    * 
-   * 優化版本 (2026-01-29):
+   * 優化版本 (2026-01-30):
+   * - 🆕 雄獅旅遊自動轉換為列印版 URL（解決 SPA 動態載入問題）
    * - 優先使用 QuickInfo 從 metadata 快速提取關鍵資訊
    * - 使用 onlyMainContent: false 獲取完整頁面內容
    */
   private async executeWithFirecrawl(url: string): Promise<WebScraperResult> {
     console.log("[WebScraperAgent] === Firecrawl 模式開始 ===");
     
-    // 檢查是否為雄獅旅遊網站，優先使用專屬解析器
-    const isLionTravel = LionTravelParser.isLionTravelUrl(url);
+    // 檢查是否為雄獅旅遊網站
+    const isLionTravel = LionTravelPrintParser.isLionTravelUrl(url);
+    let actualUrl = url;
+    
+    // 🆕 2026-01-30: 雄獅旅遊優先使用 Puppeteer Vision 模式
+    // 視覺理解模式可以直接「看」網頁內容，準確度更高
     if (isLionTravel) {
-      console.log("[WebScraperAgent] 偵測到雄獅旅遊網站，優先使用專屬解析器");
+      console.log("[WebScraperAgent] 👁️ 雄獅旅遊：優先使用 Puppeteer Vision 模式");
+      
+      // 嘗試轉換為列印版 URL（列印版頁面更乾淨，截圖效果更好）
+      const printUrl = LionTravelPrintParser.convertToPrintUrl(url);
+      if (printUrl !== url) {
+        console.log(`[WebScraperAgent]   使用列印版 URL: ${printUrl}`);
+        actualUrl = printUrl;
+      }
+      
+      try {
+        console.log("[WebScraperAgent] 啟動 Puppeteer Vision 截圖和分析...");
+        const visionResult = await scrapeWithPuppeteerVision(actualUrl);
+        
+        if (visionResult.success && visionResult.extractedData) {
+          console.log("[WebScraperAgent] Puppeteer Vision 提取成功");
+          console.log(`[WebScraperAgent]   標題: ${visionResult.extractedData.title || 'N/A'}`);
+          console.log(`[WebScraperAgent]   天數: ${visionResult.extractedData.duration || 'N/A'}`);
+          console.log(`[WebScraperAgent]   價格: ${visionResult.extractedData.price || 'N/A'}`);
+          console.log(`[WebScraperAgent]   每日行程: ${visionResult.extractedData.dailyItinerary?.length || 0} 天`);
+          
+          // 轉換為標準格式
+          const visionData = this.convertPuppeteerVisionData(visionResult.extractedData);
+          
+          if (this.validateData(visionData)) {
+            console.log("[WebScraperAgent] 🎉 雄獅旅遊 Puppeteer Vision 模式成功！");
+            console.log("[WebScraperAgent] === Firecrawl 模式完成（Puppeteer Vision）===");
+            return {
+              success: true,
+              data: visionData,
+              method: 'three-stage',
+              extractionDetails: {
+                jsonLdFound: false,
+                markdownExtracted: false,
+                visionFallbackUsed: true,
+              },
+            };
+          } else {
+            console.log("[WebScraperAgent] Puppeteer Vision 資料驗證失敗，fallback 到 Markdown 解析");
+          }
+        } else {
+          console.log("[WebScraperAgent] Puppeteer Vision 提取失敗，fallback 到 Markdown 解析");
+        }
+      } catch (visionError) {
+        console.error("[WebScraperAgent] Puppeteer Vision 錯誤，fallback 到 Markdown 解析:", visionError);
+      }
+      
+      // Vision 失敗時，重置為列印版 URL 繼續嘗試 Markdown 解析
+      console.log("[WebScraperAgent] 🔄 Fallback 到 Markdown 解析模式...");
     }
     
     // 嘗試使用 Firecrawl
     if (this.firecrawlAgent) {
       try {
         console.log("[WebScraperAgent] 使用 Firecrawl API 爬取（優化配置）...");
-        const firecrawlResult = await this.firecrawlAgent.scrape(url);
+        const firecrawlResult = await this.firecrawlAgent.scrape(actualUrl);
         
         if (firecrawlResult.success && firecrawlResult.html) {
           console.log("[WebScraperAgent] Firecrawl 爬取成功");
@@ -774,34 +885,30 @@ ${STRICT_DATA_FIDELITY_RULES}`;
             console.log(`  - 價格: ${quickInfo.price || 'N/A'}`);
           }
           
-          // 如果是雄獅旅遊，優先使用專屬解析器
-          if (isLionTravel) {
-            console.log("[WebScraperAgent] 使用雄獅旅遊專屬解析器...");
-            let lionTravelData = await parseLionTravel(firecrawlResult.html, url);
+          // 如果是雄獅旅遊，優先使用列印版 Markdown 解析器
+          if (isLionTravel && firecrawlResult.markdown) {
+            console.log("[WebScraperAgent] 🆕 使用雄獅旅遊列印版 Markdown 解析器...");
+            const printData = parseLionTravelPrint(firecrawlResult.markdown);
             
-            if (lionTravelData) {
-              // 🆕 使用 QuickInfo 補充缺失資訊
+            if (printData) {
+              console.log("[WebScraperAgent] 列印版解析器提取結果:");
+              console.log(`  - 標題: ${printData.basicInfo?.title || 'N/A'}`);
+              console.log(`  - 天數: ${printData.duration?.days || 'N/A'}`);
+              console.log(`  - 價格: ${printData.pricing?.price || 'N/A'}`);
+              console.log(`  - 每日行程: ${printData.dailyItinerary?.length || 0} 天`);
+              console.log(`  - 亮點: ${printData.highlights?.length || 0} 個`);
+              
+              // 轉換為標準格式
+              const lionTravelData = this.convertPrintDataToStandard(printData);
+              
+              // 使用 QuickInfo 補充缺失資訊
               if (quickInfo) {
-                lionTravelData = this.enrichWithQuickInfo(lionTravelData, quickInfo);
-              }
-              
-              // 🆕 檢查 dailyItinerary 是否有內容，如果沒有則使用 LLM 補充
-              const hasDailyItinerary = lionTravelData?.dailyItinerary && 
-                                        Array.isArray(lionTravelData?.dailyItinerary) && 
-                                        lionTravelData?.dailyItinerary.length > 0;
-              
-              if (!hasDailyItinerary && firecrawlResult.markdown && lionTravelData) {
-                console.log("[WebScraperAgent] 雄獅專屬解析器未提取到每日行程，使用 LLM 補充...");
-                const llmData = await this.extractFromMarkdownWithLLM(firecrawlResult.markdown, url);
-                if (llmData?.dailyItinerary && llmData.dailyItinerary.length > 0) {
-                  console.log(`[WebScraperAgent] LLM 成功提取 ${llmData.dailyItinerary.length} 天每日行程`);
-                  (lionTravelData as any).dailyItinerary = llmData.dailyItinerary;
-                }
+                Object.assign(lionTravelData, this.enrichWithQuickInfo(lionTravelData, quickInfo));
               }
               
               if (this.validateData(lionTravelData)) {
-                console.log("[WebScraperAgent] 雄獅旅遊專屬解析器成功！");
-                console.log("[WebScraperAgent] === Firecrawl 模式完成（雄獅專屬解析）===");
+                console.log("[WebScraperAgent] 雄獅旅遊列印版解析器成功！");
+                console.log("[WebScraperAgent] === Firecrawl 模式完成（雄獅列印版解析）===");
                 return {
                   success: true,
                   data: lionTravelData,
@@ -813,10 +920,10 @@ ${STRICT_DATA_FIDELITY_RULES}`;
                   },
                 };
               } else {
-                console.log("[WebScraperAgent] 雄獅旅遊專屬解析器未能提取完整資料，fallback 到 LLM");
+                console.log("[WebScraperAgent] 列印版解析器未能提取完整資料，fallback 到 LLM");
               }
             } else {
-              console.log("[WebScraperAgent] 雄獅旅遊專屬解析器未能提取完整資料，fallback 到 LLM");
+              console.log("[WebScraperAgent] 列印版解析器失敗，fallback 到 LLM");
             }
           }
           

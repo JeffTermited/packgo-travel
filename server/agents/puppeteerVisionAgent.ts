@@ -48,13 +48,41 @@ export interface PuppeteerVisionResult {
 }
 
 /**
- * 使用 Puppeteer 截取網頁截圖 - 優化版本
- * 只截取 3 張關鍵截圖：Hero、行程中段、費用區域
+ * 自動滾動頁面以載入所有懶載入內容
+ */
+async function autoScroll(page: Page): Promise<void> {
+  await page.evaluate(async () => {
+    await new Promise<void>((resolve) => {
+      let totalHeight = 0;
+      const distance = 500; // 每次滾動 500px
+      const maxScrolls = 50; // 最多滾動 50 次，防止無限滾動
+      let scrollCount = 0;
+      
+      const timer = setInterval(() => {
+        const scrollHeight = document.body.scrollHeight;
+        window.scrollBy(0, distance);
+        totalHeight += distance;
+        scrollCount++;
+
+        if (totalHeight >= scrollHeight || scrollCount >= maxScrolls) {
+          clearInterval(timer);
+          // 滾動回頂部
+          window.scrollTo(0, 0);
+          resolve();
+        }
+      }, 100);
+    });
+  });
+}
+
+/**
+ * 使用 Puppeteer 截取網頁截圖 - 整頁截圖版本
+ * 使用 fullPage: true 截取整頁，然後自動分割成多張圖片
  */
 async function captureScreenshots(url: string): Promise<{ screenshots: Buffer[]; error?: string }> {
   let browser: Browser | null = null;
   
-  console.log('[PuppeteerVision] Optimizations: 3 screenshots, JPEG format, parallel upload');
+  console.log('[PuppeteerVision] Using fullPage screenshot mode with auto-split');
   
   try {
     console.log('[PuppeteerVision] Launching browser...');
@@ -148,67 +176,62 @@ async function captureScreenshots(url: string): Promise<{ screenshots: Buffer[];
     // 再等待一下確保圖片載入
     await new Promise(resolve => setTimeout(resolve, 2000));
 
+    // 先滾動到頁面底部，確保所有懶載入內容都已載入
+    console.log('[PuppeteerVision] Scrolling to load all lazy content...');
+    await autoScroll(page);
+    
+    // 等待所有圖片載入
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // 獲取頁面總高度
+    const pageHeight = await page.evaluate(() => document.body.scrollHeight);
+    console.log(`[PuppeteerVision] Page total height: ${pageHeight}px`);
+    
+    // 截取整頁截圖
+    console.log('[PuppeteerVision] Capturing full page screenshot...');
+    const fullPageScreenshot = await page.screenshot({ 
+      type: 'jpeg',
+      quality: 85,
+      fullPage: true,
+    }) as Buffer;
+    
+    console.log(`[PuppeteerVision] Full page screenshot size: ${(fullPageScreenshot.length / 1024 / 1024).toFixed(2)} MB`);
+    
+    // 如果截圖太大（超過 10MB），需要分割
+    // Claude Vision API 建議單張圖片不超過 20MB，但為了效率我們設定 5MB 為閾值
+    const MAX_SIZE_MB = 5;
     const screenshots: Buffer[] = [];
-
-    // 優化：只截取 3 張關鍵截圖
-    // 截圖 1：Hero 區域（頁面頂部）
-    console.log('[PuppeteerVision] Capturing screenshot 1 (Hero)...');
-    const screenshot1 = await page.screenshot({ 
-      type: 'jpeg',
-      quality: 80,
-    }) as Buffer;
-    screenshots.push(screenshot1);
-
-    // 截圖 2：行程中段（滾動到中間）
-    await page.evaluate(() => window.scrollTo(0, 2000));
-    await new Promise(resolve => setTimeout(resolve, 500));
     
-    console.log('[PuppeteerVision] Capturing screenshot 2 (Itinerary)...');
-    const screenshot2 = await page.screenshot({ 
-      type: 'jpeg',
-      quality: 80,
-    }) as Buffer;
-    screenshots.push(screenshot2);
-
-    // 截圖 3：費用區域（嘗試點擊費用標籤或滾動到底部）
-    try {
-      // 嘗試點擊費用說明標籤
-      const clicked = await page.evaluate(() => {
-        const elements = Array.from(document.querySelectorAll('button, a, div[role="tab"], li'));
-        const targetElement = elements.find(el => 
-          el.textContent?.includes('費用') || 
-          el.textContent?.includes('價格') ||
-          el.textContent?.includes('出發日期')
-        ) as HTMLElement;
-        
-        if (targetElement) {
-          targetElement.click();
-          return true;
-        }
-        return false;
-      });
+    if (fullPageScreenshot.length > MAX_SIZE_MB * 1024 * 1024) {
+      console.log(`[PuppeteerVision] Screenshot too large, splitting into segments...`);
       
-      if (clicked) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      } else {
-        // 如果找不到標籤，滾動到頁面底部
-        await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight - 1000));
+      // 計算需要分割成幾段
+      const viewportHeight = 720;
+      const numSegments = Math.ceil(pageHeight / viewportHeight);
+      const maxSegments = 10; // 最多 10 張截圖
+      const actualSegments = Math.min(numSegments, maxSegments);
+      
+      console.log(`[PuppeteerVision] Splitting into ${actualSegments} segments...`);
+      
+      // 滾動並截取每個段落
+      for (let i = 0; i < actualSegments; i++) {
+        const scrollY = i * viewportHeight;
+        await page.evaluate((y) => window.scrollTo(0, y), scrollY);
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        const segmentScreenshot = await page.screenshot({ 
+          type: 'jpeg',
+          quality: 80,
+        }) as Buffer;
+        screenshots.push(segmentScreenshot);
+        console.log(`[PuppeteerVision] Captured segment ${i + 1}/${actualSegments}`);
       }
-    } catch (e) {
-      // 忽略錯誤，直接滾動到底部
-      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight - 1000));
+    } else {
+      // 截圖大小可接受，直接使用整頁截圖
+      screenshots.push(fullPageScreenshot);
     }
-    
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    console.log('[PuppeteerVision] Capturing screenshot 3 (Cost/Dates)...');
-    const screenshot3 = await page.screenshot({ 
-      type: 'jpeg',
-      quality: 80,
-    }) as Buffer;
-    screenshots.push(screenshot3);
 
-    console.log(`[PuppeteerVision] Captured ${screenshots.length} screenshots (optimized)`);
+    console.log(`[PuppeteerVision] Captured ${screenshots.length} screenshot(s) (fullPage mode)`);
     return { screenshots };
 
   } catch (error: any) {
