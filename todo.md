@@ -1016,3 +1016,67 @@
 - [ ] 測試每日行程編輯功能
 - [ ] 保存檢查點
 
+
+
+---
+
+## Phase 21: 修復 NoticeAgent 和 CostAgent JSON 解析錯誤（2026-01-29）
+
+### 21.1 分析錯誤原因
+- [ ] 讀取 NoticeAgent 和 CostAgent 的程式碼
+- [ ] 分析日誌中的錯誤訊息
+- [ ] 識別 LLM 返回內容的格式問題
+
+### 21.2 設計修復方案
+- [ ] 更新 Agent prompt，明確要求只返回 JSON
+- [ ] 實作 JSON 清洗邏輯（移除前綴/後綴）
+- [ ] 加入更嚴格的 JSON 驗證
+
+### 21.3 實施修復
+- [ ] 修改 NoticeAgent 的 prompt 和解析邏輯
+- [ ] 修改 CostAgent 的 prompt 和解析邏輯
+- [ ] 測試修復效果
+
+### 21.4 驗證
+- [ ] 生成新行程測試 JSON 解析是否成功
+- [ ] 檢查日誌確認無解析錯誤
+- [ ] 儲存 checkpoint
+
+
+---
+
+## Phase 22: Claude Hybrid 架構遷移（2026-01-29）
+
+### 22.1 擴展 ClaudeAgent 支援 JSON Schema
+- [ ] 新增 `sendStructuredMessage` 方法（支援原生 JSON Schema）
+- [ ] 實作 Schema 驗證和錯誤處理
+- [ ] 加入 token 使用量追蹤
+- [ ] 支援 Claude 3 Haiku 和 Claude 3.5 Sonnet 模型切換
+
+### 22.2 遷移 NoticeAgent 到 Claude 3 Haiku
+- [x] 從 `invokeLLM` 遷移到 `ClaudeAgent.sendStructuredMessage`
+- [x] 定義 NOTICE_SCHEMA（JSON Schema）
+- [x] 刪除所有 JSON 清洗邏輯（Regex）
+- [x] 加入 STRICT_DATA_FIDELITY_RULES
+- [ ] 測試 JSON 解析成功率
+
+### 22.3 遷移 CostAgent 到 Claude 3 Haiku
+- [x] 從 `invokeLLM` 遷移到 `ClaudeAgent.sendStructuredMessage`
+- [x] 定義 COST_SCHEMA（JSON Schema）
+- [x] 刪除所有 JSON 清洗邏輯（Regex）
+- [x] 加入 STRICT_DATA_FIDELITY_RULES
+- [ ] 測試 JSON 解析成功率
+
+### 22.4 遷移 ItineraryAgent 到 Claude 3.5 Sonnet
+- [ ] 從 `invokeLLM` 遷移到 `ClaudeAgent.sendStructuredMessage`
+- [ ] 定義 ITINERARY_SCHEMA（JSON Schema）
+- [ ] 使用 Claude 3.5 Sonnet（品質優先）
+- [ ] 加入 STRICT_DATA_FIDELITY_RULES（避免幻覺）
+- [ ] 測試行程合理性判斷
+
+### 22.5 端到端測試驗證
+- [ ] 使用山嵐號 URL 測試完整生成流程
+- [ ] 驗證 JSON 解析成功率達 99%+
+- [ ] 驗證數據忠實度（無幻覺）
+- [ ] 監控 API 成本（預期節省 60-80%）
+- [ ] 儲存 checkpoint

@@ -1,9 +1,14 @@
 /**
  * Notice Agent
  * 生成注意事項
+ * 
+ * Claude Hybrid Architecture:
+ * - Uses Claude 3 Haiku for fast, cost-effective extraction
+ * - Uses native JSON Schema for guaranteed valid output
+ * - No more JSON parsing errors or regex cleaning
  */
 
-import { invokeLLM } from "../_core/llm";
+import { getHaikuAgent, JSONSchema, STRICT_DATA_FIDELITY_RULES } from "./claudeAgent";
 import { getKeyInstructions } from "./skillLoader";
 import { NOTICE_SKILL } from "./skillLibrary";
 
@@ -16,11 +21,68 @@ export interface NoticeAgentResult {
     emergency: string[]; // 緊急應對措施
   };
   error?: string;
+  usage?: {
+    inputTokens: number;
+    outputTokens: number;
+  };
+}
+
+// JSON Schema for Notice output
+const NOTICE_SCHEMA: JSONSchema = {
+  type: 'object',
+  properties: {
+    preparation: {
+      type: 'array',
+      description: '行前準備提醒，如護照、簽證、貨幣、藥品等',
+      items: {
+        type: 'string',
+        description: '單條行前準備提醒',
+        maxLength: 50,
+      },
+    },
+    culturalNotes: {
+      type: 'array',
+      description: '當地文化禁忌與習俗，如宗教、禮儀、穿著等',
+      items: {
+        type: 'string',
+        description: '單條文化注意事項',
+        maxLength: 50,
+      },
+    },
+    healthSafety: {
+      type: 'array',
+      description: '健康安全注意事項，如飲食、保險、衛生等',
+      items: {
+        type: 'string',
+        description: '單條健康安全提醒',
+        maxLength: 50,
+      },
+    },
+    emergency: {
+      type: 'array',
+      description: '緊急應對措施，如緊急電話、駐外單位、遺失護照處理等',
+      items: {
+        type: 'string',
+        description: '單條緊急聯絡資訊',
+        maxLength: 50,
+      },
+    },
+  },
+  required: ['preparation', 'culturalNotes', 'healthSafety', 'emergency'],
+  additionalProperties: false,
+};
+
+// Type for the schema output
+interface NoticeSchemaOutput {
+  preparation: string[];
+  culturalNotes: string[];
+  healthSafety: string[];
+  emergency: string[];
 }
 
 /**
  * Notice Agent
- * 使用 NOTICE_SKILL 生成注意事項
+ * 使用 Claude 3 Haiku + JSON Schema 生成注意事項
  */
 export class NoticeAgent {
   private skillInstructions: string;
@@ -28,6 +90,7 @@ export class NoticeAgent {
   constructor() {
     this.skillInstructions = getKeyInstructions('NoticeAgent');
     console.log('[NoticeAgent] SKILL loaded:', this.skillInstructions.length, 'chars');
+    console.log('[NoticeAgent] Using Claude 3 Haiku with JSON Schema');
   }
 
   /**
@@ -36,12 +99,12 @@ export class NoticeAgent {
   async execute(
     rawData: any
   ): Promise<NoticeAgentResult> {
-    console.log("[NoticeAgent] Starting notice generation...");
+    console.log("[NoticeAgent] Starting notice generation with Claude...");
     
     try {
       // Validate input data
       if (!rawData || !rawData.location) {
-        console.warn("[NoticeAgent] Insufficient location data, returning null");
+        console.warn("[NoticeAgent] Insufficient location data, returning empty");
         return {
           success: true,
           data: {
@@ -53,25 +116,23 @@ export class NoticeAgent {
         };
       }
       
-      const notice = await this.generateNotice(rawData.location);
+      const result = await this.generateNoticeWithClaude(rawData.location);
       
-      if (!notice) {
+      if (!result.success || !result.data) {
+        console.warn("[NoticeAgent] Claude generation failed, using default template");
         return {
           success: true,
-          data: {
-            preparation: [],
-            culturalNotes: [],
-            healthSafety: [],
-            emergency: [],
-          },
+          data: this.getDefaultNotice(rawData.location),
+          usage: result.usage,
         };
       }
       
-      console.log("[NoticeAgent] Notice generated successfully");
+      console.log("[NoticeAgent] Notice generated successfully with Claude");
       
       return {
         success: true,
-        data: notice,
+        data: result.data,
+        usage: result.usage,
       };
     } catch (error) {
       console.error("[NoticeAgent] Error:", error);
@@ -83,204 +144,89 @@ export class NoticeAgent {
   }
   
   /**
-   * Generate notice with retry mechanism
+   * Generate notice using Claude 3 Haiku with JSON Schema
+   * This guarantees valid JSON output - no parsing errors possible
    */
-  private async generateNotice(
-    locationData: any,
-    retryCount: number = 0
+  private async generateNoticeWithClaude(
+    locationData: any
   ): Promise<{
-    preparation: string[];
-    culturalNotes: string[];
-    healthSafety: string[];
-    emergency: string[];
-  } | null> {
-    const MAX_RETRIES = 2;
+    success: boolean;
+    data?: NoticeSchemaOutput;
+    usage?: { inputTokens: number; outputTokens: number };
+  }> {
+    console.log("[NoticeAgent] Calling Claude 3 Haiku with JSON Schema...");
     
-    try {
-      const prompt = `請根據以下資料生成注意事項：
+    const prompt = `請根據以下目的地資訊，生成旅遊注意事項。
 
-原始資料：
+目的地資訊：
 ${JSON.stringify(locationData, null, 2)}
 
-請以 JSON 格式回傳，包含以下欄位：
-{
-  "preparation": [
-    "請確認護照有效期限至少6個月以上",
-    "建議攜帶輕便保暖外套（當地早晚溫差大）",
-    "請攜帶個人常用藥品及暈車藥",
-    "建議攜帶萬用轉接頭（電壓 100V）"
-  ],
-  "culturalNotes": [
-    "進入寺廟請脫鞋，並保持安靜",
-    "用餐時請勿大聲喧嘩",
-    "搭乘大眾運輸工具請將手機調為靜音",
-    "泡溫泉前請先淋浴，並將毛巾放在頭上"
-  ],
-  "healthSafety": [
-    "當地氣候乾燥，請多補充水分",
-    "建議攜帶口罩（花粉季節）",
-    "請注意飲食衛生，避免生食",
-    "建議投保旅遊平安保險及醫療保險"
-  ],
-  "emergency": [
-    "緊急聯絡電話：領隊 +81-90-xxxx-xxxx",
-    "台灣駐日代表處：+81-3-3280-7811",
-    "日本報警電話：110，救護車：119",
-    "遺失護照請立即聯絡領隊及駐外單位"
-  ]
-}
+要求：
+1. 每個類別提供 3-4 條實用的注意事項
+2. 每條注意事項控制在 50 字以內
+3. 內容必須與目的地相關且實用
+4. 如果某些資訊不確定，請標記為「請查詢最新資訊」
+5. 緊急聯絡電話請使用真實的官方號碼
 
-注意：
-1. 注意事項總字數控制在 200-300 字之間（寬容檢查：±30% 誤差，即 140-390 字）
-2. 每個類別不超過 80 字（寬容檢查：±30% 誤差，即不超過 104 字）
-3. 重點放在最重要和最實用的提醒
-4. 如果資料不足，請回傳 null`;
+請直接提取並返回結構化的注意事項。`;
 
-      const response = await invokeLLM({
-        messages: [
-          { role: "system", content: NOTICE_SKILL },
-          { role: "user", content: prompt },
-        ],
-      });
+    const systemPrompt = `${NOTICE_SKILL}
+
+你是一位專業的旅遊顧問，擅長為旅客提供實用的旅遊注意事項。
+你的建議必須基於真實資訊，不能編造任何內容。
+
+${STRICT_DATA_FIDELITY_RULES}`;
+
+    try {
+      const claudeAgent = getHaikuAgent();
       
-      const content = response.choices[0].message.content;
-      
-      // Handle content type (string or array)
-      let contentStr = typeof content === 'string' ? content : JSON.stringify(content);
-      
-      if (!contentStr || contentStr.trim().toLowerCase() === "null") {
-        console.warn("[NoticeAgent] Insufficient data, returning null");
-        return null;
-      }
-      
-      // Remove markdown code blocks if present
-      contentStr = contentStr.trim();
-      if (contentStr.startsWith("```json")) {
-        contentStr = contentStr.replace(/^```json\s*/, "").replace(/\s*```$/, "");
-      } else if (contentStr.startsWith("```")) {
-        contentStr = contentStr.replace(/^```\s*/, "").replace(/\s*```$/, "");
-      }
-      
-      // Parse JSON response with error handling
-      let notice;
-      try {
-        notice = JSON.parse(contentStr);
-      } catch (parseError) {
-        console.error("[NoticeAgent] JSON parse failed, using default template:", parseError);
-        return this.getDefaultNotice(locationData);
-      }
-      
-      // Validate and normalize notice structure
-      const normalizedNotice = this.normalizeNotice(notice);
-      
-      // Validate word count (total should be 200-300 characters)
-      const totalWords = this.calculateTotalWords(normalizedNotice);
-      
-      if (totalWords < 200 || totalWords > 300) {
-        console.warn(`[NoticeAgent] Notice word count (${totalWords}) out of range, retrying...`);
-        
-        if (retryCount < MAX_RETRIES) {
-          return this.generateNotice(locationData, retryCount + 1);
-        } else {
-          console.warn(`[NoticeAgent] Notice word count still out of range after ${MAX_RETRIES} retries, using truncation`);
-          return this.truncateNotice(normalizedNotice, 300);
+      const result = await claudeAgent.sendStructuredMessage<NoticeSchemaOutput>(
+        prompt,
+        NOTICE_SCHEMA,
+        {
+          systemPrompt,
+          maxTokens: 2048,
+          temperature: 0.3, // Low temperature for consistent output
+          schemaName: 'notice_output',
+          schemaDescription: '旅遊注意事項結構化輸出',
+          strictDataFidelity: true,
         }
+      );
+
+      if (!result.success || !result.data) {
+        console.error("[NoticeAgent] Claude returned error:", result.error);
+        return {
+          success: false,
+          usage: result.usage,
+        };
       }
+
+      // Validate and normalize the output
+      const normalizedData = this.normalizeNotice(result.data);
       
-      return normalizedNotice;
+      console.log("[NoticeAgent] Claude response validated successfully");
+      console.log(`[NoticeAgent] Token usage - Input: ${result.usage?.inputTokens}, Output: ${result.usage?.outputTokens}`);
+
+      return {
+        success: true,
+        data: normalizedData,
+        usage: result.usage,
+      };
     } catch (error) {
-      console.error("[NoticeAgent] Error generating notice:", error);
-      
-      if (retryCount < MAX_RETRIES) {
-        console.log(`[NoticeAgent] Retrying notice generation (${retryCount + 1}/${MAX_RETRIES})...`);
-        return this.generateNotice(locationData, retryCount + 1);
-      }
-      
-      // Use default template as final fallback
-      console.warn("[NoticeAgent] All retries failed, using default template");
-      return this.getDefaultNotice(locationData);
+      console.error("[NoticeAgent] Claude API error:", error);
+      return {
+        success: false,
+      };
     }
-  }
-  
-  /**
-   * Calculate total word count of notice
-   */
-  private calculateTotalWords(notice: any): number {
-    let total = 0;
-    
-    // Preparation
-    notice.preparation.forEach((item: string) => {
-      total += item.length;
-    });
-    
-    // Cultural notes
-    notice.culturalNotes.forEach((item: string) => {
-      total += item.length;
-    });
-    
-    // Health & safety
-    notice.healthSafety.forEach((item: string) => {
-      total += item.length;
-    });
-    
-    // Emergency
-    notice.emergency.forEach((item: string) => {
-      total += item.length;
-    });
-    
-    return total;
-  }
-  
-  /**
-   * Truncate notice to fit word count limit
-   */
-  private truncateNotice(notice: any, maxWords: number): any {
-    // Simple truncation strategy: truncate last item in each category
-    const currentWords = this.calculateTotalWords(notice);
-    
-    if (currentWords <= maxWords) {
-      return notice;
-    }
-    
-    const excessWords = currentWords - maxWords;
-    const wordsPerCategory = Math.ceil(excessWords / 4);
-    
-    // Truncate last item in each category
-    if (notice.preparation.length > 0) {
-      const lastIndex = notice.preparation.length - 1;
-      notice.preparation[lastIndex] = notice.preparation[lastIndex].slice(0, notice.preparation[lastIndex].length - wordsPerCategory) + "...";
-    }
-    
-    if (notice.culturalNotes.length > 0) {
-      const lastIndex = notice.culturalNotes.length - 1;
-      notice.culturalNotes[lastIndex] = notice.culturalNotes[lastIndex].slice(0, notice.culturalNotes[lastIndex].length - wordsPerCategory) + "...";
-    }
-    
-    if (notice.healthSafety.length > 0) {
-      const lastIndex = notice.healthSafety.length - 1;
-      notice.healthSafety[lastIndex] = notice.healthSafety[lastIndex].slice(0, notice.healthSafety[lastIndex].length - wordsPerCategory) + "...";
-    }
-    
-    if (notice.emergency.length > 0) {
-      const lastIndex = notice.emergency.length - 1;
-      notice.emergency[lastIndex] = notice.emergency[lastIndex].slice(0, notice.emergency[lastIndex].length - wordsPerCategory) + "...";
-    }
-    
-    return notice;
   }
   
   /**
    * Normalize notice structure to ensure all fields are arrays
    */
-  private normalizeNotice(notice: any): {
-    preparation: string[];
-    culturalNotes: string[];
-    healthSafety: string[];
-    emergency: string[];
-  } {
+  private normalizeNotice(notice: NoticeSchemaOutput): NoticeSchemaOutput {
     const toArray = (value: any): string[] => {
       if (Array.isArray(value)) {
-        return value.filter(item => typeof item === 'string');
+        return value.filter(item => typeof item === 'string').slice(0, 5); // Max 5 items per category
       }
       if (typeof value === 'string') {
         return [value];
@@ -297,14 +243,9 @@ ${JSON.stringify(locationData, null, 2)}
   }
 
   /**
-   * Get default notice template when LLM fails
+   * Get default notice template when Claude fails
    */
-  private getDefaultNotice(locationData: any): {
-    preparation: string[];
-    culturalNotes: string[];
-    healthSafety: string[];
-    emergency: string[];
-  } {
+  private getDefaultNotice(locationData: any): NoticeSchemaOutput {
     const country = locationData?.country || "目的地";
     
     return {

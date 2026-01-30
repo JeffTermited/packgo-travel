@@ -1,9 +1,14 @@
 /**
  * Cost Agent
  * 生成費用說明
+ * 
+ * Claude Hybrid Architecture:
+ * - Uses Claude 3 Haiku for fast, cost-effective extraction
+ * - Uses native JSON Schema for guaranteed valid output
+ * - No more JSON parsing errors or regex cleaning
  */
 
-import { invokeLLM } from "../_core/llm";
+import { getHaikuAgent, JSONSchema, STRICT_DATA_FIDELITY_RULES } from "./claudeAgent";
 import { getKeyInstructions } from "./skillLoader";
 import { COST_SKILL } from "./skillLibrary";
 
@@ -16,11 +21,64 @@ export interface CostAgentResult {
     notes: string; // 費用說明備註
   };
   error?: string;
+  usage?: {
+    inputTokens: number;
+    outputTokens: number;
+  };
+}
+
+// JSON Schema for Cost output
+const COST_SCHEMA: JSONSchema = {
+  type: 'object',
+  properties: {
+    included: {
+      type: 'array',
+      description: '團費包含項目，如機票、住宿、餐食、門票、交通、導遊、保險等',
+      items: {
+        type: 'string',
+        description: '單條包含項目',
+        maxLength: 50,
+      },
+    },
+    excluded: {
+      type: 'array',
+      description: '團費不包含項目，如護照、簽證、小費、行李超重、個人消費等',
+      items: {
+        type: 'string',
+        description: '單條不包含項目',
+        maxLength: 50,
+      },
+    },
+    additionalCosts: {
+      type: 'array',
+      description: '額外費用提醒，如單人房差、簽證費、建議攜帶現金、小費建議等',
+      items: {
+        type: 'string',
+        description: '單條額外費用提醒',
+        maxLength: 60,
+      },
+    },
+    notes: {
+      type: 'string',
+      description: '費用說明備註，如報價基準、價格調整說明等',
+      maxLength: 200,
+    },
+  },
+  required: ['included', 'excluded', 'additionalCosts', 'notes'],
+  additionalProperties: false,
+};
+
+// Type for the schema output
+interface CostSchemaOutput {
+  included: string[];
+  excluded: string[];
+  additionalCosts: string[];
+  notes: string;
 }
 
 /**
  * Cost Agent
- * 使用 COST_SKILL 生成費用說明
+ * 使用 Claude 3 Haiku + JSON Schema 生成費用說明
  */
 export class CostAgent {
   private skillInstructions: string;
@@ -28,6 +86,7 @@ export class CostAgent {
   constructor() {
     this.skillInstructions = getKeyInstructions('CostAgent');
     console.log('[CostAgent] SKILL loaded:', this.skillInstructions.length, 'chars');
+    console.log('[CostAgent] Using Claude 3 Haiku with JSON Schema');
   }
 
   /**
@@ -36,7 +95,7 @@ export class CostAgent {
   async execute(
     rawData: any
   ): Promise<CostAgentResult> {
-    console.log("[CostAgent] Starting cost explanation generation...");
+    console.log("[CostAgent] Starting cost explanation generation with Claude...");
     
     try {
       // Validate input data - support multiple field names
@@ -63,28 +122,23 @@ export class CostAgent {
         destinationCity,
       };
       
-      let costExplanation;
-      try {
-        costExplanation = await this.generateCostExplanation(enrichedPricingData);
-      } catch (genError) {
-        console.warn("[CostAgent] generateCostExplanation failed, using default:", genError);
-        costExplanation = null;
-      }
+      const result = await this.generateCostWithClaude(enrichedPricingData);
       
-      if (!costExplanation) {
-        console.log("[CostAgent] Using default cost explanation");
-        const defaultCost = this.generateDefaultCostExplanation(days, destinationCountry, destinationCity);
+      if (!result.success || !result.data) {
+        console.warn("[CostAgent] Claude generation failed, using default template");
         return {
           success: true,
-          data: defaultCost,
+          data: this.generateDefaultCostExplanation(days, destinationCountry, destinationCity),
+          usage: result.usage,
         };
       }
       
-      console.log("[CostAgent] Cost explanation generated successfully");
+      console.log("[CostAgent] Cost explanation generated successfully with Claude");
       
       return {
         success: true,
-        data: costExplanation,
+        data: result.data,
+        usage: result.usage,
       };
     } catch (error) {
       console.error("[CostAgent] Error:", error);
@@ -98,175 +152,106 @@ export class CostAgent {
   }
   
   /**
-   * Generate cost explanation with retry mechanism
+   * Generate cost explanation using Claude 3 Haiku with JSON Schema
+   * This guarantees valid JSON output - no parsing errors possible
    */
-  private async generateCostExplanation(
-    pricingData: any,
-    retryCount: number = 0
+  private async generateCostWithClaude(
+    pricingData: any
   ): Promise<{
-    included: string[];
-    excluded: string[];
-    additionalCosts: string[];
-    notes: string;
-  } | null> {
-    const MAX_RETRIES = 2;
+    success: boolean;
+    data?: CostSchemaOutput;
+    usage?: { inputTokens: number; outputTokens: number };
+  }> {
+    console.log("[CostAgent] Calling Claude 3 Haiku with JSON Schema...");
     
-    try {
-      const prompt = `請根據以下資料生成費用說明：
+    const prompt = `請根據以下定價資訊，生成費用說明。
 
-原始資料：
+定價資訊：
 ${JSON.stringify(pricingData, null, 2)}
 
-請以 JSON 格式回傳，包含以下欄位：
-{
-  "included": [
-    "來回經濟艙機票",
-    "4晚5星級飯店住宿（雙人房）",
-    "每日早餐及行程中標註的午晚餐",
-    "行程中所列景點門票",
-    "全程遊覽車交通",
-    "專業中文導遊服務",
-    "旅遊責任保險"
-  ],
-  "excluded": [
-    "護照及簽證費用",
-    "個人旅遊平安保險（建議自行投保）",
-    "導遊、司機小費（建議每人每天 USD 10）",
-    "行李超重費用",
-    "個人消費（飲料、紀念品、洗衣等）",
-    "行程中未標註的餐食",
-    "因天氣、罷工等不可抗力因素產生的額外費用"
-  ],
-  "additionalCosts": [
-    "單人房差價：每人加收 NTD 8,000",
-    "簽證費用：約 NTD 1,200（代辦服務另計）",
-    "建議攜帶現金：每人約 USD 300-500（用於小費、個人消費）",
-    "建議小費：導遊每人每天 USD 5、司機每人每天 USD 5"
-  ],
-  "notes": "以上報價以雙人房為基準，單人報名需補單人房差價。機票及飯店價格可能因淡旺季而有所調整，實際價格以報名時確認為準。"
-}
+要求：
+1. 包含項目（included）：列出 5-7 項團費包含的服務
+2. 不包含項目（excluded）：列出 5-6 項團費不包含的費用
+3. 額外費用提醒（additionalCosts）：列出 3-4 項額外費用或建議
+4. 備註（notes）：簡短說明報價基準和注意事項
 
 注意：
-1. 費用說明總字數控制在 200-300 字之間（寬容檢查：±30% 誤差，即 140-390 字）
-2. 包含項目不超過 100 字（寬容檢查：±30% 誤差，即不超過 130 字）
-3. 不包含項目不超過 100 字（寬容檢查：±30% 誤差，即不超過 130 字）
-4. 額外費用提醒不超過 100 字（寬容檢查：±30% 誤差，即不超過 130 字）
-5. 如果資料不足，請回傳 null`;
+- 所有內容必須基於提供的資料
+- 如果某些資訊不確定，請使用通用的旅遊業標準說明
+- 金額和數字必須準確，不能隨意編造
 
-      const response = await invokeLLM({
-        messages: [
-          { role: "system", content: COST_SKILL },
-          { role: "user", content: prompt },
-        ],
-      });
+請直接提取並返回結構化的費用說明。`;
+
+    const systemPrompt = `${COST_SKILL}
+
+你是一位專業的旅遊業務顧問，擅長為旅客提供清晰的費用說明。
+你的說明必須基於真實資訊，不能編造任何金額或服務內容。
+
+${STRICT_DATA_FIDELITY_RULES}`;
+
+    try {
+      const claudeAgent = getHaikuAgent();
       
-      const content = response.choices[0].message.content;
-      
-      // Handle content type (string or array)
-      let contentStr = typeof content === 'string' ? content : JSON.stringify(content);
-      
-      if (!contentStr || contentStr.trim().toLowerCase() === "null") {
-        console.warn("[CostAgent] Insufficient data, returning null");
-        return null;
-      }
-      
-      // Remove markdown code blocks if present
-      contentStr = contentStr.trim();
-      if (contentStr.startsWith("```json")) {
-        contentStr = contentStr.replace(/^```json\s*/, "").replace(/\s*```$/, "");
-      } else if (contentStr.startsWith("```")) {
-        contentStr = contentStr.replace(/^```\s*/, "").replace(/\s*```$/, "");
-      }
-      
-      // Parse JSON response
-      const costExplanation = JSON.parse(contentStr);
-      
-      // Validate word count (total should be 200-300 characters)
-      const totalWords = this.calculateTotalWords(costExplanation);
-      
-      if (totalWords < 200 || totalWords > 300) {
-        console.warn(`[CostAgent] Cost explanation word count (${totalWords}) out of range, retrying...`);
-        
-        if (retryCount < MAX_RETRIES) {
-          return this.generateCostExplanation(pricingData, retryCount + 1);
-        } else {
-          console.warn(`[CostAgent] Cost explanation word count still out of range after ${MAX_RETRIES} retries, using truncation`);
-          return this.truncateCostExplanation(costExplanation, 300);
+      const result = await claudeAgent.sendStructuredMessage<CostSchemaOutput>(
+        prompt,
+        COST_SCHEMA,
+        {
+          systemPrompt,
+          maxTokens: 2048,
+          temperature: 0.3, // Low temperature for consistent output
+          schemaName: 'cost_output',
+          schemaDescription: '費用說明結構化輸出',
+          strictDataFidelity: true,
         }
+      );
+
+      if (!result.success || !result.data) {
+        console.error("[CostAgent] Claude returned error:", result.error);
+        return {
+          success: false,
+          usage: result.usage,
+        };
       }
+
+      // Validate and normalize the output
+      const normalizedData = this.normalizeCost(result.data);
       
-      return costExplanation;
+      console.log("[CostAgent] Claude response validated successfully");
+      console.log(`[CostAgent] Token usage - Input: ${result.usage?.inputTokens}, Output: ${result.usage?.outputTokens}`);
+
+      return {
+        success: true,
+        data: normalizedData,
+        usage: result.usage,
+      };
     } catch (error) {
-      console.error("[CostAgent] Error generating cost explanation:", error);
-      
-      if (retryCount < MAX_RETRIES) {
-        console.log(`[CostAgent] Retrying cost explanation generation (${retryCount + 1}/${MAX_RETRIES})...`);
-        return this.generateCostExplanation(pricingData, retryCount + 1);
+      console.error("[CostAgent] Claude API error:", error);
+      return {
+        success: false,
+      };
+    }
+  }
+  
+  /**
+   * Normalize cost structure to ensure all fields are valid
+   */
+  private normalizeCost(cost: CostSchemaOutput): CostSchemaOutput {
+    const toArray = (value: any): string[] => {
+      if (Array.isArray(value)) {
+        return value.filter(item => typeof item === 'string').slice(0, 8); // Max 8 items per category
       }
-      
-      return null;
-    }
-  }
-  
-  /**
-   * Calculate total word count of cost explanation
-   */
-  private calculateTotalWords(costExplanation: any): number {
-    let total = 0;
-    
-    // Included items (with null check)
-    if (Array.isArray(costExplanation?.included)) {
-      costExplanation.included.forEach((item: string) => {
-        total += (item || '').length;
-      });
-    }
-    
-    // Excluded items (with null check)
-    if (Array.isArray(costExplanation?.excluded)) {
-      costExplanation.excluded.forEach((item: string) => {
-        total += (item || '').length;
-      });
-    }
-    
-    // Additional costs (with null check)
-    if (Array.isArray(costExplanation?.additionalCosts)) {
-      costExplanation.additionalCosts.forEach((item: string) => {
-        total += (item || '').length;
-      });
-    }
-    
-    // Notes (with null check)
-    total += (costExplanation?.notes || '').length;
-    
-    return total;
-  }
-  
-  /**
-   * Truncate cost explanation to fit word count limit
-   */
-  private truncateCostExplanation(costExplanation: any, maxWords: number): any {
-    // Ensure all required fields exist
-    const result = {
-      included: Array.isArray(costExplanation?.included) ? costExplanation.included : [],
-      excluded: Array.isArray(costExplanation?.excluded) ? costExplanation.excluded : [],
-      additionalCosts: Array.isArray(costExplanation?.additionalCosts) ? costExplanation.additionalCosts : [],
-      notes: costExplanation?.notes || '',
+      if (typeof value === 'string') {
+        return [value];
+      }
+      return [];
     };
     
-    // Simple truncation strategy: truncate notes
-    const currentWords = this.calculateTotalWords(result);
-    
-    if (currentWords <= maxWords) {
-      return result;
-    }
-    
-    const excessWords = currentWords - maxWords;
-    
-    if (result.notes.length > excessWords) {
-      result.notes = result.notes.slice(0, result.notes.length - excessWords) + "...";
-    }
-    
-    return result;
+    return {
+      included: toArray(cost?.included),
+      excluded: toArray(cost?.excluded),
+      additionalCosts: toArray(cost?.additionalCosts),
+      notes: typeof cost?.notes === 'string' ? cost.notes : '',
+    };
   }
   
   /**
@@ -276,12 +261,7 @@ ${JSON.stringify(pricingData, null, 2)}
     days: number,
     destinationCountry: string,
     destinationCity: string
-  ): {
-    included: string[];
-    excluded: string[];
-    additionalCosts: string[];
-    notes: string;
-  } {
+  ): CostSchemaOutput {
     const destination = destinationCity || destinationCountry || "目的地";
     const nights = days - 1;
     
