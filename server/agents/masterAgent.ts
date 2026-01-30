@@ -182,12 +182,14 @@ export class MasterAgent {
     url: string,
     userId?: number,
     onProgress?: (step: string, percentage: number) => void,
-    taskId?: string
+    taskId?: string,
+    forceRegenerate: boolean = false
   ): Promise<MasterAgentResult> {
     const startTime = Date.now();
     console.log("[MasterAgent] Starting OPTIMIZED tour generation...");
     console.log("[MasterAgent] URL:", url);
     console.log("[MasterAgent] User ID:", userId);
+    console.log("[MasterAgent] Force Regenerate:", forceRegenerate);
     
     // Reset monitor for new execution
     this.monitor.reset();
@@ -201,11 +203,17 @@ export class MasterAgent {
       // ========================================================================
       // Phase 0: Check Cache for Full Result
       // If we have a cached result for this URL, return it immediately
+      // Skip cache if forceRegenerate is true
       // ========================================================================
       onProgress?.("checking_cache", 5);
-      console.log("[MasterAgent] Checking cache for URL:", url);
       
-      const cachedFullResult = await generationCache.getFullResult(url);
+      if (forceRegenerate) {
+        console.log("[MasterAgent] 🔄 Force regenerate enabled, skipping cache");
+      } else {
+        console.log("[MasterAgent] Checking cache for URL:", url);
+      }
+      
+      const cachedFullResult = forceRegenerate ? null : await generationCache.getFullResult(url);
       if (cachedFullResult) {
         console.log("[MasterAgent] 🎯 Cache HIT! Returning cached result");
         const elapsedTime = Date.now() - startTime;
@@ -227,9 +235,9 @@ export class MasterAgent {
       this.monitor.startAgent('WebScraperAgent');
       if (taskId) progressTracker.startPhase(taskId, 'web_scraper');
       
-      // Check for cached scrape result first
+      // Check for cached scrape result first (skip if forceRegenerate)
       let rawData;
-      const cachedScrape = await generationCache.getScrapeResult(url);
+      const cachedScrape = forceRegenerate ? null : await generationCache.getScrapeResult(url);
       if (cachedScrape) {
         console.log("[MasterAgent] 🎯 Scrape cache HIT!");
         rawData = cachedScrape;
@@ -309,10 +317,10 @@ export class MasterAgent {
         progressTracker.completePhase(taskId, 'image_prompt');
       }
       
-      // Check for cached color palette first
+      // Check for cached color palette first (skip if forceRegenerate)
       const destination = rawData.location?.destinationCity || rawData.location?.destinationCountry || "";
       let colorTheme;
-      const cachedPalette = await generationCache.getColorPalette(destination);
+      const cachedPalette = forceRegenerate ? null : await generationCache.getColorPalette(destination);
       
       // Run ColorTheme only
       const colorThemeResult = cachedPalette 
@@ -510,6 +518,8 @@ export class MasterAgent {
             progressTracker.completePhase(taskId, 'meal_agent');
           }
           console.log(`[MasterAgent] ✓ DetailsSkill completed (costs, notices, hotels, meals)`);
+          console.log(`[MasterAgent] hotelData type: ${typeof hotelData}, isArray: ${Array.isArray(hotelData)}, length: ${Array.isArray(hotelData) ? hotelData.length : 'N/A'}`);
+          console.log(`[MasterAgent] mealData type: ${typeof mealData}, isArray: ${Array.isArray(mealData)}, length: ${Array.isArray(mealData) ? mealData.length : 'N/A'}`);
           console.log(`[MasterAgent] Token usage - Input: ${result.usage?.inputTokens}, Output: ${result.usage?.outputTokens}`);
         } else {
           console.warn(`[MasterAgent] ⚠ DetailsSkill returned error, using fallbacks`);
@@ -614,11 +624,11 @@ export class MasterAgent {
         // Detailed Notice
         noticeDetailed: JSON.stringify(noticeData),
         
-        // Hotels
-        hotels: JSON.stringify(hotelData?.hotels || []),
+        // Hotels (hotelData is already an array from DetailsSkill)
+        hotels: JSON.stringify(Array.isArray(hotelData) ? hotelData : (hotelData?.hotels || [])),
         
-        // Meals
-        meals: JSON.stringify(mealData?.meals || []),
+        // Meals (mealData is already an array from DetailsSkill)
+        meals: JSON.stringify(Array.isArray(mealData) ? mealData : (mealData?.meals || [])),
         
         // Transportation (交通資訊 - 只有飛機行程才生成)
         // 火車、巴士等行程的交通資訊已整合到每日行程中

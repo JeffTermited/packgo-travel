@@ -328,16 +328,27 @@ export class WebScraperAgent {
       const { getSonnetAgent, STRICT_DATA_FIDELITY_RULES } = await import("./claudeAgent");
       type JSONSchema = import("./claudeAgent").JSONSchema;
       
+      // 2026-01-30: 移除 15000 字元截取限制，使用完整 Markdown 內容
+      // Claude 3.5 Sonnet 支援 200K context window，可以處理完整內容
+      // 如果內容超過 100K，才進行截取（保留安全邊界）
+      const MAX_MARKDOWN_LENGTH = 100000;
+      const truncatedMarkdown = markdown.length > MAX_MARKDOWN_LENGTH 
+        ? markdown.substring(0, MAX_MARKDOWN_LENGTH) + '\n\n[內容已截取，原始長度: ' + markdown.length + ' 字元]'
+        : markdown;
+      
+      console.log(`[WebScraperAgent] Markdown 長度: ${markdown.length} 字元，截取後: ${truncatedMarkdown.length} 字元`);
+      
       const prompt = `你是一個專業的旅遊行程資料提取專家。請從以下 Markdown 格式的網頁內容中提取旅遊行程資訊。
 
 重要提示：
-1. 請仔細識別「每日行程」的標題層級（例如 "Day 1", "第一天", "DAY 1" 等）
+1. 請仔細識別「每日行程」的標題層級（例如 "Day 1", "第一天", "DAY 1", "第1天" 等）
 2. 提取所有天數的行程，不要遺漏任何一天
 3. 如果找不到明確的每日行程，請返回空陣列
+4. 對於台灣國內行程，請正確識別目的地（如阿里山→嘉義、日月潭→南投）
 
 Markdown 內容：
 \`\`\`markdown
-${markdown.substring(0, 15000)} 
+${truncatedMarkdown}
 \`\`\`
 
 請提取以下資訊：
@@ -433,13 +444,24 @@ ${STRICT_DATA_FIDELITY_RULES}`;
       
       const extractedData = response.data;
       
-      // 驗證每日行程是否有效
+      // 2026-01-30: 放寬驗證邏輯，即使沒有每日行程也返回其他資料
+      // 讓後續的 enrichWithQuickInfo 和 validateData 來決定是否有效
       if (!extractedData.dailyItinerary || extractedData.dailyItinerary.length === 0) {
-        console.log("[WebScraperAgent] 未提取到每日行程");
-        return null;
+        console.log("[WebScraperAgent] 未提取到每日行程，但仍返回其他資料");
+        // 確保 dailyItinerary 是空陣列而非 undefined
+        extractedData.dailyItinerary = [];
+      } else {
+        console.log("[WebScraperAgent] Claude 提取成功，每日行程天數：", extractedData.dailyItinerary.length);
       }
       
-      console.log("[WebScraperAgent] Claude 提取成功，每日行程天數：", extractedData.dailyItinerary.length);
+      // 記錄提取到的資料摘要
+      console.log("[WebScraperAgent] Claude 提取資料摘要：", {
+        title: extractedData.basicInfo?.title || 'N/A',
+        country: extractedData.location?.destinationCountry || 'N/A',
+        city: extractedData.location?.destinationCity || 'N/A',
+        days: extractedData.duration?.days || 'N/A',
+        itineraryDays: extractedData.dailyItinerary?.length || 0,
+      });
       
       return extractedData;
     } catch (error) {
@@ -787,9 +809,27 @@ ${STRICT_DATA_FIDELITY_RULES}`;
   /**
    * 🆕 使用 QuickInfo 補充缺失資訊
    * 優先使用 QuickInfo 的資料（從 metadata 提取，更準確）
+   * 2026-01-30: 增強台灣景點到城市的對應邏輯
    */
   private enrichWithQuickInfo(data: any, quickInfo: any): any {
     const enriched = { ...data };
+    
+    // 台灣景點到城市的對應表
+    const TAIWAN_ATTRACTIONS_TO_CITY: Record<string, string> = {
+      '阿里山': '嘉義', '奮起湖': '嘉義', '達娜伊谷': '嘉義',
+      '日月潭': '南投', '清境': '南投', '合歡山': '南投', '溪頭': '南投', '杉林溪': '南投',
+      '墾丁': '屏東', '小琉球': '屏東',
+      '太魯閣': '花蓮', '七星潭': '花蓮', '瑞穗': '花蓮',
+      '知本': '台東', '綠島': '台東', '蘭喼': '台東', '池上': '台東', '鹿野': '台東',
+      '礁溪': '宜蘭', '羅東': '宜蘭', '太平山': '宜蘭',
+      '三義': '苗栗', '南莊': '苗栗',
+      '內灣': '新竹', '司馬庫斯': '新竹',
+      '鹿港': '彰化',
+      '古坑': '雲林',
+      '澎湖': '澎湖', '馬公': '澎湖',
+      '金門': '金門',
+      '馬祖': '馬祖', '北竿': '馬祖', '南竿': '馬祖',
+    };
     
     // 補充列車名稱（火車行程專用）
     if (quickInfo.trainName) {
@@ -809,12 +849,21 @@ ${STRICT_DATA_FIDELITY_RULES}`;
       console.log(`[WebScraperAgent] QuickInfo 補充天數: ${quickInfo.days}`);
     }
     
-    // 補充目的地
+    // 補充目的地（增強版：支援景點到城市的對應）
     if (quickInfo.destination && (!enriched.location || !enriched.location.destinationCity)) {
       enriched.location = enriched.location || {};
       enriched.location.destinationCountry = '台灣';
-      enriched.location.destinationCity = quickInfo.destination;
-      console.log(`[WebScraperAgent] QuickInfo 補充目的地: ${quickInfo.destination}`);
+      
+      // 檢查是否為台灣景點，如果是則轉換為對應的城市
+      const mappedCity = TAIWAN_ATTRACTIONS_TO_CITY[quickInfo.destination];
+      if (mappedCity) {
+        enriched.location.destinationCity = mappedCity;
+        console.log(`[WebScraperAgent] QuickInfo 補充目的地: ${quickInfo.destination} → ${mappedCity}`);
+      } else {
+        // 如果不是景點，直接使用原始值
+        enriched.location.destinationCity = quickInfo.destination;
+        console.log(`[WebScraperAgent] QuickInfo 補充目的地: ${quickInfo.destination}`);
+      }
     }
     
     // 補充價格
@@ -873,6 +922,19 @@ ${STRICT_DATA_FIDELITY_RULES}`;
    * Validate extracted data
    */
   validateData(data: any): boolean {
+    // 2026-01-30: 添加詳細日誌，幫助調試
+    console.log("[WebScraperAgent] 驗證資料：", {
+      hasBasicInfo: !!data.basicInfo,
+      hasTitle: !!data.basicInfo?.title,
+      hasLocation: !!data.location,
+      hasCountry: !!data.location?.destinationCountry,
+      hasCity: !!data.location?.destinationCity,
+      hasDuration: !!data.duration,
+      hasDays: !!data.duration?.days,
+      hasPricing: !!data.pricing,
+      hasPrice: !!(data.pricing?.price || data.pricing?.basePrice),
+    });
+    
     // Check required fields
     if (!data.basicInfo || !data.basicInfo.title) {
       console.error("[WebScraperAgent] Missing required field: basicInfo.title");
@@ -881,20 +943,24 @@ ${STRICT_DATA_FIDELITY_RULES}`;
     
     if (!data.location || !data.location.destinationCountry || !data.location.destinationCity) {
       console.error("[WebScraperAgent] Missing required fields: location.destinationCountry or location.destinationCity");
+      console.error("[WebScraperAgent] Current location data:", data.location);
       return false;
     }
     
     if (!data.duration || !data.duration.days) {
       console.error("[WebScraperAgent] Missing required field: duration.days");
+      console.error("[WebScraperAgent] Current duration data:", data.duration);
       return false;
     }
     
     // pricing.price 或 pricing.basePrice 都可以
     if (!data.pricing || (!data.pricing.price && !data.pricing.basePrice)) {
       console.error("[WebScraperAgent] Missing required field: pricing.price or pricing.basePrice");
+      console.error("[WebScraperAgent] Current pricing data:", data.pricing);
       return false;
     }
     
+    console.log("[WebScraperAgent] 資料驗證通過！");
     return true;
   }
 }

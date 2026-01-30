@@ -73,7 +73,12 @@ export const tourGenerationWorker = new Worker<TourGenerationJobData, TourGenera
       });
       
       // Call the actual tour generation function
-      const result = await generateTourFromUrlInternal(job.data.url, job.data.userId, job);
+      const result = await generateTourFromUrlInternal(
+        job.data.url, 
+        job.data.userId, 
+        job,
+        job.data.forceRegenerate || false
+      );
       
       // Complete
       await updateProgress(job, {

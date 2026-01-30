@@ -4,6 +4,10 @@
  * 
  * 針對 travel.liontravel.com 網站結構進行優化提取
  * 減少 Vision 救援的觸發頻率
+ * 
+ * 2026-01-30 更新：
+ * - 修復 location 提取邏輯，支援台灣景點到城市的對應
+ * - 先提取每日行程，從中推斷城市
  */
 
 import { JSDOM } from 'jsdom';
@@ -54,6 +58,71 @@ export interface LionTravelData {
   }>;
 }
 
+// 台灣景點到城市/縣市的對應表
+const TAIWAN_ATTRACTIONS_TO_CITY: Record<string, string> = {
+  // 嘉義縣
+  '阿里山': '嘉義',
+  '奮起湖': '嘉義',
+  '達娜伊谷': '嘉義',
+  // 南投縣
+  '日月潭': '南投',
+  '清境': '南投',
+  '合歡山': '南投',
+  '溪頭': '南投',
+  '杉林溪': '南投',
+  '九族文化村': '南投',
+  // 屏東縣
+  '墾丁': '屏東',
+  '小琉球': '屏東',
+  '大鵬灣': '屏東',
+  // 花蓮縣
+  '太魯閣': '花蓮',
+  '七星潭': '花蓮',
+  '瑞穗': '花蓮',
+  '富里': '花蓮',
+  // 台東縣
+  '知本': '台東',
+  '綠島': '台東',
+  '蘭嶼': '台東',
+  '池上': '台東',
+  '鹿野': '台東',
+  // 宜蘭縣
+  '礁溪': '宜蘭',
+  '羅東': '宜蘭',
+  '太平山': '宜蘭',
+  '龜山島': '宜蘭',
+  // 苗栗縣
+  '三義': '苗栗',
+  '南庄': '苗栗',
+  '大湖': '苗栗',
+  // 新竹縣
+  '內灣': '新竹',
+  '司馬庫斯': '新竹',
+  // 彰化縣
+  '鹿港': '彰化',
+  // 雲林縣
+  '古坑': '雲林',
+  '劍湖山': '雲林',
+  // 澎湖縣
+  '澎湖': '澎湖',
+  '馬公': '澎湖',
+  // 金門縣
+  '金門': '金門',
+  // 馬祖
+  '馬祖': '馬祖',
+  '北竿': '馬祖',
+  '南竿': '馬祖',
+};
+
+// 台灣城市列表（用於直接匹配）
+const TAIWAN_CITIES = [
+  '台北', '新北', '基隆', '桃園', '新竹', '苗栗',
+  '台中', '彰化', '南投', '雲林',
+  '嘉義', '台南', '高雄', '屏東',
+  '宜蘭', '花蓮', '台東',
+  '澎湖', '金門', '馬祖',
+];
+
 export class LionTravelParser {
   private dom: JSDOM;
   private document: Document;
@@ -73,21 +142,24 @@ export class LionTravelParser {
 
   /**
    * 從 HTML 提取所有資料
+   * 修改：先提取每日行程，再從中推斷 location
    */
   async parse(): Promise<LionTravelData | null> {
     console.log('[LionTravelParser] Starting parse...');
 
     try {
       const basicInfo = this.extractBasicInfo();
-      const location = this.extractLocation();
+      const dailyItinerary = this.extractDailyItinerary(); // 先提取每日行程
       const duration = this.extractDuration();
       const pricing = this.extractPricing();
       const highlights = this.extractHighlights();
-      const dailyItinerary = this.extractDailyItinerary();
       const includes = this.extractIncludes();
       const excludes = this.extractExcludes();
       const flights = this.extractFlights();
       const hotels = this.extractHotels();
+      
+      // 最後提取 location，傳入 dailyItinerary 以便從中推斷
+      const location = this.extractLocation(dailyItinerary, basicInfo.title);
 
       // 驗證必要欄位
       if (!basicInfo.title) {
@@ -96,8 +168,17 @@ export class LionTravelParser {
       }
 
       if (!location.destinationCountry || !location.destinationCity) {
-        console.log('[LionTravelParser] Missing location');
-        return null;
+        console.log('[LionTravelParser] Missing location, trying fallback...');
+        // 如果還是沒有 location，使用標題中的任何地名作為 fallback
+        const fallbackLocation = this.extractLocationFromTitle(basicInfo.title);
+        if (fallbackLocation.destinationCountry && fallbackLocation.destinationCity) {
+          location.destinationCountry = fallbackLocation.destinationCountry;
+          location.destinationCity = fallbackLocation.destinationCity;
+          console.log(`[LionTravelParser] Fallback location: ${location.destinationCountry} ${location.destinationCity}`);
+        } else {
+          console.log('[LionTravelParser] Missing location after fallback');
+          return null;
+        }
       }
 
       if (!duration.days || duration.days === 0) {
@@ -229,9 +310,14 @@ export class LionTravelParser {
 
   /**
    * 提取目的地資訊
+   * 修改：接收 dailyItinerary 參數，從中推斷城市
    */
-  private extractLocation(): LionTravelData['location'] {
-    // 從標題或 breadcrumb 提取目的地
+  private extractLocation(dailyItinerary: LionTravelData['dailyItinerary'], title: string): LionTravelData['location'] {
+    let destinationCountry = '';
+    let destinationCity = '';
+    let departureCity = '台北';
+
+    // 1. 從 breadcrumb 提取國家
     const breadcrumbSelectors = [
       '.breadcrumb',
       '.bread-crumb',
@@ -239,11 +325,6 @@ export class LionTravelParser {
       '.category-path',
     ];
 
-    let destinationCountry = '';
-    let destinationCity = '';
-    let departureCity = '台北';
-
-    // 從 breadcrumb 提取
     for (const selector of breadcrumbSelectors) {
       const element = this.document.querySelector(selector);
       if (element) {
@@ -264,26 +345,88 @@ export class LionTravelParser {
       }
     }
 
-    // 從標題提取城市
-    const title = this.extractBasicInfo().title;
-    if (title) {
-      // 常見城市名稱
-      const cities = ['東京', '大阪', '京都', '北海道', '沖繩', '福岡', '名古屋',
-                     '首爾', '釜山', '濟州島', '曼谷', '清邁', '普吉島', '芭達雅',
-                     '河內', '胡志明市', '峴港', '下龍灣', '沙壩', '吳哥窟', '暹粒', '金邊',
-                     '新加坡', '吉隆坡', '檳城', '峇里島', '長灘島', '宿霧',
-                     '上海', '北京', '杭州', '蘇州', '成都', '重慶', '西安', '桂林',
-                     '香港', '澳門', '台北', '台中', '台南', '高雄', '花蓮', '台東',
-                     '紐約', '洛杉磯', '舊金山', '拉斯維加斯', '溫哥華', '多倫多',
-                     '倫敦', '巴黎', '羅馬', '米蘭', '威尼斯', '佛羅倫斯', '巴塞隆納',
-                     '馬德里', '蘇黎世', '維也納', '布拉格', '布達佩斯',
-                     '雪梨', '墨爾本', '黃金海岸', '凱恩斯', '奧克蘭', '皇后鎮',
-                     '開羅', '伊斯坦堡', '杜拜', '阿布達比'];
+    // 2. 從每日行程中提取城市（新增邏輯）
+    if (dailyItinerary && dailyItinerary.length > 0) {
+      const citiesFound = new Set<string>();
       
-      for (const city of cities) {
-        if (title.includes(city)) {
+      for (const day of dailyItinerary) {
+        const dayText = `${day.title} ${day.description}`;
+        
+        // 檢查台灣景點
+        for (const [attraction, city] of Object.entries(TAIWAN_ATTRACTIONS_TO_CITY)) {
+          if (dayText.includes(attraction)) {
+            citiesFound.add(city);
+            if (!destinationCountry) {
+              destinationCountry = '台灣';
+            }
+          }
+        }
+        
+        // 檢查台灣城市
+        for (const city of TAIWAN_CITIES) {
+          if (dayText.includes(city)) {
+            citiesFound.add(city);
+            if (!destinationCountry) {
+              destinationCountry = '台灣';
+            }
+          }
+        }
+      }
+      
+      // 如果找到城市，使用第一個作為主要目的地
+      if (citiesFound.size > 0) {
+        const cities = Array.from(citiesFound);
+        destinationCity = cities[0];
+        console.log(`[LionTravelParser] Cities found from itinerary: ${cities.join(', ')}`);
+      }
+    }
+
+    // 3. 從標題提取城市（如果還沒找到）
+    if (!destinationCity && title) {
+      // 先檢查台灣景點
+      for (const [attraction, city] of Object.entries(TAIWAN_ATTRACTIONS_TO_CITY)) {
+        if (title.includes(attraction)) {
           destinationCity = city;
+          if (!destinationCountry) {
+            destinationCountry = '台灣';
+          }
+          console.log(`[LionTravelParser] Found attraction "${attraction}" in title, mapped to city: ${city}`);
           break;
+        }
+      }
+      
+      // 再檢查台灣城市
+      if (!destinationCity) {
+        for (const city of TAIWAN_CITIES) {
+          if (title.includes(city)) {
+            destinationCity = city;
+            if (!destinationCountry) {
+              destinationCountry = '台灣';
+            }
+            break;
+          }
+        }
+      }
+      
+      // 檢查其他國家城市
+      if (!destinationCity) {
+        const cities = ['東京', '大阪', '京都', '北海道', '沖繩', '福岡', '名古屋',
+                       '首爾', '釜山', '濟州島', '曼谷', '清邁', '普吉島', '芭達雅',
+                       '河內', '胡志明市', '峴港', '下龍灣', '沙壩', '吳哥窟', '暹粒', '金邊',
+                       '新加坡', '吉隆坡', '檳城', '峇里島', '長灘島', '宿霧',
+                       '上海', '北京', '杭州', '蘇州', '成都', '重慶', '西安', '桂林',
+                       '香港', '澳門',
+                       '紐約', '洛杉磯', '舊金山', '拉斯維加斯', '溫哥華', '多倫多',
+                       '倫敦', '巴黎', '羅馬', '米蘭', '威尼斯', '佛羅倫斯', '巴塞隆納',
+                       '馬德里', '蘇黎世', '維也納', '布拉格', '布達佩斯',
+                       '雪梨', '墨爾本', '黃金海岸', '凱恩斯', '奧克蘭', '皇后鎮',
+                       '開羅', '伊斯坦堡', '杜拜', '阿布達比'];
+        
+        for (const city of cities) {
+          if (title.includes(city)) {
+            destinationCity = city;
+            break;
+          }
         }
       }
 
@@ -308,7 +451,7 @@ export class LionTravelParser {
       }
     }
 
-    // 從目的地標籤提取
+    // 4. 從目的地標籤提取
     const destinationSelectors = [
       '.destination',
       '.tour-destination',
@@ -331,6 +474,49 @@ export class LionTravelParser {
     }
 
     return { destinationCountry, destinationCity, departureCity };
+  }
+
+  /**
+   * 從標題中提取 location 的 fallback 方法
+   */
+  private extractLocationFromTitle(title: string): { destinationCountry: string; destinationCity: string } {
+    let destinationCountry = '';
+    let destinationCity = '';
+
+    if (!title) {
+      return { destinationCountry, destinationCity };
+    }
+
+    // 檢查是否包含「國內」、「台灣」等關鍵字
+    if (title.includes('國內') || title.includes('台灣') || title.includes('本島')) {
+      destinationCountry = '台灣';
+    }
+
+    // 從標題中提取任何可能的地名
+    // 先檢查台灣景點
+    for (const [attraction, city] of Object.entries(TAIWAN_ATTRACTIONS_TO_CITY)) {
+      if (title.includes(attraction)) {
+        destinationCountry = '台灣';
+        destinationCity = city;
+        return { destinationCountry, destinationCity };
+      }
+    }
+
+    // 檢查台灣城市
+    for (const city of TAIWAN_CITIES) {
+      if (title.includes(city)) {
+        destinationCountry = '台灣';
+        destinationCity = city;
+        return { destinationCountry, destinationCity };
+      }
+    }
+
+    // 如果有國家但沒有城市，使用預設城市
+    if (destinationCountry === '台灣' && !destinationCity) {
+      destinationCity = '台北';
+    }
+
+    return { destinationCountry, destinationCity };
   }
 
   /**
@@ -371,6 +557,7 @@ export class LionTravelParser {
         if (daysMatch && !days) {
           days = parseInt(daysMatch[1]);
         }
+        
         const nightsMatch = text.match(/(\d+)\s*夜/);
         if (nightsMatch && !nights) {
           nights = parseInt(nightsMatch[1]);
@@ -379,8 +566,8 @@ export class LionTravelParser {
       }
     }
 
-    // 如果只有天數沒有夜數，計算夜數
-    if (days > 0 && nights === 0) {
+    // 計算晚數
+    if (days > 0 && !nights) {
       nights = days - 1;
     }
 
@@ -392,12 +579,11 @@ export class LionTravelParser {
    */
   private extractPricing(): LionTravelData['pricing'] {
     let price = 0;
-    let currency = 'TWD';
+    const currency = 'TWD';
     let priceNote = '';
 
     // 價格選擇器
     const priceSelectors = [
-      '.price',
       '.tour-price',
       '.product-price',
       '[class*="price"]',

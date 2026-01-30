@@ -506,6 +506,7 @@ Important guidelines:
     submitAsyncGeneration: protectedProcedure
       .input(z.object({ 
         url: z.string().url(),
+        forceRegenerate: z.boolean().optional().default(false),
       }))
       .mutation(async ({ ctx, input }) => {
         // Check if user is admin
@@ -523,6 +524,7 @@ Important guidelines:
           url: input.url,
           userId: ctx.user.id,
           requestId,
+          forceRegenerate: input.forceRegenerate,
         });
 
         console.log(`[SubmitAsyncGeneration] Job submitted: ${job.id}`);

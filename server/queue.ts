@@ -8,6 +8,7 @@ export interface TourGenerationJobData {
   url: string;
   userId: number;
   requestId: string; // Unique identifier for tracking
+  forceRegenerate?: boolean; // If true, ignore cache and regenerate
 }
 
 /**

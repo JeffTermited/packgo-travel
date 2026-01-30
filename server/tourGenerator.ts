@@ -19,11 +19,13 @@ import { createTour } from "./db";
 export async function generateTourFromUrlInternal(
   url: string,
   userId: number,
-  job: Job<TourGenerationJobData, TourGenerationResult>
+  job: Job<TourGenerationJobData, TourGenerationResult>,
+  forceRegenerate: boolean = false
 ): Promise<TourGenerationResult> {
   console.log("[TourGenerator] Starting tour generation...");
   console.log("[TourGenerator] URL:", url);
   console.log("[TourGenerator] User ID:", userId);
+  console.log("[TourGenerator] Force Regenerate:", forceRegenerate);
   
   try {
     // Create Master Agent
@@ -49,7 +51,7 @@ export async function generateTourFromUrlInternal(
         timestamp: Date.now(),
         partialResults: partialResults || undefined,
       });
-    }, taskId);
+    }, taskId, forceRegenerate);
     
     if (!result.success || !result.data) {
       throw new Error(result.error || "Tour generation failed");

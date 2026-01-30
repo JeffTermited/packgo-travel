@@ -1216,3 +1216,50 @@
 - [ ] 移除已停用的「圖片生成」步驟
 - [ ] 更新進度百分比計算
 - [ ] 測試 UI 變更
+
+
+---
+
+## Phase 21: WebScraperAgent 修復（2026-01-30）
+
+### 21.1 問題診斷
+- [x] 分析日誌發現 Firecrawl 爬取成功但 LionTravelParser 失敗
+- [x] 發現 location 欄位缺失原因：台灣景點（阿里山）不在城市列表中
+- [x] 發現 dailyItinerary 為空原因：Markdown 截取長度僅 15,000 字元
+
+### 21.2 修復 LionTravelParser
+- [x] 新增台灣景點到城市的對應表（阿里山→嘉義、日月潭→南投等）
+- [x] 修改 extractLocation 函數，先從每日行程中推斷城市
+- [x] 新增 extractLocationFromTitle fallback 方法
+- [x] 修改 parse 函數執行順序（先提取 dailyItinerary）
+
+### 21.3 修復 WebScraperAgent
+- [x] 移除 15,000 字元截取限制，改為 100,000 字元
+- [x] 放寬 dailyItinerary 為空時的驗證邏輯
+- [x] 增強 enrichWithQuickInfo 函數，支援景點到城市的對應
+- [x] 添加詳細的驗證日誌
+
+### 21.4 測試驗證
+- [ ] 重新測試雄獅旅遊阿里山行程
+- [ ] 驗證 location 是否正確提取（台灣/嘉義）
+- [ ] 驗證 dailyItinerary 是否正確提取
+- [ ] 驗證完整生成流程
+
+
+---
+
+## Phase 21: WebScraperAgent 修復 (2026-01-30)
+- [x] 修復雄獅專屬解析器 location 欄位缺失問題
+- [x] 修復 Claude LLM 提取 dailyItinerary 為空問題（Markdown 截取長度不足）
+- [x] 移除 Markdown 15,000 字元截取限制，改為 100,000 字元
+- [x] 增強台灣景點到城市的對應邏輯（阿里山→嘉義、日月潭→南投等）
+- [x] 放寬 validateData 驗證邏輯，添加詳細日誌
+- [x] 修復 MasterAgent 中 hotelData/mealData 的變數解構錯誤
+
+---
+
+## Phase 22: 強制重新生成功能 (2026-01-30)
+- [ ] 前端 AI 生成對話框添加「強制重新生成」選項
+- [ ] 後端 API 支援 forceRegenerate 參數
+- [ ] MasterAgent 支援忽略快取
+- [ ] 測試驗證功能
