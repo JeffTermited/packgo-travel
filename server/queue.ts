@@ -9,6 +9,7 @@ export interface TourGenerationJobData {
   userId: number;
   requestId: string; // Unique identifier for tracking
   forceRegenerate?: boolean; // If true, ignore cache and regenerate
+  isPdf?: boolean; // If true, treat URL as PDF file URL
 }
 
 /**

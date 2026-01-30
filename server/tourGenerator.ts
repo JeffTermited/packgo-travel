@@ -20,12 +20,14 @@ export async function generateTourFromUrlInternal(
   url: string,
   userId: number,
   job: Job<TourGenerationJobData, TourGenerationResult>,
-  forceRegenerate: boolean = false
+  forceRegenerate: boolean = false,
+  isPdf: boolean = false
 ): Promise<TourGenerationResult> {
   console.log("[TourGenerator] Starting tour generation...");
   console.log("[TourGenerator] URL:", url);
   console.log("[TourGenerator] User ID:", userId);
   console.log("[TourGenerator] Force Regenerate:", forceRegenerate);
+  console.log("[TourGenerator] Is PDF:", isPdf);
   
   try {
     // Create Master Agent
@@ -51,7 +53,7 @@ export async function generateTourFromUrlInternal(
         timestamp: Date.now(),
         partialResults: partialResults || undefined,
       });
-    }, taskId, forceRegenerate);
+    }, taskId, forceRegenerate, isPdf);
     
     if (!result.success || !result.data) {
       throw new Error(result.error || "Tour generation failed");

@@ -1411,3 +1411,73 @@
 - [x] 添加 /sipin/:id 路由
 - [ ] 測試 Inline Editing 實際編輯流程
 - [ ] 測試圖片上傳功能
+
+
+---
+
+## Phase 23: PDF 上傳生成行程功能（2026-01-30）
+
+### 23.1 PDF 上傳 API 實作
+- [ ] 創建 `server/pdfUpload.ts` - PDF 上傳端點
+- [ ] 支援大型 PDF 檔案上傳（無大小限制）
+- [ ] 將 PDF 上傳到 S3 並返回 URL
+
+### 23.2 PDF 解析邏輯實作
+- [ ] 創建 `server/agents/pdfParserAgent.ts`
+- [ ] 使用 pdf-lib 或 pdf2pic 將 PDF 轉為圖片
+- [ ] 使用 LLM Vision API 分析每頁內容
+- [ ] 從 PDF 中提取圖片資源
+- [ ] 將提取的圖片上傳到 S3
+
+### 23.3 前端 AI 生成對話框更新
+- [ ] 修改 `ToursTab.tsx` 支援 PDF 上傳
+- [ ] 新增「上傳 PDF」按鈕
+- [ ] 顯示 PDF 上傳進度
+- [ ] 支援拖放上傳
+
+### 23.4 整合 PDF 解析到行程生成流程
+- [ ] 修改 `masterAgent.ts` 支援 PDF 輸入
+- [ ] 當輸入為 PDF 時，跳過 WebScraperAgent
+- [ ] 使用 PdfParserAgent 提取內容
+- [ ] 將提取的圖片直接用於行程
+
+### 23.5 測試與驗證
+- [ ] 測試 PDF 上傳功能
+- [ ] 測試 PDF 解析準確率
+- [ ] 測試圖片提取功能
+- [ ] 驗證生成結果是否包含 PDF 中的圖片
+- [ ] 儲存 checkpoint
+
+
+---
+
+## Phase 21: 架構簡化 - 移除 LionTravelParser（2026-01-30）
+- [x] 刪除 LionTravelParser 檔案
+- [x] 更新 WebScraperAgent 移除 LionTravelParser 引用
+- [x] 更新診斷工具移除 LionTravelParser 步驟
+- [x] 測試驗證系統正常運作
+
+---
+
+## Phase 22: 詳情頁面 Inline Editing 系統（2026-01-30）
+- [x] 創建 EditableText 組件
+- [x] 創建 EditableImage 組件
+- [x] 創建 EditModeContext
+- [x] 創建 EditModeToolbar
+- [x] 創建 PriceEditDialog
+- [x] 更新 HeroSection 支援編輯
+- [x] 更新 DailyItinerarySection 支援編輯
+- [x] 更新 FeaturesSection 支援編輯
+- [x] 實作圖片上傳 API
+- [x] 測試完整編輯流程
+
+---
+
+## Phase 23: PDF 上傳生成行程功能（2026-01-30）
+- [x] 實作 PDF 上傳 API 端點（/api/pdf/upload）
+- [x] 實作 PDF 轉圖片功能（使用 pdf-poppler）
+- [x] 實作 PDF 圖片提取功能
+- [x] 實作 LLM Vision 解析 PDF 頁面（PdfParserAgent）
+- [x] 更新前端 AI 生成對話框支援 PDF 上傳（URL/PDF 模式切換）
+- [x] 整合 PDF 解析到行程生成流程（MasterAgent、Worker）
+- [ ] 測試完整 PDF 上傳生成流程（待發布後測試）

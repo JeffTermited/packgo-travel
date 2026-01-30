@@ -571,6 +571,7 @@ Important guidelines:
       .input(z.object({ 
         url: z.string().url(),
         forceRegenerate: z.boolean().optional().default(false),
+        isPdf: z.boolean().optional().default(false),
       }))
       .mutation(async ({ ctx, input }) => {
         // Check if user is admin
@@ -589,6 +590,7 @@ Important guidelines:
           userId: ctx.user.id,
           requestId,
           forceRegenerate: input.forceRegenerate,
+          isPdf: input.isPdf,
         });
 
         console.log(`[SubmitAsyncGeneration] Job submitted: ${job.id}`);

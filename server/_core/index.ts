@@ -11,6 +11,7 @@ import { serveStatic, setupVite } from "./vite";
 import { handleStripeWebhook } from "./stripeWebhook";
 import { avatarUploadRouter } from "../avatarUpload";
 import { tourImageUploadRouter } from "../tourImageUpload";
+import { pdfUploadRouter } from "../pdfUpload";
 import { progressRouter } from "../progressRouter";
 import { initializeGoogleAuth } from "../googleAuth";
 import "../worker"; // Initialize BullMQ worker
@@ -64,6 +65,9 @@ async function startServer() {
   
   // Tour image upload API
   app.use("/api", tourImageUploadRouter);
+  
+  // PDF upload API
+  app.use("/api", pdfUploadRouter);
   
   // Progress tracking SSE API
   app.use("/api", progressRouter);

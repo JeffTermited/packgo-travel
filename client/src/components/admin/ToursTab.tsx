@@ -23,7 +23,7 @@ import { trpc } from "@/lib/trpc";
 import DeparturesManagement from "./DeparturesManagement";
 import { GenerationProgressComponent } from "./GenerationProgress";
 import { TourEditDialog } from "./TourEditDialog";
-import { Calendar, Edit, Eye, EyeOff, ExternalLink, Loader2, Plus, RefreshCw, Search, Sparkles, Star, Trash2 } from "lucide-react";
+import { Calendar, Edit, Eye, EyeOff, ExternalLink, FileUp, Loader2, Plus, RefreshCw, Search, Sparkles, Star, Trash2, Upload } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
@@ -61,6 +61,9 @@ export default function ToursTab() {
   const [selectedTourForDepartures, setSelectedTourForDepartures] = useState<{id: number, title: string} | null>(null);
   const [autoGenerateUrl, setAutoGenerateUrl] = useState("");
   const [forceRegenerate, setForceRegenerate] = useState(false);
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [pdfUploading, setPdfUploading] = useState(false);
+  const [inputMode, setInputMode] = useState<"url" | "pdf">("url");
   const [generatedTourData, setGeneratedTourData] = useState<any>(null);
   const [extractionStep, setExtractionStep] = useState<number>(0); // 0: 未開始, 1: 抓取網頁, 2: 解析內容, 3: AI 分析, 4: 預覽準備完成
   const [currentTaskId, setCurrentTaskId] = useState<string | null>(null); // 用於進度追蹤
@@ -263,17 +266,60 @@ export default function ToursTab() {
     },
   });
 
-  const handleAutoGenerate = () => {
-    if (!autoGenerateUrl.trim()) {
-      toast.error("請輸入行程網址");
-      return;
+  const handleAutoGenerate = async () => {
+    if (inputMode === "url") {
+      if (!autoGenerateUrl.trim()) {
+        toast.error("請輸入行程網址");
+        return;
+      }
+      
+      // 提交異步生成任務
+      submitAsyncGenerationMutation.mutate({ 
+        url: autoGenerateUrl,
+        forceRegenerate,
+      });
+    } else {
+      // PDF 模式
+      if (!pdfFile) {
+        toast.error("請選擇 PDF 檔案");
+        return;
+      }
+      
+      try {
+        setPdfUploading(true);
+        toast.info("正在上傳 PDF 檔案...");
+        
+        // 上傳 PDF 到 S3
+        const formData = new FormData();
+        formData.append("pdf", pdfFile);
+        
+        const uploadResponse = await fetch("/api/pdf/upload", {
+          method: "POST",
+          body: formData,
+        });
+        
+        if (!uploadResponse.ok) {
+          throw new Error("PDF 上傳失敗");
+        }
+        
+        const { url: pdfUrl } = await uploadResponse.json();
+        console.log("[PDF Upload] Uploaded to:", pdfUrl);
+        
+        setPdfUploading(false);
+        toast.success("PDF 上傳成功，開始生成行程...");
+        
+        // 使用 PDF URL 提交生成任務
+        submitAsyncGenerationMutation.mutate({ 
+          url: pdfUrl,
+          forceRegenerate,
+          isPdf: true,
+        });
+      } catch (error: any) {
+        setPdfUploading(false);
+        console.error("[PDF Upload] Error:", error);
+        toast.error(`PDF 上傳失敗：${error.message}`);
+      }
     }
-    
-    // 提交異步生成任務
-    submitAsyncGenerationMutation.mutate({ 
-      url: autoGenerateUrl,
-      forceRegenerate,
-    });
   };
 
   const handleConfirmGeneratedTour = () => {
@@ -853,24 +899,113 @@ export default function ToursTab() {
               AI 自動生成行程
             </DialogTitle>
             <DialogDescription>
-              輸入旅遊行程網址，AI 將自動提取並生成行程資訊
+              輸入旅遊行程網址或上傳 PDF 檔案，AI 將自動提取並生成行程資訊
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="url">行程網址</Label>
-              <Input
-                id="url"
-                placeholder="https://www.liontravel.com/..."
-                value={autoGenerateUrl}
-                onChange={(e) => setAutoGenerateUrl(e.target.value)}
-                disabled={submitAsyncGenerationMutation.isPending}
-                className="rounded-full"
-              />
-              <p className="text-xs text-gray-500">
-                支援雄獅旅遊、可樂旅遊等主流旅行社網站
-              </p>
+            {/* 輸入模式切換 */}
+            <div className="flex gap-2 p-1 bg-gray-100 rounded-full">
+              <button
+                type="button"
+                onClick={() => setInputMode("url")}
+                disabled={isGenerating || pdfUploading}
+                className={`flex-1 py-2 px-4 rounded-full text-sm font-medium transition-all ${
+                  inputMode === "url"
+                    ? "bg-white text-purple-600 shadow-sm"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                網址輸入
+              </button>
+              <button
+                type="button"
+                onClick={() => setInputMode("pdf")}
+                disabled={isGenerating || pdfUploading}
+                className={`flex-1 py-2 px-4 rounded-full text-sm font-medium transition-all ${
+                  inputMode === "pdf"
+                    ? "bg-white text-purple-600 shadow-sm"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                <FileUp className="h-4 w-4 inline mr-1" />
+                上傳 PDF
+              </button>
             </div>
+            
+            {/* URL 輸入模式 */}
+            {inputMode === "url" && (
+              <div className="space-y-2">
+                <Label htmlFor="url">行程網址</Label>
+                <Input
+                  id="url"
+                  placeholder="https://www.liontravel.com/..."
+                  value={autoGenerateUrl}
+                  onChange={(e) => setAutoGenerateUrl(e.target.value)}
+                  disabled={submitAsyncGenerationMutation.isPending || isGenerating}
+                  className="rounded-full"
+                />
+                <p className="text-xs text-gray-500">
+                  支援雄獅旅遊、可樂旅遊等主流旅行社網站
+                </p>
+              </div>
+            )}
+            
+            {/* PDF 上傳模式 */}
+            {inputMode === "pdf" && (
+              <div className="space-y-2">
+                <Label>選擇 PDF 檔案</Label>
+                <div 
+                  className={`border-2 border-dashed rounded-2xl p-6 text-center transition-colors ${
+                    pdfFile 
+                      ? "border-purple-300 bg-purple-50" 
+                      : "border-gray-300 hover:border-purple-300 hover:bg-purple-50/50"
+                  }`}
+                >
+                  <input
+                    type="file"
+                    accept=".pdf,application/pdf"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setPdfFile(file);
+                      }
+                    }}
+                    disabled={isGenerating || pdfUploading}
+                    className="hidden"
+                    id="pdf-upload"
+                  />
+                  <label 
+                    htmlFor="pdf-upload" 
+                    className="cursor-pointer flex flex-col items-center gap-2"
+                  >
+                    {pdfFile ? (
+                      <>
+                        <FileUp className="h-8 w-8 text-purple-600" />
+                        <span className="text-sm font-medium text-purple-600">{pdfFile.name}</span>
+                        <span className="text-xs text-gray-500">
+                          {(pdfFile.size / 1024 / 1024).toFixed(2)} MB
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="h-8 w-8 text-gray-400" />
+                        <span className="text-sm text-gray-600">點擊或拖放上傳 PDF</span>
+                        <span className="text-xs text-gray-400">支援雄獅旅遊等旅行社行程 PDF</span>
+                      </>
+                    )}
+                  </label>
+                </div>
+                {pdfFile && (
+                  <button
+                    type="button"
+                    onClick={() => setPdfFile(null)}
+                    className="text-xs text-red-500 hover:text-red-700"
+                  >
+                    清除檔案
+                  </button>
+                )}
+              </div>
+            )}
             
             {/* 強制重新生成選項 */}
             <div className="flex items-center space-x-2">
@@ -912,6 +1047,9 @@ export default function ToursTab() {
                 setExtractionStep(0);
                 setCurrentTaskId(null);
                 setIsGenerating(false);
+                setPdfFile(null);
+                setPdfUploading(false);
+                setInputMode("url");
               }}
               disabled={submitAsyncGenerationMutation.isPending || isGenerating}
               className="rounded-full"
@@ -920,10 +1058,10 @@ export default function ToursTab() {
             </Button>
             <Button
               onClick={handleAutoGenerate}
-              disabled={submitAsyncGenerationMutation.isPending || isGenerating || !autoGenerateUrl.trim()}
+              disabled={submitAsyncGenerationMutation.isPending || isGenerating || pdfUploading || (inputMode === "url" ? !autoGenerateUrl.trim() : !pdfFile)}
               className="bg-purple-600 text-white hover:bg-purple-700 rounded-full"
             >
-              {(submitAsyncGenerationMutation.isPending || isGenerating) ? (
+              {(submitAsyncGenerationMutation.isPending || isGenerating || pdfUploading) ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   生成中...

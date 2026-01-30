@@ -183,13 +183,15 @@ export class MasterAgent {
     userId?: number,
     onProgress?: (step: string, percentage: number) => void,
     taskId?: string,
-    forceRegenerate: boolean = false
+    forceRegenerate: boolean = false,
+    isPdf: boolean = false
   ): Promise<MasterAgentResult> {
     const startTime = Date.now();
     console.log("[MasterAgent] Starting OPTIMIZED tour generation...");
     console.log("[MasterAgent] URL:", url);
     console.log("[MasterAgent] User ID:", userId);
     console.log("[MasterAgent] Force Regenerate:", forceRegenerate);
+    console.log("[MasterAgent] Is PDF:", isPdf);
     
     // Reset monitor for new execution
     this.monitor.reset();
@@ -228,10 +230,10 @@ export class MasterAgent {
       console.log("[MasterAgent] Cache MISS, proceeding with generation...");
       
       // ========================================================================
-      // Phase 1: Web Scraping (Critical, Sequential)
+      // Phase 1: Web Scraping or PDF Parsing (Critical, Sequential)
       // Must complete first as all other agents depend on rawData
       // ========================================================================
-      onProgress?.("scraping", 10);
+      onProgress?.(isPdf ? "parsing_pdf" : "scraping", 10);
       this.monitor.startAgent('WebScraperAgent');
       if (taskId) progressTracker.startPhase(taskId, 'web_scraper');
       
@@ -242,6 +244,23 @@ export class MasterAgent {
         console.log("[MasterAgent] 🎯 Scrape cache HIT!");
         rawData = cachedScrape;
         this.monitor.completeAgent('WebScraperAgent', { success: true, data: cachedScrape });
+      } else if (isPdf) {
+        // PDF mode: use PdfParserAgent
+        console.log("[MasterAgent] 📄 PDF mode: parsing PDF...");
+        const { PdfParserAgent } = await import("./pdfParserAgent");
+        const pdfParser = new PdfParserAgent();
+        const pdfResult = await pdfParser.execute(url);
+        
+        if (!pdfResult.success || !pdfResult.data) {
+          this.monitor.failAgent('WebScraperAgent', new Error(pdfResult.error || "PDF parsing failed"));
+          throw new Error(pdfResult.error || "PDF parsing failed");
+        }
+        
+        this.monitor.completeAgent('WebScraperAgent', pdfResult);
+        rawData = pdfResult.data;
+        
+        // Cache the PDF parse result (1 day TTL)
+        await generationCache.cacheScrapeResult(url, rawData);
       } else {
         const scrapingResult = await this.retryManager.executeWithRetry(
           () => this.webScraperAgent.execute(url),
