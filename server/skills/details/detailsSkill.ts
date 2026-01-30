@@ -289,8 +289,34 @@ export class DetailsSkill {
   }> {
     console.log("[DetailsSkill:meals] Starting meal extraction...");
 
-    const mealData = rawData?.meals || rawData?.dining || [];
+    let mealData = rawData?.meals || rawData?.dining || [];
     const dailyItinerary = rawData?.dailyItinerary || rawData?.itinerary || [];
+    
+    console.log(`[DetailsSkill:meals] mealData length: ${mealData.length}`);
+    console.log(`[DetailsSkill:meals] dailyItinerary length: ${dailyItinerary.length}`);
+    console.log(`[DetailsSkill:meals] rawData.meals: ${JSON.stringify(rawData?.meals)?.substring(0, 200)}`);
+    
+    // 如果 meals 是空的但有 dailyItinerary，從每日行程提取餐食資訊
+    if ((!mealData || mealData.length === 0) && dailyItinerary.length > 0) {
+      const extractedMeals: any[] = [];
+      
+      for (const day of dailyItinerary) {
+        if (day.meals && typeof day.meals === 'string' && day.meals.trim()) {
+          extractedMeals.push({
+            day: day.day || 0,
+            description: day.meals.trim(),
+            breakfast: day.meals.includes('早') || day.meals.toLowerCase().includes('breakfast'),
+            lunch: day.meals.includes('午') || day.meals.toLowerCase().includes('lunch'),
+            dinner: day.meals.includes('晚') || day.meals.toLowerCase().includes('dinner'),
+          });
+        }
+      }
+      
+      if (extractedMeals.length > 0) {
+        mealData = extractedMeals;
+        console.log(`[DetailsSkill:meals] Extracted ${mealData.length} meal records from dailyItinerary`);
+      }
+    }
 
     // 如果沒有餐飲資料，返回預設值
     if ((!mealData || mealData.length === 0) && dailyItinerary.length === 0) {
@@ -342,9 +368,38 @@ ${JSON.stringify(mealData.length > 0 ? mealData : dailyItinerary, null, 2)}
   }> {
     console.log("[DetailsSkill:hotels] Starting hotel extraction...");
 
-    const accommodationData = rawData?.accommodation || rawData?.hotels || [];
+    // 嘗試從多個來源獲取住宿資料
+    let accommodationData = rawData?.accommodation || rawData?.hotels || [];
+    
+    // 如果 accommodation 和 hotels 都是空的，嘗試從 dailyItinerary 提取
+    if ((!accommodationData || accommodationData.length === 0) && rawData?.dailyItinerary) {
+      const dailyItinerary = rawData.dailyItinerary || [];
+      const hotelNames = new Set<string>();
+      
+      for (const day of dailyItinerary) {
+        // 從每日行程的 accommodation 欄位提取飯店名稱
+        if (day.accommodation && typeof day.accommodation === 'string' && day.accommodation.trim()) {
+          hotelNames.add(day.accommodation.trim());
+        }
+      }
+      
+      if (hotelNames.size > 0) {
+        accommodationData = Array.from(hotelNames).map(name => ({
+          name,
+          stars: '',
+          description: '',
+          location: '',
+        }));
+        console.log(`[DetailsSkill:hotels] Extracted ${accommodationData.length} hotels from dailyItinerary`);
+      }
+    }
+    
+    console.log(`[DetailsSkill:hotels] accommodationData length: ${accommodationData.length}`);
+    console.log(`[DetailsSkill:hotels] rawData.accommodation: ${JSON.stringify(rawData?.accommodation)?.substring(0, 200)}`);
+    console.log(`[DetailsSkill:hotels] rawData.hotels: ${JSON.stringify(rawData?.hotels)?.substring(0, 200)}`);
 
     if (!accommodationData || accommodationData.length === 0) {
+      console.log("[DetailsSkill:hotels] No accommodation data found, using defaults");
       return { data: this.getDefaultHotels(rawData) };
     }
 
