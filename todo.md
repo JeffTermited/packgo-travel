@@ -1207,3 +1207,12 @@
 - [x] 整合 MealAgent, HotelAgent, CostAgent, NoticeAgent 功能
 - [x] 更新 MasterAgent 使用 DetailsSkill
 - [ ] 端到端測試
+
+
+---
+
+## Phase 24: AI 生成進度 UI 優化
+- [ ] 移除已停用的「圖片提示」步驟
+- [ ] 移除已停用的「圖片生成」步驟
+- [ ] 更新進度百分比計算
+- [ ] 測試 UI 變更
