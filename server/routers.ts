@@ -1116,6 +1116,82 @@ Important guidelines:
         };
       }),
 
+    // Generate PDF for tour (public)
+    generatePdf: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        console.log(`[GeneratePDF] Starting PDF generation for tour ${input.id}`);
+        
+        // Get tour data
+        const tour = await db.getTourById(input.id);
+        if (!tour) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Tour not found",
+          });
+        }
+        
+        // Parse JSON fields
+        const parseJSON = (str: string | null | undefined, defaultValue: any = null) => {
+          if (!str) return defaultValue;
+          try {
+            return JSON.parse(str);
+          } catch {
+            return defaultValue;
+          }
+        };
+        
+        const itineraryDetailed = parseJSON(tour.itineraryDetailed, []);
+        const highlights = parseJSON(tour.highlights, []);
+        const includes = parseJSON(tour.includes, []);
+        const excludes = parseJSON(tour.excludes, []);
+        const noticeDetailed = parseJSON(tour.noticeDetailed, []);
+        const colorTheme = parseJSON(tour.colorTheme, null);
+        
+        // Prepare PDF data
+        const pdfGenerator = await import('./pdfGenerator');
+        
+        const pdfData: any = {
+          id: tour.id,
+          title: tour.title,
+          subtitle: tour.heroSubtitle || undefined,
+          days: tour.duration,
+          destinations: [
+            tour.destinationCountry,
+            ...(tour.destinationCity ? tour.destinationCity.split(',').map(c => c.trim()) : []),
+          ].filter(Boolean),
+          price: tour.price || undefined,
+          currency: 'NT$',
+          heroImage: tour.heroImage || undefined,
+          description: tour.description || undefined,
+          highlights: highlights.length > 0 ? highlights : undefined,
+          itinerary: itineraryDetailed.length > 0 ? itineraryDetailed.map((day: any) => ({
+            day: day.day,
+            title: day.title,
+            subtitle: day.subtitle,
+            activities: day.activities || [],
+            meals: day.meals || {},
+            accommodation: day.accommodation,
+          })) : undefined,
+          inclusions: includes.length > 0 ? includes : undefined,
+          exclusions: excludes.length > 0 ? excludes : undefined,
+          notes: noticeDetailed.length > 0 ? noticeDetailed : undefined,
+          colorTheme: colorTheme || undefined,
+        };
+        
+        // Generate and upload PDF
+        const storageKey = `tours/${tour.id}/itinerary_${Date.now()}.pdf`;
+        const pdfUrl = await pdfGenerator.generateAndUploadTourPdf(pdfData, storageKey);
+        
+        console.log(`[GeneratePDF] PDF generated successfully: ${pdfUrl}`);
+        
+        return {
+          success: true,
+          url: pdfUrl,
+          message: "PDF 已成功生成",
+        };
+      }),
+
     // 診斷工具 API (admin only)
     diagnose: adminProcedure
       .input(z.object({ 

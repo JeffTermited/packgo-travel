@@ -100,3 +100,62 @@ export async function storageGet(relKey: string): Promise<{ key: string; url: st
     url: await buildDownloadUrl(baseUrl, key, apiKey),
   };
 }
+
+// Image optimization and upload
+import {
+  optimizeImage,
+  generateStorageKeys,
+  getMimeType,
+  type ImageOptimizationOptions,
+} from './imageOptimizer';
+
+export interface OptimizedImageUrls {
+  thumbnail: string;
+  medium: string;
+  large: string;
+  original?: string;
+}
+
+/**
+ * Upload an image with automatic optimization and multiple sizes
+ * @param baseKey - Base storage key without extension (e.g., "tours/123/image1")
+ * @param imageBuffer - Input image buffer
+ * @param options - Optimization options
+ * @returns URLs for all generated sizes
+ */
+export async function storageImagePut(
+  baseKey: string,
+  imageBuffer: Buffer,
+  options: ImageOptimizationOptions = {}
+): Promise<OptimizedImageUrls> {
+  const format = options.format || 'webp';
+  const mimeType = getMimeType(format);
+
+  // Optimize image to multiple sizes
+  const optimized = await optimizeImage(imageBuffer, options);
+
+  // Generate storage keys
+  const keys = generateStorageKeys(baseKey, format);
+
+  // Upload all sizes in parallel
+  const [thumbnailResult, mediumResult, largeResult, originalResult] = await Promise.all([
+    storagePut(keys.thumbnail, optimized.thumbnail, mimeType),
+    storagePut(keys.medium, optimized.medium, mimeType),
+    storagePut(keys.large, optimized.large, mimeType),
+    optimized.original
+      ? storagePut(keys.original!, optimized.original, mimeType)
+      : Promise.resolve(null),
+  ]);
+
+  const urls: OptimizedImageUrls = {
+    thumbnail: thumbnailResult.url,
+    medium: mediumResult.url,
+    large: largeResult.url,
+  };
+
+  if (originalResult) {
+    urls.original = originalResult.url;
+  }
+
+  return urls;
+}
