@@ -361,14 +361,24 @@ export async function parsePdf(
   const pdfPath = path.join(tempDir, "document.pdf");
 
   try {
-    // 下載 PDF
-    const response = await fetch(pdfUrl);
-    if (!response.ok) {
-      throw new Error(`Failed to download PDF: ${response.status}`);
+    // 下載或複製 PDF
+    let pdfBuffer: Buffer;
+    
+    if (pdfUrl.startsWith('http://') || pdfUrl.startsWith('https://')) {
+      // HTTP URL: 下載 PDF
+      const response = await fetch(pdfUrl);
+      if (!response.ok) {
+        throw new Error(`Failed to download PDF: ${response.status}`);
+      }
+      pdfBuffer = Buffer.from(await response.arrayBuffer());
+      console.log(`[PdfParserAgent] Downloaded PDF from URL: ${pdfBuffer.length} bytes`);
+    } else {
+      // 本地檔案路徑: 直接讀取
+      pdfBuffer = await fs.readFile(pdfUrl);
+      console.log(`[PdfParserAgent] Read PDF from local file: ${pdfBuffer.length} bytes`);
     }
-    const pdfBuffer = Buffer.from(await response.arrayBuffer());
+    
     await fs.writeFile(pdfPath, pdfBuffer);
-    console.log(`[PdfParserAgent] Downloaded PDF: ${pdfBuffer.length} bytes`);
 
     // 將 PDF 轉換為圖片
     const pageImages = await convertPdfToImages(pdfPath);
