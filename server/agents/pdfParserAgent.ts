@@ -361,17 +361,26 @@ export async function parsePdf(pdfUrl: string): Promise<PdfParseResult> {
     const extractedImages = await extractImagesFromPdf(pdfPath);
     console.log(`[PdfParserAgent] Extracted ${extractedImages.length} embedded images`);
 
-    // 使用 LLM Vision 分析每一頁
-    const pageResults: any[] = [];
-    for (let i = 0; i < pageImages.length; i++) {
-      const imageBuffer = await fs.readFile(pageImages[i]);
-      const imageBase64 = imageBuffer.toString("base64");
-      
-      console.log(`[PdfParserAgent] Analyzing page ${i + 1}/${pageImages.length}...`);
-      const result = await analyzePageWithVision(imageBase64, i + 1, pageImages.length);
-      result.pageNumber = i + 1;
-      pageResults.push(result);
-    }
+    // 使用 LLM Vision 並行分析所有頁面 ⭐ 優化：串行改为并行
+    console.log(`[PdfParserAgent] Analyzing ${pageImages.length} pages in parallel...`);
+    const startTime = Date.now();
+    
+    const pageResults = await Promise.all(
+      pageImages.map(async (imagePath, i) => {
+        const imageBuffer = await fs.readFile(imagePath);
+        const imageBase64 = imageBuffer.toString("base64");
+        
+        console.log(`[PdfParserAgent] Starting analysis of page ${i + 1}/${pageImages.length}...`);
+        const result = await analyzePageWithVision(imageBase64, i + 1, pageImages.length);
+        result.pageNumber = i + 1;
+        console.log(`[PdfParserAgent] Completed analysis of page ${i + 1}/${pageImages.length}`);
+        
+        return result;
+      })
+    );
+    
+    const analysisTime = ((Date.now() - startTime) / 1000).toFixed(1);
+    console.log(`[PdfParserAgent] ✅ Parallel analysis completed in ${analysisTime}s (${pageImages.length} pages)`);
 
     // 合併所有頁面的分析結果
     const mergedResult = mergePageResults(pageResults);
