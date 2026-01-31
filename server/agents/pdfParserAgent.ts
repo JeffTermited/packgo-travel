@@ -333,9 +333,26 @@ function mergePageResults(pageResults: any[]): Partial<PdfParseResult> {
 }
 
 /**
- * 主要解析函數 - 解析 PDF 並返回結構化資料
+ * 進度回調介面
  */
-export async function parsePdf(pdfUrl: string): Promise<PdfParseResult> {
+export interface ProgressCallback {
+  (progress: {
+    current: number;
+    total: number;
+    percentage: number;
+    message: string;
+  }): void | Promise<void>;
+}
+
+/**
+ * 主要解析函數 - 解析 PDF 並返回結構化資料
+ * @param pdfUrl PDF 檔案的 URL
+ * @param onProgress 進度回調函數（可選）
+ */
+export async function parsePdf(
+  pdfUrl: string,
+  onProgress?: ProgressCallback
+): Promise<PdfParseResult> {
   console.log(`[PdfParserAgent] Starting PDF parsing: ${pdfUrl}`);
   const startTime = Date.now();
 
@@ -361,26 +378,58 @@ export async function parsePdf(pdfUrl: string): Promise<PdfParseResult> {
     const extractedImages = await extractImagesFromPdf(pdfPath);
     console.log(`[PdfParserAgent] Extracted ${extractedImages.length} embedded images`);
 
-    // 使用 LLM Vision 並行分析所有頁面 ⭐ 優化：串行改为并行
-    console.log(`[PdfParserAgent] Analyzing ${pageImages.length} pages in parallel...`);
-    const startTime = Date.now();
+    // 使用批次處理分析頁面 ⭐ 優化：批次處理避免記憶體溢出和超時
+    const BATCH_SIZE = 5; // 每批處理 5 頁
+    const totalBatches = Math.ceil(pageImages.length / BATCH_SIZE);
+    const pageResults: any[] = [];
     
-    const pageResults = await Promise.all(
-      pageImages.map(async (imagePath, i) => {
-        const imageBuffer = await fs.readFile(imagePath);
-        const imageBase64 = imageBuffer.toString("base64");
-        
-        console.log(`[PdfParserAgent] Starting analysis of page ${i + 1}/${pageImages.length}...`);
-        const result = await analyzePageWithVision(imageBase64, i + 1, pageImages.length);
-        result.pageNumber = i + 1;
-        console.log(`[PdfParserAgent] Completed analysis of page ${i + 1}/${pageImages.length}`);
-        
-        return result;
-      })
-    );
+    console.log(`[PdfParserAgent] Analyzing ${pageImages.length} pages in ${totalBatches} batches...`);
+    const analysisStartTime = Date.now();
     
-    const analysisTime = ((Date.now() - startTime) / 1000).toFixed(1);
-    console.log(`[PdfParserAgent] ✅ Parallel analysis completed in ${analysisTime}s (${pageImages.length} pages)`);
+    for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
+      const startPage = batchIndex * BATCH_SIZE;
+      const endPage = Math.min((batchIndex + 1) * BATCH_SIZE, pageImages.length);
+      const batchImages = pageImages.slice(startPage, endPage);
+      
+      // 報告進度
+      const percentage = Math.round(((batchIndex + 1) / totalBatches) * 100);
+      const progressMessage = `正在解析第 ${startPage + 1}-${endPage} 頁（批次 ${batchIndex + 1}/${totalBatches}）...`;
+      console.log(`[PdfParserAgent] ${progressMessage}`);
+      
+      if (onProgress) {
+        await onProgress({
+          current: batchIndex + 1,
+          total: totalBatches,
+          percentage,
+          message: progressMessage,
+        });
+      }
+      
+      // 並行處理當前批次的頁面
+      const batchStartTime = Date.now();
+      const batchResults = await Promise.all(
+        batchImages.map(async (imagePath, i) => {
+          const globalIndex = startPage + i;
+          const imageBuffer = await fs.readFile(imagePath);
+          const imageBase64 = imageBuffer.toString("base64");
+          
+          console.log(`[PdfParserAgent] Analyzing page ${globalIndex + 1}/${pageImages.length}...`);
+          const result = await analyzePageWithVision(imageBase64, globalIndex + 1, pageImages.length);
+          result.pageNumber = globalIndex + 1;
+          console.log(`[PdfParserAgent] Completed page ${globalIndex + 1}/${pageImages.length}`);
+          
+          return result;
+        })
+      );
+      
+      const batchTime = ((Date.now() - batchStartTime) / 1000).toFixed(1);
+      console.log(`[PdfParserAgent] ✅ Batch ${batchIndex + 1}/${totalBatches} completed in ${batchTime}s (${batchResults.length} pages)`);
+      
+      pageResults.push(...batchResults);
+    }
+    
+    const analysisTime = ((Date.now() - analysisStartTime) / 1000).toFixed(1);
+    console.log(`[PdfParserAgent] ✅ All batches completed in ${analysisTime}s (${pageImages.length} pages)`);
 
     // 合併所有頁面的分析結果
     const mergedResult = mergePageResults(pageResults);

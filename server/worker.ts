@@ -108,7 +108,8 @@ export const tourGenerationWorker = new Worker<TourGenerationJobData, TourGenera
   {
     connection: redis,
     concurrency: 2, // Process 2 jobs concurrently
-    lockDuration: 600000, // 10 minutes lock duration for long-running tasks
+    lockDuration: 1200000, // 20 minutes lock duration for long-running tasks (e.g., large PDF processing)
+    lockRenewTime: 600000, // Renew lock every 10 minutes
     maxStalledCount: 3, // Allow up to 3 stalled attempts before failing
     limiter: {
       max: 10, // Max 10 jobs

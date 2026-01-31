@@ -245,15 +245,85 @@ export class MasterAgent {
         rawData = cachedScrape;
         this.monitor.completeAgent('WebScraperAgent', { success: true, data: cachedScrape });
       } else if (isPdf) {
-        // PDF mode: use PdfParserAgent
+        // PDF mode: use PdfParserAgent with progress tracking
         console.log("[MasterAgent] 📄 PDF mode: parsing PDF...");
-        const { PdfParserAgent } = await import("./pdfParserAgent");
-        const pdfParser = new PdfParserAgent();
-        const pdfResult = await pdfParser.execute(url);
+        const { parsePdf } = await import("./pdfParserAgent");
+        
+        // Parse PDF with progress callback
+        const pdfData = await parsePdf(url, async (progress) => {
+          // Report progress to worker
+          if (onProgress) {
+            await onProgress(
+              `pdf_parsing_batch_${progress.current}`,
+              10 + Math.round((progress.percentage / 100) * 20) // 10-30% of total progress
+            );
+          }
+          console.log(`[MasterAgent] PDF parsing progress: ${progress.percentage}% - ${progress.message}`);
+        });
+        
+        // Convert to WebScraperAgent compatible format
+        const pdfResult = {
+          success: true,
+          data: {
+            basicInfo: {
+              title: pdfData.title || '未命名行程',
+              subtitle: pdfData.subtitle || '',
+              description: pdfData.subtitle || '',
+              productCode: pdfData.productCode || '',
+            },
+            location: {
+              destinationCountry: pdfData.country || '台灣',
+              destinationCity: pdfData.destinations?.join(', ') || '',
+            },
+            duration: {
+              days: pdfData.duration || 1,
+              nights: pdfData.duration > 1 ? pdfData.duration - 1 : 0,
+            },
+            pricing: {
+              price: pdfData.price || 0,
+              basePrice: pdfData.price || 0,
+              currency: 'TWD',
+              priceNote: pdfData.priceNote || '',
+            },
+            highlights: pdfData.highlights || [],
+            dailyItinerary: (pdfData.dailyItinerary || []).map((day: any) => ({
+              day: day.day,
+              title: day.title || `第 ${day.day} 天`,
+              activities: (day.activities || []).map((act: any) => ({
+                time: act.time || '',
+                title: act.title || '',
+                description: act.description || '',
+                location: act.location || '',
+                transportation: act.transportation || '',
+              })),
+              meals: {
+                breakfast: day.meals?.breakfast || '',
+                lunch: day.meals?.lunch || '',
+                dinner: day.meals?.dinner || '',
+              },
+              accommodation: day.hotel || '',
+            })),
+            includes: pdfData.costDetails?.included || [],
+            excludes: pdfData.costDetails?.excluded || [],
+            accommodation: (pdfData.hotelInfo || []).map((hotel: any) => hotel.name),
+            hotels: (pdfData.hotelInfo || []).map((hotel: any) => ({
+              name: hotel.name || '',
+              description: hotel.description || '',
+              imageUrl: hotel.imageUrl || '',
+            })),
+            meals: [],
+            flights: [],
+            notices: pdfData.notices?.beforeTrip || [],
+            images: pdfData.images || [],
+            rawContent: pdfData.rawContent,
+            sourceUrl: url,
+            isPdfSource: true,
+          },
+        };
         
         if (!pdfResult.success || !pdfResult.data) {
-          this.monitor.failAgent('WebScraperAgent', new Error(pdfResult.error || "PDF parsing failed"));
-          throw new Error(pdfResult.error || "PDF parsing failed");
+          this.monitor.failAgent('WebScraperAgent', new Error("PDF parsing failed"));
+          throw new Error("PDF parsing failed");
         }
         
         this.monitor.completeAgent('WebScraperAgent', pdfResult);

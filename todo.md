@@ -1624,3 +1624,14 @@
 - [ ] 測試左右分欄編輯介面
 - [ ] 測試 WYSIWYG 直接編輯功能
 - [ ] 儲存 checkpoint 並部署
+
+
+---
+
+## Phase 30: PDF Vision 優化（批次處理 + Timeout）
+
+- [x] 修改 PdfParserAgent 實施批次處理（每批 5 頁）
+- [x] 增加 Worker lockDuration 到 20 分鐘
+- [x] 實施進度追蹤機制（透過 onProgress 回調）
+- [x] 測試 15 頁 PDF 處理效能（75.2 秒成功）
+- [ ] 編寫 vitest 測試
