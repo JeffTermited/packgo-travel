@@ -62,7 +62,7 @@ export const tours = mysqlTable("tours", {
   
   // Location Information - Destination
   destinationCountry: varchar("destinationCountry", { length: 100 }).notNull(), // 目的地國家
-  destinationCity: varchar("destinationCity", { length: 100 }).notNull(), // 目的地城市
+  destinationCity: text("destinationCity").notNull(), // 目的地城市 (支援多個城市)
   destinationRegion: varchar("destinationRegion", { length: 100 }), // 目的地區域 (e.g., 那霸)
   destinationAirportCode: varchar("destinationAirportCode", { length: 10 }), // 目的地機場代碼 (e.g., OKA)
   destinationAirportName: varchar("destinationAirportName", { length: 100 }), // 目的地機場名稱

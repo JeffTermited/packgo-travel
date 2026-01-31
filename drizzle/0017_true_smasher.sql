@@ -1,0 +1,1 @@
+ALTER TABLE `tours` MODIFY COLUMN `destinationCity` text NOT NULL;
