@@ -1,4 +1,4 @@
-import { eq, and, gte, lte, desc, inArray } from "drizzle-orm";
+import { eq, and, gte, lte, desc, inArray, like, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { 
   InsertUser, users, 
@@ -928,7 +928,17 @@ export async function searchTours(filters: {
   const conditions = [eq(tours.status, "active")];
 
   if (filters.destination) {
-    conditions.push(eq(tours.destination, filters.destination));
+    // 使用模糊匹配，支援在 destination, destinationCountry, destinationCity 中搜尋
+    const searchPattern = `%${filters.destination}%`;
+    const destinationCondition = or(
+      like(tours.destination, searchPattern),
+      like(tours.destinationCountry, searchPattern),
+      like(tours.destinationCity, searchPattern),
+      like(tours.title, searchPattern)
+    );
+    if (destinationCondition) {
+      conditions.push(destinationCondition);
+    }
   }
 
   if (filters.minDays !== undefined) {
