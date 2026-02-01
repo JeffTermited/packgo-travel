@@ -663,10 +663,10 @@ export default function TourDetailPeony() {
                   className="p-6 border border-gray-200 hover:border-gray-300 transition-colors"
                 >
                   <div 
-                    className="w-12 h-12 flex items-center justify-center mb-4"
-                    style={{ backgroundColor: themeColor.light }}
+                    className="w-12 h-12 flex items-center justify-center mb-4 rounded-lg"
+                    style={{ backgroundColor: themeColor.secondary }}
                   >
-                    <Check className="h-6 w-6" style={{ color: themeColor.secondary }} />
+                    <Check className="h-6 w-6 text-white" />
                   </div>
                   <h3 className="font-bold mb-2">{typeof feature === 'string' ? feature : feature.title || feature.name}</h3>
                   {typeof feature !== 'string' && feature.description && (
