@@ -22,6 +22,14 @@ export interface NoticeSectionProps {
   };
 }
 
+// 確保值是陣列的輔助函數
+const ensureArray = (value: any): string[] => {
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+  if (typeof value === 'string') return [value];
+  return [];
+};
+
 export const NoticeSection: React.FC<NoticeSectionProps> = ({
   noticeDetailed,
   colorTheme,
@@ -53,17 +61,21 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
     ],
   };
 
-  // 使用資料庫資料或預設資料
-  const notice = noticeDetailed || defaultNotice;
-  const hasData = noticeDetailed && (
-    (noticeDetailed.preparation && noticeDetailed.preparation.length > 0) ||
-    (noticeDetailed.culturalNotes && noticeDetailed.culturalNotes.length > 0) ||
-    (noticeDetailed.healthSafety && noticeDetailed.healthSafety.length > 0) ||
-    (noticeDetailed.emergency && noticeDetailed.emergency.length > 0)
-  );
+  // 安全地獲取陣列資料
+  const preparation = ensureArray(noticeDetailed?.preparation);
+  const culturalNotes = ensureArray(noticeDetailed?.culturalNotes);
+  const healthSafety = ensureArray(noticeDetailed?.healthSafety);
+  const emergency = ensureArray(noticeDetailed?.emergency);
+
+  // 檢查是否有資料
+  const hasData = preparation.length > 0 || culturalNotes.length > 0 || 
+                  healthSafety.length > 0 || emergency.length > 0;
 
   // 如果沒有資料，使用預設資料
-  const displayNotice = hasData ? notice : defaultNotice;
+  const displayPreparation = hasData ? preparation : defaultNotice.preparation!;
+  const displayCulturalNotes = hasData ? culturalNotes : defaultNotice.culturalNotes!;
+  const displayHealthSafety = hasData ? healthSafety : defaultNotice.healthSafety!;
+  const displayEmergency = hasData ? emergency : defaultNotice.emergency!;
 
   return (
     <section id="notice" className="w-full py-8 lg:py-10 bg-white">
@@ -77,7 +89,7 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* 行前準備 */}
-          {displayNotice.preparation && displayNotice.preparation.length > 0 && (
+          {displayPreparation.length > 0 && (
             <div className="bg-gray-50 rounded-lg p-5 shadow-sm">
               <div className="flex items-center gap-2 mb-3">
                 <div
@@ -97,7 +109,7 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
                 </h3>
               </div>
               <ul className="space-y-2">
-                {displayNotice.preparation.map((item, index) => (
+                {displayPreparation.map((item, index) => (
                   <li key={index} className="flex items-start gap-3">
                     <span
                       className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
@@ -113,7 +125,7 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
           )}
 
           {/* 文化禮儀 */}
-          {displayNotice.culturalNotes && displayNotice.culturalNotes.length > 0 && (
+          {displayCulturalNotes.length > 0 && (
             <div className="bg-gray-50 rounded-lg p-5 shadow-sm">
               <div className="flex items-center gap-2 mb-3">
                 <div
@@ -133,7 +145,7 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
                 </h3>
               </div>
               <ul className="space-y-2">
-                {displayNotice.culturalNotes.map((item, index) => (
+                {displayCulturalNotes.map((item, index) => (
                   <li key={index} className="flex items-start gap-3">
                     <span
                       className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
@@ -149,7 +161,7 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
           )}
 
           {/* 健康安全 */}
-          {displayNotice.healthSafety && displayNotice.healthSafety.length > 0 && (
+          {displayHealthSafety.length > 0 && (
             <div className="bg-gray-50 rounded-lg p-5 shadow-sm">
               <div className="flex items-center gap-2 mb-3">
                 <div
@@ -169,7 +181,7 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
                 </h3>
               </div>
               <ul className="space-y-2">
-                {displayNotice.healthSafety.map((item, index) => (
+                {displayHealthSafety.map((item, index) => (
                   <li key={index} className="flex items-start gap-3">
                     <span
                       className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
@@ -185,7 +197,7 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
           )}
 
           {/* 緊急聯絡 */}
-          {displayNotice.emergency && displayNotice.emergency.length > 0 && (
+          {displayEmergency.length > 0 && (
             <div className="bg-gray-50 rounded-lg p-5 shadow-sm">
               <div className="flex items-center gap-2 mb-3">
                 <div
@@ -205,7 +217,7 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
                 </h3>
               </div>
               <ul className="space-y-2">
-                {displayNotice.emergency.map((item, index) => (
+                {displayEmergency.map((item, index) => (
                   <li key={index} className="flex items-start gap-3">
                     <span
                       className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"

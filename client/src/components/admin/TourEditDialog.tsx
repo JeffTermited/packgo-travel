@@ -79,6 +79,19 @@ export function TourEditDialog({
       if (!parsed.noticeDetailed || typeof parsed.noticeDetailed !== 'object') {
         parsed.noticeDetailed = { preparation: [], culturalNotes: [], healthSafety: [], emergency: [] };
       }
+      // 確保所有欄位都是陣列
+      const ensureArray = (val: any) => {
+        if (!val) return [];
+        if (Array.isArray(val)) return val;
+        if (typeof val === 'string') return [val];
+        return [];
+      };
+      parsed.noticeDetailed = {
+        preparation: ensureArray(parsed.noticeDetailed.preparation),
+        culturalNotes: ensureArray(parsed.noticeDetailed.culturalNotes),
+        healthSafety: ensureArray(parsed.noticeDetailed.healthSafety),
+        emergency: ensureArray(parsed.noticeDetailed.emergency),
+      };
       
       // 解析 flights (交通資訊)
       if (typeof parsed.flights === 'string') {

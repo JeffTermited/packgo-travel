@@ -1696,3 +1696,22 @@
 - [ ] 測試 PDF 上傳完整流程
 - [ ] 確認 100% 成功率
 
+
+
+---
+
+## Phase 33: PDF 生成失敗問題修復（2026-02-01）
+
+### 33.1 資料庫 Schema 修復
+- [x] 修改 destinationCity 欄位為 TEXT
+- [x] 修改 destination 欄位為 TEXT
+- [x] 修改 destinationCountry, departureCity, heroImageAlt, poeticTitle, promotionText 欄位為 TEXT
+- [x] 更新 drizzle/schema.ts 以匹配資料庫
+
+### 33.2 PDF 解析器修復
+- [x] 移除對 poppler-utils 系統工具的依賴
+- [x] 改用 LLM 直接讀取 PDF 文件
+- [x] 簡化處理流程
+
+### 33.3 前端錯誤修復
+- [ ] 修復 noticeDetailed.preparation.map 錯誤
