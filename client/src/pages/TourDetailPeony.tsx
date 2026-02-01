@@ -292,36 +292,100 @@ const DayCard = ({
   );
 };
 
-// 飯店卡片組件
+// 設施圖示映射
+const facilityIcons: Record<string, { icon: React.ReactNode; label: string }> = {
+  wifi: { icon: <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.14 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" /></svg>, label: 'WiFi' },
+  pool: { icon: <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" /></svg>, label: '游泳池' },
+  spa: { icon: <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>, label: 'SPA' },
+  gym: { icon: <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" /></svg>, label: '健身房' },
+  restaurant: { icon: <Utensils className="h-4 w-4" />, label: '餐廳' },
+  bar: { icon: <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>, label: '酒吧' },
+  parking: { icon: <Car className="h-4 w-4" />, label: '停車場' },
+  breakfast: { icon: <Utensils className="h-4 w-4" />, label: '早餐' },
+  view: { icon: <Camera className="h-4 w-4" />, label: '景觀' },
+  roomservice: { icon: <Building className="h-4 w-4" />, label: '客房服務' },
+};
+
+// 解析星級數字
+const parseStarRating = (stars: string | undefined): number => {
+  if (!stars) return 0;
+  if (stars.includes('五星') || stars.includes('5')) return 5;
+  if (stars.includes('四星') || stars.includes('4')) return 4;
+  if (stars.includes('三星') || stars.includes('3')) return 3;
+  if (stars.includes('二星') || stars.includes('2')) return 2;
+  if (stars.includes('一星') || stars.includes('1')) return 1;
+  return 0;
+};
+
+// 飯店卡片組件 - 重新設計版
 const HotelCard = ({ hotel, themeColor }: { hotel: any; themeColor: ReturnType<typeof getThemeColorByDestination> }) => {
+  const starRating = hotel.rating || parseStarRating(hotel.stars);
+  const facilities = hotel.facilities || [];
+  
   return (
-    <div className="bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-      <div className="aspect-[16/10] overflow-hidden">
+    <div className="bg-white overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 group">
+      {/* 圖片區域 */}
+      <div className="relative aspect-[16/10] overflow-hidden">
         <img 
           src={hotel.image || "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800"}
-          alt={hotel.name}
-          className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+          alt={hotel.imageAlt || hotel.name}
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
         />
-      </div>
-      <div className="p-6">
-        {hotel.rating && (
-          <div className="flex items-center gap-1 mb-3">
-            {[...Array(5)].map((_, i) => (
-              <Star 
-                key={i} 
-                className={`h-4 w-4 ${i < hotel.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-200'}`}
-              />
+        {/* 星級標籤 */}
+        {starRating > 0 && (
+          <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm px-3 py-1.5 flex items-center gap-1 shadow-md">
+            {[...Array(starRating)].map((_, i) => (
+              <Star key={i} className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
             ))}
           </div>
         )}
-        <h3 className="text-xl font-bold mb-2">{hotel.name}</h3>
-        {hotel.location && (
-          <p className="text-sm text-gray-400 mb-3 flex items-center gap-1">
-            <MapPin className="h-3 w-3" />
-            {hotel.location}
+        {/* 漸層遮罩 */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      </div>
+      
+      {/* 內容區域 */}
+      <div className="p-6">
+        {/* 飯店名稱 */}
+        <h3 className="text-xl font-bold mb-2 text-gray-900 group-hover:text-primary transition-colors">
+          {hotel.name}
+        </h3>
+        
+        {/* 位置 */}
+        {hotel.location && hotel.location !== '待確認' && (
+          <p className="text-sm text-gray-500 mb-3 flex items-center gap-1.5">
+            <MapPin className="h-4 w-4 flex-shrink-0" style={{ color: themeColor.secondary }} />
+            <span className="truncate">{hotel.location}</span>
           </p>
         )}
-        <p className="text-gray-600 text-sm line-clamp-3">{hotel.description}</p>
+        
+        {/* 描述 */}
+        {hotel.description && hotel.description !== '待確認' && (
+          <p className="text-gray-600 text-sm leading-relaxed mb-4 line-clamp-3">
+            {hotel.description}
+          </p>
+        )}
+        
+        {/* 設施圖示 */}
+        {facilities.length > 0 && (
+          <div className="pt-4 border-t border-gray-100">
+            <div className="flex flex-wrap gap-3">
+              {facilities.slice(0, 6).map((facility: string, idx: number) => {
+                const facilityInfo = facilityIcons[facility.toLowerCase()];
+                if (!facilityInfo) return null;
+                return (
+                  <div 
+                    key={idx} 
+                    className="flex items-center gap-1.5 text-gray-500 text-xs"
+                    title={facilityInfo.label}
+                  >
+                    <span style={{ color: themeColor.secondary }}>{facilityInfo.icon}</span>
+                    <span>{facilityInfo.label}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
