@@ -1761,3 +1761,55 @@
 - [ ] 修復圖片顯示問題
 - [ ] 發布到生產環境
 - [ ] 最終驗收
+
+
+### 34.4 每日行程圖片自動配置
+- [ ] 分析現有每日行程圖片配置機制
+- [ ] 修改 AI 生成流程，為每日行程自動搜尋目的地圖片
+- [ ] 更新現有行程的每日行程圖片
+- [ ] 測試並驗證圖片顯示效果
+
+
+---
+
+## Phase 33: PDF 生成失敗問題修復（2026-02-01）
+
+### 33.1 資料庫 Schema 修復
+- [x] 修改 destinationCity 欄位從 varchar(100) 改為 TEXT
+- [x] 修改 destination 欄位從 varchar(255) 改為 TEXT
+- [x] 修改其他可能太短的欄位（title, destinationCountry, departureCity 等）
+
+### 33.2 PDF 解析器重構
+- [x] 移除對 poppler-utils 系統工具的依賴
+- [x] 改用 LLM 直接讀取 PDF 文件進行分析
+- [x] 簡化處理流程，提高穩定性
+
+### 33.3 前端類型安全修復
+- [x] 修復 noticeDetailed.preparation.map 錯誤
+- [x] 添加 ensureArray 輔助函數確保所有欄位都是陣列
+
+### 33.4 搜尋功能修復
+- [x] 將目的地搜尋從完全匹配改為模糊匹配
+- [x] 支援在 destination、destinationCountry、destinationCity、title 中搜尋
+
+---
+
+## Phase 34: 行程詳情頁面重新設計（2026-02-01）
+
+### 34.1 參考 Peony Tours 設計風格
+- [x] 分析參考網站設計風格
+- [x] 創建新的 TourDetailPeony.tsx 頁面
+
+### 34.2 設計特點
+- [x] Hero 區塊：大型背景圖片，標題居中顯示
+- [x] 固定標籤導航：行程簡介、精彩行程、內容特色、豪華酒店、出發日期/售價、注意事項
+- [x] 每日行程 Zigzag 佈局：左右交錯排列，更具視覺層次
+- [x] 行程摘要卡片：清晰顯示天數、目的地、成團人數、出發日期
+
+### 34.3 每日行程圖片自動配置
+- [x] 修改 PolishedItinerary 介面，添加 image 和 imageAlt 欄位
+- [x] 創建 itineraryImageService.ts，實現自動搜尋目的地圖片功能
+- [x] 修改 masterAgent.ts，在行程生成流程中自動為每日行程配置圖片
+- [x] 創建 supplement-itinerary-images.ts 腳本為現有行程補充圖片
+- [x] 成功為巴爾幹七國秘境15日行程配置 13 張圖片
+- [x] 成功為環島六日秘境行配置 4 張圖片

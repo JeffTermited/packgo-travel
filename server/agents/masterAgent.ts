@@ -515,8 +515,15 @@ export class MasterAgent {
           );
           
           if (polishResult.success && polishResult.data) {
-            itineraryData = JSON.stringify(polishResult.data.polishedItineraries);
-            console.log(`[MasterAgent] ✓ ItineraryPolishAgent completed: ${polishResult.data.polishedItineraries.length} days polished`);
+            // Phase 2 新增：為每日行程配置圖片
+            const { assignItineraryImages } = await import("../services/itineraryImageService");
+            const itinerariesWithImages = await assignItineraryImages(
+              polishResult.data.polishedItineraries,
+              { country: rawData?.location?.destinationCountry, city: rawData?.location?.destinationCity }
+            );
+            
+            itineraryData = JSON.stringify(itinerariesWithImages);
+            console.log(`[MasterAgent] ✓ ItineraryPolishAgent completed: ${itinerariesWithImages.length} days polished with images`);
             // Phase 1 新增：輸出忠實度檢查結果
             console.log(`[MasterAgent] Fidelity Check: Score=${polishResult.data.fidelityCheck.overallScore}, Transportation=${polishResult.data.fidelityCheck.transportationMatch}, Hotel=${polishResult.data.fidelityCheck.hotelMatch}`);
             if (polishResult.data.fidelityCheck.issues.length > 0) {

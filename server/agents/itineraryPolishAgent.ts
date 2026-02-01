@@ -24,6 +24,9 @@ export interface PolishedItinerary {
     dinner: string;
   };
   accommodation: string;
+  // Phase 2 新增：每日行程圖片
+  image?: string;
+  imageAlt?: string;
 }
 
 export interface PolishedActivity {
