@@ -50,23 +50,23 @@ export const tours = mysqlTable("tours", {
   id: int("id").autoincrement().primaryKey(),
   
   // Basic Information
-  title: varchar("title", { length: 255 }).notNull(),
+  title: text("title").notNull(),
   productCode: varchar("productCode", { length: 50 }), // 產品代碼 (e.g., 26JO217BRC-T)
   description: text("description").notNull(),
   
   // Location Information - Departure
   departureCountry: varchar("departureCountry", { length: 100 }).default("台灣"), // 出發國家
-  departureCity: varchar("departureCity", { length: 100 }).default("桃園"), // 出發城市
+  departureCity: text("departureCity").default("桃園"), // 出發城市
   departureAirportCode: varchar("departureAirportCode", { length: 10 }), // 出發機場代碼 (e.g., TPE)
   departureAirportName: varchar("departureAirportName", { length: 100 }), // 出發機場名稱
   
   // Location Information - Destination
-  destinationCountry: varchar("destinationCountry", { length: 100 }).notNull(), // 目的地國家
+  destinationCountry: text("destinationCountry").notNull(), // 目的地國家
   destinationCity: text("destinationCity").notNull(), // 目的地城市 (支援多個城市)
   destinationRegion: varchar("destinationRegion", { length: 100 }), // 目的地區域 (e.g., 那霸)
   destinationAirportCode: varchar("destinationAirportCode", { length: 10 }), // 目的地機場代碼 (e.g., OKA)
   destinationAirportName: varchar("destinationAirportName", { length: 100 }), // 目的地機場名稱
-  destination: varchar("destination", { length: 255 }).notNull(), // Legacy field for compatibility
+  destination: text("destination").notNull(), // Legacy field for compatibility
   
   // Duration & Pricing
   duration: int("duration").notNull(), // in days
@@ -118,7 +118,7 @@ export const tours = mysqlTable("tours", {
   // Tags & Features
   tags: text("tags"), // JSON array of tags (e.g., 特色住宿, 獨家企劃)
   highlights: text("highlights"), // JSON array of highlights
-  promotionText: varchar("promotionText", { length: 255 }), // 促銷文字 (e.g., 過年大促銷)
+  promotionText: text("promotionText"), // 促銷文字 (e.g., 過年大促銷)
   
   // Images
   imageUrl: varchar("imageUrl", { length: 512 }), // Main image
@@ -127,7 +127,7 @@ export const tours = mysqlTable("tours", {
   // === New Fields for Luxury Design ===
   // Hero Section
   heroImage: varchar("heroImage", { length: 512 }), // Full-screen hero background image
-  heroImageAlt: varchar("heroImageAlt", { length: 255 }), // Hero image alt text for SEO
+  heroImageAlt: text("heroImageAlt"), // Hero image alt text for SEO
   heroSubtitle: text("heroSubtitle"), // Hero subtitle - tour highlights summary
   
   // Color Theme
@@ -137,7 +137,7 @@ export const tours = mysqlTable("tours", {
   keyFeatures: text("keyFeatures"), // JSON array of key features with poetic phrases
   
   // Poetic Content (elegant descriptions for different sections)
-  poeticTitle: varchar("poeticTitle", { length: 255 }), // Poetic title (e.g., "北海道二世谷雅奢6日")
+  poeticTitle: text("poeticTitle"), // Poetic title (e.g., "北海道二世谷雅奢６日")
   poeticContent: text("poeticContent"), // JSON object: {intro, accommodation, dining, experience, closing}
   poeticSubtitle: text("poeticSubtitle"), // Poetic subtitle (e.g., "越獅境踏野原魂，追遷徙逐天地心")
   
