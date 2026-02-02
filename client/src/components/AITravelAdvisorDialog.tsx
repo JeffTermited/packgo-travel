@@ -6,6 +6,17 @@ import { Send, Loader2, User, ThumbsUp, ThumbsDown, Sparkles, X, Minimize2 } fro
 import { trpc } from "@/lib/trpc";
 import { Streamdown } from "streamdown";
 
+// 企鵝表情圖像 URLs
+const PENGUIN_EXPRESSIONS = {
+  default: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663159191204/bJsbScmQpKmVdhut.png",
+  thinking: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663159191204/SjvtTEmhuOMPCozg.png",
+  happy: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663159191204/qvHPuVaTsuielbwl.png",
+  confused: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663159191204/vyzjOiHzLOerStch.png",
+  waving: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663159191204/WkOQbHIhVnUckSkg.png",
+};
+
+type PenguinExpression = keyof typeof PENGUIN_EXPRESSIONS;
+
 interface Message {
   role: "user" | "assistant";
   content: string;
@@ -28,10 +39,23 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
     },
   ]);
   const [input, setInput] = useState("");
+  const [penguinExpression, setPenguinExpression] = useState<PenguinExpression>("waving");
+  const [isAnimating, setIsAnimating] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // 根據對話狀態切換企鵝表情
+  const updatePenguinExpression = (newExpression: PenguinExpression) => {
+    setIsAnimating(true);
+    setPenguinExpression(newExpression);
+    setTimeout(() => setIsAnimating(false), 300);
+  };
+
   const chatMutation = trpc.ai.chat.useMutation({
+    onMutate: () => {
+      updatePenguinExpression("thinking");
+    },
     onSuccess: (data) => {
+      updatePenguinExpression("happy");
       setMessages((prev) => [
         ...prev,
         {
@@ -42,8 +66,10 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
           feedbackGiven: null,
         },
       ]);
+      setTimeout(() => updatePenguinExpression("default"), 3000);
     },
     onError: () => {
+      updatePenguinExpression("confused");
       setMessages((prev) => [
         ...prev,
         {
@@ -51,6 +77,7 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
           content: "抱歉，我遇到了一些問題。請稍後再試。",
         },
       ]);
+      setTimeout(() => updatePenguinExpression("default"), 3000);
     },
   });
 
@@ -67,6 +94,13 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  useEffect(() => {
+    if (open) {
+      updatePenguinExpression("waving");
+      setTimeout(() => updatePenguinExpression("default"), 2000);
+    }
+  }, [open]);
 
   const handleSend = () => {
     if (!input.trim() || chatMutation.isPending) return;
@@ -94,6 +128,11 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
     if (!message.usageLogIds || message.usageLogIds.length === 0) return;
     if (message.feedbackGiven) return;
 
+    if (feedback === "positive") {
+      updatePenguinExpression("happy");
+      setTimeout(() => updatePenguinExpression("default"), 2000);
+    }
+
     setMessages((prev) => 
       prev.map((m, i) => 
         i === messageIndex ? { ...m, feedbackGiven: feedback } : m
@@ -113,22 +152,32 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
     }
   };
 
+  const currentPenguinImage = PENGUIN_EXPRESSIONS[penguinExpression];
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg h-[600px] flex flex-col p-0 border-2 border-black rounded-none gap-0 overflow-hidden">
-        {/* Header with Character */}
+        {/* Header with Animated Character */}
         <div className="bg-black text-white px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white flex items-center justify-center overflow-hidden">
+            <div 
+              className={`w-12 h-12 bg-white flex items-center justify-center overflow-hidden transition-transform duration-300 ${
+                isAnimating ? "scale-110" : "scale-100"
+              }`}
+            >
               <img
-                src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663159191204/bJsbScmQpKmVdhut.png"
+                src={currentPenguinImage}
                 alt="AI 旅遊顧問"
-                className="w-9 h-9 object-contain"
+                className={`w-11 h-11 object-contain transition-all duration-300 ${
+                  chatMutation.isPending ? "animate-bounce" : ""
+                }`}
               />
             </div>
             <div>
               <h3 className="font-bold text-base">AI 旅遊顧問</h3>
-              <p className="text-xs text-gray-300">隨時為您服務</p>
+              <p className="text-xs text-gray-300">
+                {chatMutation.isPending ? "思考中..." : "隨時為您服務"}
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-1">
@@ -161,7 +210,7 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
                 {message.role === "assistant" && (
                   <div className="flex-shrink-0 w-8 h-8 bg-white border border-black flex items-center justify-center overflow-hidden">
                     <img
-                      src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663159191204/bJsbScmQpKmVdhut.png"
+                      src={PENGUIN_EXPRESSIONS.default}
                       alt="AI"
                       className="w-7 h-7 object-contain"
                     />
@@ -237,19 +286,23 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
             </div>
           ))}
           
-          {/* Loading State */}
+          {/* Loading State with Thinking Expression */}
           {chatMutation.isPending && (
             <div className="flex gap-3 justify-start">
               <div className="flex-shrink-0 w-8 h-8 bg-white border border-black flex items-center justify-center overflow-hidden">
                 <img
-                  src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663159191204/bJsbScmQpKmVdhut.png"
+                  src={PENGUIN_EXPRESSIONS.thinking}
                   alt="AI"
-                  className="w-7 h-7 object-contain animate-pulse"
+                  className="w-7 h-7 object-contain"
                 />
               </div>
               <div className="bg-white border-2 border-black px-4 py-3">
                 <div className="flex items-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin text-black" />
+                  <div className="flex gap-1">
+                    <span className="w-2 h-2 bg-black rounded-full animate-bounce" style={{ animationDelay: "0ms" }}></span>
+                    <span className="w-2 h-2 bg-black rounded-full animate-bounce" style={{ animationDelay: "150ms" }}></span>
+                    <span className="w-2 h-2 bg-black rounded-full animate-bounce" style={{ animationDelay: "300ms" }}></span>
+                  </div>
                   <span className="text-sm text-gray-600">正在思考中...</span>
                 </div>
               </div>

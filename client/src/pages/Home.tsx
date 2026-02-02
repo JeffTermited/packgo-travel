@@ -80,21 +80,20 @@ function HomeContent() {
       {/* Floating AI Advisor Button with Penguin Character */}
       <div className="fixed bottom-6 right-6 z-50">
         {/* Speech Bubble */}
-        <div className="absolute -top-16 right-0 bg-white border-2 border-black px-4 py-2 rounded-2xl shadow-lg animate-bounce-slow">
-          <p className="text-sm font-medium text-black whitespace-nowrap">點我問問題！🐧</p>
-          <div className="absolute -bottom-2 right-8 w-4 h-4 bg-white border-r-2 border-b-2 border-black transform rotate-45"></div>
+        <div className="absolute -top-12 -left-4 bg-white border border-gray-200 px-3 py-1.5 rounded-full shadow-md animate-bounce-slow">
+          <p className="text-xs font-medium text-gray-700 whitespace-nowrap">點我問問題！</p>
         </div>
         
-        {/* Penguin Button */}
+        {/* Penguin Button - Using Waving Expression */}
         <button
           onClick={() => setAiDialogOpen(true)}
-          className="w-20 h-20 bg-white hover:bg-gray-50 rounded-full shadow-2xl flex items-center justify-center transition-all hover:scale-110 border-2 border-black overflow-hidden group"
+          className="w-24 h-24 flex items-center justify-center transition-all hover:scale-110 group drop-shadow-lg"
           aria-label="AI 旅遊顧問"
         >
           <img
-            src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663159191204/bJsbScmQpKmVdhut.png"
+            src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663159191204/WkOQbHIhVnUckSkg.png"
             alt="AI 旅遊顧問"
-            className="w-16 h-16 object-contain transition-transform group-hover:scale-110"
+            className="w-full h-full object-contain transition-transform group-hover:scale-105"
           />
         </button>
       </div>
