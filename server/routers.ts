@@ -1972,10 +1972,11 @@ Important guidelines:
         return skill;
       }),
 
-    // Create new skill
+    // Create new skill (with Superpowers-style fields)
     create: adminProcedure
       .input(z.object({
         skillType: z.enum(["feature_classification", "tag_rule", "itinerary_structure", "highlight_detection", "transportation_type", "meal_classification", "accommodation_type"]),
+        skillCategory: z.enum(["technique", "pattern", "reference"]).optional().default("technique"),
         skillName: z.string(),
         skillNameEn: z.string().optional(),
         keywords: z.array(z.string()),
@@ -1985,10 +1986,25 @@ Important guidelines:
         description: z.string().optional(),
         source: z.string().optional(),
         sourceUrl: z.string().optional(),
+        // Superpowers-style documentation fields
+        whenToUse: z.string().optional(),
+        corePattern: z.string().optional(),
+        quickReference: z.string().optional(),
+        commonMistakes: z.string().optional(),
+        realWorldImpact: z.string().optional(),
+        // Dependencies and testing
+        dependsOn: z.array(z.number()).optional(),
+        testCases: z.array(z.object({
+          id: z.string(),
+          input: z.string(),
+          expectedOutput: z.string(),
+          description: z.string().optional(),
+        })).optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         const skillId = await skillDb.createSkill({
           skillType: input.skillType,
+          skillCategory: input.skillCategory,
           skillName: input.skillName,
           skillNameEn: input.skillNameEn,
           keywords: JSON.stringify(input.keywords),
@@ -1998,6 +2014,13 @@ Important guidelines:
           description: input.description,
           source: input.source,
           sourceUrl: input.sourceUrl,
+          whenToUse: input.whenToUse,
+          corePattern: input.corePattern,
+          quickReference: input.quickReference,
+          commonMistakes: input.commonMistakes,
+          realWorldImpact: input.realWorldImpact,
+          dependsOn: input.dependsOn ? JSON.stringify(input.dependsOn) : undefined,
+          testCases: input.testCases ? JSON.stringify(input.testCases) : undefined,
           createdBy: ctx.user.id,
           isActive: true,
           isBuiltIn: false,
@@ -2005,10 +2028,11 @@ Important guidelines:
         return { id: skillId };
       }),
 
-    // Update skill
+    // Update skill (with Superpowers-style fields)
     update: adminProcedure
       .input(z.object({
         id: z.number(),
+        skillCategory: z.enum(["technique", "pattern", "reference"]).optional(),
         skillName: z.string().optional(),
         skillNameEn: z.string().optional(),
         keywords: z.array(z.string()).optional(),
@@ -2017,13 +2041,29 @@ Important guidelines:
         outputFormat: z.string().optional(),
         description: z.string().optional(),
         isActive: z.boolean().optional(),
+        // Superpowers-style documentation fields
+        whenToUse: z.string().optional(),
+        corePattern: z.string().optional(),
+        quickReference: z.string().optional(),
+        commonMistakes: z.string().optional(),
+        realWorldImpact: z.string().optional(),
+        // Dependencies and testing
+        dependsOn: z.array(z.number()).optional(),
+        testCases: z.array(z.object({
+          id: z.string(),
+          input: z.string(),
+          expectedOutput: z.string(),
+          description: z.string().optional(),
+        })).optional(),
       }))
       .mutation(async ({ input }) => {
-        const { id, keywords, rules, outputLabels, ...rest } = input;
+        const { id, keywords, rules, outputLabels, dependsOn, testCases, ...rest } = input;
         const updates: any = { ...rest };
         if (keywords) updates.keywords = JSON.stringify(keywords);
         if (rules) updates.rules = JSON.stringify(rules);
         if (outputLabels) updates.outputLabels = JSON.stringify(outputLabels);
+        if (dependsOn) updates.dependsOn = JSON.stringify(dependsOn);
+        if (testCases) updates.testCases = JSON.stringify(testCases);
         
         await skillDb.updateSkill(id, updates);
         return { success: true };
@@ -2117,6 +2157,131 @@ Important guidelines:
       await initializeBuiltInSkills();
       return { success: true };
     }),
+
+    // Run skill test cases (TDD-style)
+    runTests: adminProcedure
+      .input(z.object({ skillId: z.number() }))
+      .mutation(async ({ input }) => {
+        const skill = await skillDb.getSkillById(input.skillId);
+        if (!skill) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Skill not found",
+          });
+        }
+        
+        const testCases = skill.testCases ? JSON.parse(skill.testCases as string) : [];
+        if (testCases.length === 0) {
+          return { results: [], passRate: 0, message: "No test cases defined" };
+        }
+        
+        const results = [];
+        let passed = 0;
+        
+        for (const testCase of testCases) {
+          const startTime = Date.now();
+          try {
+            const labels = skillDb.applySkillRules(skill, testCase.input, {});
+            const actualOutput = JSON.stringify(labels);
+            const isPassed = actualOutput === testCase.expectedOutput || 
+                            labels.some((l: string) => testCase.expectedOutput.includes(l));
+            
+            if (isPassed) passed++;
+            
+            results.push({
+              testCaseId: testCase.id,
+              passed: isPassed,
+              expectedOutput: testCase.expectedOutput,
+              actualOutput,
+              executionTimeMs: Date.now() - startTime,
+            });
+          } catch (error: any) {
+            results.push({
+              testCaseId: testCase.id,
+              passed: false,
+              expectedOutput: testCase.expectedOutput,
+              actualOutput: null,
+              errorMessage: error.message,
+              executionTimeMs: Date.now() - startTime,
+            });
+          }
+        }
+        
+        const passRate = passed / testCases.length;
+        
+        // Update skill with test results
+        await skillDb.updateSkill(input.skillId, {
+          lastTestedAt: new Date(),
+          testPassRate: passRate.toFixed(2),
+        });
+        
+        return { results, passRate, totalTests: testCases.length, passedTests: passed };
+      }),
+
+    // Get skill statistics
+    getStats: adminProcedure.query(async () => {
+      const skills = await skillDb.getAllSkills(true);
+      const totalSkills = skills.length;
+      const activeSkills = skills.filter(s => s.isActive).length;
+      const builtInSkills = skills.filter(s => s.isBuiltIn).length;
+      const customSkills = totalSkills - builtInSkills;
+      
+      const byCategory = {
+        technique: skills.filter(s => s.skillCategory === 'technique').length,
+        pattern: skills.filter(s => s.skillCategory === 'pattern').length,
+        reference: skills.filter(s => s.skillCategory === 'reference').length,
+      };
+      
+      const byType = skills.reduce((acc, s) => {
+        acc[s.skillType] = (acc[s.skillType] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+      
+      const totalUsage = skills.reduce((sum, s) => sum + (s.usageCount || 0), 0);
+      const totalSuccess = skills.reduce((sum, s) => sum + (s.successCount || 0), 0);
+      const overallSuccessRate = totalUsage > 0 ? (totalSuccess / totalUsage * 100).toFixed(1) : '0';
+      
+      return {
+        totalSkills,
+        activeSkills,
+        builtInSkills,
+        customSkills,
+        byCategory,
+        byType,
+        totalUsage,
+        overallSuccessRate,
+      };
+    }),
+
+    // Get skill dependencies
+    getDependencies: adminProcedure
+      .input(z.object({ skillId: z.number() }))
+      .query(async ({ input }) => {
+        const skill = await skillDb.getSkillById(input.skillId);
+        if (!skill) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Skill not found",
+          });
+        }
+        
+        const dependsOn = skill.dependsOn ? JSON.parse(skill.dependsOn as string) : [];
+        const dependencies = [];
+        
+        for (const depId of dependsOn) {
+          const depSkill = await skillDb.getSkillById(depId);
+          if (depSkill) {
+            dependencies.push({
+              id: depSkill.id,
+              skillName: depSkill.skillName,
+              skillType: depSkill.skillType,
+              skillCategory: depSkill.skillCategory,
+            });
+          }
+        }
+        
+        return dependencies;
+      }),
   }),
 });
 export type AppRouter = typeof appRouter;

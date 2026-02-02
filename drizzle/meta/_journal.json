@@ -162,6 +162,13 @@
       "when": 1770055217953,
       "tag": "0022_nosy_aqueduct",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "5",
+      "when": 1770056794884,
+      "tag": "0023_perpetual_maverick",
+      "breakpoints": true
     }
   ]
 }

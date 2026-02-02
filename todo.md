@@ -3198,3 +3198,90 @@
 - [x] 實作技能 CRUD 功能
 - [x] 實作 10 個內建技能初始化
 - [x] 整合到管理後台（第 6 個 Tab）
+
+
+---
+
+## Phase 58: AI Agent 技能系統重構（基於 Superpowers 設計理念）（2026-02-02）
+
+### 58.1 設計新的技能系統架構
+- [ ] 設計新的技能結構（參考 Superpowers 的 SKILL.md 結構）
+- [ ] 定義技能類型：Technique（技術）、Pattern（模式）、Reference（參考）
+- [ ] 設計技能觸發條件（When to Use）
+- [ ] 設計技能組合與依賴關係
+- [ ] 設計 Claude Search Optimization (CSO) 策略
+
+### 58.2 資料庫 Schema 更新
+- [ ] 更新 skills 資料表結構
+  - 新增 whenToUse 欄位（觸發條件）
+  - 新增 corePattern 欄位（核心模式）
+  - 新增 quickReference 欄位（快速參考）
+  - 新增 commonMistakes 欄位（常見錯誤）
+  - 新增 skillType 欄位（technique/pattern/reference）
+- [ ] 新增 skillDependencies 資料表（技能依賴關係）
+- [ ] 新增 skillUsageLogs 資料表（詳細使用記錄）
+- [ ] 執行資料庫 migration
+
+### 58.3 後端 API 更新
+- [ ] 更新技能 CRUD API 支援新欄位
+- [ ] 新增技能觸發匹配 API（根據上下文自動選擇技能）
+- [ ] 新增技能使用統計 API（成功率、平均執行時間）
+- [ ] 新增技能版本管理 API
+
+### 58.4 前端介面重新設計
+- [ ] 重新設計技能管理介面（參考 Superpowers 的結構化設計）
+- [ ] 新增技能編輯器（支援 Markdown 格式）
+- [ ] 新增技能預覽功能（模擬 SKILL.md 渲染）
+- [ ] 新增技能依賴關係視覺化（流程圖）
+- [ ] 新增技能測試功能（TDD 風格）
+
+### 58.5 測試與驗證
+- [ ] 測試新的技能系統
+- [ ] 驗證技能觸發邏輯
+- [ ] 撰寫優點分析報告
+
+
+---
+
+## Phase 58: AI Agent 技能系統重構（基於 Superpowers 架構）✅ 已完成
+
+### 58.1 設計新的技能系統架構
+- [x] 分析 Superpowers 專案的設計理念
+- [x] 設計 Superpowers 風格的技能文檔結構
+- [x] 撰寫 AI Agent 技能系統設計文檔
+
+### 58.2 更新資料庫 Schema
+- [x] 新增 Superpowers 風格欄位到 agentSkills 資料表
+  - whenToUse（何時使用）
+  - corePattern（核心模式）
+  - quickReference（快速參考）
+  - commonMistakes（常見錯誤）
+  - realWorldImpact（實際影響）
+  - version（版本控制）
+  - documentation（完整文檔）
+- [x] 建立 skillDependencies 資料表（技能依賴關係）
+- [x] 建立 skillTestResults 資料表（TDD 測試結果）
+
+### 58.3 更新後端 API
+- [x] 更新 skills.create API 支援新欄位
+- [x] 更新 skills.update API 支援新欄位
+- [x] 新增 skills.runTests API（TDD 風格測試執行）
+- [x] 新增 skills.getStats API（技能統計）
+
+### 58.4 重新設計前端介面
+- [x] 重寫 SkillsTab.tsx 組件
+- [x] 新增統計概覽區塊（總技能數、啟用中、使用次數、成功率）
+- [x] 新增技能分類分佈圖（技術、模式、參考）
+- [x] 新增分頁導航（技能總覽、技術、模式、參考）
+- [x] 新增篩選功能（按類型、按分類）
+- [x] 新增技能卡片詳情對話框
+- [x] 新增「新增技能」對話框（三個分頁：基本資訊、文檔、測試案例）
+- [x] 實作 Superpowers 風格的文檔欄位（When to Use、Core Pattern、Quick Reference、Common Mistakes、Real World Impact）
+- [x] 實作 TDD 風格的測試案例管理
+
+### 58.5 測試驗證
+- [x] 測試技能管理介面顯示正常
+- [x] 測試技能詳情對話框
+- [x] 測試新增技能對話框
+- [x] 測試文檔分頁欄位
+- [x] 測試測試案例分頁

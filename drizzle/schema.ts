@@ -489,8 +489,19 @@ export const agentSkills = mysqlTable("agentSkills", {
     "accommodation_type"      // 住宿類型
   ]).notNull(),
   
+  // Superpowers-style skill category
+  skillCategory: mysqlEnum("skillCategory", [
+    "technique",   // 技術 - 具體方法，有明確步驟可循
+    "pattern",     // 模式 - 思考問題的方式
+    "reference"    // 參考 - API 文檔、語法指南
+  ]).default("technique").notNull(),
+  
   skillName: varchar("skillName", { length: 100 }).notNull(), // 技能名稱
   skillNameEn: varchar("skillNameEn", { length: 100 }), // 英文名稱
+  
+  // Version control
+  version: int("version").default(1).notNull(),
+  previousVersionId: int("previousVersionId"), // 指向前一版本
   
   // Matching rules
   keywords: text("keywords").notNull(), // JSON array of trigger keywords
@@ -504,6 +515,21 @@ export const agentSkills = mysqlTable("agentSkills", {
   description: text("description"), // 技能描述
   source: varchar("source", { length: 255 }), // 學習來源（如 PDF 檔名）
   sourceUrl: varchar("sourceUrl", { length: 1024 }), // 來源 URL
+  
+  // Superpowers-style documentation fields
+  whenToUse: text("whenToUse"), // 觸發條件（何時使用此技能）
+  corePattern: text("corePattern"), // 核心模式（技術/模式的核心邏輯）
+  quickReference: text("quickReference"), // 快速參考（常用操作速查表）
+  commonMistakes: text("commonMistakes"), // 常見錯誤（避免的陷阱）
+  realWorldImpact: text("realWorldImpact"), // 實際影響（使用此技能的效果）
+  
+  // Dependencies
+  dependsOn: text("dependsOn"), // JSON array of skill IDs this skill depends on
+  
+  // TDD-style test cases
+  testCases: text("testCases"), // JSON array of test cases
+  lastTestedAt: timestamp("lastTestedAt"), // 最後測試時間
+  testPassRate: decimal("testPassRate", { precision: 3, scale: 2 }), // 測試通過率
   
   // Quality metrics
   confidence: decimal("confidence", { precision: 3, scale: 2 }).default("1.00"), // 信心度（0-1）
