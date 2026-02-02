@@ -39,6 +39,8 @@ import {
 } from "./agentOrchestration";
 import { progressTracker } from "./progressTracker";
 import generationCache from "../cache/generation-cache";
+import { generateSmartTags, mergeWithExistingTags } from "../utils/tagGenerator";
+import { TourType } from "./itineraryExtractAgent";
 
 export interface MasterAgentResult {
   success: boolean;
@@ -671,13 +673,34 @@ export class MasterAgent {
       onProgress?.("assembling", 90);
       if (taskId) progressTracker.startPhase(taskId, 'finalize');
       
+      // 生成智能標籤
+      const smartTags = generateSmartTags(
+        {
+          days: rawData.duration?.days,
+          nights: rawData.duration?.nights,
+          price: rawData.pricing?.price,
+          title: analyzedContent.title || rawData.basicInfo?.title,
+          description: analyzedContent.description || rawData.basicInfo?.description,
+          destinationCountry: rawData.location?.destinationCountry,
+          destinationCity: rawData.location?.destinationCity,
+          highlights: rawData.highlights,
+          transportation: transportationData?.typeName,
+          category: rawData.basicInfo?.category,
+        },
+        tourType as TourType
+      );
+      
+      // 合併現有標籤和生成的標籤
+      const finalTags = mergeWithExistingTags(rawData.basicInfo?.tags, smartTags);
+      console.log(`[MasterAgent] Generated smart tags: ${finalTags.join(', ')}`);
+      
       const finalData = {
         // Basic info
         poeticTitle: analyzedContent.poeticTitle, // Use ContentAnalyzerAgent's poetic title
         title: analyzedContent.title,
         description: analyzedContent.description,
         productCode: rawData.basicInfo?.productCode || "",
-        tags: rawData.basicInfo?.tags || [],
+        tags: finalTags,
         
         // Location
         destinationCountry: rawData.location?.destinationCountry || "",
