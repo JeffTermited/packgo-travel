@@ -3285,3 +3285,53 @@
 - [x] 測試新增技能對話框
 - [x] 測試文檔分頁欄位
 - [x] 測試測試案例分頁
+
+
+---
+
+## Phase 59: 整合技能到 ContentAnalyzerAgent（2026-02-02）
+
+### 59.1 分析現有架構
+- [ ] 檢查 ContentAnalyzerAgent 的現有結構
+- [ ] 識別技能調用的最佳整合點
+- [ ] 確認技能資料庫查詢方式
+
+### 59.2 建立技能調用服務層
+- [ ] 建立 SkillService 類別
+- [ ] 實作技能查詢和匹配邏輯
+- [ ] 實作關鍵字匹配演算法
+- [ ] 實作技能執行和結果記錄
+
+### 59.3 整合技能到 ContentAnalyzerAgent
+- [ ] 修改 ContentAnalyzerAgent 調用 SkillService
+- [ ] 在內容分析後自動執行識別技能
+- [ ] 生成智能標籤（特色分類、交通類型等）
+- [ ] 記錄技能使用日誌
+
+### 59.4 更新行程生成流程
+- [ ] 將智能標籤整合到行程資料結構
+- [ ] 更新資料庫儲存邏輯
+- [ ] 確保標籤在前端正確顯示
+
+### 59.5 測試驗證
+- [ ] 測試技能調用是否正常
+- [ ] 驗證智能標籤生成準確性
+- [ ] 測試完整行程生成流程
+
+
+---
+
+## Phase 59: 整合技能到 ContentAnalyzerAgent（2026-02-02）✅ 已完成
+- [x] 分析現有 ContentAnalyzerAgent 架構
+- [x] 建立技能調用服務層
+- [x] 整合技能到 ContentAnalyzerAgent（applySkillsForSmartTags 方法）
+- [x] 更新行程生成流程以使用智能標籤
+- [x] 測試並驗證整合功能
+- [x] 撰寫單元測試 (11 個測試通過)
+
+### 技術細節
+- 新增 `applySkillsForSmartTags` 方法到 ContentAnalyzerAgent
+- 從資料庫讀取啟用的技能，根據關鍵字匹配生成智能標籤
+- 記錄技能使用日誌到 skillApplicationLogs 資料表
+- 更新 MasterAgent 整合 ContentAnalyzerAgent 生成的 smartTags
+- 智能標籤與 learningAgent 生成的標籤合併並去重

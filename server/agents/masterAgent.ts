@@ -692,31 +692,57 @@ export class MasterAgent {
       );
       
       // 應用學習系統的技能生成額外標籤
+      // Phase 59 更新：優先使用 ContentAnalyzerAgent 生成的 smartTags
       let learnedTags: string[] = [];
       let appliedSkillNames: string[] = [];
       onProgress?.('applying_skills', 85);
-      try {
-        const contentForSkills = [
-          analyzedContent.title,
-          analyzedContent.description,
-          rawData.basicInfo?.title,
-          rawData.basicInfo?.description,
-          ...(rawData.highlights || []),
-        ].filter(Boolean).join(' ');
+      
+      // 優先使用 ContentAnalyzerAgent 已生成的 smartTags
+      if (analyzedContent.smartTags && analyzedContent.smartTags.labels.length > 0) {
+        learnedTags = analyzedContent.smartTags.labels;
+        appliedSkillNames = analyzedContent.smartTags.labels;
+        console.log(`[MasterAgent] Using ContentAnalyzerAgent smartTags: ${learnedTags.join(', ')}`);
+        console.log(`[MasterAgent] Applied ${analyzedContent.smartTags.appliedSkills.length} skills from ContentAnalyzerAgent`);
         
-        const skillResult = await applyLearnedSkills(contentForSkills, {
-          duration: rawData.duration?.days,
-          price: rawData.pricing?.price,
-        });
-        learnedTags = skillResult.labels;
-        appliedSkillNames = skillResult.labels; // 用於通知
-        if (learnedTags.length > 0) {
-          console.log(`[MasterAgent] Applied ${skillResult.appliedSkills.length} learned skills, generated tags: ${learnedTags.join(', ')}`);
-          // 發送技能學習通知進度
-          onProgress?.('learning_new_skills', 88);
+        // 詳細輸出分類資訊
+        if (analyzedContent.smartTags.featureClassification?.length) {
+          console.log(`[MasterAgent] Feature Classification: ${analyzedContent.smartTags.featureClassification.join(', ')}`);
         }
-      } catch (error) {
-        console.warn(`[MasterAgent] Failed to apply learned skills:`, error);
+        if (analyzedContent.smartTags.transportationType?.length) {
+          console.log(`[MasterAgent] Transportation Type: ${analyzedContent.smartTags.transportationType.join(', ')}`);
+        }
+        if (analyzedContent.smartTags.highlightActivities?.length) {
+          console.log(`[MasterAgent] Highlight Activities: ${analyzedContent.smartTags.highlightActivities.join(', ')}`);
+        }
+        if (analyzedContent.smartTags.accommodationType?.length) {
+          console.log(`[MasterAgent] Accommodation Type: ${analyzedContent.smartTags.accommodationType.join(', ')}`);
+        }
+        
+        onProgress?.('learning_new_skills', 88);
+      } else {
+        // Fallback: 如果 ContentAnalyzerAgent 沒有生成 smartTags，才手動調用 applyLearnedSkills
+        try {
+          const contentForSkills = [
+            analyzedContent.title,
+            analyzedContent.description,
+            rawData.basicInfo?.title,
+            rawData.basicInfo?.description,
+            ...(rawData.highlights || []),
+          ].filter(Boolean).join(' ');
+          
+          const skillResult = await applyLearnedSkills(contentForSkills, {
+            duration: rawData.duration?.days,
+            price: rawData.pricing?.price,
+          });
+          learnedTags = skillResult.labels;
+          appliedSkillNames = skillResult.labels;
+          if (learnedTags.length > 0) {
+            console.log(`[MasterAgent] Applied ${skillResult.appliedSkills.length} learned skills (fallback), generated tags: ${learnedTags.join(', ')}`);
+            onProgress?.('learning_new_skills', 88);
+          }
+        } catch (error) {
+          console.warn(`[MasterAgent] Failed to apply learned skills:`, error);
+        }
       }
       
       // 合併現有標籤、智能標籤和學習標籤

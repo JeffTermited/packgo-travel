@@ -12,6 +12,7 @@
 import { getHaikuAgent, getSonnetAgent, ClaudeAgent, JSONSchema } from './claudeAgent';
 import { COPYWRITER_SKILL } from "./skillLibrary";
 import { getKeyInstructions, extractJsonSchema } from "./skillLoader";
+import { applyLearnedSkills } from "./learningAgent";
 
 export interface ContentAnalyzerResult {
   success: boolean;
@@ -29,6 +30,15 @@ export interface ContentAnalyzerResult {
     meals: any[]; // 餐食介紹
     flights: any; // 航班資訊
     originalityScore: number; // 0-100
+    // 新增：智能標籤系統
+    smartTags?: {
+      labels: string[];           // 生成的標籤
+      appliedSkills: number[];    // 應用的技能 ID
+      featureClassification?: string[];  // 特色分類
+      transportationType?: string[];     // 交通類型
+      highlightActivities?: string[];    // 亮點活動
+      accommodationType?: string[];      // 住宿類型
+    };
   };
   error?: string;
 }
@@ -108,9 +118,13 @@ export class ContentAnalyzerAgent {
         heroSubtitle: combinedResult.heroSubtitle,
       });
       
+      // Phase 3: 應用技能系統生成智能標籤
+      const smartTags = await this.applySkillsForSmartTags(rawData, combinedResult);
+      
       const elapsed = Date.now() - startTime;
       console.log(`[ContentAnalyzerAgent] Content analysis completed in ${elapsed}ms`);
       console.log("[ContentAnalyzerAgent] Originality score:", originalityScore);
+      console.log(`[ContentAnalyzerAgent] Smart tags generated: ${smartTags.labels.length} labels from ${smartTags.appliedSkills.length} skills`);
       
       return {
         success: true,
@@ -137,6 +151,7 @@ export class ContentAnalyzerAgent {
           meals: [],
           flights: {},
           originalityScore,
+          smartTags,
         },
       };
     } catch (error) {
@@ -333,5 +348,136 @@ export class ContentAnalyzerAgent {
     score -= commonCount * 5;
     
     return Math.max(60, Math.min(100, score));
+  }
+
+  /**
+   * Phase 3: 應用技能系統生成智能標籤
+   * 整合 Superpowers 風格的技能系統
+   */
+  private async applySkillsForSmartTags(
+    rawData: any,
+    combinedResult: {
+      poeticTitle: string;
+      title: string;
+      description: string;
+      heroSubtitle: string;
+      highlights: string[];
+    }
+  ): Promise<{
+    labels: string[];
+    appliedSkills: number[];
+    featureClassification: string[];
+    transportationType: string[];
+    highlightActivities: string[];
+    accommodationType: string[];
+  }> {
+    const startTime = Date.now();
+    console.log("[ContentAnalyzerAgent] Applying skills for smart tags...");
+
+    try {
+      // 組合所有內容用於技能匹配
+      const contentForMatching = [
+        rawData.basicInfo?.title || "",
+        rawData.basicInfo?.description || "",
+        combinedResult.title,
+        combinedResult.description,
+        combinedResult.poeticTitle,
+        combinedResult.heroSubtitle,
+        ...(combinedResult.highlights || []),
+        ...(rawData.highlights || []),
+        ...(rawData.specialExperiences || []),
+        rawData.accommodation?.hotelName || "",
+        rawData.accommodation?.hotelDescription || "",
+        rawData.location?.destinationCountry || "",
+        rawData.location?.destinationCity || "",
+      ].filter(Boolean).join(" ");
+
+      // 組合 metadata 用於規則匹配
+      const metadata = {
+        duration: rawData.duration?.days || 0,
+        price: rawData.pricing?.basePrice || 0,
+        country: rawData.location?.destinationCountry || "",
+        city: rawData.location?.destinationCity || "",
+        hotelGrade: rawData.accommodation?.hotelGrade || "",
+      };
+
+      // 調用技能系統
+      const { labels, appliedSkills } = await applyLearnedSkills(contentForMatching, metadata);
+
+      // 分類標籤
+      const featureClassification: string[] = [];
+      const transportationType: string[] = [];
+      const highlightActivities: string[] = [];
+      const accommodationType: string[] = [];
+
+      // 根據標籤內容進行分類
+      for (const label of labels) {
+        // 特色分類
+        if (
+          label.includes("ESG") ||
+          label.includes("永續") ||
+          label.includes("美食") ||
+          label.includes("文化") ||
+          label.includes("自然") ||
+          label.includes("生態")
+        ) {
+          featureClassification.push(label);
+        }
+        // 交通類型
+        else if (
+          label.includes("鐵道") ||
+          label.includes("郵輪") ||
+          label.includes("火車") ||
+          label.includes("遊輪")
+        ) {
+          transportationType.push(label);
+        }
+        // 亮點活動
+        else if (
+          label.includes("特別") ||
+          label.includes("獨家") ||
+          label.includes("升級") ||
+          label.includes("體驗")
+        ) {
+          highlightActivities.push(label);
+        }
+        // 住宿類型
+        else if (
+          label.includes("溫泉") ||
+          label.includes("旅館") ||
+          label.includes("酒店") ||
+          label.includes("度假村")
+        ) {
+          accommodationType.push(label);
+        }
+        // 其他標籤歸類到特色分類
+        else {
+          featureClassification.push(label);
+        }
+      }
+
+      const elapsed = Date.now() - startTime;
+      console.log(`[ContentAnalyzerAgent] Skills applied in ${elapsed}ms`);
+      console.log(`[ContentAnalyzerAgent] Generated labels: ${labels.join(", ")}`);
+
+      return {
+        labels,
+        appliedSkills,
+        featureClassification,
+        transportationType,
+        highlightActivities,
+        accommodationType,
+      };
+    } catch (error) {
+      console.error("[ContentAnalyzerAgent] Failed to apply skills:", error);
+      return {
+        labels: [],
+        appliedSkills: [],
+        featureClassification: [],
+        transportationType: [],
+        highlightActivities: [],
+        accommodationType: [],
+      };
+    }
   }
 }
