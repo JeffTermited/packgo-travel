@@ -169,6 +169,13 @@
       "when": 1770056794884,
       "tag": "0023_perpetual_maverick",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "5",
+      "when": 1770059938469,
+      "tag": "0024_lethal_owl",
+      "breakpoints": true
     }
   ]
 }

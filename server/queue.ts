@@ -145,3 +145,48 @@ export async function getUserTourGenerationJobs(userId: number) {
 }
 
 console.log("✅ Tour generation queue initialized");
+
+
+/**
+ * Job data structure for skill learning
+ */
+export interface SkillLearningJobData {
+  scheduleId: number;
+  scheduleName: string;
+}
+
+/**
+ * Job result structure for skill learning
+ */
+export interface SkillLearningResult {
+  success: boolean;
+  historyId?: number;
+  toursProcessed?: number;
+  keywordSuggestions?: number;
+  newSkillSuggestions?: number;
+  error?: string;
+}
+
+/**
+ * Queue for skill learning tasks
+ */
+export const skillLearningQueue = new Queue<SkillLearningJobData, SkillLearningResult>("skill-learning", {
+  connection: redis,
+  defaultJobOptions: {
+    attempts: 2, // Retry up to 2 times on failure
+    backoff: {
+      type: "exponential",
+      delay: 10000, // Start with 10 second delay
+    },
+    removeOnComplete: {
+      age: 86400, // Keep completed jobs for 24 hours
+      count: 50, // Keep last 50 completed jobs
+    },
+    removeOnFail: {
+      age: 604800, // Keep failed jobs for 7 days
+      count: 100, // Keep last 100 failed jobs
+    },
+  },
+});
+
+console.log("✅ Skill learning queue initialized");

@@ -2383,6 +2383,122 @@ Important guidelines:
         recentLearnings: [],
       };
     }),
+
+    // === 排程學習 API ===
+    
+    // 獲取所有排程
+    getSchedules: adminProcedure.query(async () => {
+      const { scheduledLearningService } = await import('./services/scheduledLearningService');
+      return await scheduledLearningService.getSchedules();
+    }),
+
+    // 創建排程
+    createSchedule: adminProcedure
+      .input(z.object({
+        name: z.string(),
+        frequency: z.enum(['daily', 'weekly', 'monthly']),
+        dayOfWeek: z.number().min(0).max(6).optional(),
+        dayOfMonth: z.number().min(1).max(31).optional(),
+        hour: z.number().min(0).max(23).optional(),
+        minute: z.number().min(0).max(59).optional(),
+        maxToursPerRun: z.number().min(1).max(50).optional(),
+        minTourAge: z.number().min(0).optional(),
+        autoApplyHighConfidence: z.boolean().optional(),
+        autoApplyThreshold: z.number().min(0).max(1).optional(),
+        notifyOnComplete: z.boolean().optional(),
+        notifyOnNewSuggestions: z.boolean().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { scheduledLearningService } = await import('./services/scheduledLearningService');
+        const scheduleId = await scheduledLearningService.createSchedule({
+          ...input,
+          createdBy: ctx.user.id,
+        });
+        return { success: scheduleId !== null, scheduleId };
+      }),
+
+    // 更新排程
+    updateSchedule: adminProcedure
+      .input(z.object({
+        id: z.number(),
+        name: z.string().optional(),
+        isEnabled: z.boolean().optional(),
+        frequency: z.enum(['daily', 'weekly', 'monthly']).optional(),
+        dayOfWeek: z.number().min(0).max(6).optional(),
+        dayOfMonth: z.number().min(1).max(31).optional(),
+        hour: z.number().min(0).max(23).optional(),
+        minute: z.number().min(0).max(59).optional(),
+        maxToursPerRun: z.number().min(1).max(50).optional(),
+        minTourAge: z.number().min(0).optional(),
+        autoApplyHighConfidence: z.boolean().optional(),
+        autoApplyThreshold: z.number().min(0).max(1).optional(),
+        notifyOnComplete: z.boolean().optional(),
+        notifyOnNewSuggestions: z.boolean().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { scheduledLearningService } = await import('./services/scheduledLearningService');
+        const { id, ...updates } = input;
+        const success = await scheduledLearningService.updateSchedule(id, updates);
+        return { success };
+      }),
+
+    // 刪除排程
+    deleteSchedule: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        const { scheduledLearningService } = await import('./services/scheduledLearningService');
+        const success = await scheduledLearningService.deleteSchedule(input.id);
+        return { success };
+      }),
+
+    // 手動觸發排程學習
+    triggerScheduledLearning: adminProcedure
+      .input(z.object({ scheduleId: z.number() }))
+      .mutation(async ({ input }) => {
+        const { scheduledLearningService } = await import('./services/scheduledLearningService');
+        const result = await scheduledLearningService.executeScheduledLearning(input.scheduleId);
+        return { success: result !== null, result };
+      }),
+
+    // 手動學習（從指定行程）
+    triggerManualLearning: adminProcedure
+      .input(z.object({ tourIds: z.array(z.number()) }))
+      .mutation(async ({ ctx, input }) => {
+        const { scheduledLearningService } = await import('./services/scheduledLearningService');
+        const result = await scheduledLearningService.triggerManualLearning(input.tourIds, ctx.user.id);
+        return { success: result !== null, result };
+      }),
+
+    // 獲取學習歷史
+    getLearningHistory: adminProcedure
+      .input(z.object({
+        limit: z.number().min(1).max(100).optional(),
+        offset: z.number().min(0).optional(),
+        sourceType: z.enum(['tour', 'batch', 'scheduled', 'manual']).optional(),
+      }).optional())
+      .query(async ({ input }) => {
+        const { scheduledLearningService } = await import('./services/scheduledLearningService');
+        return await scheduledLearningService.getLearningHistory(input || {});
+      }),
+
+    // 更新學習歷史的建議狀態
+    updateLearningHistoryStatus: adminProcedure
+      .input(z.object({
+        historyId: z.number(),
+        accepted: z.number(),
+        rejected: z.number(),
+        skillsCreated: z.number(),
+      }))
+      .mutation(async ({ input }) => {
+        const { scheduledLearningService } = await import('./services/scheduledLearningService');
+        const success = await scheduledLearningService.updateSuggestionStatus(
+          input.historyId,
+          input.accepted,
+          input.rejected,
+          input.skillsCreated
+        );
+        return { success };
+      }),
   }),
 });
 export type AppRouter = typeof appRouter;

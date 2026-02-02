@@ -643,3 +643,96 @@ export const userBrowsingHistory = mysqlTable("userBrowsingHistory", {
 
 export type UserBrowsingHistory = typeof userBrowsingHistory.$inferSelect;
 export type InsertUserBrowsingHistory = typeof userBrowsingHistory.$inferInsert;
+
+
+/**
+ * Skill Learning History table for tracking AI learning results.
+ * Records each learning session with suggestions and outcomes.
+ */
+export const skillLearningHistory = mysqlTable("skillLearningHistory", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  // Learning source
+  sourceType: mysqlEnum("sourceType", ["tour", "batch", "scheduled", "manual"]).notNull(),
+  sourceTourIds: text("sourceTourIds"), // JSON array of tour IDs that were analyzed
+  
+  // Learning results
+  keywordSuggestions: text("keywordSuggestions"), // JSON array of keyword suggestions
+  newSkillSuggestions: text("newSkillSuggestions"), // JSON array of new skill suggestions
+  identifiedTags: text("identifiedTags"), // JSON array of identified tags
+  
+  // Statistics
+  totalKeywordsFound: int("totalKeywordsFound").default(0).notNull(),
+  newKeywordsFound: int("newKeywordsFound").default(0).notNull(),
+  suggestionsAccepted: int("suggestionsAccepted").default(0).notNull(),
+  suggestionsRejected: int("suggestionsRejected").default(0).notNull(),
+  skillsCreated: int("skillsCreated").default(0).notNull(),
+  processingTimeMs: int("processingTimeMs"),
+  
+  // Status
+  status: mysqlEnum("status", [
+    "pending",     // 等待處理
+    "processing",  // 處理中
+    "completed",   // 完成
+    "failed",      // 失敗
+    "partial"      // 部分完成
+  ]).default("pending").notNull(),
+  errorMessage: text("errorMessage"),
+  
+  // Trigger info
+  triggeredBy: mysqlEnum("triggeredBy", ["user", "schedule", "system"]).default("user").notNull(),
+  triggeredByUserId: int("triggeredByUserId"), // null for scheduled/system
+  
+  // Audit
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  completedAt: timestamp("completedAt"),
+});
+
+export type SkillLearningHistory = typeof skillLearningHistory.$inferSelect;
+export type InsertSkillLearningHistory = typeof skillLearningHistory.$inferInsert;
+
+/**
+ * Skill Learning Schedule table for managing automated learning settings.
+ * Controls when and how the system automatically learns from new content.
+ */
+export const skillLearningSchedule = mysqlTable("skillLearningSchedule", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  // Schedule settings
+  name: varchar("name", { length: 100 }).notNull(), // Schedule name
+  isEnabled: boolean("isEnabled").default(true).notNull(),
+  
+  // Frequency settings
+  frequency: mysqlEnum("frequency", ["daily", "weekly", "monthly"]).default("weekly").notNull(),
+  dayOfWeek: int("dayOfWeek"), // 0-6 for weekly (0 = Sunday)
+  dayOfMonth: int("dayOfMonth"), // 1-31 for monthly
+  hour: int("hour").default(3).notNull(), // Hour to run (0-23), default 3 AM
+  minute: int("minute").default(0).notNull(), // Minute to run (0-59)
+  
+  // Learning scope
+  learnFromNewTours: boolean("learnFromNewTours").default(true).notNull(), // Learn from tours created since last run
+  maxToursPerRun: int("maxToursPerRun").default(10).notNull(), // Max tours to process per run
+  minTourAge: int("minTourAge").default(0).notNull(), // Min age in days before learning from a tour
+  
+  // Auto-apply settings
+  autoApplyHighConfidence: boolean("autoApplyHighConfidence").default(false).notNull(), // Auto-apply suggestions with confidence > threshold
+  autoApplyThreshold: decimal("autoApplyThreshold", { precision: 3, scale: 2 }).default("0.90"), // Confidence threshold for auto-apply
+  
+  // Notification settings
+  notifyOnComplete: boolean("notifyOnComplete").default(true).notNull(),
+  notifyOnNewSuggestions: boolean("notifyOnNewSuggestions").default(true).notNull(),
+  
+  // Execution tracking
+  lastRunAt: timestamp("lastRunAt"),
+  lastRunStatus: mysqlEnum("lastRunStatus", ["success", "failed", "partial"]),
+  lastRunHistoryId: int("lastRunHistoryId"), // Reference to skillLearningHistory
+  nextRunAt: timestamp("nextRunAt"),
+  
+  // Audit
+  createdBy: int("createdBy").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type SkillLearningSchedule = typeof skillLearningSchedule.$inferSelect;
+export type InsertSkillLearningSchedule = typeof skillLearningSchedule.$inferInsert;

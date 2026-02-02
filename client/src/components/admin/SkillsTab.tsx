@@ -857,6 +857,459 @@ export default function SkillsTab() {
     );
   };
 
+  // Scheduled Learning Tab Component
+  const ScheduledLearningTab = () => {
+    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+    const [selectedSchedule, setSelectedSchedule] = useState<any>(null);
+    const [newSchedule, setNewSchedule] = useState({
+      name: '',
+      frequency: 'weekly' as 'daily' | 'weekly' | 'monthly',
+      dayOfWeek: 1,
+      dayOfMonth: 1,
+      hour: 3,
+      minute: 0,
+      maxToursPerRun: 10,
+      minTourAge: 24,
+      autoApplyHighConfidence: false,
+      autoApplyThreshold: 0.9,
+      notifyOnComplete: true,
+      notifyOnNewSuggestions: true,
+    });
+
+    // 獲取所有排程
+    const { data: schedules, refetch: refetchSchedules } = trpc.skills.getSchedules.useQuery();
+    
+    // 獲取學習歷史
+    const { data: learningHistory, refetch: refetchHistory } = trpc.skills.getLearningHistory.useQuery({ limit: 20 });
+
+    // 創建排程
+    const createSchedule = trpc.skills.createSchedule.useMutation({
+      onSuccess: () => {
+        toast.success('排程已創建');
+        setIsCreateDialogOpen(false);
+        refetchSchedules();
+        setNewSchedule({
+          name: '',
+          frequency: 'weekly',
+          dayOfWeek: 1,
+          dayOfMonth: 1,
+          hour: 3,
+          minute: 0,
+          maxToursPerRun: 10,
+          minTourAge: 24,
+          autoApplyHighConfidence: false,
+          autoApplyThreshold: 0.9,
+          notifyOnComplete: true,
+          notifyOnNewSuggestions: true,
+        });
+      },
+      onError: (error) => {
+        toast.error(`創建失敗: ${error.message}`);
+      },
+    });
+
+    // 更新排程
+    const updateSchedule = trpc.skills.updateSchedule.useMutation({
+      onSuccess: () => {
+        toast.success('排程已更新');
+        refetchSchedules();
+      },
+      onError: (error) => {
+        toast.error(`更新失敗: ${error.message}`);
+      },
+    });
+
+    // 刪除排程
+    const deleteSchedule = trpc.skills.deleteSchedule.useMutation({
+      onSuccess: () => {
+        toast.success('排程已刪除');
+        refetchSchedules();
+      },
+      onError: (error) => {
+        toast.error(`刪除失敗: ${error.message}`);
+      },
+    });
+
+    // 手動觸發排程
+    const triggerSchedule = trpc.skills.triggerScheduledLearning.useMutation({
+      onSuccess: (result) => {
+        toast.success(`學習完成！處理了 ${(result.result as any)?.toursProcessed || 0} 個行程`);
+        refetchHistory();
+        refetchSchedules();
+      },
+      onError: (error) => {
+        toast.error(`執行失敗: ${error.message}`);
+      },
+    });
+
+    const frequencyLabels = {
+      daily: '每天',
+      weekly: '每週',
+      monthly: '每月',
+    };
+
+    const dayOfWeekLabels = ['週日', '週一', '週二', '週三', '週四', '週五', '週六'];
+
+    const formatScheduleTime = (schedule: any) => {
+      const hour = String(schedule.hour || 0).padStart(2, '0');
+      const minute = String(schedule.minute || 0).padStart(2, '0');
+      
+      if (schedule.frequency === 'daily') {
+        return `每天 ${hour}:${minute}`;
+      } else if (schedule.frequency === 'weekly') {
+        return `每${dayOfWeekLabels[schedule.dayOfWeek || 0]} ${hour}:${minute}`;
+      } else {
+        return `每月 ${schedule.dayOfMonth || 1} 日 ${hour}:${minute}`;
+      }
+    };
+
+    return (
+      <div className="space-y-6">
+        {/* Schedules Section */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-primary" />
+                  自動學習排程
+                </CardTitle>
+                <CardDescription>
+                  設定自動學習任務，讓系統定期從新行程中學習
+                </CardDescription>
+              </div>
+              <Button onClick={() => setIsCreateDialogOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                新增排程
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {schedules && schedules.length > 0 ? (
+              <div className="space-y-4">
+                {schedules.map((schedule: any) => (
+                  <div
+                    key={schedule.id}
+                    className="flex items-center justify-between p-4 border rounded-lg"
+                  >
+                    <div className="flex items-center gap-4">
+                      <Switch
+                        checked={schedule.isEnabled}
+                        onCheckedChange={(checked) =>
+                          updateSchedule.mutate({ id: schedule.id, isEnabled: checked })
+                        }
+                      />
+                      <div>
+                        <p className="font-medium">{schedule.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {formatScheduleTime(schedule)} | 每次最多 {schedule.maxToursPerRun} 個行程
+                        </p>
+                        {schedule.lastRunAt && (
+                          <p className="text-xs text-muted-foreground">
+                            上次執行: {new Date(schedule.lastRunAt).toLocaleString('zh-TW')}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => triggerSchedule.mutate({ scheduleId: schedule.id })}
+                        disabled={triggerSchedule.isPending}
+                      >
+                        {triggerSchedule.isPending ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Play className="h-4 w-4" />
+                        )}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => deleteSchedule.mutate({ id: schedule.id })}
+                        disabled={deleteSchedule.isPending}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>尚未設定任何自動學習排程</p>
+                <p className="text-sm">點擊「新增排程」開始設定</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Learning History Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5 text-primary" />
+              學習歷史記錄
+            </CardTitle>
+            <CardDescription>
+              查看過去的自動學習結果
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {learningHistory && learningHistory.length > 0 ? (
+              <div className="space-y-3">
+                {learningHistory.map((history: any) => (
+                  <div
+                    key={history.id}
+                    className="flex items-center justify-between p-3 border rounded-lg"
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={history.status === 'completed' ? 'default' : history.status === 'failed' ? 'destructive' : 'secondary'}>
+                          {history.status === 'completed' ? '完成' : history.status === 'failed' ? '失敗' : '進行中'}
+                        </Badge>
+                        <span className="text-sm font-medium">
+                          {history.sourceType === 'scheduled' ? '排程學習' : history.sourceType === 'manual' ? '手動學習' : '批量學習'}
+                        </span>
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        處理 {history.toursProcessed || 0} 個行程 | 
+                        發現 {history.keywordSuggestions || 0} 個關鍵字 | 
+                        新技能 {history.newSkillSuggestions || 0} 個
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(history.createdAt).toLocaleString('zh-TW')}
+                      </p>
+                    </div>
+                    <div className="text-right text-sm">
+                      {history.suggestionsAccepted > 0 && (
+                        <p className="text-green-600">採納: {history.suggestionsAccepted}</p>
+                      )}
+                      {history.suggestionsRejected > 0 && (
+                        <p className="text-red-600">拒絕: {history.suggestionsRejected}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <BarChart3 className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>尚無學習歷史記錄</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Create Schedule Dialog */}
+        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>新增自動學習排程</DialogTitle>
+              <DialogDescription>
+                設定系統自動從新行程中學習的時間和參數
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label>排程名稱</Label>
+                <Input
+                  value={newSchedule.name}
+                  onChange={(e) => setNewSchedule({ ...newSchedule, name: e.target.value })}
+                  placeholder="例如：每週自動學習"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label>執行頻率</Label>
+                <Select
+                  value={newSchedule.frequency}
+                  onValueChange={(value: 'daily' | 'weekly' | 'monthly') =>
+                    setNewSchedule({ ...newSchedule, frequency: value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="daily">每天</SelectItem>
+                    <SelectItem value="weekly">每週</SelectItem>
+                    <SelectItem value="monthly">每月</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {newSchedule.frequency === 'weekly' && (
+                <div className="space-y-2">
+                  <Label>執行日</Label>
+                  <Select
+                    value={String(newSchedule.dayOfWeek)}
+                    onValueChange={(value) =>
+                      setNewSchedule({ ...newSchedule, dayOfWeek: Number(value) })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {dayOfWeekLabels.map((label, idx) => (
+                        <SelectItem key={idx} value={String(idx)}>{label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {newSchedule.frequency === 'monthly' && (
+                <div className="space-y-2">
+                  <Label>執行日期</Label>
+                  <Select
+                    value={String(newSchedule.dayOfMonth)}
+                    onValueChange={(value) =>
+                      setNewSchedule({ ...newSchedule, dayOfMonth: Number(value) })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Array.from({ length: 28 }, (_, i) => i + 1).map((day) => (
+                        <SelectItem key={day} value={String(day)}>{day} 日</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>執行時間 (時)</Label>
+                  <Select
+                    value={String(newSchedule.hour)}
+                    onValueChange={(value) =>
+                      setNewSchedule({ ...newSchedule, hour: Number(value) })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Array.from({ length: 24 }, (_, i) => i).map((hour) => (
+                        <SelectItem key={hour} value={String(hour)}>
+                          {String(hour).padStart(2, '0')}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>執行時間 (分)</Label>
+                  <Select
+                    value={String(newSchedule.minute)}
+                    onValueChange={(value) =>
+                      setNewSchedule({ ...newSchedule, minute: Number(value) })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[0, 15, 30, 45].map((minute) => (
+                        <SelectItem key={minute} value={String(minute)}>
+                          {String(minute).padStart(2, '0')}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>每次最多處理行程數</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={50}
+                  value={newSchedule.maxToursPerRun}
+                  onChange={(e) =>
+                    setNewSchedule({ ...newSchedule, maxToursPerRun: Number(e.target.value) })
+                  }
+                />
+              </div>
+
+              <Separator />
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>自動應用高信心度建議</Label>
+                    <p className="text-xs text-muted-foreground">
+                      自動採納信心度超過閾值的建議
+                    </p>
+                  </div>
+                  <Switch
+                    checked={newSchedule.autoApplyHighConfidence}
+                    onCheckedChange={(checked) =>
+                      setNewSchedule({ ...newSchedule, autoApplyHighConfidence: checked })
+                    }
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>完成時通知</Label>
+                    <p className="text-xs text-muted-foreground">
+                      學習完成後發送通知
+                    </p>
+                  </div>
+                  <Switch
+                    checked={newSchedule.notifyOnComplete}
+                    onCheckedChange={(checked) =>
+                      setNewSchedule({ ...newSchedule, notifyOnComplete: checked })
+                    }
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>新建議通知</Label>
+                    <p className="text-xs text-muted-foreground">
+                      發現新建議時發送通知
+                    </p>
+                  </div>
+                  <Switch
+                    checked={newSchedule.notifyOnNewSuggestions}
+                    onCheckedChange={(checked) =>
+                      setNewSchedule({ ...newSchedule, notifyOnNewSuggestions: checked })
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                取消
+              </Button>
+              <Button
+                onClick={() => createSchedule.mutate(newSchedule)}
+                disabled={!newSchedule.name || createSchedule.isPending}
+              >
+                {createSchedule.isPending ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Plus className="h-4 w-4 mr-2" />
+                )}
+                創建排程
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -921,6 +1374,10 @@ export default function SkillsTab() {
           <TabsTrigger value="ai-learning" className="flex items-center gap-1">
             <Sparkles className="h-3 w-3" />
             AI 學習
+          </TabsTrigger>
+          <TabsTrigger value="scheduled-learning" className="flex items-center gap-1">
+            <Clock className="h-3 w-3" />
+            自動排程
           </TabsTrigger>
         </TabsList>
 
@@ -1144,6 +1601,11 @@ export default function SkillsTab() {
         {/* AI Learning Tab */}
         <TabsContent value="ai-learning" className="mt-4">
           <AILearningTab />
+        </TabsContent>
+
+        {/* Scheduled Learning Tab */}
+        <TabsContent value="scheduled-learning" className="mt-4">
+          <ScheduledLearningTab />
         </TabsContent>
       </Tabs>
 
