@@ -351,6 +351,67 @@ export function EditableDayCard({
               </div>
             </div>
           )}
+
+          {/* Meals */}
+          {(day.meals || isEditMode) && (
+            <div className="mt-4 pt-4 border-t border-gray-100">
+              <div className="text-sm text-gray-600 space-y-2">
+                <span className="font-medium block mb-2">今日餐食：</span>
+                {isEditMode ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-12 text-gray-500">早餐</span>
+                      <Input
+                        value={day.meals?.breakfast || ""}
+                        onChange={(e) => onUpdate({ 
+                          ...day, 
+                          meals: { ...day.meals, breakfast: e.target.value } 
+                        })}
+                        placeholder="輸入早餐內容"
+                        className="flex-1 h-8"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-12 text-gray-500">午餐</span>
+                      <Input
+                        value={day.meals?.lunch || ""}
+                        onChange={(e) => onUpdate({ 
+                          ...day, 
+                          meals: { ...day.meals, lunch: e.target.value } 
+                        })}
+                        placeholder="輸入午餐內容"
+                        className="flex-1 h-8"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-12 text-gray-500">晚餐</span>
+                      <Input
+                        value={day.meals?.dinner || ""}
+                        onChange={(e) => onUpdate({ 
+                          ...day, 
+                          meals: { ...day.meals, dinner: e.target.value } 
+                        })}
+                        placeholder="輸入晚餐內容"
+                        className="flex-1 h-8"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap gap-4">
+                    {day.meals?.breakfast && (
+                      <span>早：{day.meals.breakfast}</span>
+                    )}
+                    {day.meals?.lunch && (
+                      <span>午：{day.meals.lunch}</span>
+                    )}
+                    {day.meals?.dinner && (
+                      <span>晚：{day.meals.dinner}</span>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
