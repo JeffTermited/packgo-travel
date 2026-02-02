@@ -427,8 +427,8 @@ const getThemeColorByDestination = (country: string | null | undefined) => {
   // 預設 - 黑色系（極簡風格）
   return {
     primary: "#0A0A0A",      // 純黑
-    secondary: "#374151",    // 深灰
-    accent: "#6B7280",       // 灰色
+    secondary: "#1F2937",    // 更深的灰色
+    accent: "#374151",       // 深灰色
     light: "#F9FAFB",        // 淺灰背景
     gradient: "from-gray-900 to-gray-700"
   };
@@ -711,28 +711,28 @@ const MealCard = ({
     breakfast: { 
       label: '早餐', 
       icon: Coffee,
-      borderColor: 'border-amber-200',
-      bgColor: 'bg-amber-50', 
-      textColor: 'text-amber-600',
-      iconBg: 'bg-amber-100',
+      borderColor: 'border-amber-300',
+      bgColor: 'bg-amber-100', 
+      textColor: 'text-amber-700',
+      iconBg: 'bg-amber-200',
       hoverBg: 'hover:bg-amber-100/50'
     },
     lunch: { 
       label: '午餐', 
       icon: UtensilsCrossed,
-      borderColor: 'border-orange-200',
-      bgColor: 'bg-orange-50', 
-      textColor: 'text-orange-600',
-      iconBg: 'bg-orange-100',
+      borderColor: 'border-orange-300',
+      bgColor: 'bg-orange-100', 
+      textColor: 'text-orange-700',
+      iconBg: 'bg-orange-200',
       hoverBg: 'hover:bg-orange-100/50'
     },
     dinner: { 
       label: '晚餐', 
       icon: Wine,
-      borderColor: 'border-indigo-200',
-      bgColor: 'bg-indigo-50', 
-      textColor: 'text-indigo-600',
-      iconBg: 'bg-indigo-100',
+      borderColor: 'border-indigo-300',
+      bgColor: 'bg-indigo-100', 
+      textColor: 'text-indigo-700',
+      iconBg: 'bg-indigo-200',
       hoverBg: 'hover:bg-indigo-100/50'
     }
   };
@@ -1080,8 +1080,8 @@ const DayCard = ({
           {/* Meals Section - 獨立區塊 */}
           {day.meals && (day.meals.breakfast || day.meals.lunch || day.meals.dinner) && (
             <div className="mt-6 pt-6 border-t border-gray-100">
-              <h4 className="text-base font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                <Utensils className="h-5 w-5" style={{ color: themeColor.secondary }} />
+              <h4 className="text-base font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                <Utensils className="h-5 w-5" style={{ color: themeColor.primary }} />
                 今日餐食
               </h4>
               <div className="grid grid-cols-3 gap-3">
@@ -1119,8 +1119,8 @@ const DayCard = ({
           {/* Accommodation */}
           {day.accommodation && (
             <div className="mt-4 pt-4 border-t border-gray-100">
-              <div className="flex items-center gap-2 text-base text-gray-600">
-                <Building className="h-5 w-5" style={{ color: themeColor.secondary }} />
+              <div className="flex items-center gap-2 text-base text-gray-800">
+                <Building className="h-5 w-5" style={{ color: themeColor.primary }} />
                 <span className="font-medium">今晚住宿：</span>
                 <span>{day.accommodation}</span>
               </div>
@@ -2313,7 +2313,7 @@ export default function TourDetailPeony() {
             <Button 
               onClick={() => navigate(`/book/${tour.id}`)}
               className="px-8 py-4 text-white text-lg font-medium btn-hover-lift transition-all duration-300 hover:shadow-lg"
-              style={{ backgroundColor: themeColor.secondary }}
+              style={{ backgroundColor: themeColor.primary }}
             >
               立即預訂
             </Button>
@@ -2321,7 +2321,7 @@ export default function TourDetailPeony() {
               variant="outline"
               onClick={() => navigate("/contact")}
               className="px-8 py-4 text-lg font-medium border-2 btn-hover-lift transition-all duration-300 hover:bg-gray-50"
-              style={{ borderColor: themeColor.secondary, color: themeColor.secondary }}
+              style={{ borderColor: themeColor.primary, color: themeColor.primary }}
             >
               聯繫我們
             </Button>
@@ -2475,7 +2475,7 @@ export default function TourDetailPeony() {
           <Button 
             onClick={() => navigate(`/book/${tour.id}`)}
             className="px-6 py-3 text-white font-medium"
-            style={{ backgroundColor: themeColor.secondary }}
+            style={{ backgroundColor: themeColor.primary }}
           >
             立即預訂
           </Button>
