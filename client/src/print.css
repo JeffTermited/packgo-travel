@@ -1,14 +1,65 @@
 /**
  * CSS Print Styles for Tour Detail Page
- * Optimized for PDF export via browser print (Ctrl+P)
+ * Optimized for A4 paper (210mm x 297mm) PDF export
+ * 
+ * A4 紙張尺寸: 210mm x 297mm
+ * 可列印區域 (扣除邊距): 約 180mm x 257mm
  */
 
 @media print {
   /* ========================================
-     1. Hide Unnecessary Elements
+     1. Page Setup - A4 紙張設定
      ======================================== */
   
-  /* Hide navigation, footer, and interactive elements */
+  @page {
+    size: A4 portrait;
+    margin: 20mm 15mm 25mm 15mm; /* 上 右 下 左 */
+  }
+  
+  /* 首頁特殊設定 */
+  @page :first {
+    margin-top: 15mm;
+  }
+  
+  /* 頁碼設定 */
+  @page {
+    @bottom-center {
+      content: counter(page) " / " counter(pages);
+      font-size: 9pt;
+      color: #666;
+    }
+  }
+
+  /* ========================================
+     2. 基本設定
+     ======================================== */
+  
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+    box-sizing: border-box;
+  }
+  
+  html {
+    font-size: 11pt; /* 基準字體大小 */
+  }
+  
+  body {
+    background: white !important;
+    color: #000 !important;
+    font-size: 11pt;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    max-width: 180mm; /* A4 可列印寬度 */
+  }
+
+  /* ========================================
+     3. 隱藏不需要列印的元素
+     ======================================== */
+  
   header,
   nav,
   footer,
@@ -16,232 +67,360 @@
   .no-print,
   .tour-button-group,
   .tour-booking-section,
-  .tour-contact-section {
-    display: none !important;
-  }
-  
-  /* Hide social media share buttons */
+  .tour-contact-section,
   .share-button,
-  .social-links {
-    display: none !important;
-  }
-  
-  /* Hide video players and embedded content */
+  .social-links,
   video,
   iframe,
   embed,
-  object {
+  object,
+  .fixed,
+  .sticky,
+  [data-radix-scroll-area-viewport],
+  .toast,
+  .dialog,
+  .modal,
+  .price-card,
+  [class*="sticky"],
+  .edit-mode-indicator,
+  .inline-edit-controls {
     display: none !important;
   }
-  
+
   /* ========================================
-     2. Page Layout
+     4. 容器寬度設定
      ======================================== */
   
-  /* Reset page margins */
-  @page {
-    margin: 1.5cm;
-    size: A4 portrait;
-  }
-  
-  /* Reset body styling */
-  body {
-    background: white !important;
-    color: black !important;
-    font-size: 12pt;
-    line-height: 1.5;
-    margin: 0;
-    padding: 0;
-  }
-  
-  /* Ensure main content takes full width */
   main,
-  .container {
+  .container,
+  .max-w-4xl,
+  .max-w-5xl,
+  .max-w-6xl,
+  .max-w-7xl {
     width: 100% !important;
-    max-width: 100% !important;
-    margin: 0 !important;
+    max-width: 180mm !important; /* A4 可列印寬度 */
+    margin: 0 auto !important;
     padding: 0 !important;
   }
-  
+
   /* ========================================
-     3. Typography
+     5. 字體大小 - A4 優化
      ======================================== */
   
-  /* Adjust font sizes for print */
   h1 {
-    font-size: 24pt;
-    margin-bottom: 12pt;
+    font-size: 20pt;
+    margin-bottom: 10pt;
     page-break-after: avoid;
   }
   
   h2 {
-    font-size: 18pt;
-    margin-top: 16pt;
+    font-size: 16pt;
+    margin-top: 14pt;
     margin-bottom: 8pt;
     page-break-after: avoid;
   }
   
   h3 {
-    font-size: 14pt;
-    margin-top: 12pt;
+    font-size: 13pt;
+    margin-top: 10pt;
     margin-bottom: 6pt;
     page-break-after: avoid;
   }
   
-  p {
+  h4 {
     font-size: 12pt;
-    margin-bottom: 8pt;
+    margin-top: 8pt;
+    margin-bottom: 4pt;
+    page-break-after: avoid;
+  }
+  
+  p {
+    font-size: 11pt;
+    margin-bottom: 6pt;
     orphans: 3;
     widows: 3;
   }
   
+  li {
+    font-size: 11pt;
+    margin-bottom: 3pt;
+  }
+
   /* ========================================
-     4. Images
+     6. 圖片設定 - A4 優化
      ======================================== */
   
-  /* Optimize images for print */
   img {
     max-width: 100% !important;
+    max-height: 120mm !important; /* 限制圖片最大高度 */
     height: auto !important;
     page-break-inside: avoid;
     display: block;
-    margin: 8pt 0;
+    margin: 6pt auto;
+    object-fit: contain;
   }
   
-  /* Hero image: reduce size for print */
-  .tour-hero-image {
-    max-height: 15cm !important;
-    object-fit: contain !important;
+  /* Hero 圖片 - 限制高度 */
+  .tour-hero-image,
+  section[id="hero"] img,
+  .hero-section img {
+    max-height: 80mm !important;
+    width: auto !important;
+    margin: 0 auto 10pt auto;
   }
   
-  /* Hide placeholder images */
-  img[src*="placeholder"] {
-    display: none !important;
+  /* 行程亮點圖片 */
+  .key-features-grid img,
+  .tour-highlight img {
+    max-height: 50mm !important;
+    width: auto !important;
   }
   
+  /* 每日行程圖片 */
+  .day-card img,
+  .tour-day-item img {
+    max-height: 60mm !important;
+  }
+  
+  /* 飯店圖片 */
+  .hotel-card img {
+    max-height: 40mm !important;
+  }
+  
+  /* 隱藏佔位圖片 */
+  img[src*="placeholder"],
+  img[src*="unsplash"] {
+    max-height: 60mm !important;
+  }
+
   /* ========================================
-     5. Page Breaks
+     7. 分頁控制 - 關鍵設定
      ======================================== */
   
-  /* Avoid page breaks inside these elements */
+  /* 避免在這些元素內部分頁 */
   .tour-highlight,
   .tour-feature,
   .tour-day-item,
   .tour-attraction,
   .card,
   table,
-  figure {
+  figure,
+  .day-card,
+  .hotel-card,
+  .meal-card,
+  .key-feature-card {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  
+  /* 主要區塊前強制分頁 */
+  section[id="itinerary"],
+  section[id="hotels"],
+  section[id="cost"],
+  section[id="notes"],
+  .itinerary-section,
+  .hotels-section,
+  .cost-section,
+  .notes-section {
+    page-break-before: always;
+    break-before: page;
+  }
+  
+  /* Hero 區塊後分頁 */
+  section[id="hero"],
+  .hero-section {
+    page-break-after: always;
+    break-after: page;
+    height: auto !important;
+    min-height: auto !important;
+    max-height: 200mm !important;
+  }
+  
+  /* 每日行程卡片 - 智慧分頁 */
+  .day-card {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    margin-bottom: 15pt;
+  }
+  
+  /* 如果內容太長，允許在適當位置分頁 */
+  .day-card-content {
+    page-break-inside: auto;
+    break-inside: auto;
+  }
+  
+  /* 標題不與內容分離 */
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+  
+  /* 段落孤行/寡行控制 */
+  p, li, blockquote {
+    orphans: 3;
+    widows: 3;
+  }
+
+  /* ========================================
+     8. 網格佈局 - 轉為單欄
+     ======================================== */
+  
+  /* 行程亮點網格 - 轉為兩欄 */
+  .key-features-grid,
+  .tour-highlights-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10pt !important;
+  }
+  
+  .key-features-grid > *,
+  .tour-highlights-grid > * {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  
+  /* Zigzag 佈局 - 轉為單欄 */
+  .tour-zigzag-layout {
+    display: block !important;
+  }
+  
+  .tour-zigzag-layout > * {
+    margin-bottom: 10pt;
     page-break-inside: avoid;
   }
   
-  /* Force page break before major sections */
-  .tour-section-break {
-    page-break-before: always;
+  /* 飯店卡片 - 單欄顯示 */
+  .hotels-grid {
+    display: block !important;
   }
   
-  /* Avoid page break after headings */
-  h1, h2, h3, h4, h5, h6 {
-    page-break-after: avoid;
+  .hotel-card {
+    margin-bottom: 15pt;
+    page-break-inside: avoid;
   }
-  
+
   /* ========================================
-     6. Colors and Backgrounds
+     9. 表格優化
      ======================================== */
   
-  /* Remove background colors to save ink */
-  * {
-    background: white !important;
-    color: black !important;
-  }
-  
-  /* Keep borders for structure */
-  .card,
-  .border {
-    border: 1pt solid #ccc !important;
-  }
-  
-  /* ========================================
-     7. Links
-     ======================================== */
-  
-  /* Show URLs after links */
-  a[href]:after {
-    content: " (" attr(href) ")";
-    font-size: 10pt;
-    color: #666;
-  }
-  
-  /* Don't show URLs for internal links */
-  a[href^="#"]:after,
-  a[href^="/"]:after {
-    content: "";
-  }
-  
-  /* ========================================
-     8. Tables
-     ======================================== */
-  
-  /* Optimize tables for print */
   table {
     width: 100%;
     border-collapse: collapse;
     page-break-inside: avoid;
+    font-size: 10pt;
   }
   
   th, td {
-    padding: 6pt;
-    border: 1pt solid #ccc;
+    padding: 4pt 6pt;
+    border: 0.5pt solid #ccc;
     text-align: left;
   }
   
   th {
     font-weight: bold;
-    background: #f0f0f0 !important;
+    background: #f5f5f5 !important;
   }
-  
+
   /* ========================================
-     9. Lists
+     10. 列表優化
      ======================================== */
   
-  /* Optimize lists for print */
   ul, ol {
-    margin-left: 1cm;
+    margin-left: 15pt;
+    padding-left: 0;
     page-break-inside: avoid;
   }
   
   li {
-    margin-bottom: 4pt;
+    margin-bottom: 3pt;
   }
-  
+
   /* ========================================
-     10. Special Elements
+     11. 連結處理
      ======================================== */
   
-  /* Print-specific header */
+  a {
+    color: #000 !important;
+    text-decoration: none !important;
+  }
+  
+  /* 不顯示 URL（保持版面整潔） */
+  a[href]:after {
+    content: "" !important;
+  }
+
+  /* ========================================
+     12. 顏色和背景
+     ======================================== */
+  
+  /* 保持重要的背景色 */
+  .bg-primary,
+  .bg-accent {
+    background-color: #f5f5f5 !important;
+  }
+  
+  /* 移除陰影和圓角 */
+  * {
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+  
+  /* 保持邊框 */
+  .card,
+  .border {
+    border: 0.5pt solid #ddd !important;
+  }
+
+  /* ========================================
+     13. 列印專用元素
+     ======================================== */
+  
+  .print-only {
+    display: block !important;
+  }
+  
   .print-header {
     display: block !important;
     text-align: center;
-    margin-bottom: 16pt;
-    border-bottom: 2pt solid black;
-    padding-bottom: 8pt;
+    margin-bottom: 15pt;
+    padding-bottom: 10pt;
+    border-bottom: 1pt solid #000;
   }
   
-  /* Print-specific footer */
-  .print-footer {
-    display: block !important;
-    text-align: center;
-    margin-top: 16pt;
-    border-top: 1pt solid #ccc;
-    padding-top: 8pt;
+  .print-header h1 {
+    font-size: 18pt;
+    margin-bottom: 5pt;
+  }
+  
+  .print-header p {
     font-size: 10pt;
     color: #666;
   }
   
+  .print-footer {
+    display: block !important;
+    text-align: center;
+    margin-top: 15pt;
+    padding-top: 10pt;
+    border-top: 0.5pt solid #ccc;
+    font-size: 9pt;
+    color: #666;
+  }
+
   /* ========================================
-     11. Tabs and Accordions
+     14. 展開所有摺疊內容
      ======================================== */
   
-  /* Show all tab content */
+  [data-state="closed"] {
+    display: block !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  
+  [data-state="closed"] > * {
+    display: block !important;
+  }
+  
   .tabs-content,
   .accordion-content {
     display: block !important;
@@ -249,69 +428,106 @@
     overflow: visible !important;
   }
   
-  /* Hide tab triggers */
   .tabs-list,
   .accordion-trigger {
     display: none !important;
   }
-  
+
   /* ========================================
-     12. Grid Layout
+     15. 特定區塊優化
      ======================================== */
   
-  /* Convert grid to single column for print */
-  .tour-highlights-grid,
-  .tour-zigzag-layout {
-    display: block !important;
+  /* 行程簡介區塊 */
+  section[id="overview"],
+  .overview-section {
+    max-height: none !important;
   }
   
-  .tour-highlights-grid > *,
-  .tour-zigzag-layout > * {
-    margin-bottom: 12pt;
-    page-break-inside: avoid;
+  /* 費用說明 - 兩欄並排 */
+  .cost-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 15pt !important;
   }
   
+  /* 注意事項 */
+  .notes-section ul {
+    columns: 1 !important;
+  }
+  
+  /* 餐食卡片 - 橫向排列 */
+  .meals-grid {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 10pt !important;
+  }
+  
+  .meal-card {
+    flex: 1 !important;
+    max-width: 33% !important;
+  }
+
   /* ========================================
-     13. Vertical Text
+     16. 垂直文字處理
      ======================================== */
   
-  /* Convert vertical text to horizontal for print */
-  .tour-vertical-title {
+  .tour-vertical-title,
+  [style*="writing-mode: vertical"] {
     writing-mode: horizontal-tb !important;
     text-orientation: initial !important;
   }
-  
+
   /* ========================================
-     14. Print-Specific Content
+     17. 日曆/日期選擇器隱藏
      ======================================== */
   
-  /* Show print-only elements */
-  .print-only {
-    display: block !important;
+  .calendar,
+  .date-picker,
+  [class*="calendar"],
+  [class*="datepicker"] {
+    display: none !important;
   }
-  
-  /* Add page numbers */
-  @page {
-    @bottom-right {
-      content: "Page " counter(page) " of " counter(pages);
-      font-size: 10pt;
-      color: #666;
-    }
-  }
-  
+
   /* ========================================
-     15. Optimization
+     18. 行程詳情頁面專用
      ======================================== */
   
-  /* Reduce margins for compact layout */
-  .tour-content-container {
-    margin: 0 !important;
-    padding: 0 !important;
+  /* 行程標題區塊 */
+  .tour-title-section {
+    text-align: center;
+    margin-bottom: 20pt;
   }
   
-  /* Remove shadows and rounded corners */
-  * {
-    box-shadow: none !important;
-    border-radius: 0 !important;
+  /* 行程資訊卡片 */
+  .tour-info-cards {
+    display: flex !important;
+    justify-content: space-around !important;
+    margin: 15pt 0;
+    padding: 10pt;
+    border: 0.5pt solid #ddd;
+  }
+  
+  /* 每日行程標題 */
+  .day-header {
+    background: #f5f5f5 !important;
+    padding: 8pt !important;
+    margin-bottom: 10pt;
+  }
+  
+  /* 景點列表 */
+  .attractions-list {
+    margin-left: 10pt;
+  }
+  
+  .attraction-item {
+    margin-bottom: 5pt;
+    page-break-inside: avoid;
+  }
+  
+  /* 住宿資訊 */
+  .accommodation-info {
+    margin-top: 10pt;
+    padding-top: 8pt;
+    border-top: 0.5pt dashed #ccc;
   }
 }

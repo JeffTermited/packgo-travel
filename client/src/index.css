@@ -246,9 +246,20 @@
 
 
 /* ========================================
-   Print Styles - 行程下載 PDF 優化
+   Print Styles - A4 紙張優化 (210mm x 297mm)
+   詳細列印樣式請參考 print.css
    ======================================== */
 @media print {
+  /* A4 紙張設定 */
+  @page {
+    size: A4 portrait;
+    margin: 20mm 15mm 25mm 15mm;
+  }
+  
+  @page :first {
+    margin-top: 15mm;
+  }
+  
   /* 基本設定 */
   * {
     -webkit-print-color-adjust: exact !important;
@@ -256,11 +267,17 @@
     color-adjust: exact !important;
   }
   
+  html {
+    font-size: 11pt;
+  }
+  
   body {
-    font-size: 12pt;
-    line-height: 1.5;
+    font-size: 11pt;
+    line-height: 1.6;
     color: #000 !important;
     background: #fff !important;
+    max-width: 180mm;
+    margin: 0 auto;
   }
   
   /* 隱藏不需要列印的元素 */
@@ -275,7 +292,11 @@
   [data-radix-scroll-area-viewport],
   .toast,
   .dialog,
-  .modal {
+  .modal,
+  .price-card,
+  .edit-mode-indicator,
+  .inline-edit-controls,
+  section.bg-black {
     display: none !important;
   }
   
@@ -284,41 +305,57 @@
     display: block !important;
   }
   
-  /* Hero 區塊優化 */
+  /* 容器寬度 - A4 可列印區域 */
+  .container,
+  .max-w-4xl,
+  .max-w-5xl,
+  .max-w-6xl,
+  .max-w-7xl {
+    max-width: 180mm !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
+  }
+  
+  /* 圖片限制 */
+  img {
+    max-width: 100% !important;
+    max-height: 120mm !important;
+    page-break-inside: avoid;
+  }
+  
+  /* Hero 區塊 */
   section[id="hero"],
   .hero-section {
     height: auto !important;
     min-height: auto !important;
-    max-height: none !important;
+    max-height: 200mm !important;
     page-break-after: always;
   }
   
-  /* 背景圖片處理 */
-  .bg-cover,
-  .bg-center {
-    background-size: contain !important;
-    background-position: center !important;
-    background-repeat: no-repeat !important;
+  section[id="hero"] img,
+  .hero-section img {
+    max-height: 80mm !important;
   }
   
-  /* 每日行程區塊 */
+  /* 主要區塊分頁 */
   section[id="itinerary"],
-  .itinerary-section {
+  section[id="hotels"],
+  section[id="cost"],
+  section[id="notes"] {
     page-break-before: always;
   }
   
-  /* 展開所有摺疊內容 */
-  [data-state="closed"] {
-    display: block !important;
-    height: auto !important;
-    overflow: visible !important;
+  /* 避免在元素內部分頁 */
+  .day-card,
+  .hotel-card,
+  .meal-card,
+  .card,
+  table,
+  figure {
+    page-break-inside: avoid;
+    break-inside: avoid;
   }
   
-  [data-state="closed"] > * {
-    display: block !important;
-  }
-  
-  /* 避免在元素中間分頁 */
   h1, h2, h3, h4, h5, h6 {
     page-break-after: avoid;
   }
@@ -328,103 +365,45 @@
     widows: 3;
   }
   
-  img {
-    max-width: 100% !important;
-    page-break-inside: avoid;
+  /* 展開所有折疊內容 */
+  [data-state="closed"] {
+    display: block !important;
+    height: auto !important;
+    overflow: visible !important;
   }
   
-  table {
-    page-break-inside: avoid;
-  }
-  
-  /* 連結顯示 URL */
-  a[href]:after {
-    content: " (" attr(href) ")";
-    font-size: 0.8em;
-    color: #666;
-  }
-  
-  a[href^="#"]:after,
-  a[href^="javascript:"]:after {
-    content: "";
-  }
-  
-  /* 移除陰影和圓角 */
+  /* 移除裝飾效果 */
   * {
     box-shadow: none !important;
     border-radius: 0 !important;
   }
   
-  /* 頁面邊距 */
-  @page {
-    margin: 1.5cm;
-    size: A4;
+  /* 連結不顯示 URL */
+  a[href]:after {
+    content: "" !important;
   }
   
-  /* 首頁標題區塊 */
-  @page :first {
-    margin-top: 0;
-  }
-  
-  /* 費用說明區塊 */
-  section[id="cost"],
-  .cost-section {
-    page-break-before: always;
-  }
-  
-  /* 注意事項區塊 */
-  section[id="notes"],
-  .notes-section {
-    page-break-before: always;
-  }
-  
-  /* 隱藏 CTA 區塊 */
-  section.bg-black {
-    display: none !important;
-  }
-  
-  /* 價格卡片 - 列印時隱藏 */
-  .price-card,
-  [class*="sticky"] {
-    display: none !important;
-  }
-  
-  /* 調整容器寬度 */
-  .container,
-  .max-w-4xl,
-  .max-w-6xl,
-  .max-w-7xl {
-    max-width: 100% !important;
-    padding: 0 !important;
-  }
-  
-  /* 列印頁首 */
+  /* 列印頁首頁尾 */
   .print-header {
     display: block !important;
     text-align: center;
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
-    border-bottom: 2px solid #000;
+    margin-bottom: 15pt;
+    padding-bottom: 10pt;
+    border-bottom: 1pt solid #000;
   }
   
   .print-header h1 {
-    font-size: 24pt;
-    margin-bottom: 0.5rem;
+    font-size: 18pt;
+    margin-bottom: 5pt;
   }
   
-  .print-header p {
-    font-size: 12pt;
-    color: #666;
-  }
-  
-  /* 列印頁尾 */
   .print-footer {
     display: block !important;
     text-align: center;
-    margin-top: 2rem;
-    padding-top: 1rem;
-    border-top: 1px solid #ccc;
-    font-size: 10pt;
+    margin-top: 15pt;
+    padding-top: 10pt;
+    border-top: 0.5pt solid #ccc;
+    font-size: 9pt;
     color: #666;
   }
 }

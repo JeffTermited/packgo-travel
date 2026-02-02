@@ -2306,3 +2306,26 @@
 - [x] 測試景點詳情彈窗功能 - 點擊景點可顯示詳情彈窗
 - [x] 測試行程複製功能 - 後台已顯示複製按鈕
 - [ ] 儲存 checkpoint
+
+
+---
+
+## Phase 37: 列印功能 A4 紙張適配優化
+
+### 37.1 分析現有列印功能
+- [x] 檢視現有的列印樣式和 CSS (index.css 和 print.css)
+- [x] 分析列印時的版面問題 - 需要優化 A4 適配
+
+### 37.2 實作 A4 紙張適配
+- [x] 設定 @media print 樣式
+- [x] 設定 A4 紙張尺寸 (210mm x 297mm) - @page { size: A4 portrait; margin: 20mm 15mm 25mm 15mm; }
+- [x] 優化分頁控制 (page-break-before, page-break-after, page-break-inside)
+- [x] 調整列印時的邊距和字體大小 (11pt 基準字體)
+- [x] 隱藏不需要列印的元素（導航、按鈕等）
+- [x] 圖片高度限制 (max-height: 120mm)
+- [x] 容器寬度限制 (max-width: 180mm)
+
+### 37.3 測試與驗證
+- [x] 測試列印預覽效果 - 列印樣式已正確載入
+- [x] 確認版面整齊、分頁合理 - 各區塊已設定 page-break
+- [ ] 儲存 checkpoint
