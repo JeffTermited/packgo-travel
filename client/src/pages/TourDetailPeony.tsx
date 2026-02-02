@@ -64,7 +64,9 @@ import {
   FileText,
   Heart,
   PhoneCall,
-  ChevronRight
+  ChevronRight,
+  ChevronLeft,
+  ImageIcon
 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -470,6 +472,126 @@ const NavTabs = ({
   );
 };
 
+/// 餐食卡片組件 - 帶圖片輪播功能
+const MealCard = ({
+  type,
+  name,
+  images,
+  themeColor
+}: {
+  type: 'breakfast' | 'lunch' | 'dinner';
+  name: string;
+  images?: string[];
+  themeColor: ReturnType<typeof getThemeColorByDestination>;
+}) => {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+  
+  const mealConfig = {
+    breakfast: { 
+      label: '早餐', 
+      bgColor: 'bg-amber-50', 
+      textColor: 'text-amber-600',
+      hoverBg: 'hover:bg-amber-100'
+    },
+    lunch: { 
+      label: '午餐', 
+      bgColor: 'bg-orange-50', 
+      textColor: 'text-orange-600',
+      hoverBg: 'hover:bg-orange-100'
+    },
+    dinner: { 
+      label: '晚餐', 
+      bgColor: 'bg-indigo-50', 
+      textColor: 'text-indigo-600',
+      hoverBg: 'hover:bg-indigo-100'
+    }
+  };
+  
+  const config = mealConfig[type];
+  const hasImages = images && images.length > 0;
+  const isSpecialMeal = name !== '自理' && name !== '飯店內用';
+  
+  const nextImage = () => {
+    if (hasImages) {
+      setCurrentImageIndex((prev) => (prev + 1) % images.length);
+    }
+  };
+  
+  const prevImage = () => {
+    if (hasImages) {
+      setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+    }
+  };
+  
+  return (
+    <div 
+      className={`${config.bgColor} rounded-lg overflow-hidden transition-all duration-300 ${config.hoverBg} ${hasImages ? 'cursor-pointer' : ''}`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {/* 圖片輪播區域 */}
+      {hasImages && (
+        <div className="relative aspect-[4/3] overflow-hidden">
+          <img 
+            src={images[currentImageIndex]} 
+            alt={name}
+            className="w-full h-full object-cover transition-transform duration-500"
+            style={{ transform: isHovered ? 'scale(1.05)' : 'scale(1)' }}
+          />
+          {/* 滑動指示器 */}
+          {images.length > 1 && (
+            <>
+              {/* 左右箭頭 */}
+              <button 
+                onClick={(e) => { e.stopPropagation(); prevImage(); }}
+                className="absolute left-1 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                style={{ opacity: isHovered ? 1 : 0 }}
+              >
+                <ChevronLeft className="h-3 w-3" />
+              </button>
+              <button 
+                onClick={(e) => { e.stopPropagation(); nextImage(); }}
+                className="absolute right-1 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                style={{ opacity: isHovered ? 1 : 0 }}
+              >
+                <ChevronRight className="h-3 w-3" />
+              </button>
+              {/* 圖片指示點 */}
+              <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-1">
+                {images.map((_, idx) => (
+                  <div 
+                    key={idx}
+                    className={`w-1.5 h-1.5 rounded-full transition-all ${idx === currentImageIndex ? 'bg-white w-3' : 'bg-white/50'}`}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+          {/* 特色餐食標籤 */}
+          {isSpecialMeal && (
+            <div className="absolute top-1 right-1 bg-white/90 backdrop-blur-sm rounded px-1.5 py-0.5">
+              <span className="text-[10px] font-medium" style={{ color: themeColor.secondary }}>特色餐食</span>
+            </div>
+          )}
+        </div>
+      )}
+      
+      {/* 餐食資訊 */}
+      <div className="p-3 text-center">
+        <div className={`text-xs ${config.textColor} font-medium mb-1`}>{config.label}</div>
+        <div className="text-sm text-gray-700 font-medium line-clamp-2">{name}</div>
+        {hasImages && (
+          <div className="mt-1 flex items-center justify-center gap-1 text-[10px] text-gray-400">
+            <ImageIcon className="h-3 w-3" />
+            <span>{images.length} 張照片</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // 每日行程卡片 - Zigzag 佈局
 const DayCard = ({ 
   day, 
@@ -564,20 +686,26 @@ const DayCard = ({
               </h4>
               <div className="grid grid-cols-3 gap-3">
                 {/* 早餐 */}
-                <div className="bg-amber-50 rounded-lg p-3 text-center">
-                  <div className="text-xs text-amber-600 font-medium mb-1">早餐</div>
-                  <div className="text-sm text-gray-700">{day.meals.breakfast || '自理'}</div>
-                </div>
+                <MealCard 
+                  type="breakfast" 
+                  name={day.meals.breakfast || '自理'}
+                  images={day.meals.breakfastImages}
+                  themeColor={themeColor}
+                />
                 {/* 午餐 */}
-                <div className="bg-orange-50 rounded-lg p-3 text-center">
-                  <div className="text-xs text-orange-600 font-medium mb-1">午餐</div>
-                  <div className="text-sm text-gray-700">{day.meals.lunch || '自理'}</div>
-                </div>
+                <MealCard 
+                  type="lunch" 
+                  name={day.meals.lunch || '自理'}
+                  images={day.meals.lunchImages}
+                  themeColor={themeColor}
+                />
                 {/* 晚餐 */}
-                <div className="bg-indigo-50 rounded-lg p-3 text-center">
-                  <div className="text-xs text-indigo-600 font-medium mb-1">晚餐</div>
-                  <div className="text-sm text-gray-700">{day.meals.dinner || '自理'}</div>
-                </div>
+                <MealCard 
+                  type="dinner" 
+                  name={day.meals.dinner || '自理'}
+                  images={day.meals.dinnerImages}
+                  themeColor={themeColor}
+                />
               </div>
             </div>
           )}
