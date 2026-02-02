@@ -2730,6 +2730,189 @@ Important guidelines:
       await updatePopularityScores();
       return { success: true };
     }),
+
+    // ========== 技能效能追蹤 API ==========
+    
+    // 記錄技能觸發事件
+    recordSkillTrigger: protectedProcedure
+      .input(z.object({
+        skillId: z.number(),
+        skillName: z.string(),
+        skillType: z.string(),
+        contextType: z.enum(['chat', 'search', 'itinerary', 'content', 'classification']),
+        contextId: z.string().optional(),
+        inputText: z.string().optional(),
+        matchedKeywords: z.array(z.string()).optional(),
+        outputResult: z.string().optional(),
+        wasSuccessful: z.boolean().optional(),
+        errorMessage: z.string().optional(),
+        processingTimeMs: z.number().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { recordSkillTrigger } = await import('./services/skillPerformanceService');
+        const usageLogId = await recordSkillTrigger({
+          ...input,
+          userId: ctx.user.id,
+          sessionId: ctx.req.headers['x-session-id'] as string,
+        });
+        return { success: true, usageLogId };
+      }),
+
+    // 記錄用戶回饋
+    recordFeedback: protectedProcedure
+      .input(z.object({
+        usageLogId: z.number(),
+        feedback: z.enum(['positive', 'negative', 'none']),
+        comment: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { recordUserFeedback } = await import('./services/skillPerformanceService');
+        await recordUserFeedback(input);
+        return { success: true };
+      }),
+
+    // 記錄轉換事件
+    recordConversion: protectedProcedure
+      .input(z.object({
+        usageLogId: z.number(),
+        conversionType: z.enum(['booking', 'inquiry', 'favorite', 'share', 'none']),
+        conversionId: z.number().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { recordConversion } = await import('./services/skillPerformanceService');
+        await recordConversion(input);
+        return { success: true };
+      }),
+
+    // 獲取效能儀表板數據
+    getPerformanceDashboard: adminProcedure
+      .input(z.object({ days: z.number().optional() }).optional())
+      .query(async ({ input }) => {
+        const { getPerformanceDashboard } = await import('./services/skillPerformanceService');
+        return await getPerformanceDashboard(input?.days || 30);
+      }),
+
+    // 獲取技能效能摘要
+    getSkillPerformanceSummary: adminProcedure
+      .input(z.object({ days: z.number().optional() }).optional())
+      .query(async ({ input }) => {
+        const { getSkillPerformanceSummary } = await import('./services/skillPerformanceService');
+        return await getSkillPerformanceSummary(input?.days || 30);
+      }),
+
+    // 獲取技能效能趨勢
+    getSkillPerformanceTrend: adminProcedure
+      .input(z.object({
+        skillId: z.number(),
+        days: z.number().optional(),
+      }))
+      .query(async ({ input }) => {
+        const { getSkillPerformanceTrend } = await import('./services/skillPerformanceService');
+        return await getSkillPerformanceTrend(input.skillId, input.days || 30);
+      }),
+
+    // 獲取使用記錄
+    getUsageLogs: adminProcedure
+      .input(z.object({
+        skillId: z.number().optional(),
+        contextType: z.enum(['chat', 'search', 'itinerary', 'content', 'classification']).optional(),
+        feedback: z.enum(['positive', 'negative', 'none']).optional(),
+        startDate: z.string().optional(),
+        endDate: z.string().optional(),
+        limit: z.number().optional(),
+        offset: z.number().optional(),
+      }).optional())
+      .query(async ({ input }) => {
+        const { getUsageLogs } = await import('./services/skillPerformanceService');
+        return await getUsageLogs({
+          ...input,
+          startDate: input?.startDate ? new Date(input.startDate) : undefined,
+          endDate: input?.endDate ? new Date(input.endDate) : undefined,
+        });
+      }),
+
+    // ========== 自動審核規則 API ==========
+    
+    // 獲取所有規則
+    getAutoApprovalRules: adminProcedure.query(async () => {
+      const { getAllRules } = await import('./services/autoApprovalService');
+      return await getAllRules();
+    }),
+
+    // 創建規則
+    createAutoApprovalRule: adminProcedure
+      .input(z.object({
+        ruleName: z.string(),
+        description: z.string().optional(),
+        ruleType: z.enum(['confidence_threshold', 'source_type', 'keyword_count', 'skill_category', 'combined']),
+        conditions: z.array(z.object({
+          field: z.string(),
+          operator: z.enum(['>', '>=', '<', '<=', '==', '!=', 'in', 'not_in']),
+          value: z.union([z.string(), z.number(), z.array(z.string())]),
+        })),
+        action: z.enum(['auto_approve', 'auto_reject', 'flag_priority', 'notify_admin']),
+        priority: z.number().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { createRule } = await import('./services/autoApprovalService');
+        const ruleId = await createRule({
+          ...input,
+          createdBy: ctx.user.id,
+        });
+        return { success: true, ruleId };
+      }),
+
+    // 更新規則
+    updateAutoApprovalRule: adminProcedure
+      .input(z.object({
+        ruleId: z.number(),
+        ruleName: z.string().optional(),
+        description: z.string().optional(),
+        conditions: z.array(z.object({
+          field: z.string(),
+          operator: z.enum(['>', '>=', '<', '<=', '==', '!=', 'in', 'not_in']),
+          value: z.union([z.string(), z.number(), z.array(z.string())]),
+        })).optional(),
+        action: z.enum(['auto_approve', 'auto_reject', 'flag_priority', 'notify_admin']).optional(),
+        priority: z.number().optional(),
+        isActive: z.boolean().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { updateRule } = await import('./services/autoApprovalService');
+        const { ruleId, ...updateData } = input;
+        await updateRule(ruleId, updateData);
+        return { success: true };
+      }),
+
+    // 刪除規則
+    deleteAutoApprovalRule: adminProcedure
+      .input(z.object({ ruleId: z.number() }))
+      .mutation(async ({ input }) => {
+        const { deleteRule } = await import('./services/autoApprovalService');
+        await deleteRule(input.ruleId);
+        return { success: true };
+      }),
+
+    // 初始化預設規則
+    initializeDefaultRules: adminProcedure.mutation(async ({ ctx }) => {
+      const { initializeDefaultRules } = await import('./services/autoApprovalService');
+      await initializeDefaultRules(ctx.user.id);
+      return { success: true };
+    }),
+
+    // 獲取規則統計
+    getRuleStatistics: adminProcedure.query(async () => {
+      const { getRuleStatistics } = await import('./services/autoApprovalService');
+      return await getRuleStatistics();
+    }),
+
+    // 應用自動審核規則到待審核項目
+    applyAutoApprovalRules: adminProcedure
+      .input(z.object({ reviewQueueId: z.number() }))
+      .mutation(async ({ input }) => {
+        const { applyAutoApprovalRules } = await import('./services/autoApprovalService');
+        return await applyAutoApprovalRules(input.reviewQueueId);
+      }),
   }),
 });
 export type AppRouter = typeof appRouter;

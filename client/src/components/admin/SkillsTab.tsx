@@ -1672,6 +1672,456 @@ export default function SkillsTab() {
     );
   };
 
+  // Performance Tab Component
+  const PerformanceTab = () => {
+    const { data: dashboard, isLoading } = trpc.skills.getPerformanceDashboard.useQuery({ days: 30 });
+    const { data: skillSummary } = trpc.skills.getSkillPerformanceSummary.useQuery({ days: 30 });
+
+    if (isLoading) {
+      return (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      );
+    }
+
+    const summary = dashboard?.summary || {};
+
+    return (
+      <div className="space-y-6">
+        {/* Summary Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">總觸發次數</p>
+                  <p className="text-2xl font-bold">{summary.totalTriggers || 0}</p>
+                </div>
+                <Zap className="h-8 w-8 text-blue-500 opacity-50" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">成功率</p>
+                  <p className="text-2xl font-bold">
+                    {((summary.overallSuccessRate || 0) * 100).toFixed(1)}%
+                  </p>
+                </div>
+                <CheckCircle2 className="h-8 w-8 text-green-500 opacity-50" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">滿意度</p>
+                  <p className="text-2xl font-bold">
+                    {((summary.overallSatisfactionRate || 0) * 100).toFixed(1)}%
+                  </p>
+                </div>
+                <ThumbsUp className="h-8 w-8 text-yellow-500 opacity-50" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">轉換率</p>
+                  <p className="text-2xl font-bold">
+                    {((summary.overallConversionRate || 0) * 100).toFixed(1)}%
+                  </p>
+                </div>
+                <TrendingUp className="h-8 w-8 text-purple-500 opacity-50" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Top Skills */}
+        <Card>
+          <CardHeader>
+            <CardTitle>技能效能排名</CardTitle>
+            <CardDescription>根據觸發次數、成功率和滿意度排序</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {skillSummary && skillSummary.length > 0 ? (
+              <div className="space-y-3">
+                {skillSummary.slice(0, 10).map((skill: any, index: number) => (
+                  <div key={skill.skillId} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <span className="text-lg font-bold text-muted-foreground">#{index + 1}</span>
+                      <div>
+                        <p className="font-medium">{skill.skillName}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {skill.totalTriggers} 次觸發 | 
+                          成功率 {(skill.successRate * 100).toFixed(0)}% | 
+                          滿意度 {(skill.satisfactionRate * 100).toFixed(0)}%
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="text-green-600">
+                        <ThumbsUp className="h-3 w-3 mr-1" />
+                        {skill.positiveCount}
+                      </Badge>
+                      <Badge variant="outline" className="text-red-600">
+                        <ThumbsDown className="h-3 w-3 mr-1" />
+                        {skill.negativeCount}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <BarChart3 className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>尚無效能數據</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Recent Logs */}
+        <Card>
+          <CardHeader>
+            <CardTitle>最近使用記錄</CardTitle>
+            <CardDescription>最近的技能觸發事件</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {dashboard?.recentLogs && dashboard.recentLogs.length > 0 ? (
+              <div className="space-y-2">
+                {dashboard.recentLogs.slice(0, 10).map((log: any) => (
+                  <div key={log.id} className="flex items-center justify-between p-2 border-b last:border-0">
+                    <div className="flex items-center gap-3">
+                      <Badge variant={log.wasSuccessful ? 'default' : 'destructive'} className="text-xs">
+                        {log.wasSuccessful ? '成功' : '失敗'}
+                      </Badge>
+                      <span className="font-medium">{log.skillName}</span>
+                      <span className="text-sm text-muted-foreground">{log.contextType}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {log.userFeedback === 'positive' && <ThumbsUp className="h-4 w-4 text-green-500" />}
+                      {log.userFeedback === 'negative' && <ThumbsDown className="h-4 w-4 text-red-500" />}
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(log.triggeredAt).toLocaleString('zh-TW')}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <Eye className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>尚無使用記錄</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  };
+
+  // Auto Rules Tab Component
+  const AutoRulesTab = () => {
+    const [isAddRuleOpen, setIsAddRuleOpen] = useState(false);
+    const [newRule, setNewRule] = useState({
+      ruleName: '',
+      description: '',
+      ruleType: 'confidence_threshold' as const,
+      conditions: [{ field: 'confidence', operator: '>=' as const, value: 0.9 }],
+      action: 'auto_approve' as const,
+      priority: 50,
+    });
+
+    const { data: rules, isLoading, refetch } = trpc.skills.getAutoApprovalRules.useQuery();
+    const { data: stats } = trpc.skills.getRuleStatistics.useQuery();
+    const createRule = trpc.skills.createAutoApprovalRule.useMutation({
+      onSuccess: () => {
+        toast.success('規則已建立');
+        setIsAddRuleOpen(false);
+        refetch();
+      },
+      onError: (error) => toast.error(error.message),
+    });
+    const updateRule = trpc.skills.updateAutoApprovalRule.useMutation({
+      onSuccess: () => {
+        toast.success('規則已更新');
+        refetch();
+      },
+      onError: (error) => toast.error(error.message),
+    });
+    const deleteRule = trpc.skills.deleteAutoApprovalRule.useMutation({
+      onSuccess: () => {
+        toast.success('規則已刪除');
+        refetch();
+      },
+      onError: (error) => toast.error(error.message),
+    });
+    const initializeDefault = trpc.skills.initializeDefaultRules.useMutation({
+      onSuccess: () => {
+        toast.success('預設規則已初始化');
+        refetch();
+      },
+      onError: (error) => toast.error(error.message),
+    });
+
+    const RULE_TYPES = [
+      { value: 'confidence_threshold', label: '信心度閾值' },
+      { value: 'source_type', label: '來源類型' },
+      { value: 'keyword_count', label: '關鍵字數量' },
+      { value: 'skill_category', label: '技能類別' },
+      { value: 'combined', label: '組合條件' },
+    ];
+
+    const ACTIONS = [
+      { value: 'auto_approve', label: '自動批准', color: 'text-green-600' },
+      { value: 'auto_reject', label: '自動拒絕', color: 'text-red-600' },
+      { value: 'flag_priority', label: '標記高優先', color: 'text-yellow-600' },
+      { value: 'notify_admin', label: '通知管理員', color: 'text-blue-600' },
+    ];
+
+    if (isLoading) {
+      return (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-6">
+        {/* Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">總規則數</p>
+                  <p className="text-2xl font-bold">{stats?.totalRules || 0}</p>
+                </div>
+                <Zap className="h-8 w-8 text-blue-500 opacity-50" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">啟用中</p>
+                  <p className="text-2xl font-bold">{stats?.activeRules || 0}</p>
+                </div>
+                <CheckCircle2 className="h-8 w-8 text-green-500 opacity-50" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">總觸發次數</p>
+                  <p className="text-2xl font-bold">{stats?.totalTriggered || 0}</p>
+                </div>
+                <TrendingUp className="h-8 w-8 text-purple-500 opacity-50" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => initializeDefault.mutate()}
+                  disabled={initializeDefault.isPending}
+                >
+                  {initializeDefault.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-4 w-4 mr-1" />
+                  )}
+                  初始化預設
+                </Button>
+                <Button size="sm" onClick={() => setIsAddRuleOpen(true)}>
+                  <Plus className="h-4 w-4 mr-1" />
+                  新增規則
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Rules List */}
+        <Card>
+          <CardHeader>
+            <CardTitle>自動審核規則</CardTitle>
+            <CardDescription>根據條件自動處理技能建議</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {rules && rules.length > 0 ? (
+              <div className="space-y-3">
+                {rules.map((rule: any) => (
+                  <div key={rule.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-medium">{rule.ruleName}</h4>
+                        <Badge variant={rule.isActive ? 'default' : 'secondary'}>
+                          {rule.isActive ? '啟用' : '停用'}
+                        </Badge>
+                        <Badge variant="outline">
+                          {RULE_TYPES.find(t => t.value === rule.ruleType)?.label}
+                        </Badge>
+                        <Badge 
+                          variant="outline" 
+                          className={ACTIONS.find(a => a.value === rule.action)?.color}
+                        >
+                          {ACTIONS.find(a => a.value === rule.action)?.label}
+                        </Badge>
+                      </div>
+                      {rule.description && (
+                        <p className="text-sm text-muted-foreground mt-1">{rule.description}</p>
+                      )}
+                      <p className="text-xs text-muted-foreground mt-1">
+                        優先級: {rule.priority} | 觸發次數: {rule.timesTriggered}
+                        {rule.lastTriggeredAt && ` | 最後觸發: ${new Date(rule.lastTriggeredAt).toLocaleString('zh-TW')}`}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        checked={rule.isActive}
+                        onCheckedChange={(checked) => 
+                          updateRule.mutate({ ruleId: rule.id, isActive: checked })
+                        }
+                      />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => deleteRule.mutate({ ruleId: rule.id })}
+                      >
+                        <Trash2 className="h-4 w-4 text-red-500" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <Zap className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>尚無自動審核規則</p>
+                <p className="text-sm">點擊「初始化預設」建立基本規則</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Add Rule Dialog */}
+        <Dialog open={isAddRuleOpen} onOpenChange={setIsAddRuleOpen}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>新增自動審核規則</DialogTitle>
+              <DialogDescription>設定條件和動作以自動處理技能建議</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>規則名稱</Label>
+                <Input
+                  value={newRule.ruleName}
+                  onChange={(e) => setNewRule({ ...newRule, ruleName: e.target.value })}
+                  placeholder="例如：高信心度自動批准"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>描述</Label>
+                <Textarea
+                  value={newRule.description}
+                  onChange={(e) => setNewRule({ ...newRule, description: e.target.value })}
+                  placeholder="規則說明..."
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>規則類型</Label>
+                  <Select
+                    value={newRule.ruleType}
+                    onValueChange={(v: any) => setNewRule({ ...newRule, ruleType: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {RULE_TYPES.map((type) => (
+                        <SelectItem key={type.value} value={type.value}>
+                          {type.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>執行動作</Label>
+                  <Select
+                    value={newRule.action}
+                    onValueChange={(v: any) => setNewRule({ ...newRule, action: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ACTIONS.map((action) => (
+                        <SelectItem key={action.value} value={action.value}>
+                          {action.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>信心度閾值 (適用於信心度規則)</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  value={newRule.conditions[0]?.value || 0.9}
+                  onChange={(e) => setNewRule({
+                    ...newRule,
+                    conditions: [{ field: 'confidence', operator: '>=', value: parseFloat(e.target.value) }]
+                  })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>優先級 (0-100)</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={newRule.priority}
+                  onChange={(e) => setNewRule({ ...newRule, priority: parseInt(e.target.value) })}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsAddRuleOpen(false)}>取消</Button>
+              <Button
+                onClick={() => createRule.mutate(newRule)}
+                disabled={createRule.isPending || !newRule.ruleName}
+              >
+                {createRule.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                建立規則
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -1748,6 +2198,14 @@ export default function SkillsTab() {
           <TabsTrigger value="review" className="flex items-center gap-1">
             <Shield className="h-3 w-3" />
             審核佇列
+          </TabsTrigger>
+          <TabsTrigger value="performance" className="flex items-center gap-1">
+            <TrendingUp className="h-3 w-3" />
+            效能追蹤
+          </TabsTrigger>
+          <TabsTrigger value="auto-rules" className="flex items-center gap-1">
+            <Zap className="h-3 w-3" />
+            自動規則
           </TabsTrigger>
         </TabsList>
 
@@ -1986,6 +2444,14 @@ export default function SkillsTab() {
         {/* Review Queue Tab */}
         <TabsContent value="review" className="mt-4">
           <ReviewQueueTab />
+        </TabsContent>
+
+        <TabsContent value="performance" className="mt-4">
+          <PerformanceTab />
+        </TabsContent>
+
+        <TabsContent value="auto-rules" className="mt-4">
+          <AutoRulesTab />
         </TabsContent>
       </Tabs>
 

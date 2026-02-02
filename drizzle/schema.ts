@@ -868,3 +868,168 @@ export const learningAnalytics = mysqlTable("learningAnalytics", {
 
 export type LearningAnalytics = typeof learningAnalytics.$inferSelect;
 export type InsertLearningAnalytics = typeof learningAnalytics.$inferInsert;
+
+
+/**
+ * Skill Usage Log table for tracking skill performance.
+ * Records each time a skill is triggered and its outcome.
+ */
+export const skillUsageLog = mysqlTable("skillUsageLog", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  // Skill reference
+  skillId: int("skillId").notNull(),
+  skillName: varchar("skillName", { length: 255 }).notNull(),
+  skillType: varchar("skillType", { length: 100 }).notNull(),
+  
+  // Context
+  contextType: mysqlEnum("contextType", [
+    "chat",           // AI 客服對話
+    "search",         // 搜尋推薦
+    "itinerary",      // 行程生成
+    "content",        // 內容生成
+    "classification"  // 分類標籤
+  ]).notNull(),
+  contextId: varchar("contextId", { length: 100 }), // Reference to conversation/search/tour ID
+  
+  // Trigger details
+  inputText: text("inputText"), // The input that triggered the skill
+  matchedKeywords: text("matchedKeywords"), // JSON array of matched keywords
+  outputResult: text("outputResult"), // The skill's output
+  
+  // User information
+  userId: int("userId"), // User who triggered (null for anonymous)
+  sessionId: varchar("sessionId", { length: 100 }), // Session identifier
+  
+  // Outcome tracking
+  wasSuccessful: boolean("wasSuccessful").default(true).notNull(),
+  errorMessage: text("errorMessage"),
+  
+  // User feedback
+  userFeedback: mysqlEnum("userFeedback", [
+    "positive",   // 點讚
+    "negative",   // 點踩
+    "none"        // 無回饋
+  ]).default("none").notNull(),
+  feedbackComment: text("feedbackComment"),
+  feedbackAt: timestamp("feedbackAt"),
+  
+  // Conversion tracking
+  ledToConversion: boolean("ledToConversion").default(false).notNull(),
+  conversionType: mysqlEnum("conversionType", [
+    "booking",    // 預訂
+    "inquiry",    // 諮詢
+    "favorite",   // 收藏
+    "share",      // 分享
+    "none"        // 無轉換
+  ]).default("none"),
+  conversionId: int("conversionId"), // Reference to booking/inquiry ID
+  conversionAt: timestamp("conversionAt"),
+  
+  // Performance metrics
+  processingTimeMs: int("processingTimeMs"),
+  
+  // Timestamps
+  triggeredAt: timestamp("triggeredAt").defaultNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type SkillUsageLog = typeof skillUsageLog.$inferSelect;
+export type InsertSkillUsageLog = typeof skillUsageLog.$inferInsert;
+
+/**
+ * Auto Approval Rules table for automated skill review.
+ * Defines rules that automatically approve or reject skill suggestions.
+ */
+export const autoApprovalRules = mysqlTable("autoApprovalRules", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  // Rule identification
+  ruleName: varchar("ruleName", { length: 255 }).notNull(),
+  description: text("description"),
+  
+  // Rule type
+  ruleType: mysqlEnum("ruleType", [
+    "confidence_threshold",  // 信心度閾值
+    "source_type",           // 來源類型
+    "keyword_count",         // 關鍵字數量
+    "skill_category",        // 技能類別
+    "combined"               // 組合規則
+  ]).notNull(),
+  
+  // Rule conditions (JSON format)
+  conditions: text("conditions").notNull(), // JSON: {field: value, operator: '>', ...}
+  
+  // Action
+  action: mysqlEnum("action", [
+    "auto_approve",   // 自動批准
+    "auto_reject",    // 自動拒絕
+    "flag_priority",  // 標記為高優先級
+    "notify_admin"    // 通知管理員
+  ]).notNull(),
+  
+  // Priority (higher = evaluated first)
+  priority: int("priority").default(0).notNull(),
+  
+  // Status
+  isActive: boolean("isActive").default(true).notNull(),
+  
+  // Statistics
+  timesTriggered: int("timesTriggered").default(0).notNull(),
+  lastTriggeredAt: timestamp("lastTriggeredAt"),
+  
+  // Audit
+  createdBy: int("createdBy").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type AutoApprovalRule = typeof autoApprovalRules.$inferSelect;
+export type InsertAutoApprovalRule = typeof autoApprovalRules.$inferInsert;
+
+/**
+ * Skill Performance Metrics table for aggregated skill statistics.
+ * Daily aggregated metrics for each skill.
+ */
+export const skillPerformanceMetrics = mysqlTable("skillPerformanceMetrics", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  // Skill reference
+  skillId: int("skillId").notNull(),
+  
+  // Date for aggregation
+  date: timestamp("date").notNull(),
+  
+  // Usage metrics
+  triggerCount: int("triggerCount").default(0).notNull(),
+  uniqueUserCount: int("uniqueUserCount").default(0).notNull(),
+  
+  // Success metrics
+  successCount: int("successCount").default(0).notNull(),
+  failureCount: int("failureCount").default(0).notNull(),
+  successRate: decimal("successRate", { precision: 5, scale: 4 }).default("0.0000"),
+  
+  // Feedback metrics
+  positiveCount: int("positiveCount").default(0).notNull(),
+  negativeCount: int("negativeCount").default(0).notNull(),
+  satisfactionRate: decimal("satisfactionRate", { precision: 5, scale: 4 }).default("0.0000"),
+  
+  // Conversion metrics
+  conversionCount: int("conversionCount").default(0).notNull(),
+  conversionRate: decimal("conversionRate", { precision: 5, scale: 4 }).default("0.0000"),
+  
+  // Revenue impact (estimated)
+  estimatedRevenue: int("estimatedRevenue").default(0).notNull(), // in TWD
+  
+  // Performance metrics
+  avgProcessingTimeMs: int("avgProcessingTimeMs"),
+  
+  // Timestamps
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  uniqueSkillDate: unique().on(table.skillId, table.date),
+}));
+
+export type SkillPerformanceMetrics = typeof skillPerformanceMetrics.$inferSelect;
+export type InsertSkillPerformanceMetrics = typeof skillPerformanceMetrics.$inferInsert;

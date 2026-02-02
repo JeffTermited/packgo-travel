@@ -183,6 +183,13 @@
       "when": 1770060907078,
       "tag": "0025_regular_dazzler",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "5",
+      "when": 1770062715853,
+      "tag": "0026_rare_killer_shrike",
+      "breakpoints": true
     }
   ]
 }
