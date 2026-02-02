@@ -71,7 +71,7 @@ import {
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { EditableText, EditableImage, EditModeToggle, EditModeBanner } from "@/components/inline-edit";
+import { EditableText, EditableImage, EditableDayCard, EditModeToggle, EditModeBanner } from "@/components/inline-edit";
 import { toast } from "sonner";
 
 // 解析 JSON 字串
@@ -1543,12 +1543,28 @@ export default function TourDetailPeony() {
 
       {/* Hero Section */}
       <section className="relative h-[60vh] min-h-[450px] max-h-[600px]">
-        <div 
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${heroImage})` }}
-        >
-          <div className={`absolute inset-0 bg-gradient-to-t ${themeColor.gradient} opacity-60`} />
-        </div>
+        {isEditMode ? (
+          <div className="absolute inset-0">
+            <EditableImage
+              src={displayTour.heroImage || heroImage}
+              alt={displayTour.title || '行程圖片'}
+              onSave={(newSrc) => updateField('heroImage', newSrc)}
+              isEditing={isEditMode}
+              className="w-full h-full"
+              aspectRatio="auto"
+              tourId={tourId}
+              imagePath="hero"
+            />
+            <div className={`absolute inset-0 bg-gradient-to-t ${themeColor.gradient} opacity-60 pointer-events-none`} />
+          </div>
+        ) : (
+          <div 
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: `url(${heroImage})` }}
+          >
+            <div className={`absolute inset-0 bg-gradient-to-t ${themeColor.gradient} opacity-60`} />
+          </div>
+        )}
         
         <div className="relative h-full max-w-7xl mx-auto px-6 flex flex-col justify-center items-center text-center">
           {/* Destination Badge */}
@@ -1769,17 +1785,38 @@ export default function TourDetailPeony() {
 
           {/* Daily Itinerary */}
           <div className="space-y-16">
-            {itineraryDetailed.length > 0 ? (
-              itineraryDetailed.map((day: any, index: number) => (
-                <DayCard 
-                  key={index}
-                  day={day}
-                  index={index}
-                  themeColor={themeColor}
-                  isExpanded={expandedDays.has(index)}
-                  onToggle={() => toggleDay(index)}
-                  onShowMealDetail={handleShowMealDetail}
-                />
+            {(isEditMode ? (editedTour?.itineraryDetailed ? (typeof editedTour.itineraryDetailed === 'string' ? parseJSON(editedTour.itineraryDetailed, []) : editedTour.itineraryDetailed) : []) : itineraryDetailed).length > 0 ? (
+              (isEditMode ? (editedTour?.itineraryDetailed ? (typeof editedTour.itineraryDetailed === 'string' ? parseJSON(editedTour.itineraryDetailed, []) : editedTour.itineraryDetailed) : []) : itineraryDetailed).map((day: any, index: number) => (
+                isEditMode ? (
+                  <EditableDayCard
+                    key={index}
+                    day={day}
+                    index={index}
+                    isEditMode={isEditMode}
+                    onUpdate={(updatedDay) => {
+                      const currentItinerary = editedTour?.itineraryDetailed 
+                        ? (typeof editedTour.itineraryDetailed === 'string' 
+                          ? parseJSON(editedTour.itineraryDetailed, []) 
+                          : editedTour.itineraryDetailed) 
+                        : [];
+                      const newItinerary = [...currentItinerary];
+                      newItinerary[index] = updatedDay;
+                      updateField('itineraryDetailed', newItinerary);
+                    }}
+                    tourId={tourId}
+                    themeColor={themeColor}
+                  />
+                ) : (
+                  <DayCard 
+                    key={index}
+                    day={day}
+                    index={index}
+                    themeColor={themeColor}
+                    isExpanded={expandedDays.has(index)}
+                    onToggle={() => toggleDay(index)}
+                    onShowMealDetail={handleShowMealDetail}
+                  />
+                )
               ))
             ) : (
               <div className="text-center py-12 text-gray-500">

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Camera, Upload, X, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -18,6 +18,8 @@ interface EditableImageProps {
   isEditing: boolean;
   className?: string;
   aspectRatio?: "square" | "video" | "wide" | "auto";
+  tourId?: number;
+  imagePath?: string;
 }
 
 export function EditableImage({
@@ -27,11 +29,18 @@ export function EditableImage({
   isEditing,
   className = "",
   aspectRatio = "auto",
+  tourId,
+  imagePath = "image",
 }: EditableImageProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [imageUrl, setImageUrl] = useState(src);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // 當 src 變更時更新 imageUrl
+  useEffect(() => {
+    setImageUrl(src);
+  }, [src]);
 
   const aspectRatioClass = {
     square: "aspect-square",
@@ -58,24 +67,63 @@ export function EditableImage({
 
     setIsUploading(true);
     try {
-      const formData = new FormData();
-      formData.append("image", file);
+      // 如果有 tourId，使用行程圖片上傳 API
+      if (tourId) {
+        // 將檔案轉換為 base64
+        const reader = new FileReader();
+        reader.onload = async () => {
+          try {
+            const base64 = reader.result as string;
+            const response = await fetch(`/api/tours/${tourId}/upload-image`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                image: base64,
+                path: imagePath,
+              }),
+            });
 
-      const response = await fetch("/api/upload/image", {
-        method: "POST",
-        body: formData,
-      });
+            if (!response.ok) {
+              throw new Error("上傳失敗");
+            }
 
-      if (!response.ok) {
-        throw new Error("上傳失敗");
+            const { url } = await response.json();
+            setImageUrl(url);
+            toast.success("圖片上傳成功");
+          } catch (error) {
+            toast.error("圖片上傳失敗，請稍後再試");
+          } finally {
+            setIsUploading(false);
+          }
+        };
+        reader.onerror = () => {
+          toast.error("讀取檔案失敗");
+          setIsUploading(false);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        // 使用通用圖片上傳 API
+        const formData = new FormData();
+        formData.append("image", file);
+
+        const response = await fetch("/api/upload/image", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error("上傳失敗");
+        }
+
+        const { url } = await response.json();
+        setImageUrl(url);
+        toast.success("圖片上傳成功");
+        setIsUploading(false);
       }
-
-      const { url } = await response.json();
-      setImageUrl(url);
-      toast.success("圖片上傳成功");
     } catch (error) {
       toast.error("圖片上傳失敗，請稍後再試");
-    } finally {
       setIsUploading(false);
     }
   };

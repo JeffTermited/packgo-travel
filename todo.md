@@ -2117,3 +2117,36 @@
 - [ ] 測試各欄位的 inline editing 功能
 - [ ] 測試儲存和更新功能
 - [ ] 儲存 checkpoint
+
+
+---
+
+## Phase 30: 擴展 Inline Editing 功能（2026-02-01）
+
+### 30.1 分析現有組件結構和資料流
+- [x] 檢視 TourDetailPeony.tsx 中 DayCard 組件的結構
+- [x] 檢視 EditableImage 組件的現有實作
+- [x] 確認圖片上傳 API 的可用性
+
+### 30.2 實作 Hero 圖片更換功能
+- [x] 修改 EditableImage 組件支援圖片上傳（tourId, imagePath 參數）
+- [x] 在 Hero Section 整合 EditableImage
+- [x] 使用現有的 /api/tours/:tourId/upload-i### 30.3 實作每日行程 inline editing 功能
+- [x] 建立 EditableDayCard 組件支援編輯模式
+- [x] 實作每日行程標題的 inline editing
+- [x] 實作活動內容的新增/編輯/刪除
+- [x] 實作每日圖片的更換功能
+- [x] 整合到 TourDetailPeony.tsx 中diting（時間、地點、描述）
+- [ ] 實作活動的新增和刪除功能
+
+### 30.4 實作後端 API 支援
+- [x] 確認 tours.update mutation 支援 itineraryDetailed 欄位更新
+- [x] 確認 tours.patchField mutation 支援單一欄位更新
+- [x] 確認圖片上傳 API 已存在（/api/tours/:tourId/upload-image）
+- [ ] 實作圖片上傳 API（如果不存在）
+
+### 30.5 測試與驗證
+- [x] 測試 Hero 圖片更換功能 - 顯示「點擊更換圖片」提示
+- [x] 測試每日行程標題編輯 - 可點擊編輯標題和描述
+- [x] 測試活動內容編輯 - 可編輯時間和活動名稱，可新增活動
+- [x] 儲存 checkpoint

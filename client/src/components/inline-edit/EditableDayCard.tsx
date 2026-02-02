@@ -1,0 +1,360 @@
+import React, { useState } from "react";
+import { 
+  ChevronDown, 
+  ChevronUp, 
+  Plus, 
+  Trash2, 
+  GripVertical,
+  Clock,
+  MapPin,
+  Edit2,
+  Save,
+  X
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
+import { EditableImage } from "./EditableImage";
+
+interface Activity {
+  time?: string;
+  title?: string;
+  name?: string;
+  description?: string;
+  location?: string;
+}
+
+interface DayData {
+  day?: number;
+  title?: string;
+  location?: string;
+  description?: string;
+  summary?: string;
+  image?: string;
+  imageUrl?: string;
+  activities?: Activity[];
+  accommodation?: string;
+  meals?: {
+    breakfast?: string;
+    lunch?: string;
+    dinner?: string;
+  };
+}
+
+interface EditableDayCardProps {
+  day: DayData;
+  index: number;
+  isEditMode: boolean;
+  onUpdate: (updatedDay: DayData) => void;
+  tourId?: number;
+  themeColor: {
+    primary: string;
+    secondary: string;
+    gradient: string;
+    light: string;
+  };
+}
+
+export function EditableDayCard({
+  day,
+  index,
+  isEditMode,
+  onUpdate,
+  tourId,
+  themeColor,
+}: EditableDayCardProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [editingField, setEditingField] = useState<string | null>(null);
+  const [tempValue, setTempValue] = useState("");
+
+  const isEven = index % 2 === 0;
+  const dayImage = day.image || day.imageUrl || `https://images.unsplash.com/photo-${1500000000000 + index * 1000}?w=800`;
+
+  // 開始編輯欄位
+  const startEdit = (field: string, value: string) => {
+    setEditingField(field);
+    setTempValue(value);
+  };
+
+  // 儲存欄位
+  const saveField = (field: string) => {
+    const updatedDay = { ...day };
+    if (field === "title") {
+      updatedDay.title = tempValue;
+    } else if (field === "description") {
+      updatedDay.description = tempValue;
+    } else if (field === "accommodation") {
+      updatedDay.accommodation = tempValue;
+    }
+    onUpdate(updatedDay);
+    setEditingField(null);
+    setTempValue("");
+  };
+
+  // 取消編輯
+  const cancelEdit = () => {
+    setEditingField(null);
+    setTempValue("");
+  };
+
+  // 更新活動
+  const updateActivity = (actIndex: number, field: keyof Activity, value: string) => {
+    const updatedActivities = [...(day.activities || [])];
+    updatedActivities[actIndex] = {
+      ...updatedActivities[actIndex],
+      [field]: value,
+    };
+    onUpdate({ ...day, activities: updatedActivities });
+  };
+
+  // 新增活動
+  const addActivity = () => {
+    const newActivity: Activity = {
+      time: "",
+      title: "新活動",
+      description: "",
+      location: "",
+    };
+    onUpdate({
+      ...day,
+      activities: [...(day.activities || []), newActivity],
+    });
+  };
+
+  // 刪除活動
+  const removeActivity = (actIndex: number) => {
+    const updatedActivities = (day.activities || []).filter((_, i) => i !== actIndex);
+    onUpdate({ ...day, activities: updatedActivities });
+  };
+
+  // 更新圖片
+  const updateImage = (newSrc: string) => {
+    onUpdate({ ...day, image: newSrc, imageUrl: newSrc });
+  };
+
+  // 渲染可編輯文字
+  const renderEditableText = (
+    field: string,
+    value: string,
+    placeholder: string,
+    className: string,
+    as: "h3" | "p" | "span" = "span"
+  ) => {
+    if (!isEditMode) {
+      const Tag = as;
+      return <Tag className={className}>{value || placeholder}</Tag>;
+    }
+
+    if (editingField === field) {
+      return (
+        <div className="flex items-center gap-2">
+          {as === "p" ? (
+            <Textarea
+              value={tempValue}
+              onChange={(e) => setTempValue(e.target.value)}
+              className="flex-1 min-h-[80px]"
+              autoFocus
+            />
+          ) : (
+            <Input
+              value={tempValue}
+              onChange={(e) => setTempValue(e.target.value)}
+              className="flex-1"
+              autoFocus
+            />
+          )}
+          <Button size="sm" onClick={() => saveField(field)}>
+            <Save className="h-4 w-4" />
+          </Button>
+          <Button size="sm" variant="outline" onClick={cancelEdit}>
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      );
+    }
+
+    const Tag = as;
+    return (
+      <Tag
+        className={cn(
+          className,
+          "cursor-pointer hover:bg-yellow-100/50 transition-colors rounded px-1 -mx-1",
+          "border border-dashed border-transparent hover:border-yellow-400"
+        )}
+        onClick={() => startEdit(field, value || "")}
+        title="點擊編輯"
+      >
+        {value || placeholder}
+        <Edit2 className="inline-block h-3 w-3 ml-1 opacity-50" />
+      </Tag>
+    );
+  };
+
+  return (
+    <div className="relative animate-fade-in" style={{ animationDelay: `${index * 100}ms` }}>
+      {/* Day Badge */}
+      <div 
+        className="absolute left-1/2 -translate-x-1/2 -top-5 z-10 px-6 py-2 text-white text-sm font-bold tracking-wider"
+        style={{ backgroundColor: themeColor.secondary }}
+      >
+        DAY {day.day || index + 1}
+      </div>
+      
+      {/* Content Container */}
+      <div className={`flex flex-col ${isEven ? 'md:flex-row' : 'md:flex-row-reverse'} gap-0 bg-white`}>
+        {/* Image Side */}
+        <div className="md:w-1/2 aspect-[4/3] md:aspect-auto overflow-hidden">
+          {isEditMode ? (
+            <EditableImage
+              src={dayImage}
+              alt={day.title || `Day ${index + 1}`}
+              onSave={updateImage}
+              isEditing={isEditMode}
+              className="w-full h-full"
+              aspectRatio="auto"
+              tourId={tourId}
+              imagePath={`day-${index + 1}`}
+            />
+          ) : (
+            <img 
+              src={dayImage}
+              alt={day.title || `Day ${index + 1}`}
+              className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+            />
+          )}
+        </div>
+        
+        {/* Content Side */}
+        <div className="md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
+          {/* Title */}
+          {renderEditableText(
+            "title",
+            day.title || day.location || `第 ${index + 1} 天`,
+            "輸入標題...",
+            "text-2xl md:text-3xl font-bold mb-4",
+            "h3"
+          )}
+          
+          {/* Description */}
+          {renderEditableText(
+            "description",
+            day.description || day.summary || "",
+            "輸入描述...",
+            "text-gray-600 leading-relaxed mb-6",
+            "p"
+          )}
+          
+          {/* Activities */}
+          {(day.activities && day.activities.length > 0) || isEditMode ? (
+            <div className="space-y-3 mb-6">
+              {(day.activities || []).slice(0, isExpanded ? undefined : 3).map((activity, actIndex) => (
+                <div key={actIndex} className="flex items-start gap-3 group">
+                  <div 
+                    className="w-2 h-2 rounded-full mt-2 flex-shrink-0"
+                    style={{ backgroundColor: themeColor.secondary }}
+                  />
+                  <div className="flex-1">
+                    {isEditMode ? (
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Input
+                            value={activity.time || ""}
+                            onChange={(e) => updateActivity(actIndex, "time", e.target.value)}
+                            placeholder="時間 (如: 09:00)"
+                            className="w-24 h-8 text-sm"
+                          />
+                          <Input
+                            value={activity.title || ""}
+                            onChange={(e) => updateActivity(actIndex, "title", e.target.value)}
+                            placeholder="活動標題"
+                            className="flex-1 h-8"
+                          />
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-8 w-8 p-0 text-red-500 opacity-0 group-hover:opacity-100"
+                            onClick={() => removeActivity(actIndex)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        {isExpanded && (
+                          <Textarea
+                            value={activity.description || ""}
+                            onChange={(e) => updateActivity(actIndex, "description", e.target.value)}
+                            placeholder="活動描述（選填）"
+                            className="text-sm min-h-[60px]"
+                          />
+                        )}
+                      </div>
+                    ) : (
+                      <>
+                        <span className="font-medium">
+                          {activity.time && <span className="text-gray-500 mr-2">{activity.time}</span>}
+                          {activity.title || activity.name}
+                        </span>
+                        {activity.description && isExpanded && (
+                          <p className="text-sm text-gray-500 mt-1">{activity.description}</p>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+              ))}
+              
+              {/* 新增活動按鈕 */}
+              {isEditMode && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={addActivity}
+                  className="mt-2"
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  新增活動
+                </Button>
+              )}
+            </div>
+          ) : null}
+          
+          {/* Expand Button */}
+          {day.activities && day.activities.length > 3 && (
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="flex items-center gap-2 text-sm font-medium transition-colors"
+              style={{ color: themeColor.secondary }}
+            >
+              {isExpanded ? (
+                <>收起 <ChevronUp className="h-4 w-4" /></>
+              ) : (
+                <>查看更多 <ChevronDown className="h-4 w-4" /></>
+              )}
+            </button>
+          )}
+          
+          {/* Accommodation */}
+          {(day.accommodation || isEditMode) && (
+            <div className="mt-4 pt-4 border-t border-gray-100">
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <span className="font-medium">今晚住宿：</span>
+                {isEditMode ? (
+                  <Input
+                    value={day.accommodation || ""}
+                    onChange={(e) => onUpdate({ ...day, accommodation: e.target.value })}
+                    placeholder="輸入住宿名稱"
+                    className="flex-1 h-8"
+                  />
+                ) : (
+                  <span>{day.accommodation}</span>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default EditableDayCard;
