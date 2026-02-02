@@ -596,20 +596,20 @@ const MealCard = ({
           )}
           {/* 特色餐食標籤 */}
           {isSpecialMeal && (
-            <div className="absolute top-1 right-1 bg-white/90 backdrop-blur-sm rounded px-1.5 py-0.5">
-              <span className="text-[10px] font-medium" style={{ color: themeColor.secondary }}>特色餐食</span>
+            <div className="absolute top-1 right-1 bg-white/90 backdrop-blur-sm rounded px-2 py-1">
+              <span className="text-xs font-medium" style={{ color: themeColor.secondary }}>特色餐食</span>
             </div>
           )}
         </div>
       )}
       
       {/* 餐食資訊 */}
-      <div className="p-3 text-center">
-        <div className={`text-xs ${config.textColor} font-medium mb-1`}>{config.label}</div>
-        <div className="text-sm text-gray-700 font-medium line-clamp-2">{name}</div>
+      <div className="p-4 text-center">
+        <div className={`text-sm ${config.textColor} font-medium mb-1`}>{config.label}</div>
+        <div className="text-base text-gray-700 font-medium line-clamp-2">{name}</div>
         {hasImages && (
-          <div className="mt-1 flex items-center justify-center gap-1 text-[10px] text-gray-400">
-            <ImageIcon className="h-3 w-3" />
+          <div className="mt-1 flex items-center justify-center gap-1 text-xs text-gray-400">
+            <ImageIcon className="h-4 w-4" />
             <span>{images.length} 張照片</span>
           </div>
         )}
@@ -766,7 +766,7 @@ const DayCard = ({
     <div className="relative animate-fade-in" style={{ animationDelay: `${index * 100}ms` }}>
       {/* Day Badge */}
       <div 
-        className="absolute left-1/2 -translate-x-1/2 -top-5 z-10 px-6 py-2 text-white text-sm font-bold tracking-wider"
+        className="absolute left-1/2 -translate-x-1/2 -top-5 z-10 px-6 py-2 text-white text-base font-bold tracking-wider"
         style={{ backgroundColor: themeColor.secondary }}
       >
         DAY {day.day || index + 1}
@@ -786,12 +786,12 @@ const DayCard = ({
         {/* Content Side */}
         <div className="md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
           {/* Location */}
-          <h3 className="text-2xl md:text-3xl font-bold mb-4" style={{ color: themeColor.primary }}>
+          <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4" style={{ color: themeColor.primary }}>
             {day.title || day.location || `第 ${index + 1} 天`}
           </h3>
           
           {/* Description */}
-          <p className="text-gray-600 leading-relaxed mb-6">
+          <p className="text-lg text-gray-600 leading-relaxed mb-6">
             {day.description || day.summary || "精彩行程內容"}
           </p>
           
@@ -801,13 +801,13 @@ const DayCard = ({
               {day.activities.slice(0, isExpanded ? undefined : 3).map((activity: any, actIndex: number) => (
                 <div key={actIndex} className="flex items-start gap-3">
                   <div 
-                    className="w-2 h-2 rounded-full mt-2 flex-shrink-0"
+                    className="w-3 h-3 rounded-full mt-2 flex-shrink-0"
                     style={{ backgroundColor: themeColor.secondary }}
                   />
                   <div>
-                    <span className="font-medium">{activity.title || activity.name}</span>
+                    <span className="font-medium text-lg">{activity.title || activity.name}</span>
                     {activity.description && isExpanded && (
-                      <p className="text-sm text-gray-500 mt-1">{activity.description}</p>
+                      <p className="text-base text-gray-500 mt-1">{activity.description}</p>
                     )}
                   </div>
                 </div>
@@ -819,7 +819,7 @@ const DayCard = ({
           {day.activities && day.activities.length > 3 && (
             <button
               onClick={onToggle}
-              className="flex items-center gap-2 text-sm font-medium transition-colors"
+              className="flex items-center gap-2 text-base font-medium transition-colors"
               style={{ color: themeColor.secondary }}
             >
               {isExpanded ? (
@@ -833,8 +833,8 @@ const DayCard = ({
           {/* Meals Section - 獨立區塊 */}
           {day.meals && (day.meals.breakfast || day.meals.lunch || day.meals.dinner) && (
             <div className="mt-6 pt-6 border-t border-gray-100">
-              <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                <Utensils className="h-4 w-4" style={{ color: themeColor.secondary }} />
+              <h4 className="text-base font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                <Utensils className="h-5 w-5" style={{ color: themeColor.secondary }} />
                 今日餐食
               </h4>
               <div className="grid grid-cols-3 gap-3">
@@ -872,8 +872,8 @@ const DayCard = ({
           {/* Accommodation */}
           {day.accommodation && (
             <div className="mt-4 pt-4 border-t border-gray-100">
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <Building className="h-4 w-4" style={{ color: themeColor.secondary }} />
+              <div className="flex items-center gap-2 text-base text-gray-600">
+                <Building className="h-5 w-5" style={{ color: themeColor.secondary }} />
                 <span className="font-medium">今晚住宿：</span>
                 <span>{day.accommodation}</span>
               </div>
@@ -1583,12 +1583,12 @@ export default function TourDetailPeony() {
               value={displayTour.title || ""}
               onSave={(value) => updateField("title", value)}
               isEditing={isEditMode}
-              className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 max-w-4xl leading-tight drop-shadow-lg"
+              className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 max-w-4xl leading-tight drop-shadow-lg"
               placeholder="輸入行程標題..."
               as="h1"
             />
           ) : (
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 max-w-4xl leading-tight drop-shadow-lg">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 max-w-4xl leading-tight drop-shadow-lg">
               {displayTour.title}
             </h1>
           )}
@@ -1600,25 +1600,25 @@ export default function TourDetailPeony() {
                 value={displayTour.poeticTitle || ""}
                 onSave={(value) => updateField("poeticTitle", value)}
                 isEditing={isEditMode}
-                className="text-lg md:text-xl text-white/90 mb-6 max-w-2xl"
+                className="text-xl md:text-2xl text-white/90 mb-6 max-w-2xl"
                 placeholder="輸入副標題..."
                 as="p"
               />
             ) : (
-              <p className="text-lg md:text-xl text-white/90 mb-6 max-w-2xl">
+              <p className="text-xl md:text-2xl text-white/90 mb-6 max-w-2xl">
                 {displayTour.poeticTitle}
               </p>
             )
           )}
 
           {/* Meta info */}
-          <div className="flex flex-wrap items-center justify-center gap-6 text-white/90 text-sm">
+          <div className="flex flex-wrap items-center justify-center gap-6 text-white/90 text-base md:text-lg">
             <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4" />
+              <Clock className="h-5 w-5" />
               <span>{tour.duration || "多日行程"}</span>
             </div>
             <div className="flex items-center gap-2">
-              <MapPin className="h-4 w-4" />
+              <MapPin className="h-5 w-5" />
               <span>{(() => {
                 const cities = (tour.destinationCity || tour.destinationCountry || '').split(/[,、]/).map((c: string) => c.trim()).filter(Boolean);
                 if (cities.length <= 4) return cities.join('、');
@@ -1627,7 +1627,7 @@ export default function TourDetailPeony() {
             </div>
             {transportationInfo?.type && (
               <div className="flex items-center gap-2">
-                <TransportIcon type={transportationInfo.type} className="h-4 w-4" />
+                <TransportIcon type={transportationInfo.type} className="h-5 w-5" />
                 <span>{transportationInfo.typeName || "精選交通"}</span>
               </div>
             )}
@@ -1679,12 +1679,12 @@ export default function TourDetailPeony() {
       {/* Overview Section */}
       <section ref={sectionRefs.overview} id="overview" className="py-16 lg:py-24">
         <div className="max-w-5xl mx-auto px-6">
-          <h2 className="text-3xl font-bold text-center mb-12" style={{ color: themeColor.primary }}>
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12" style={{ color: themeColor.primary }}>
             行程簡介
           </h2>
           
           {/* Description */}
-          <div className="prose prose-lg max-w-none text-gray-600 leading-relaxed text-center mb-12">
+          <div className="prose prose-xl max-w-none text-gray-600 leading-relaxed text-center mb-12 text-lg md:text-xl">
             {isEditMode ? (
               <EditableText
                 value={displayTour.description || ""}
@@ -1733,11 +1733,11 @@ export default function TourDetailPeony() {
                     >
                       <IconComponent className="h-7 w-7" style={{ color: style.color }} />
                     </div>
-                    <h3 className="font-bold text-gray-800 mb-2 leading-tight">
+                    <h3 className="font-bold text-lg text-gray-800 mb-2 leading-tight">
                       {typeof feature === 'string' ? feature : feature.title || feature.name}
                     </h3>
                     {typeof feature !== 'string' && feature.description && (
-                      <p className="text-sm text-gray-500 leading-relaxed">{feature.description}</p>
+                      <p className="text-base text-gray-500 leading-relaxed">{feature.description}</p>
                     )}
                   </div>
                 );
@@ -1748,28 +1748,28 @@ export default function TourDetailPeony() {
           {/* Quick Info Cards */}
           <div className="grid md:grid-cols-4 gap-4 mt-12">
             <div className="text-center p-6 bg-gray-50">
-              <Clock className="h-8 w-8 mx-auto mb-3 text-gray-400" />
-              <p className="text-sm text-gray-500 mb-1">行程天數</p>
-              <p className="font-bold text-lg">{tour.duration || "多日行程"}</p>
+              <Clock className="h-10 w-10 mx-auto mb-3 text-gray-400" />
+              <p className="text-base text-gray-500 mb-1">行程天數</p>
+              <p className="font-bold text-xl">{tour.duration || "多日行程"}</p>
             </div>
             <div className="text-center p-6 bg-gray-50">
-              <MapPin className="h-8 w-8 mx-auto mb-3 text-gray-400" />
-              <p className="text-sm text-gray-500 mb-1">目的地</p>
-              <p className="font-bold text-lg">{(() => {
+              <MapPin className="h-10 w-10 mx-auto mb-3 text-gray-400" />
+              <p className="text-base text-gray-500 mb-1">目的地</p>
+              <p className="font-bold text-xl">{(() => {
                 const cities = (tour.destinationCity || tour.destinationCountry || '').split(/[,、]/).map((c: string) => c.trim()).filter(Boolean);
                 if (cities.length <= 4) return cities.join('、');
                 return cities.slice(0, 4).join('、') + '…';
               })()}</p>
             </div>
             <div className="text-center p-6 bg-gray-50">
-              <Users className="h-8 w-8 mx-auto mb-3 text-gray-400" />
-              <p className="text-sm text-gray-500 mb-1">成團人數</p>
-              <p className="font-bold text-lg">{(tour as any).minGroupSize || 10}-{(tour as any).maxGroupSize || 25}人</p>
+              <Users className="h-10 w-10 mx-auto mb-3 text-gray-400" />
+              <p className="text-base text-gray-500 mb-1">成團人數</p>
+              <p className="font-bold text-xl">{(tour as any).minGroupSize || 10}-{(tour as any).maxGroupSize || 25}人</p>
             </div>
             <div className="text-center p-6 bg-gray-50">
-              <Calendar className="h-8 w-8 mx-auto mb-3 text-gray-400" />
-              <p className="text-sm text-gray-500 mb-1">出發日期</p>
-              <p className="font-bold text-lg">多日期可選</p>
+              <Calendar className="h-10 w-10 mx-auto mb-3 text-gray-400" />
+              <p className="text-base text-gray-500 mb-1">出發日期</p>
+              <p className="font-bold text-xl">多日期可選</p>
             </div>
           </div>
         </div>
@@ -1778,10 +1778,10 @@ export default function TourDetailPeony() {
       {/* Itinerary Section - Zigzag Layout */}
       <section ref={sectionRefs.itinerary} id="itinerary" className="py-16 lg:py-24 bg-gray-50">
         <div className="max-w-7xl mx-auto px-6">
-          <h2 className="text-3xl font-bold text-center mb-4" style={{ color: themeColor.primary }}>
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4" style={{ color: themeColor.primary }}>
             精彩行程
           </h2>
-          <p className="text-gray-500 text-center mb-16">每一天都是獨特的旅程體驗</p>
+          <p className="text-lg text-gray-500 text-center mb-16">每一天都是獨特的旅程體驗</p>
 
           {/* Daily Itinerary */}
           <div className="space-y-16">
@@ -1831,10 +1831,10 @@ export default function TourDetailPeony() {
       {/* Features Section */}
       <section ref={sectionRefs.features} id="features" className="py-16 lg:py-24">
         <div className="max-w-5xl mx-auto px-6">
-          <h2 className="text-3xl font-bold text-center mb-4" style={{ color: themeColor.primary }}>
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4" style={{ color: themeColor.primary }}>
             內容特色 & 升等選項
           </h2>
-          <p className="text-gray-500 text-center mb-12">精心安排的行程亮點</p>
+          <p className="text-lg text-gray-500 text-center mb-12">精心安排的行程亮點</p>
 
           {/* Attractions */}
           {attractions.length > 0 && (
@@ -1936,10 +1936,10 @@ export default function TourDetailPeony() {
       {hotels.length > 0 && (
         <section ref={sectionRefs.hotels} id="hotels" className="py-16 lg:py-24 bg-gray-50">
           <div className="max-w-7xl mx-auto px-6">
-            <h2 className="text-3xl font-bold text-center mb-4" style={{ color: themeColor.primary }}>
+            <h2 className="text-3xl md:text-4xl font-bold text-center mb-4" style={{ color: themeColor.primary }}>
               豪華酒店
             </h2>
-            <p className="text-gray-500 text-center mb-12">嚴選優質住宿，讓您的旅程更加舒適</p>
+            <p className="text-lg text-gray-500 text-center mb-12">嚴選優質住宿，讓您的旅程更加舒適</p>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {hotels.map((hotel: any, index: number) => (
@@ -1953,10 +1953,10 @@ export default function TourDetailPeony() {
       {/* Pricing Section */}
       <section ref={sectionRefs.pricing} id="pricing" className="py-16 lg:py-24">
         <div className="max-w-5xl mx-auto px-6">
-          <h2 className="text-3xl font-bold text-center mb-4" style={{ color: themeColor.primary }}>
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4" style={{ color: themeColor.primary }}>
             出發日期 / 售價
           </h2>
-          <p className="text-gray-500 text-center mb-12">選擇您理想的出發日期</p>
+          <p className="text-lg text-gray-500 text-center mb-12">選擇您理想的出發日期</p>
 
           {/* Dynamic Price Calendar */}
           <DeparturePriceCalendar 
@@ -2005,10 +2005,10 @@ export default function TourDetailPeony() {
       {/* Notes Section */}
       <section ref={sectionRefs.notes} id="notes" className="py-16 lg:py-24 bg-gray-50">
         <div className="max-w-5xl mx-auto px-6">
-          <h2 className="text-3xl font-bold text-center mb-4" style={{ color: themeColor.primary }}>
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4" style={{ color: themeColor.primary }}>
             注意事項
           </h2>
-          <p className="text-gray-500 text-center mb-12">出發前請詳閱以下資訊</p>
+          <p className="text-lg text-gray-500 text-center mb-12">出發前請詳閱以下資訊</p>
 
           {noticeDetailed ? (
             <div className="grid md:grid-cols-2 gap-6">
