@@ -1723,23 +1723,41 @@ export default function TourDetailPeony() {
                 const style = featureStyles[index % featureStyles.length];
                 const IconComponent = style.icon;
                 
+                // 檢查 feature 是否有圖片
+                const featureImage = typeof feature !== 'string' ? (feature.image || feature.imageUrl || feature.photo) : null;
+                
                 return (
                   <div 
                     key={index} 
-                    className="group p-6 rounded-xl border border-gray-100 hover:shadow-lg transition-all duration-300 bg-white hover:-translate-y-1"
+                    className="group rounded-xl border border-gray-100 hover:shadow-lg transition-all duration-300 bg-white hover:-translate-y-1 overflow-hidden"
                   >
-                    <div 
-                      className="w-14 h-14 flex items-center justify-center mb-4 rounded-xl transition-transform duration-300 group-hover:scale-110"
-                      style={{ backgroundColor: style.bgColor }}
-                    >
-                      <IconComponent className="h-7 w-7" style={{ color: style.color }} />
-                    </div>
-                    <h3 className="font-bold text-lg text-gray-800 mb-2 leading-tight">
-                      {typeof feature === 'string' ? feature : feature.title || feature.name}
-                    </h3>
-                    {typeof feature !== 'string' && feature.description && (
-                      <p className="text-base text-gray-500 leading-relaxed">{feature.description}</p>
+                    {/* 圖片區域 */}
+                    {featureImage ? (
+                      <div className="relative h-40 overflow-hidden">
+                        <img 
+                          src={featureImage} 
+                          alt={typeof feature === 'string' ? feature : feature.title || feature.name}
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+                      </div>
+                    ) : (
+                      <div 
+                        className="h-40 flex items-center justify-center transition-transform duration-300"
+                        style={{ backgroundColor: style.bgColor }}
+                      >
+                        <IconComponent className="h-16 w-16 transition-transform duration-300 group-hover:scale-110" style={{ color: style.color }} />
+                      </div>
                     )}
+                    {/* 文字區域 */}
+                    <div className="p-5">
+                      <h3 className="font-bold text-lg text-gray-800 mb-2 leading-tight">
+                        {typeof feature === 'string' ? feature : feature.title || feature.name}
+                      </h3>
+                      {typeof feature !== 'string' && feature.description && (
+                        <p className="text-base text-gray-500 leading-relaxed line-clamp-2">{feature.description}</p>
+                      )}
+                    </div>
                   </div>
                 );
               })}
