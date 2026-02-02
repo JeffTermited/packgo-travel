@@ -472,17 +472,33 @@ const NavTabs = ({
   );
 };
 
+// 餐廳詳情資料型別
+interface MealDetail {
+  name: string;
+  description?: string;
+  address?: string;
+  phone?: string;
+  menu?: string[];
+  images?: string[];
+  rating?: number;
+  priceRange?: string;
+}
+
 /// 餐食卡片組件 - 帶圖片輪播功能
 const MealCard = ({
   type,
   name,
   images,
-  themeColor
+  themeColor,
+  detail,
+  onShowDetail
 }: {
   type: 'breakfast' | 'lunch' | 'dinner';
   name: string;
   images?: string[];
   themeColor: ReturnType<typeof getThemeColorByDestination>;
+  detail?: MealDetail;
+  onShowDetail?: (detail: MealDetail) => void;
 }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
@@ -524,11 +540,18 @@ const MealCard = ({
     }
   };
   
+  const handleClick = () => {
+    if (isSpecialMeal && onShowDetail && detail) {
+      onShowDetail(detail);
+    }
+  };
+  
   return (
     <div 
-      className={`${config.bgColor} rounded-lg overflow-hidden transition-all duration-300 ${config.hoverBg} ${hasImages ? 'cursor-pointer' : ''}`}
+      className={`${config.bgColor} rounded-lg overflow-hidden transition-all duration-300 ${config.hoverBg} ${isSpecialMeal ? 'cursor-pointer' : ''}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onClick={handleClick}
     >
       {/* 圖片輪播區域 */}
       {hasImages && (
@@ -592,19 +615,146 @@ const MealCard = ({
   );
 };
 
+// 餐廳詳情彈窗組件
+const MealDetailDialog = ({
+  isOpen,
+  onClose,
+  detail,
+  themeColor
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  detail: MealDetail | null;
+  themeColor: ReturnType<typeof getThemeColorByDestination>;
+}) => {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  
+  if (!detail) return null;
+  
+  const images = detail.images || [];
+  const hasImages = images.length > 0;
+  
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-bold" style={{ color: themeColor.primary }}>
+            {detail.name}
+          </DialogTitle>
+        </DialogHeader>
+        
+        {/* 圖片輪播 */}
+        {hasImages && (
+          <div className="relative aspect-[16/9] rounded-lg overflow-hidden mb-4">
+            <img 
+              src={images[currentImageIndex]} 
+              alt={detail.name}
+              className="w-full h-full object-cover"
+            />
+            {images.length > 1 && (
+              <>
+                <button 
+                  onClick={() => setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length)}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+                <button 
+                  onClick={() => setCurrentImageIndex((prev) => (prev + 1) % images.length)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </button>
+                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+                  {images.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setCurrentImageIndex(idx)}
+                      className={`w-2 h-2 rounded-full transition-all ${idx === currentImageIndex ? 'bg-white w-4' : 'bg-white/50'}`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        )}
+        
+        {/* 餐廳資訊 */}
+        <div className="space-y-4">
+          {/* 評分和價格 */}
+          <div className="flex items-center gap-4">
+            {detail.rating && (
+              <div className="flex items-center gap-1">
+                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                <span className="font-medium">{detail.rating}</span>
+              </div>
+            )}
+            {detail.priceRange && (
+              <div className="text-gray-600">
+                <span className="font-medium">價位：</span>{detail.priceRange}
+              </div>
+            )}
+          </div>
+          
+          {/* 餐廳介紹 */}
+          {detail.description && (
+            <div>
+              <h4 className="font-semibold text-gray-900 mb-2">餐廳介紹</h4>
+              <p className="text-gray-600 leading-relaxed">{detail.description}</p>
+            </div>
+          )}
+          
+          {/* 推薦菜色 */}
+          {detail.menu && detail.menu.length > 0 && (
+            <div>
+              <h4 className="font-semibold text-gray-900 mb-2">推薦菜色</h4>
+              <div className="grid grid-cols-2 gap-2">
+                {detail.menu.map((item, idx) => (
+                  <div key={idx} className="flex items-center gap-2 text-gray-600">
+                    <Utensils className="h-4 w-4" style={{ color: themeColor.secondary }} />
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {/* 地址和電話 */}
+          <div className="pt-4 border-t border-gray-100">
+            {detail.address && (
+              <div className="flex items-start gap-2 text-gray-600 mb-2">
+                <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" style={{ color: themeColor.secondary }} />
+                <span>{detail.address}</span>
+              </div>
+            )}
+            {detail.phone && (
+              <div className="flex items-center gap-2 text-gray-600">
+                <Phone className="h-4 w-4 flex-shrink-0" style={{ color: themeColor.secondary }} />
+                <span>{detail.phone}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 // 每日行程卡片 - Zigzag 佈局
 const DayCard = ({ 
   day, 
   index, 
   themeColor,
   isExpanded,
-  onToggle
+  onToggle,
+  onShowMealDetail
 }: { 
   day: any; 
   index: number;
   themeColor: ReturnType<typeof getThemeColorByDestination>;
   isExpanded: boolean;
   onToggle: () => void;
+  onShowMealDetail: (detail: MealDetail) => void;
 }) => {
   const isEven = index % 2 === 0;
   const dayImage = day.image || day.imageUrl || `https://images.unsplash.com/photo-${1500000000000 + index * 1000}?w=800`;
@@ -691,6 +841,8 @@ const DayCard = ({
                   name={day.meals.breakfast || '自理'}
                   images={day.meals.breakfastImages}
                   themeColor={themeColor}
+                  detail={day.meals.breakfastDetail}
+                  onShowDetail={onShowMealDetail}
                 />
                 {/* 午餐 */}
                 <MealCard 
@@ -698,6 +850,8 @@ const DayCard = ({
                   name={day.meals.lunch || '自理'}
                   images={day.meals.lunchImages}
                   themeColor={themeColor}
+                  detail={day.meals.lunchDetail}
+                  onShowDetail={onShowMealDetail}
                 />
                 {/* 晚餐 */}
                 <MealCard 
@@ -705,6 +859,8 @@ const DayCard = ({
                   name={day.meals.dinner || '自理'}
                   images={day.meals.dinnerImages}
                   themeColor={themeColor}
+                  detail={day.meals.dinnerDetail}
+                  onShowDetail={onShowMealDetail}
                 />
               </div>
             </div>
@@ -952,6 +1108,14 @@ export default function TourDetailPeony() {
 
   const [activeTab, setActiveTab] = useState("overview");
   const [expandedDays, setExpandedDays] = useState<Set<number>>(new Set());
+  const [selectedMealDetail, setSelectedMealDetail] = useState<MealDetail | null>(null);
+  const [isMealDetailOpen, setIsMealDetailOpen] = useState(false);
+
+  // 餐廳詳情彈窗處理
+  const handleShowMealDetail = (detail: MealDetail) => {
+    setSelectedMealDetail(detail);
+    setIsMealDetailOpen(true);
+  };
 
   // Section refs for scroll tracking
   const sectionRefs = {
@@ -1297,6 +1461,7 @@ export default function TourDetailPeony() {
                   themeColor={themeColor}
                   isExpanded={expandedDays.has(index)}
                   onToggle={() => toggleDay(index)}
+                  onShowMealDetail={handleShowMealDetail}
                 />
               ))
             ) : (
@@ -1623,6 +1788,14 @@ export default function TourDetailPeony() {
 
       {/* Add padding for fixed bottom CTA on mobile */}
       <div className="h-20 md:hidden" />
+
+      {/* 餐廳詳情彈窗 */}
+      <MealDetailDialog
+        isOpen={isMealDetailOpen}
+        onClose={() => setIsMealDetailOpen(false)}
+        detail={selectedMealDetail}
+        themeColor={themeColor}
+      />
 
       <Footer />
     </div>
