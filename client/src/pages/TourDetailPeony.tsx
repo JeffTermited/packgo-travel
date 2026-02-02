@@ -1497,7 +1497,7 @@ export default function TourDetailPeony() {
       </section>
 
       {/* Sticky Navigation Tabs */}
-      <nav className="sticky top-0 z-50 bg-white shadow-sm">
+      <nav className="sticky top-[80px] z-40 bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between">
             <NavTabs 
