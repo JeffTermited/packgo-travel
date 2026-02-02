@@ -9,6 +9,11 @@ import { generateTourFromUrlInternal } from "./tourGenerator";
 
 /**
  * Worker for processing tour generation jobs
+ * 
+ * 進度更新說明：
+ * - 實際進度由 MasterAgent 內部的 onProgress 回調控制
+ * - Worker 只負責初始化和錯誤處理
+ * - 進度百分比由 MasterAgent 根據實際執行階段計算
  */
 export const tourGenerationWorker = new Worker<TourGenerationJobData, TourGenerationResult>(
   "tour-generation",
@@ -20,59 +25,12 @@ export const tourGenerationWorker = new Worker<TourGenerationJobData, TourGenera
       await updateProgress(job, {
         step: "starting",
         progress: 0,
-        message: "開始生成行程...",
-        timestamp: Date.now(),
-      });
-      
-      // Step 1: Web scraping
-      await updateProgress(job, {
-        step: "scraping",
-        progress: 10,
-        message: "正在抓取網頁內容...",
-        timestamp: Date.now(),
-      });
-      
-      // Step 2: Content analysis
-      await updateProgress(job, {
-        step: "analyzing",
-        progress: 30,
-        message: "正在分析行程內容...",
-        timestamp: Date.now(),
-      });
-      
-      // Step 3: Generate hero image
-      await updateProgress(job, {
-        step: "generating_hero_image",
-        progress: 50,
-        message: "正在生成 Hero 圖片...",
-        timestamp: Date.now(),
-      });
-      
-      // Step 4: Generate highlight images
-      await updateProgress(job, {
-        step: "generating_highlight_images",
-        progress: 70,
-        message: "正在生成亮點圖片...",
-        timestamp: Date.now(),
-      });
-      
-      // Step 5: Generate color theme
-      await updateProgress(job, {
-        step: "generating_color_theme",
-        progress: 85,
-        message: "正在生成配色主題...",
-        timestamp: Date.now(),
-      });
-      
-      // Step 6: Save to database
-      await updateProgress(job, {
-        step: "saving",
-        progress: 95,
-        message: "正在儲存到資料庫...",
+        message: "初始化生成任務...",
         timestamp: Date.now(),
       });
       
       // Call the actual tour generation function
+      // MasterAgent 會透過 onProgress 回調更新進度
       const result = await generateTourFromUrlInternal(
         job.data.url, 
         job.data.userId, 
