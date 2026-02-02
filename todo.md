@@ -499,6 +499,37 @@
 - [ ] 驗證進度顯示是否流暢
 - [ ] 驗證生成結果的準確性
 
+---
+
+## Phase 29: 行程詳情頁面 Inline Editing 功能（2026-02-01）
+
+### 29.1 分析現有編輯功能和頁面結構
+- [x] 檢視現有後台編輯功能（ToursTab.tsx, TourEditDialog.tsx）
+- [x] 分析 TourDetailPeony.tsx 頁面結構
+- [x] 確認需要支援 inline editing 的欄位
+
+### 29.2 實作 inline editing 核心組件
+- [x] 建立 EditableText 組件（點擊編輯文字）
+- [x] 建立 EditableImage 組件（點擊更換圖片）
+- [x] 建立編輯模式切換按鈕（EditModeToggle, EditModeBanner）
+- [x] 建立 useInlineEdit hook 管理編輯狀態
+
+### 29.3 整合編輯功能到行程詳情頁面
+- [x] 在 TourDetailPeony.tsx 中添加編輯模式狀態
+- [x] 替換標題、副標題、描述為 EditableText
+- [x] 添加編輯模式切換按鈕和儲存按鈕
+- [x] 測試編輯功能正常運作
+
+### 29.4 後端 API 儲存編輯內容
+- [x] 使用現有的 tours.update mutation
+- [x] 測試儲存功能
+
+### 29.5 測試與驗證
+- [x] 測試編輯標題功能
+- [x] 測試編輯描述功能
+- [x] 測試儲存到資料庫
+- [ ] 儲存 checkpoint
+
 ### 20.5 創建 Checkpoint 並部署
 - [ ] 儲存 checkpoint
 - [ ] 部署到生產環境
@@ -2054,3 +2085,35 @@
 ### 28.3 測試與驗證
 - [x] 測試行程詳情頁面滾動時的顯示 - Header 和 sticky nav 不再重疊
 - [x] 儲存 checkpoint
+
+
+---
+
+## Phase 29: 行程詳情頁面 Inline Editing 功能（2026-02-01）
+
+### 29.1 分析現有編輯功能和頁面結構
+- [x] 檢視現有後台編輯功能（ToursTab.tsx, TourEditDialog.tsx）
+- [x] 分析 TourDetailPeony.tsx 頁面結構
+- [x] 確認需要支援 inline editing 的欄位
+
+### 29.2 實作 inline editing 核心組件
+- [x] 建立 EditableText 組件（點擊編輯文字）
+- [x] 建立 EditableImage 組件（點擊更換圖片）
+- [x] 建立編輯模式切換按鈕（EditModeToggle, EditModeBanner）
+- [x] 建立 useInlineEdit hook 管理編輯狀態
+
+### 29.3 整合編輯功能到行程詳情頁面
+- [ ] 行程標題和描述的 inline editing
+- [ ] 每日行程內容的 inline editing
+- [ ] 餐食和住宿資訊的 inline editing
+- [ ] 圖片更換功能
+
+### 29.4 實作後端 API 儲存編輯內容
+- [ ] 建立行程更新 API
+- [ ] 建立圖片上傳 API
+- [ ] 權限驗證（僅管理員可編輯）
+
+### 29.5 測試與驗證
+- [ ] 測試各欄位的 inline editing 功能
+- [ ] 測試儲存和更新功能
+- [ ] 儲存 checkpoint

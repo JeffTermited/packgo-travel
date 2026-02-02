@@ -70,6 +70,9 @@ import {
 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { EditableText, EditableImage, EditModeToggle, EditModeBanner } from "@/components/inline-edit";
+import { toast } from "sonner";
 
 // 解析 JSON 字串
 const parseJSON = (str: string | null | undefined, defaultValue: any = null) => {
@@ -1283,10 +1286,93 @@ export default function TourDetailPeony() {
   const [, navigate] = useLocation();
   const tourId = params?.id ? parseInt(params.id) : undefined;
 
-  const { data: tour, isLoading, error } = trpc.tours.getById.useQuery(
+  const { data: tour, isLoading, error, refetch } = trpc.tours.getById.useQuery(
     { id: tourId! },
     { enabled: !!tourId }
   );
+
+  // 編輯模式狀態
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editedTour, setEditedTour] = useState<any>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
+
+  // 更新行程 mutation
+  const updateTourMutation = trpc.tours.update.useMutation({
+    onSuccess: () => {
+      toast.success("行程已成功更新");
+      refetch();
+      setHasChanges(false);
+    },
+    onError: (error) => {
+      toast.error(`更新失敗：${error.message}`);
+    },
+  });
+
+  // 進入編輯模式時複製資料
+  useEffect(() => {
+    if (isEditMode && tour) {
+      setEditedTour(JSON.parse(JSON.stringify(tour)));
+    }
+  }, [isEditMode, tour]);
+
+  // 更新欄位
+  const updateField = (field: string, value: any) => {
+    setEditedTour((prev: any) => {
+      if (!prev) return prev;
+      const updated = { ...prev, [field]: value };
+      setHasChanges(true);
+      return updated;
+    });
+  };
+
+  // 儲存變更
+  const handleSave = async () => {
+    if (!editedTour || !hasChanges) return;
+    setIsSaving(true);
+    try {
+      await updateTourMutation.mutateAsync({
+        id: editedTour.id,
+        title: editedTour.title,
+        description: editedTour.description,
+        heroSubtitle: editedTour.heroSubtitle,
+        heroImage: editedTour.heroImage,
+        itineraryDetailed: typeof editedTour.itineraryDetailed === 'string' 
+          ? editedTour.itineraryDetailed 
+          : JSON.stringify(editedTour.itineraryDetailed),
+        keyFeatures: typeof editedTour.keyFeatures === 'string' 
+          ? editedTour.keyFeatures 
+          : JSON.stringify(editedTour.keyFeatures),
+        hotels: typeof editedTour.hotels === 'string' 
+          ? editedTour.hotels 
+          : JSON.stringify(editedTour.hotels),
+        meals: typeof editedTour.meals === 'string' 
+          ? editedTour.meals 
+          : JSON.stringify(editedTour.meals),
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // 取消編輯
+  const handleCancelEdit = () => {
+    if (hasChanges) {
+      if (confirm("您有未儲存的變更，確定要放棄嗎？")) {
+        setIsEditMode(false);
+        setEditedTour(null);
+        setHasChanges(false);
+      }
+    } else {
+      setIsEditMode(false);
+      setEditedTour(null);
+    }
+  };
+
+  // 取得當前顯示的資料（編輯模式下使用編輯中的資料）
+  const displayTour = isEditMode && editedTour ? editedTour : tour;
 
   const [activeTab, setActiveTab] = useState("overview");
   const [expandedDays, setExpandedDays] = useState<Set<number>>(new Set());
@@ -1425,6 +1511,21 @@ export default function TourDetailPeony() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
+      {/* 編輯模式標題橫幅 */}
+      {isAdmin && <EditModeBanner isEditMode={isEditMode} hasChanges={hasChanges} />}
+      
+      {/* 編輯模式切換按鈕 */}
+      {isAdmin && (
+        <EditModeToggle
+          isEditMode={isEditMode}
+          onToggle={() => setIsEditMode(!isEditMode)}
+          onSave={handleSave}
+          onCancel={handleCancelEdit}
+          isSaving={isSaving}
+          hasChanges={hasChanges}
+        />
+      )}
+      
       <Header />
 
       {/* Breadcrumb */}
@@ -1461,15 +1562,37 @@ export default function TourDetailPeony() {
           </div>
 
           {/* Title */}
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 max-w-4xl leading-tight drop-shadow-lg">
-            {tour.title}
-          </h1>
+          {isEditMode ? (
+            <EditableText
+              value={displayTour.title || ""}
+              onSave={(value) => updateField("title", value)}
+              isEditing={isEditMode}
+              className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 max-w-4xl leading-tight drop-shadow-lg"
+              placeholder="輸入行程標題..."
+              as="h1"
+            />
+          ) : (
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 max-w-4xl leading-tight drop-shadow-lg">
+              {displayTour.title}
+            </h1>
+          )}
 
           {/* Subtitle / Poetic Title */}
-          {tour.poeticTitle && (
-            <p className="text-lg md:text-xl text-white/90 mb-6 max-w-2xl">
-              {tour.poeticTitle}
-            </p>
+          {(displayTour.poeticTitle || isEditMode) && (
+            isEditMode ? (
+              <EditableText
+                value={displayTour.poeticTitle || ""}
+                onSave={(value) => updateField("poeticTitle", value)}
+                isEditing={isEditMode}
+                className="text-lg md:text-xl text-white/90 mb-6 max-w-2xl"
+                placeholder="輸入副標題..."
+                as="p"
+              />
+            ) : (
+              <p className="text-lg md:text-xl text-white/90 mb-6 max-w-2xl">
+                {displayTour.poeticTitle}
+              </p>
+            )
           )}
 
           {/* Meta info */}
@@ -1546,7 +1669,19 @@ export default function TourDetailPeony() {
           
           {/* Description */}
           <div className="prose prose-lg max-w-none text-gray-600 leading-relaxed text-center mb-12">
-            <p>{tour.description}</p>
+            {isEditMode ? (
+              <EditableText
+                value={displayTour.description || ""}
+                onSave={(value) => updateField("description", value)}
+                isEditing={isEditMode}
+                className="text-gray-600 leading-relaxed"
+                placeholder="輸入行程描述..."
+                multiline={true}
+                as="p"
+              />
+            ) : (
+              <p>{displayTour.description}</p>
+            )}
           </div>
 
           {/* Key Features Grid - 重新設計的特色卡片 */}
