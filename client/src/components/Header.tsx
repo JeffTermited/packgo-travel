@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, Phone, Search, X, User, Globe, ChevronDown, Shield } from "lucide-react";
 import { useState } from "react";
 import { Link } from "wouter";
+import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 
 export default function Header() {
   const { user, isAuthenticated } = useAuth();
@@ -65,15 +66,17 @@ export default function Header() {
           )}
         </nav>
 
-        {/* Contact Info */}
-        <div className="hidden md:flex items-center gap-6">
+        {/* Locale Switcher & Contact Info */}
+        <div className="hidden md:flex items-center gap-4">
+          {/* Language & Currency Switcher */}
+          <LocaleSwitcher />
+          
           {isAuthenticated && user?.role === "admin" && (
             <>
               <Link href="/admin" className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:text-black hover:bg-gray-50 rounded-full transition-all">
                 <Shield className="h-4 w-4" />
                 <span>管理後台</span>
               </Link>
-
             </>
           )}
           <div className="flex flex-col items-end gap-1">
@@ -125,7 +128,12 @@ export default function Header() {
               </a>
             )
           )}
-          <div className="flex items-center justify-between pt-2 border-t border-gray-100 mt-2">
+          {/* Mobile Locale Switcher */}
+          <div className="flex items-center justify-center py-2 border-t border-gray-100 mt-2">
+            <LocaleSwitcher />
+          </div>
+          
+          <div className="flex items-center justify-between pt-2 border-t border-gray-100">
             <div className="flex items-center gap-4 text-sm">
               {isAuthenticated && user ? (
                 <Link href="/profile" className="flex items-center gap-1 text-black font-medium">

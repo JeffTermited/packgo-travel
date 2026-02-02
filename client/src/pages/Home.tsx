@@ -79,16 +79,16 @@ function HomeContent() {
 
       {/* Floating AI Advisor Button with Penguin Character */}
       <div className="fixed bottom-4 right-4 z-50">
-        {/* Penguin Button - Travel Penguin with Hat and Suitcase (includes speech bubble in image) */}
+        {/* Penguin Button - Travel Penguin with Hat and Suitcase (transparent background) */}
         <button
           onClick={() => setAiDialogOpen(true)}
-          className="w-36 h-36 flex items-center justify-center transition-all hover:scale-110 group"
+          className="w-40 h-40 flex items-center justify-center transition-all hover:scale-110 group"
           aria-label="AI 旅遊顧問"
         >
           <img
-            src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663159191204/FjNoPSPqPWoRDWCy.png"
+            src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663159191204/gLgGSwTFTeHuKbKP.png"
             alt="AI 旅遊顧問"
-            className="w-full h-full object-contain drop-shadow-xl transition-transform group-hover:scale-105"
+            className="w-full h-full object-contain drop-shadow-xl animate-penguin-wobble"
           />
         </button>
       </div>

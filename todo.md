@@ -3640,3 +3640,32 @@
 - [x] 一般用戶不應看到編輯模式按鈕（已驗證）
 - [x] 編輯按鈕移到左下角，避免與企鵝重疊
 
+
+---
+
+## Phase 37: 企鵝圖片背景處理與動畫效果（2026-02-02）
+
+### 37.1 移除企鵝圖片白色背景
+- [x] 使用 Python 處理圖片，移除白色背景
+- [x] 上傳處理後的透明背景圖片到 S3
+- [x] 更新 Home.tsx 使用新圖片
+
+### 37.2 添加企鵝搖擺動畫
+- [x] 在 index.css 中添加搖擺動畫 keyframes (penguin-wobble)
+- [x] 應用動畫到企鵝浮動按鈕 (animate-penguin-wobble)
+
+
+### 37.3 語言切換功能
+- [x] 創建 LocaleContext 和 LocaleProvider
+- [x] 實作語言切換 UI（繁體中文 / English / Español）
+- [x] 在 Header 添加語言切換按鈕 (LocaleSwitcher)
+- [x] 創建 AI 翻譯 Agent (server/translation.ts)
+- [x] 創建翻譯 API (translation router)
+- [x] 創建前端翻譯 Hook (useTranslation.ts)
+
+### 37.4 幣值切換功能
+- [x] 創建幣值 Context 和 Provider (在 LocaleContext 中)
+- [x] 實作幣值切換 UI（TWD 台幣 / USD 美金）
+- [x] 添加免責聲明：「轉換價格僅供參考，實際價格以屆時人員提供的報價為準」
+- [x] 創建 PriceDisplay 組件支援幣值轉換
+

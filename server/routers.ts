@@ -14,6 +14,7 @@ import { quickExtractTourInfo } from "./webScraper";
 import { sendBookingConfirmationEmail } from "./email";
 import * as auth from "./auth";
 import { createToken } from "./jwt";
+import { translateText, translateBatch } from "./translation";
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -2929,6 +2930,41 @@ export const appRouter = router({
       .mutation(async ({ input }) => {
         const { applyAutoApprovalRules } = await import('./services/autoApprovalService');
         return await applyAutoApprovalRules(input.reviewQueueId);
+      }),
+  }),
+
+  // Translation router - AI-powered translation agent
+  translation: router({
+    // Translate single text
+    translate: publicProcedure
+      .input(z.object({
+        text: z.string(),
+        targetLanguage: z.enum(['zh-TW', 'en', 'es']),
+        sourceLanguage: z.enum(['zh-TW', 'en', 'es']).optional().default('zh-TW'),
+      }))
+      .mutation(async ({ input }) => {
+        const translated = await translateText(
+          input.text,
+          input.targetLanguage,
+          input.sourceLanguage
+        );
+        return { translated };
+      }),
+
+    // Translate multiple texts in batch
+    translateBatch: publicProcedure
+      .input(z.object({
+        texts: z.array(z.string()),
+        targetLanguage: z.enum(['zh-TW', 'en', 'es']),
+        sourceLanguage: z.enum(['zh-TW', 'en', 'es']).optional().default('zh-TW'),
+      }))
+      .mutation(async ({ input }) => {
+        const translated = await translateBatch(
+          input.texts,
+          input.targetLanguage,
+          input.sourceLanguage
+        );
+        return { translated };
       }),
   }),
 });
