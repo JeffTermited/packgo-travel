@@ -58,6 +58,11 @@ import {
   Play,
   BookOpen,
   AlertTriangle,
+  GraduationCap,
+  ThumbsUp,
+  ThumbsDown,
+  Wand2,
+  Database,
   Zap,
   GitBranch,
   TestTube,
@@ -482,6 +487,376 @@ export default function SkillsTab() {
     </Card>
   );
 
+  // AI Learning Tab Component
+  const AILearningTab = () => {
+    const [isLearning, setIsLearning] = useState(false);
+    const [learningResults, setLearningResults] = useState<any>(null);
+    const [selectedTourId, setSelectedTourId] = useState<string>("");
+    
+    // 獲取所有行程用於學習
+    const { data: tours } = trpc.tours.list.useQuery();
+    
+    // AI 學習 mutation
+    const aiLearn = trpc.skills.aiLearn.useMutation({
+      onSuccess: (result) => {
+        setLearningResults(result);
+        setIsLearning(false);
+        toast.success(`學習完成！發現 ${result.keywordSuggestions?.length || 0} 個新關鍵字建議`);
+        refetch();
+      },
+      onError: (error) => {
+        setIsLearning(false);
+        toast.error(`學習失敗: ${error.message}`);
+      },
+    });
+    
+    // 應用關鍵字建議
+    const applyKeywords = trpc.skills.applyLearnedKeywords.useMutation({
+      onSuccess: () => {
+        toast.success("關鍵字已成功新增到技能");
+        refetch();
+      },
+      onError: (error) => {
+        toast.error(`應用失敗: ${error.message}`);
+      },
+    });
+    
+    // 創建新技能
+    const createSkill = trpc.skills.createSuggestedSkill.useMutation({
+      onSuccess: () => {
+        toast.success("新技能已成功創建");
+        refetch();
+      },
+      onError: (error) => {
+        toast.error(`創建失敗: ${error.message}`);
+      },
+    });
+    
+    const handleLearnFromTour = async () => {
+      if (!selectedTourId) {
+        toast.error("請選擇一個行程");
+        return;
+      }
+      
+      const tour = tours?.find(t => t.id === Number(selectedTourId));
+      if (!tour) return;
+      
+      setIsLearning(true);
+      
+      // 準備學習內容
+      const content = [
+        tour.title,
+        tour.description,
+        tour.highlights,
+        tour.dailyItinerary,
+        tour.attractions,
+      ].filter(Boolean).join('\n\n');
+      
+      aiLearn.mutate({
+        content,
+        metadata: {
+          title: tour.title,
+          source: `行程 ID: ${tour.id}`,
+          country: tour.destinationCountry || undefined,
+        },
+      });
+    };
+    
+    const handleLearnFromAllTours = async () => {
+      if (!tours || tours.length === 0) {
+        toast.error("沒有可用的行程資料");
+        return;
+      }
+      
+      setIsLearning(true);
+      toast.info(`開始從 ${tours.length} 個行程中學習...`);
+      
+      // 逐個學習以避免過載
+      let totalSuggestions = 0;
+      for (const tour of tours.slice(0, 5)) { // 限制前 5 個避免過載
+        const content = [
+          tour.title,
+          tour.description,
+          tour.highlights,
+          tour.dailyItinerary,
+        ].filter(Boolean).join('\n\n');
+        
+        try {
+          const result = await aiLearn.mutateAsync({
+            content,
+            metadata: {
+              title: tour.title,
+              source: `行程 ID: ${tour.id}`,
+              country: tour.destinationCountry || undefined,
+            },
+          });
+          totalSuggestions += result.keywordSuggestions?.length || 0;
+        } catch (e) {
+          console.error(`學習行程 ${tour.id} 失敗:`, e);
+        }
+      }
+      
+      setIsLearning(false);
+      toast.success(`批量學習完成！共發現 ${totalSuggestions} 個新關鍵字建議`);
+    };
+    
+    return (
+      <div className="space-y-6">
+        {/* Learning Header */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <GraduationCap className="h-5 w-5 text-primary" />
+              AI 自動學習
+            </CardTitle>
+            <CardDescription>
+              讓 AI 從現有行程內容中自動學習新的關鍵字和模式，持續優化技能系統
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* 單一行程學習 */}
+            <div className="flex items-end gap-4">
+              <div className="flex-1 space-y-2">
+                <Label>選擇行程進行學習</Label>
+                <Select value={selectedTourId} onValueChange={setSelectedTourId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="選擇一個行程..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {tours?.map(tour => (
+                      <SelectItem key={tour.id} value={String(tour.id)}>
+                        {tour.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button
+                onClick={handleLearnFromTour}
+                disabled={isLearning || !selectedTourId}
+              >
+                {isLearning ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Wand2 className="h-4 w-4 mr-2" />
+                )}
+                開始學習
+              </Button>
+            </div>
+            
+            <Separator />
+            
+            {/* 批量學習 */}
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium">批量學習</p>
+                <p className="text-sm text-muted-foreground">
+                  從所有行程中學習新的關鍵字和模式（最多 5 個）
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                onClick={handleLearnFromAllTours}
+                disabled={isLearning || !tours?.length}
+              >
+                {isLearning ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Database className="h-4 w-4 mr-2" />
+                )}
+                批量學習
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+        
+        {/* Learning Results */}
+        {learningResults && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">學習結果</CardTitle>
+              <CardDescription>
+                處理時間: {learningResults.stats?.processingTimeMs || 0}ms | 
+                發現關鍵字: {learningResults.stats?.totalKeywordsFound || 0} | 
+                新關鍵字: {learningResults.stats?.newKeywordsFound || 0}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* 關鍵字建議 */}
+              {learningResults.keywordSuggestions?.length > 0 && (
+                <div className="space-y-3">
+                  <h4 className="font-medium flex items-center gap-2">
+                    <Tag className="h-4 w-4" />
+                    關鍵字建議 ({learningResults.keywordSuggestions.length})
+                  </h4>
+                  {learningResults.keywordSuggestions.map((suggestion: any, idx: number) => (
+                    <div key={idx} className="p-3 border rounded-lg space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium">{suggestion.skillName}</p>
+                          <p className="text-sm text-muted-foreground">{suggestion.reason}</p>
+                        </div>
+                        <Badge variant="outline">
+                          信心度: {Math.round((suggestion.confidence || 0) * 100)}%
+                        </Badge>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {suggestion.newKeywords?.map((kw: string, kwIdx: number) => (
+                          <Badge key={kwIdx} variant="secondary">{kw}</Badge>
+                        ))}
+                      </div>
+                      <div className="flex gap-2 pt-2">
+                        <Button
+                          size="sm"
+                          onClick={() => applyKeywords.mutate({
+                            skillId: suggestion.skillId,
+                            newKeywords: suggestion.newKeywords,
+                          })}
+                          disabled={applyKeywords.isPending}
+                        >
+                          <ThumbsUp className="h-3 w-3 mr-1" />
+                          採納
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setLearningResults({
+                              ...learningResults,
+                              keywordSuggestions: learningResults.keywordSuggestions.filter(
+                                (_: any, i: number) => i !== idx
+                              ),
+                            });
+                          }}
+                        >
+                          <ThumbsDown className="h-3 w-3 mr-1" />
+                          忽略
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {/* 新技能建議 */}
+              {learningResults.newSkillSuggestions?.length > 0 && (
+                <div className="space-y-3">
+                  <h4 className="font-medium flex items-center gap-2">
+                    <Sparkles className="h-4 w-4" />
+                    新技能建議 ({learningResults.newSkillSuggestions.length})
+                  </h4>
+                  {learningResults.newSkillSuggestions.map((suggestion: any, idx: number) => (
+                    <div key={idx} className="p-3 border rounded-lg space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium">{suggestion.skillName}</p>
+                          <p className="text-sm text-muted-foreground">{suggestion.description}</p>
+                        </div>
+                        <Badge variant="outline">
+                          信心度: {Math.round((suggestion.confidence || 0) * 100)}%
+                        </Badge>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {suggestion.keywords?.map((kw: string, kwIdx: number) => (
+                          <Badge key={kwIdx} variant="secondary">{kw}</Badge>
+                        ))}
+                      </div>
+                      <div className="flex gap-2 pt-2">
+                        <Button
+                          size="sm"
+                          onClick={() => createSkill.mutate({
+                            skillName: suggestion.skillName,
+                            skillType: suggestion.skillType,
+                            category: 'technique',
+                            description: suggestion.description,
+                            keywords: suggestion.keywords,
+                            whenToUse: suggestion.whenToUse,
+                            corePattern: suggestion.corePattern,
+                          })}
+                          disabled={createSkill.isPending}
+                        >
+                          <Plus className="h-3 w-3 mr-1" />
+                          創建技能
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setLearningResults({
+                              ...learningResults,
+                              newSkillSuggestions: learningResults.newSkillSuggestions.filter(
+                                (_: any, i: number) => i !== idx
+                              ),
+                            });
+                          }}
+                        >
+                          <ThumbsDown className="h-3 w-3 mr-1" />
+                          忽略
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {/* 識別出的標籤 */}
+              {learningResults.identifiedTags?.length > 0 && (
+                <div className="space-y-3">
+                  <h4 className="font-medium flex items-center gap-2">
+                    <Tag className="h-4 w-4" />
+                    識別出的標籤 ({learningResults.identifiedTags.length})
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {learningResults.identifiedTags.map((tag: any, idx: number) => (
+                      <Badge 
+                        key={idx} 
+                        variant={tag.isNew ? "default" : "secondary"}
+                        className={tag.isNew ? "bg-green-100 text-green-800" : ""}
+                      >
+                        {tag.tag}
+                        {tag.isNew && <span className="ml-1 text-xs">(新)</span>}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* 無結果 */}
+              {!learningResults.keywordSuggestions?.length && 
+               !learningResults.newSkillSuggestions?.length && 
+               !learningResults.identifiedTags?.length && (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Brain className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>未發現新的學習內容</p>
+                  <p className="text-sm">現有技能已能充分覆蓋此行程的特徵</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+        
+        {/* Learning Tips */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Lightbulb className="h-4 w-4" />
+              學習提示
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li>• AI 會從行程內容中自動識別新的關鍵字和模式</li>
+              <li>• 建議的關鍵字需要您審核後才會新增到技能中</li>
+              <li>• 新技能建議需要您確認後才會創建</li>
+              <li>• 學習過程中會自動跳過已存在的關鍵字</li>
+              <li>• 建議定期從新上架的行程中進行學習以保持技能更新</li>
+            </ul>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -543,6 +918,10 @@ export default function SkillsTab() {
           <TabsTrigger value="techniques">技術</TabsTrigger>
           <TabsTrigger value="patterns">模式</TabsTrigger>
           <TabsTrigger value="references">參考</TabsTrigger>
+          <TabsTrigger value="ai-learning" className="flex items-center gap-1">
+            <Sparkles className="h-3 w-3" />
+            AI 學習
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-4">
@@ -761,6 +1140,11 @@ export default function SkillsTab() {
             </TabsContent>
           );
         })}
+
+        {/* AI Learning Tab */}
+        <TabsContent value="ai-learning" className="mt-4">
+          <AILearningTab />
+        </TabsContent>
       </Tabs>
 
       {/* Add Dialog with Superpowers-style fields */}

@@ -3355,3 +3355,40 @@
 - 生成標籤：觀光列車、鐵道之旅、五星級住宿、溫泉住宿、深度旅遊、經典行程、精選行程、輕旅行、米其林美食
 - 應用技能 ID：5, 10, 7, 2
 - 處理時間：222ms
+
+
+---
+
+## Phase 60: AI Agent 自動學習技能功能（2026-02-02）
+- [ ] 設計 AI 自動學習技能架構
+- [ ] 實作 SkillLearnerAgent（使用 Claude AI 分析內容）
+- [ ] 實作自動擴充關鍵字功能（發現新詞彙時自動添加）
+- [ ] 實作新技能建議功能（無法歸類時建議創建新技能）
+- [ ] 建立學習回饋機制（管理員確認/拒絕）
+- [ ] 更新管理後台介面顯示學習結果和建議
+- [ ] 測試並驗證自動學習功能
+
+
+---
+
+## Phase 28: AI Agent 技能學習功能（2026-02-02）
+
+### 28.1 後端 API 實作
+- [x] 新增 `skills.aiLearn` tRPC mutation
+- [x] 新增 `skills.applyLearnedKeywords` tRPC mutation
+- [x] 新增 `skills.createSuggestedSkill` tRPC mutation
+- [x] 實作 SkillLearnerAgent 的 `learnFromContent` 方法
+
+### 28.2 前端 AI 學習分頁實作
+- [x] 在 SkillsTab.tsx 新增 AI 學習分頁
+- [x] 實作單一行程學習功能
+- [x] 實作批量學習功能（最多 5 個行程）
+- [x] 實作學習結果顯示（關鍵字建議、新技能建議、識別標籤）
+- [x] 實作採納/忽略建議功能
+- [x] 實作從建議創建新技能功能
+
+### 28.3 測試與驗證
+- [x] 測試 AI 學習分頁 UI 顯示正常
+- [x] 測試從行程中學習功能（成功發現 7 個新關鍵字建議）
+- [x] 驗證 TypeScript 編譯無錯誤
+

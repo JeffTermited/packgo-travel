@@ -7,6 +7,7 @@ import { z } from "zod";
 import * as db from "./db";
 import * as skillDb from "./skillDb";
 import { learnFromPdfContent, initializeBuiltInSkills } from "./agents/learningAgent";
+import { SkillLearnerAgent } from "./agents/skillLearnerAgent";
 import { invokeLLM } from "./_core/llm";
 import { extractTourInfoWithManus } from "./manusApi";
 import { quickExtractTourInfo } from "./webScraper";
@@ -2282,6 +2283,106 @@ Important guidelines:
         
         return dependencies;
       }),
+
+    // AI 自動學習 - 從內容中學習新關鍵字和技能
+    aiLearn: adminProcedure
+      .input(z.object({
+        content: z.string(),
+        contentType: z.enum(['tour', 'pdf', 'text']).optional(),
+        metadata: z.object({
+          title: z.string().optional(),
+          source: z.string().optional(),
+          region: z.string().optional(),
+          country: z.string().optional(),
+        }).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const learner = new SkillLearnerAgent();
+        const result = await learner.learnFromContent({
+          title: input.metadata?.title || '未命名行程',
+          description: input.content,
+          country: input.metadata?.country,
+        });
+        return result;
+      }),
+
+    // AI 批量學習 - 從多個內容中學習
+    aiBatchLearn: adminProcedure
+      .input(z.object({
+        contents: z.array(z.object({
+          content: z.string(),
+          metadata: z.object({
+            title: z.string().optional(),
+            source: z.string().optional(),
+          }).optional(),
+        })),
+      }))
+      .mutation(async ({ input }) => {
+        const learner = new SkillLearnerAgent();
+        const contents = input.contents.map(c => ({
+          ...c.metadata,
+          description: c.content,
+        }));
+        const result = await learner.batchLearn(contents);
+        return result;
+      }),
+
+    // 應用學習到的關鍵字到技能
+    applyLearnedKeywords: adminProcedure
+      .input(z.object({
+        skillId: z.number(),
+        newKeywords: z.array(z.string()),
+        approvedBy: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const learner = new SkillLearnerAgent();
+        const success = await learner.applyKeywordSuggestion(
+          input.skillId,
+          input.newKeywords,
+          input.approvedBy || ctx.user.name || 'admin'
+        );
+        return { success };
+      }),
+
+    // 創建 AI 建議的新技能
+    createSuggestedSkill: adminProcedure
+      .input(z.object({
+        skillType: z.string(),
+        skillName: z.string(),
+        category: z.enum(['technique', 'pattern', 'reference']),
+        description: z.string(),
+        keywords: z.array(z.string()),
+        whenToUse: z.string().optional(),
+        corePattern: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const learner = new SkillLearnerAgent();
+        // 轉換為 createNewSkill 所需的格式
+        const suggestion = {
+          skillName: input.skillName,
+          skillType: input.skillType,
+          category: input.category,
+          description: input.description,
+          keywords: input.keywords,
+          whenToUse: input.whenToUse || '',
+          corePattern: input.corePattern || '',
+          confidence: 1.0,
+          reason: '管理員手動創建'
+        };
+        const skillId = await learner.createNewSkill(suggestion);
+        return { success: skillId !== null, skillId };
+      }),
+
+    // 獲取學習建議（待審核的關鍵字和新技能建議）
+    getLearningRecommendations: adminProcedure.query(async () => {
+      // 這裡可以從資料庫獲取待審核的學習建議
+      // 目前返回空陣列，實際應用時需要建立學習建議資料表
+      return {
+        pendingKeywords: [],
+        suggestedSkills: [],
+        recentLearnings: [],
+      };
+    }),
   }),
 });
 export type AppRouter = typeof appRouter;
