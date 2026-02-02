@@ -78,27 +78,22 @@ function HomeContent() {
       <Footer />
 
       {/* Floating AI Advisor Button with Penguin Character */}
-      <div className="fixed bottom-6 right-6 z-50">
-        {/* Speech Bubble */}
-        <div className="absolute -top-12 -left-4 bg-white border border-gray-200 px-3 py-1.5 rounded-full shadow-md animate-bounce-slow">
-          <p className="text-xs font-medium text-gray-700 whitespace-nowrap">點我問問題！</p>
-        </div>
-        
-        {/* Penguin Button - Using Waving Expression */}
+      <div className="fixed bottom-4 right-4 z-50">
+        {/* Penguin Button - Travel Penguin with Hat and Suitcase (includes speech bubble in image) */}
         <button
           onClick={() => setAiDialogOpen(true)}
-          className="w-24 h-24 flex items-center justify-center transition-all hover:scale-110 group drop-shadow-lg"
+          className="w-36 h-36 flex items-center justify-center transition-all hover:scale-110 group"
           aria-label="AI 旅遊顧問"
         >
           <img
-            src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663159191204/WkOQbHIhVnUckSkg.png"
+            src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663159191204/FjNoPSPqPWoRDWCy.png"
             alt="AI 旅遊顧問"
-            className="w-full h-full object-contain transition-transform group-hover:scale-105"
+            className="w-full h-full object-contain drop-shadow-xl transition-transform group-hover:scale-105"
           />
         </button>
       </div>
 
-      {/* Admin Edit Mode Button */}
+      {/* Admin Edit Mode Button - positioned on left side to avoid overlap with penguin */}
       {canEdit && !isEditMode && (
         <button
           onClick={toggleEditMode}
