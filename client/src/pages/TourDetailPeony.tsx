@@ -9,6 +9,12 @@
  */
 
 import React, { useEffect, useState, useRef, useMemo } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useRoute, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -50,6 +56,239 @@ const parseJSON = (str: string | null | undefined, defaultValue: any = null) => 
   } catch {
     return defaultValue;
   }
+};
+
+// 動態價格日曆組件
+const DeparturePriceCalendar = ({ 
+  tourId, 
+  basePrice, 
+  themeColor,
+  onSelectDeparture 
+}: { 
+  tourId: number; 
+  basePrice: number; 
+  themeColor: ReturnType<typeof getThemeColorByDestination>;
+  onSelectDeparture: (departureId: number) => void;
+}) => {
+  const { data: departures, isLoading } = trpc.departures.list.useQuery({ tourId });
+  const [selectedMonth, setSelectedMonth] = useState(new Date());
+  const [selectedDeparture, setSelectedDeparture] = useState<number | null>(null);
+
+  // 獲取當月的出發日期
+  const monthDepartures = useMemo(() => {
+    if (!departures) return [];
+    return departures.filter((d: any) => {
+      const depDate = new Date(d.departureDate);
+      return depDate.getMonth() === selectedMonth.getMonth() && 
+             depDate.getFullYear() === selectedMonth.getFullYear();
+    });
+  }, [departures, selectedMonth]);
+
+  // 生成日曆網格
+  const calendarDays = useMemo(() => {
+    const year = selectedMonth.getFullYear();
+    const month = selectedMonth.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const startPadding = firstDay.getDay();
+    const days: (Date | null)[] = [];
+    
+    // 填充前面的空白
+    for (let i = 0; i < startPadding; i++) {
+      days.push(null);
+    }
+    
+    // 填充日期
+    for (let d = 1; d <= lastDay.getDate(); d++) {
+      days.push(new Date(year, month, d));
+    }
+    
+    return days;
+  }, [selectedMonth]);
+
+  // 檢查某天是否有出發日期
+  const getDepartureForDay = (date: Date | null) => {
+    if (!date || !departures) return null;
+    return departures.find((d: any) => {
+      const depDate = new Date(d.departureDate);
+      return depDate.getDate() === date.getDate() && 
+             depDate.getMonth() === date.getMonth() &&
+             depDate.getFullYear() === date.getFullYear();
+    });
+  };
+
+  const prevMonth = () => {
+    setSelectedMonth(new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() - 1, 1));
+  };
+
+  const nextMonth = () => {
+    setSelectedMonth(new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1, 1));
+  };
+
+  const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
+
+  if (isLoading) {
+    return (
+      <div className="bg-gray-50 p-8 text-center mb-8">
+        <p className="text-gray-500">載入出發日期中...</p>
+      </div>
+    );
+  }
+
+  // 如果沒有出發日期，顯示基本價格
+  if (!departures || departures.length === 0) {
+    return (
+      <div className="bg-gray-50 p-8 text-center mb-8">
+        <p className="text-sm text-gray-500 mb-2">每人售價 (含稅)</p>
+        <div className="flex items-baseline justify-center gap-2">
+          <span className="text-sm" style={{ color: themeColor.secondary }}>NT$</span>
+          <span className="text-5xl font-bold" style={{ color: themeColor.primary }}>
+            {basePrice ? basePrice.toLocaleString() : "洽詢"}
+          </span>
+          <span className="text-gray-500">起</span>
+        </div>
+        <p className="text-gray-400 mt-4 text-sm">請聯繫我們查詢可出發日期</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden mb-8">
+      {/* 日曆標題 */}
+      <div className="flex items-center justify-between p-4 border-b border-gray-200" style={{ backgroundColor: themeColor.light }}>
+        <button 
+          onClick={prevMonth}
+          className="p-2 hover:bg-white/50 rounded-lg transition-colors"
+        >
+          <ChevronUp className="h-5 w-5 rotate-[-90deg]" style={{ color: themeColor.primary }} />
+        </button>
+        <h3 className="text-lg font-bold" style={{ color: themeColor.primary }}>
+          {selectedMonth.getFullYear()} 年 {selectedMonth.getMonth() + 1} 月
+        </h3>
+        <button 
+          onClick={nextMonth}
+          className="p-2 hover:bg-white/50 rounded-lg transition-colors"
+        >
+          <ChevronUp className="h-5 w-5 rotate-90" style={{ color: themeColor.primary }} />
+        </button>
+      </div>
+
+      {/* 星期標題 */}
+      <div className="grid grid-cols-7 border-b border-gray-200">
+        {weekDays.map((day, idx) => (
+          <div 
+            key={day} 
+            className={`py-3 text-center text-sm font-medium ${
+              idx === 0 ? 'text-red-500' : idx === 6 ? 'text-blue-500' : 'text-gray-600'
+            }`}
+          >
+            {day}
+          </div>
+        ))}
+      </div>
+
+      {/* 日曆網格 */}
+      <div className="grid grid-cols-7">
+        {calendarDays.map((date, idx) => {
+          const departure = getDepartureForDay(date);
+          const isSelected = departure && selectedDeparture === departure.id;
+          const isPast = date && date < new Date(new Date().setHours(0, 0, 0, 0));
+          const isFull = departure?.status === 'full';
+          
+          return (
+            <div 
+              key={idx}
+              className={`
+                min-h-[80px] p-2 border-b border-r border-gray-100 relative
+                ${!date ? 'bg-gray-50' : ''}
+                ${isPast ? 'bg-gray-50 opacity-50' : ''}
+                ${departure && !isPast && !isFull ? 'cursor-pointer hover:bg-gray-50' : ''}
+                ${isSelected ? 'ring-2 ring-inset' : ''}
+              `}
+              style={isSelected ? { outline: `2px solid ${themeColor.secondary}`, outlineOffset: '-2px' } : {}}
+              onClick={() => {
+                if (departure && !isPast && !isFull) {
+                  setSelectedDeparture(departure.id);
+                }
+              }}
+            >
+              {date && (
+                <>
+                  <span className={`text-sm ${
+                    date.getDay() === 0 ? 'text-red-500' : 
+                    date.getDay() === 6 ? 'text-blue-500' : 'text-gray-700'
+                  }`}>
+                    {date.getDate()}
+                  </span>
+                  
+                  {departure && (
+                    <div className="mt-1">
+                      {isFull ? (
+                        <span className="text-xs text-gray-400">已額滿</span>
+                      ) : (
+                        <div 
+                          className="text-xs font-bold px-1 py-0.5 rounded text-white"
+                          style={{ backgroundColor: themeColor.secondary }}
+                        >
+                          ${(departure.adultPrice || basePrice).toLocaleString()}
+                        </div>
+                      )}
+                      {!isFull && departure.totalSlots && (
+                        <p className="text-[10px] text-gray-400 mt-0.5">
+                          剩 {departure.totalSlots - (departure.bookedSlots || 0)} 位
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* 選中的出發日期詳情 */}
+      {selectedDeparture && (
+        <div className="p-6 border-t border-gray-200" style={{ backgroundColor: themeColor.light }}>
+          {(() => {
+            const dep = departures.find((d: any) => d.id === selectedDeparture);
+            if (!dep) return null;
+            const depDate = new Date(dep.departureDate);
+            const retDate = new Date(dep.returnDate);
+            
+            return (
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">已選擇出發日期</p>
+                  <p className="text-xl font-bold" style={{ color: themeColor.primary }}>
+                    {depDate.getFullYear()}/{depDate.getMonth() + 1}/{depDate.getDate()} 
+                    <span className="text-gray-400 mx-2">~</span>
+                    {retDate.getFullYear()}/{retDate.getMonth() + 1}/{retDate.getDate()}
+                  </p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    剩餘名額：{dep.totalSlots - (dep.bookedSlots || 0)} 位
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-gray-500 mb-1">每人價格</p>
+                  <p className="text-3xl font-bold" style={{ color: themeColor.secondary }}>
+                    NT$ {(dep.adultPrice || basePrice).toLocaleString()}
+                  </p>
+                  <Button 
+                    onClick={() => onSelectDeparture(dep.id)}
+                    className="mt-3 px-6 py-2 text-white"
+                    style={{ backgroundColor: themeColor.secondary }}
+                  >
+                    選擇此日期
+                  </Button>
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      )}
+    </div>
+  );
 };
 
 // 根據目的地生成主題色
@@ -198,7 +437,7 @@ const DayCard = ({
   const dayImage = day.image || day.imageUrl || `https://images.unsplash.com/photo-${1500000000000 + index * 1000}?w=800`;
   
   return (
-    <div className="relative">
+    <div className="relative animate-fade-in" style={{ animationDelay: `${index * 100}ms` }}>
       {/* Day Badge */}
       <div 
         className="absolute left-1/2 -translate-x-1/2 -top-5 z-10 px-6 py-2 text-white text-sm font-bold tracking-wider"
@@ -210,11 +449,11 @@ const DayCard = ({
       {/* Content Container */}
       <div className={`flex flex-col ${isEven ? 'md:flex-row' : 'md:flex-row-reverse'} gap-0 bg-white`}>
         {/* Image Side */}
-        <div className="md:w-1/2 aspect-[4/3] md:aspect-auto overflow-hidden">
+        <div className="md:w-1/2 aspect-[4/3] md:aspect-auto overflow-hidden img-hover-zoom">
           <img 
             src={dayImage}
             alt={day.title || `Day ${index + 1}`}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover transition-transform duration-700"
           />
         </div>
         
@@ -317,13 +556,122 @@ const parseStarRating = (stars: string | undefined): number => {
   return 0;
 };
 
-// 飯店卡片組件 - 重新設計版
+// 飯店卡片組件 - 重新設計版（含彈窗功能）
 const HotelCard = ({ hotel, themeColor }: { hotel: any; themeColor: ReturnType<typeof getThemeColorByDestination> }) => {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const starRating = hotel.rating || parseStarRating(hotel.stars);
   const facilities = hotel.facilities || [];
   
+  // 飯店詳情彈窗
+  const HotelDetailDialog = () => (
+    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+            {hotel.name}
+            {starRating > 0 && (
+              <span className="flex items-center gap-0.5 ml-2">
+                {[...Array(starRating)].map((_, i) => (
+                  <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                ))}
+              </span>
+            )}
+          </DialogTitle>
+        </DialogHeader>
+        
+        {/* 圖片區域 */}
+        <div className="relative aspect-video overflow-hidden rounded-lg mb-6">
+          <img 
+            src={hotel.image || "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800"}
+            alt={hotel.imageAlt || hotel.name}
+            className="w-full h-full object-cover"
+          />
+        </div>
+        
+        {/* 位置資訊 */}
+        {hotel.location && hotel.location !== '待確認' && (
+          <div className="flex items-center gap-2 text-gray-600 mb-4">
+            <MapPin className="h-5 w-5" style={{ color: themeColor.secondary }} />
+            <span className="text-lg">{hotel.location}</span>
+          </div>
+        )}
+        
+        {/* 詳細描述 */}
+        {hotel.description && hotel.description !== '待確認' && (
+          <div className="mb-6">
+            <h4 className="font-semibold text-lg mb-2" style={{ color: themeColor.primary }}>飯店介紹</h4>
+            <p className="text-gray-600 leading-relaxed">{hotel.description}</p>
+          </div>
+        )}
+        
+        {/* 設施列表 */}
+        {facilities.length > 0 && (
+          <div className="mb-6">
+            <h4 className="font-semibold text-lg mb-3" style={{ color: themeColor.primary }}>飯店設施</h4>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {facilities.map((facility: string, idx: number) => {
+                const facilityInfo = facilityIcons[facility.toLowerCase()];
+                if (!facilityInfo) return null;
+                return (
+                  <div 
+                    key={idx} 
+                    className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
+                  >
+                    <span className="p-2 rounded-full" style={{ backgroundColor: themeColor.light, color: themeColor.secondary }}>
+                      {facilityInfo.icon}
+                    </span>
+                    <span className="font-medium">{facilityInfo.label}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+        
+        {/* 房型資訊 */}
+        <div className="mb-6">
+          <h4 className="font-semibold text-lg mb-3" style={{ color: themeColor.primary }}>房型資訊</h4>
+          <div className="grid gap-3">
+            <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
+              <div>
+                <p className="font-medium">標準雙人房</p>
+                <p className="text-sm text-gray-500">兩張單人床 / 一張雙人床、含早餐</p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm text-gray-500">每晚價格</p>
+                <p className="font-bold" style={{ color: themeColor.secondary }}>已含在團費</p>
+              </div>
+            </div>
+            <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
+              <div>
+                <p className="font-medium">升等豪華房</p>
+                <p className="text-sm text-gray-500">更寬敢空間、景觀陽台、迷你吧檯</p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm text-gray-500">每晚加價</p>
+                <p className="font-bold" style={{ color: themeColor.secondary }}>+NT$2,000</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* 備註 */}
+        <div className="p-4 bg-gray-50 rounded-lg">
+          <p className="text-sm text-gray-500 flex items-start gap-2">
+            <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
+            <span>實際入住飯店可能根據當地情況調整為同級飯店，請以最終行程確認書為準。</span>
+          </p>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+  
   return (
-    <div className="bg-white overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 group">
+    <>
+    <div 
+      className="bg-white overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 group cursor-pointer card-hover-scale"
+      onClick={() => setIsDialogOpen(true)}
+    >
       {/* 圖片區域 */}
       <div className="relative aspect-[16/10] overflow-hidden">
         <img 
@@ -388,6 +736,8 @@ const HotelCard = ({ hotel, themeColor }: { hotel: any; themeColor: ReturnType<t
         )}
       </div>
     </div>
+    <HotelDetailDialog />
+    </>
   );
 };
 
@@ -868,28 +1218,19 @@ export default function TourDetailPeony() {
           </h2>
           <p className="text-gray-500 text-center mb-12">選擇您理想的出發日期</p>
 
-          {/* Price Display */}
-          <div className="bg-gray-50 p-8 text-center mb-8">
-            <p className="text-sm text-gray-500 mb-2">每人售價 (含稅)</p>
-            <div className="flex items-baseline justify-center gap-2">
-              <span className="text-sm" style={{ color: themeColor.secondary }}>NT$</span>
-              <span className="text-5xl font-bold" style={{ color: themeColor.primary }}>
-                {tour.price ? tour.price.toLocaleString() : "洽詢"}
-              </span>
-              <span className="text-gray-500">起</span>
-            </div>
-            {(tour as any).originalPrice && (tour as any).originalPrice > (tour.price || 0) && (
-              <p className="text-gray-400 line-through mt-2">
-                原價 NT$ {(tour as any).originalPrice.toLocaleString()}
-              </p>
-            )}
-          </div>
+          {/* Dynamic Price Calendar */}
+          <DeparturePriceCalendar 
+            tourId={tour.id} 
+            basePrice={tour.price || 0} 
+            themeColor={themeColor}
+            onSelectDeparture={(departureId) => navigate(`/book/${tour.id}?departure=${departureId}`)}
+          />
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
             <Button 
               onClick={() => navigate(`/book/${tour.id}`)}
-              className="px-8 py-4 text-white text-lg font-medium"
+              className="px-8 py-4 text-white text-lg font-medium btn-hover-lift transition-all duration-300 hover:shadow-lg"
               style={{ backgroundColor: themeColor.secondary }}
             >
               立即預訂
@@ -897,7 +1238,7 @@ export default function TourDetailPeony() {
             <Button 
               variant="outline"
               onClick={() => navigate("/contact")}
-              className="px-8 py-4 text-lg font-medium border-2"
+              className="px-8 py-4 text-lg font-medium border-2 btn-hover-lift transition-all duration-300 hover:bg-gray-50"
               style={{ borderColor: themeColor.secondary, color: themeColor.secondary }}
             >
               聯繫我們
