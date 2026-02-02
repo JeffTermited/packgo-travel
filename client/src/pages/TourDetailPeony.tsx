@@ -66,7 +66,8 @@ import {
   PhoneCall,
   ChevronRight,
   ChevronLeft,
-  ImageIcon
+  ImageIcon,
+  Globe
 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -1567,16 +1568,6 @@ export default function TourDetailPeony() {
         )}
         
         <div className="relative h-full max-w-7xl mx-auto px-6 flex flex-col justify-center items-center text-center">
-          {/* Destination Badge */}
-          <div className="mb-4">
-            <span 
-              className="inline-block px-4 py-1 text-white text-sm tracking-widest uppercase"
-              style={{ backgroundColor: themeColor.secondary }}
-            >
-              {tour.destinationCountry || "精選行程"}
-            </span>
-          </div>
-
           {/* Title */}
           {isEditMode ? (
             <EditableText
@@ -1613,6 +1604,16 @@ export default function TourDetailPeony() {
 
           {/* Meta info */}
           <div className="flex flex-wrap items-center justify-center gap-6 text-white/90 text-base md:text-lg">
+            {/* Destination Country Badge */}
+            {tour.destinationCountry && (
+              <div 
+                className="flex items-center gap-2 px-3 py-1 rounded-full text-white text-sm"
+                style={{ backgroundColor: themeColor.secondary }}
+              >
+                <Globe className="h-4 w-4" />
+                <span>{tour.destinationCountry}</span>
+              </div>
+            )}
             <div className="flex items-center gap-2">
               <Clock className="h-5 w-5" />
               <span>{tour.duration || "多日行程"}</span>
