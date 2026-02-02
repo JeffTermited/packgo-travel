@@ -1920,7 +1920,7 @@ export default function TourDetailPeony() {
             {/* Action Buttons */}
             <div className="hidden md:flex items-center gap-4">
               <button 
-                onClick={() => window.print()}
+                onClick={() => window.open(`/tours/${tourId}/print`, '_blank')}
                 className="flex items-center gap-2 text-sm text-gray-600 hover:text-black transition-colors"
               >
                 <Printer className="h-4 w-4" />

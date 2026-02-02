@@ -17,6 +17,7 @@ import TourDetailSipinTest from "./pages/TourDetailSipinTest";
 import TourDetailV2 from "./pages/TourDetailV2";
 import TourDetailMinimal from "./pages/TourDetailMinimal";
 import TourDetailPeony from "./pages/TourDetailPeony";
+import TourPrintView from "./pages/TourPrintView";
 import BookTour from "./pages/BookTour";
 import BookingDetail from "./pages/BookingDetail";
 import QuickInquiry from "./pages/QuickInquiry";
@@ -50,6 +51,7 @@ function Router() {
       <Route path={"/admin/diagnostics"} component={DiagnosticsPage} />
       <Route path={"/admin"} component={Admin} />
       <Route path={"/profile"} component={Profile} />
+      <Route path={"/tours/:id/print"} component={TourPrintView} />
       <Route path={"/tours/:id"} component={TourDetailPeony} />
       <Route path={"/tours-v2/:id"} component={TourDetailV2} />
       <Route path={"/tours-sipin-test/:id"} component={TourDetailSipinTest} />
