@@ -43,7 +43,28 @@ import {
   Utensils,
   Camera,
   Info,
-  AlertCircle
+  AlertCircle,
+  // 特色卡片圖示
+  Sailboat,
+  TreePine,
+  Coffee,
+  Mountain,
+  Waves,
+  Sunrise,
+  Compass,
+  Footprints,
+  Bike,
+  Tent,
+  Landmark,
+  UtensilsCrossed,
+  Wine,
+  Sparkles,
+  // 注意事項圖示
+  Luggage,
+  FileText,
+  Heart,
+  PhoneCall,
+  ChevronRight
 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -153,33 +174,57 @@ const DeparturePriceCalendar = ({
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden mb-8">
-      {/* 日曆標題 */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200" style={{ backgroundColor: themeColor.light }}>
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-8 border border-gray-100">
+      {/* 日曆標題 - 卓面級設計 */}
+      <div 
+        className="flex items-center justify-between p-6" 
+        style={{ 
+          background: `linear-gradient(135deg, ${themeColor.primary} 0%, ${themeColor.secondary} 100%)` 
+        }}
+      >
         <button 
           onClick={prevMonth}
-          className="p-2 hover:bg-white/50 rounded-lg transition-colors"
+          className="p-3 bg-white/20 hover:bg-white/30 rounded-full transition-all duration-200 backdrop-blur-sm"
         >
-          <ChevronUp className="h-5 w-5 rotate-[-90deg]" style={{ color: themeColor.primary }} />
+          <ChevronUp className="h-5 w-5 rotate-[-90deg] text-white" />
         </button>
-        <h3 className="text-lg font-bold" style={{ color: themeColor.primary }}>
-          {selectedMonth.getFullYear()} 年 {selectedMonth.getMonth() + 1} 月
-        </h3>
+        <div className="text-center">
+          <h3 className="text-2xl font-bold text-white tracking-wide">
+            {selectedMonth.getFullYear()} 年 {selectedMonth.getMonth() + 1} 月
+          </h3>
+          <p className="text-white/80 text-sm mt-1">選擇您理想的出發日期</p>
+        </div>
         <button 
           onClick={nextMonth}
-          className="p-2 hover:bg-white/50 rounded-lg transition-colors"
+          className="p-3 bg-white/20 hover:bg-white/30 rounded-full transition-all duration-200 backdrop-blur-sm"
         >
-          <ChevronUp className="h-5 w-5 rotate-90" style={{ color: themeColor.primary }} />
+          <ChevronUp className="h-5 w-5 rotate-90 text-white" />
         </button>
       </div>
 
+      {/* 價格圖例 */}
+      <div className="flex items-center justify-center gap-6 py-4 bg-gray-50 border-b border-gray-100">
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded" style={{ backgroundColor: themeColor.secondary }}></div>
+          <span className="text-sm text-gray-600">可預訂</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded bg-gray-300"></div>
+          <span className="text-sm text-gray-600">已額滿</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded bg-gray-100 border border-gray-200"></div>
+          <span className="text-sm text-gray-600">無出團</span>
+        </div>
+      </div>
+
       {/* 星期標題 */}
-      <div className="grid grid-cols-7 border-b border-gray-200">
+      <div className="grid grid-cols-7 bg-white">
         {weekDays.map((day, idx) => (
           <div 
             key={day} 
-            className={`py-3 text-center text-sm font-medium ${
-              idx === 0 ? 'text-red-500' : idx === 6 ? 'text-blue-500' : 'text-gray-600'
+            className={`py-4 text-center text-sm font-semibold border-b border-gray-100 ${
+              idx === 0 ? 'text-red-500' : idx === 6 ? 'text-blue-500' : 'text-gray-700'
             }`}
           >
             {day}
@@ -187,8 +232,8 @@ const DeparturePriceCalendar = ({
         ))}
       </div>
 
-      {/* 日曆網格 */}
-      <div className="grid grid-cols-7">
+      {/* 日曆網格 - 卡片式設計 */}
+      <div className="grid grid-cols-7 bg-white">
         {calendarDays.map((date, idx) => {
           const departure = getDepartureForDay(date);
           const isSelected = departure && selectedDeparture === departure.id;
@@ -199,13 +244,17 @@ const DeparturePriceCalendar = ({
             <div 
               key={idx}
               className={`
-                min-h-[80px] p-2 border-b border-r border-gray-100 relative
-                ${!date ? 'bg-gray-50' : ''}
-                ${isPast ? 'bg-gray-50 opacity-50' : ''}
-                ${departure && !isPast && !isFull ? 'cursor-pointer hover:bg-gray-50' : ''}
-                ${isSelected ? 'ring-2 ring-inset' : ''}
+                min-h-[90px] p-3 border-b border-r border-gray-50 relative transition-all duration-200
+                ${!date ? 'bg-gray-50/50' : 'bg-white'}
+                ${isPast ? 'bg-gray-50/50 opacity-40' : ''}
+                ${departure && !isPast && !isFull ? 'cursor-pointer hover:bg-gray-50 hover:shadow-inner' : ''}
+                ${isSelected ? 'bg-blue-50 shadow-inner' : ''}
               `}
-              style={isSelected ? { outline: `2px solid ${themeColor.secondary}`, outlineOffset: '-2px' } : {}}
+              style={isSelected ? { 
+                outline: `3px solid ${themeColor.secondary}`, 
+                outlineOffset: '-3px',
+                borderRadius: '8px'
+              } : {}}
               onClick={() => {
                 if (departure && !isPast && !isFull) {
                   setSelectedDeparture(departure.id);
@@ -213,34 +262,36 @@ const DeparturePriceCalendar = ({
               }}
             >
               {date && (
-                <>
-                  <span className={`text-sm ${
+                <div className="flex flex-col h-full">
+                  <span className={`text-base font-medium ${
                     date.getDay() === 0 ? 'text-red-500' : 
-                    date.getDay() === 6 ? 'text-blue-500' : 'text-gray-700'
+                    date.getDay() === 6 ? 'text-blue-500' : 'text-gray-800'
                   }`}>
                     {date.getDate()}
                   </span>
                   
                   {departure && (
-                    <div className="mt-1">
+                    <div className="mt-auto">
                       {isFull ? (
-                        <span className="text-xs text-gray-400">已額滿</span>
+                        <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded">已額滿</span>
                       ) : (
-                        <div 
-                          className="text-xs font-bold px-1 py-0.5 rounded text-white"
-                          style={{ backgroundColor: themeColor.secondary }}
-                        >
-                          ${(departure.adultPrice || basePrice).toLocaleString()}
-                        </div>
-                      )}
-                      {!isFull && departure.totalSlots && (
-                        <p className="text-[10px] text-gray-400 mt-0.5">
-                          剩 {departure.totalSlots - (departure.bookedSlots || 0)} 位
-                        </p>
+                        <>
+                          <div 
+                            className="text-xs font-bold px-2 py-1 rounded-md text-white shadow-sm"
+                            style={{ backgroundColor: themeColor.secondary }}
+                          >
+                            ${(departure.adultPrice || basePrice).toLocaleString()}
+                          </div>
+                          {departure.totalSlots && (
+                            <p className="text-[10px] text-gray-500 mt-1 font-medium">
+                              剩 {departure.totalSlots - (departure.bookedSlots || 0)} 位
+                            </p>
+                          )}
+                        </>
                       )}
                     </div>
                   )}
-                </>
+                </div>
               )}
             </div>
           );
@@ -920,7 +971,7 @@ export default function TourDetailPeony() {
           </div>
 
           {/* Title */}
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 max-w-4xl leading-tight">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 max-w-4xl leading-tight drop-shadow-lg">
             {tour.title}
           </h1>
 
@@ -1008,26 +1059,48 @@ export default function TourDetailPeony() {
             <p>{tour.description}</p>
           </div>
 
-          {/* Key Features Grid */}
+          {/* Key Features Grid - 重新設計的特色卡片 */}
           {keyFeatures.length > 0 && (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
-              {keyFeatures.map((feature: any, index: number) => (
-                <div 
-                  key={index} 
-                  className="p-6 border border-gray-200 hover:border-gray-300 transition-colors"
-                >
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
+              {keyFeatures.map((feature: any, index: number) => {
+                // 為每個特色分配不同的圖示和顏色
+                const featureStyles = [
+                  { icon: Sailboat, color: '#0D7377', bgColor: '#E6F4F4' },
+                  { icon: TreePine, color: '#2E7D32', bgColor: '#E8F5E9' },
+                  { icon: Coffee, color: '#795548', bgColor: '#EFEBE9' },
+                  { icon: Mountain, color: '#5D4037', bgColor: '#D7CCC8' },
+                  { icon: Waves, color: '#0277BD', bgColor: '#E1F5FE' },
+                  { icon: Sunrise, color: '#F57C00', bgColor: '#FFF3E0' },
+                  { icon: Compass, color: '#7B1FA2', bgColor: '#F3E5F5' },
+                  { icon: Footprints, color: '#00695C', bgColor: '#E0F2F1' },
+                  { icon: Bike, color: '#1565C0', bgColor: '#E3F2FD' },
+                  { icon: Landmark, color: '#C62828', bgColor: '#FFEBEE' },
+                  { icon: UtensilsCrossed, color: '#EF6C00', bgColor: '#FFF8E1' },
+                  { icon: Wine, color: '#6A1B9A', bgColor: '#F3E5F5' },
+                ];
+                const style = featureStyles[index % featureStyles.length];
+                const IconComponent = style.icon;
+                
+                return (
                   <div 
-                    className="w-12 h-12 flex items-center justify-center mb-4 rounded-lg"
-                    style={{ backgroundColor: themeColor.secondary }}
+                    key={index} 
+                    className="group p-6 rounded-xl border border-gray-100 hover:shadow-lg transition-all duration-300 bg-white hover:-translate-y-1"
                   >
-                    <Check className="h-6 w-6 text-white" />
+                    <div 
+                      className="w-14 h-14 flex items-center justify-center mb-4 rounded-xl transition-transform duration-300 group-hover:scale-110"
+                      style={{ backgroundColor: style.bgColor }}
+                    >
+                      <IconComponent className="h-7 w-7" style={{ color: style.color }} />
+                    </div>
+                    <h3 className="font-bold text-gray-800 mb-2 leading-tight">
+                      {typeof feature === 'string' ? feature : feature.title || feature.name}
+                    </h3>
+                    {typeof feature !== 'string' && feature.description && (
+                      <p className="text-sm text-gray-500 leading-relaxed">{feature.description}</p>
+                    )}
                   </div>
-                  <h3 className="font-bold mb-2">{typeof feature === 'string' ? feature : feature.title || feature.name}</h3>
-                  {typeof feature !== 'string' && feature.description && (
-                    <p className="text-sm text-gray-500">{feature.description}</p>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
 
@@ -1149,21 +1222,23 @@ export default function TourDetailPeony() {
             </div>
           )}
 
-          {/* Cost Inclusions */}
+          {/* Cost Inclusions - 卡片式設計 */}
           {costExplanation && (
             <div className="grid md:grid-cols-2 gap-8">
               {/* Included */}
               {costExplanation.included && costExplanation.included.length > 0 && (
-                <div>
+                <div className="bg-green-50 rounded-xl p-6 border border-green-100">
                   <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-green-700">
-                    <Check className="h-5 w-5" />
+                    <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                      <Check className="h-5 w-5 text-green-600" />
+                    </div>
                     費用包含
                   </h3>
                   <ul className="space-y-3">
                     {ensureArray(costExplanation.included).map((item: string, index: number) => (
                       <li key={index} className="flex items-start gap-3">
                         <Check className="h-4 w-4 text-green-600 mt-1 flex-shrink-0" />
-                        <span className="text-gray-600">{item}</span>
+                        <span className="text-gray-700">{item}</span>
                       </li>
                     ))}
                   </ul>
@@ -1172,16 +1247,18 @@ export default function TourDetailPeony() {
 
               {/* Excluded */}
               {costExplanation.excluded && costExplanation.excluded.length > 0 && (
-                <div>
+                <div className="bg-red-50 rounded-xl p-6 border border-red-100">
                   <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-red-700">
-                    <X className="h-5 w-5" />
+                    <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
+                      <X className="h-5 w-5 text-red-600" />
+                    </div>
                     費用不含
                   </h3>
                   <ul className="space-y-3">
                     {ensureArray(costExplanation.excluded).map((item: string, index: number) => (
                       <li key={index} className="flex items-start gap-3">
                         <X className="h-4 w-4 text-red-600 mt-1 flex-shrink-0" />
-                        <span className="text-gray-600">{item}</span>
+                        <span className="text-gray-700">{item}</span>
                       </li>
                     ))}
                   </ul>
@@ -1271,18 +1348,20 @@ export default function TourDetailPeony() {
           <p className="text-gray-500 text-center mb-12">出發前請詳閱以下資訊</p>
 
           {noticeDetailed ? (
-            <div className="space-y-8">
+            <div className="grid md:grid-cols-2 gap-6">
               {/* Preparation */}
               {noticeDetailed.preparation && ensureArray(noticeDetailed.preparation).length > 0 && (
-                <div className="bg-white p-6">
-                  <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                    <AlertCircle className="h-5 w-5" style={{ color: themeColor.secondary }} />
-                    行前準備
-                  </h3>
+                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${themeColor.secondary}15` }}>
+                      <Luggage className="h-5 w-5" style={{ color: themeColor.secondary }} />
+                    </div>
+                    <h3 className="text-lg font-bold">行前準備</h3>
+                  </div>
                   <ul className="space-y-2">
                     {ensureArray(noticeDetailed.preparation).map((item: string, index: number) => (
-                      <li key={index} className="flex items-start gap-3 text-gray-600">
-                        <span className="text-gray-400">•</span>
+                      <li key={index} className="flex items-start gap-3 text-gray-600 text-sm">
+                        <ChevronRight className="h-4 w-4 mt-0.5 flex-shrink-0" style={{ color: themeColor.secondary }} />
                         {item}
                       </li>
                     ))}
@@ -1292,15 +1371,17 @@ export default function TourDetailPeony() {
 
               {/* Documents */}
               {noticeDetailed.documents && ensureArray(noticeDetailed.documents).length > 0 && (
-                <div className="bg-white p-6">
-                  <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                    <Info className="h-5 w-5" style={{ color: themeColor.secondary }} />
-                    證件需求
-                  </h3>
+                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${themeColor.secondary}15` }}>
+                      <FileText className="h-5 w-5" style={{ color: themeColor.secondary }} />
+                    </div>
+                    <h3 className="text-lg font-bold">證件需求</h3>
+                  </div>
                   <ul className="space-y-2">
                     {ensureArray(noticeDetailed.documents).map((item: string, index: number) => (
-                      <li key={index} className="flex items-start gap-3 text-gray-600">
-                        <span className="text-gray-400">•</span>
+                      <li key={index} className="flex items-start gap-3 text-gray-600 text-sm">
+                        <ChevronRight className="h-4 w-4 mt-0.5 flex-shrink-0" style={{ color: themeColor.secondary }} />
                         {item}
                       </li>
                     ))}
@@ -1310,15 +1391,37 @@ export default function TourDetailPeony() {
 
               {/* Health */}
               {noticeDetailed.health && ensureArray(noticeDetailed.health).length > 0 && (
-                <div className="bg-white p-6">
-                  <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                    <AlertCircle className="h-5 w-5" style={{ color: themeColor.secondary }} />
-                    健康須知
-                  </h3>
+                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${themeColor.secondary}15` }}>
+                      <Heart className="h-5 w-5" style={{ color: themeColor.secondary }} />
+                    </div>
+                    <h3 className="text-lg font-bold">健康須知</h3>
+                  </div>
                   <ul className="space-y-2">
                     {ensureArray(noticeDetailed.health).map((item: string, index: number) => (
-                      <li key={index} className="flex items-start gap-3 text-gray-600">
-                        <span className="text-gray-400">•</span>
+                      <li key={index} className="flex items-start gap-3 text-gray-600 text-sm">
+                        <ChevronRight className="h-4 w-4 mt-0.5 flex-shrink-0" style={{ color: themeColor.secondary }} />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Emergency Contact */}
+              {noticeDetailed.emergency && ensureArray(noticeDetailed.emergency).length > 0 && (
+                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${themeColor.secondary}15` }}>
+                      <PhoneCall className="h-5 w-5" style={{ color: themeColor.secondary }} />
+                    </div>
+                    <h3 className="text-lg font-bold">緊急聯絡</h3>
+                  </div>
+                  <ul className="space-y-2">
+                    {ensureArray(noticeDetailed.emergency).map((item: string, index: number) => (
+                      <li key={index} className="flex items-start gap-3 text-gray-600 text-sm">
+                        <ChevronRight className="h-4 w-4 mt-0.5 flex-shrink-0" style={{ color: themeColor.secondary }} />
                         {item}
                       </li>
                     ))}
@@ -1328,15 +1431,17 @@ export default function TourDetailPeony() {
 
               {/* Terms */}
               {noticeDetailed.terms && ensureArray(noticeDetailed.terms).length > 0 && (
-                <div className="bg-white p-6">
-                  <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                    <Info className="h-5 w-5" style={{ color: themeColor.secondary }} />
-                    條款與細則
-                  </h3>
-                  <ul className="space-y-2">
+                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow md:col-span-2">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${themeColor.secondary}15` }}>
+                      <Info className="h-5 w-5" style={{ color: themeColor.secondary }} />
+                    </div>
+                    <h3 className="text-lg font-bold">條款與細則</h3>
+                  </div>
+                  <ul className="grid md:grid-cols-2 gap-2">
                     {ensureArray(noticeDetailed.terms).map((item: string, index: number) => (
-                      <li key={index} className="flex items-start gap-3 text-gray-600">
-                        <span className="text-gray-400">•</span>
+                      <li key={index} className="flex items-start gap-3 text-gray-600 text-sm">
+                        <ChevronRight className="h-4 w-4 mt-0.5 flex-shrink-0" style={{ color: themeColor.secondary }} />
                         {item}
                       </li>
                     ))}

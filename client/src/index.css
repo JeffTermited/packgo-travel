@@ -46,12 +46,16 @@
 }
 
 :root {
-  /* Pure Black & White Minimalist Palette */
-  --primary: oklch(0 0 0); /* Pure Black */
+  /* PACK&GO Travel Theme - Unified Color System */
+  /* Primary: Teal/Turquoise - 代表旅行、探索、大海 */
+  --primary: oklch(0.45 0.12 195); /* #0D7377 Teal */
   --primary-foreground: oklch(1 0 0); /* Pure White */
   
+  /* Secondary: Golden Amber - 代表陽光、溫暖、精緻 */
+  --accent-gold: oklch(0.75 0.15 75); /* #E8A838 Golden */
+  
   --background: oklch(1 0 0); /* Pure White */
-  --foreground: oklch(0 0 0); /* Pure Black */
+  --foreground: oklch(0.15 0 0); /* Near Black */
   
   --card: oklch(1 0 0);
   --card-foreground: oklch(0 0 0);
@@ -59,14 +63,14 @@
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0 0 0);
   
-  --secondary: oklch(0.95 0 0); /* Light Gray */
-  --secondary-foreground: oklch(0 0 0);
+  --secondary: oklch(0.97 0.01 195); /* Light Teal Tint */
+  --secondary-foreground: oklch(0.35 0.1 195); /* Dark Teal */
   
-  --muted: oklch(0.95 0 0);
-  --muted-foreground: oklch(0.45 0 0); /* Dark Gray */
+  --muted: oklch(0.96 0 0); /* Warm Gray */
+  --muted-foreground: oklch(0.45 0 0); /* Medium Gray */
   
-  --accent: oklch(0.9 0 0); /* Light Gray */
-  --accent-foreground: oklch(0 0 0);
+  --accent: oklch(0.75 0.15 75); /* Golden Amber */
+  --accent-foreground: oklch(0.15 0 0); /* Near Black */
   
   --destructive: oklch(0 0 0); /* Black for destructive */
   --destructive-foreground: oklch(1 0 0);
