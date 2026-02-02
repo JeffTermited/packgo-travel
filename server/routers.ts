@@ -1666,5 +1666,73 @@ Important guidelines:
       };
     }),
   }),
+
+  // Image Library router
+  imageLibrary: router({
+    // List images from library
+    list: protectedProcedure
+      .input(z.object({
+        tourId: z.number().optional(),
+        search: z.string().optional(),
+        limit: z.number().optional().default(50),
+        offset: z.number().optional().default(0),
+      }).optional())
+      .query(async ({ ctx, input }) => {
+        return await db.getImageLibrary({
+          userId: ctx.user.id,
+          tourId: input?.tourId,
+          search: input?.search,
+          limit: input?.limit,
+          offset: input?.offset,
+        });
+      }),
+
+    // Add image to library
+    add: protectedProcedure
+      .input(z.object({
+        url: z.string(),
+        filename: z.string().optional(),
+        mimeType: z.string().optional(),
+        fileSize: z.number().optional(),
+        width: z.number().optional(),
+        height: z.number().optional(),
+        tags: z.array(z.string()).optional(),
+        tourId: z.number().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const image = await db.addImageToLibrary({
+          url: input.url,
+          filename: input.filename,
+          mimeType: input.mimeType,
+          fileSize: input.fileSize,
+          width: input.width,
+          height: input.height,
+          tags: input.tags ? JSON.stringify(input.tags) : null,
+          tourId: input.tourId,
+          uploadedBy: ctx.user.id,
+        });
+        if (!image) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to add image to library",
+          });
+        }
+        return image;
+      }),
+
+    // Delete image from library
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const success = await db.deleteImageFromLibrary(input.id, ctx.user.id);
+        if (!success) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Image not found or you don't have permission to delete it",
+          });
+        }
+        return { success: true };
+      }),
+  }),
 });
 export type AppRouter = typeof appRouter;

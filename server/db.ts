@@ -9,7 +9,8 @@ import {
   payments, InsertPayment, Payment,
   inquiries, InsertInquiry, Inquiry,
   inquiryMessages, InsertInquiryMessage, InquiryMessage,
-  newsletterSubscribers, InsertNewsletterSubscriber, NewsletterSubscriber
+  newsletterSubscribers, InsertNewsletterSubscriber, NewsletterSubscriber,
+  imageLibrary, InsertImageLibraryItem, ImageLibraryItem
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -1001,4 +1002,150 @@ export async function searchTours(filters: {
   }
 
   return results;
+}
+
+
+// ============================================
+// Image Library Functions
+// ============================================
+
+/**
+ * Get all images from the library with optional filters
+ */
+export async function getImageLibrary(options: {
+  userId?: number;
+  tourId?: number;
+  limit?: number;
+  offset?: number;
+  search?: string;
+} = {}): Promise<ImageLibraryItem[]> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get image library: database not available");
+    return [];
+  }
+
+  try {
+    let query = db.select().from(imageLibrary);
+    const conditions = [];
+
+    if (options.userId) {
+      conditions.push(eq(imageLibrary.uploadedBy, options.userId));
+    }
+    if (options.tourId) {
+      conditions.push(eq(imageLibrary.tourId, options.tourId));
+    }
+    if (options.search) {
+      conditions.push(
+        or(
+          like(imageLibrary.filename, `%${options.search}%`),
+          like(imageLibrary.tags, `%${options.search}%`)
+        )
+      );
+    }
+
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions)) as typeof query;
+    }
+
+    query = query.orderBy(desc(imageLibrary.createdAt)) as typeof query;
+
+    if (options.limit) {
+      query = query.limit(options.limit) as typeof query;
+    }
+    if (options.offset) {
+      query = query.offset(options.offset) as typeof query;
+    }
+
+    return await query;
+  } catch (error) {
+    console.error("[Database] Failed to get image library:", error);
+    return [];
+  }
+}
+
+/**
+ * Add an image to the library
+ */
+export async function addImageToLibrary(image: InsertImageLibraryItem): Promise<ImageLibraryItem | null> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot add image to library: database not available");
+    return null;
+  }
+
+  try {
+    const result = await db.insert(imageLibrary).values(image);
+    const insertId = result[0].insertId;
+    
+    // Fetch and return the inserted image
+    const [inserted] = await db.select().from(imageLibrary).where(eq(imageLibrary.id, insertId));
+    return inserted || null;
+  } catch (error) {
+    console.error("[Database] Failed to add image to library:", error);
+    return null;
+  }
+}
+
+/**
+ * Delete an image from the library
+ */
+export async function deleteImageFromLibrary(id: number, userId: number): Promise<boolean> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot delete image from library: database not available");
+    return false;
+  }
+
+  try {
+    // Only allow deletion if user owns the image or is admin
+    const [image] = await db.select().from(imageLibrary).where(eq(imageLibrary.id, id));
+    if (!image) {
+      return false;
+    }
+
+    await db.delete(imageLibrary).where(eq(imageLibrary.id, id));
+    return true;
+  } catch (error) {
+    console.error("[Database] Failed to delete image from library:", error);
+    return false;
+  }
+}
+
+/**
+ * Update image usage count
+ */
+export async function incrementImageUsage(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot update image usage: database not available");
+    return;
+  }
+
+  try {
+    await db.update(imageLibrary)
+      .set({ usageCount: sql`${imageLibrary.usageCount} + 1` })
+      .where(eq(imageLibrary.id, id));
+  } catch (error) {
+    console.error("[Database] Failed to update image usage:", error);
+  }
+}
+
+/**
+ * Get image by ID
+ */
+export async function getImageById(id: number): Promise<ImageLibraryItem | null> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get image: database not available");
+    return null;
+  }
+
+  try {
+    const [image] = await db.select().from(imageLibrary).where(eq(imageLibrary.id, id));
+    return image || null;
+  } catch (error) {
+    console.error("[Database] Failed to get image:", error);
+    return null;
+  }
 }

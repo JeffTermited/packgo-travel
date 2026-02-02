@@ -409,3 +409,27 @@ export const newsletterSubscribers = mysqlTable("newsletterSubscribers", {
 
 export type NewsletterSubscriber = typeof newsletterSubscribers.$inferSelect;
 export type InsertNewsletterSubscriber = typeof newsletterSubscribers.$inferInsert;
+
+
+/**
+ * Image library table for storing uploaded images.
+ * Allows users to reuse images across different tours and sections.
+ */
+export const imageLibrary = mysqlTable("imageLibrary", {
+  id: int("id").autoincrement().primaryKey(),
+  url: varchar("url", { length: 1024 }).notNull(), // S3 URL
+  filename: varchar("filename", { length: 255 }), // Original filename
+  mimeType: varchar("mimeType", { length: 100 }), // MIME type (image/jpeg, etc.)
+  fileSize: int("fileSize"), // File size in bytes
+  width: int("width"), // Image width in pixels
+  height: int("height"), // Image height in pixels
+  tags: text("tags"), // JSON array of tags for search
+  uploadedBy: int("uploadedBy").notNull(), // User ID who uploaded
+  tourId: int("tourId"), // Optional: associated tour ID
+  usageCount: int("usageCount").default(0).notNull(), // How many times this image is used
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ImageLibraryItem = typeof imageLibrary.$inferSelect;
+export type InsertImageLibraryItem = typeof imageLibrary.$inferInsert;
