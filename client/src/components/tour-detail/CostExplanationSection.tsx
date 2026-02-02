@@ -5,6 +5,7 @@
 
 import React from "react";
 import { CheckCircle2, XCircle, AlertCircle, Info } from "lucide-react";
+import { ensureReadableOnWhite } from "@/lib/colorUtils";
 
 export interface CostExplanation {
   included?: string[];
@@ -37,7 +38,7 @@ export const CostExplanationSection: React.FC<CostExplanationSectionProps> = ({
       <div className="container mx-auto px-4">
         <h2
           className="text-2xl lg:text-3xl font-serif font-bold text-center mb-6"
-          style={{ color: colorTheme.primary }}
+          style={{ color: ensureReadableOnWhite(colorTheme.primary) }}
         >
           費用說明
         </h2>
@@ -49,11 +50,11 @@ export const CostExplanationSection: React.FC<CostExplanationSectionProps> = ({
               <div className="flex items-center gap-2 mb-3">
                 <CheckCircle2
                   className="h-5 w-5"
-                  style={{ color: colorTheme.accent }}
+                  style={{ color: ensureReadableOnWhite(colorTheme.accent) }}
                 />
                 <h3
                   className="text-lg font-bold"
-                  style={{ color: colorTheme.primary }}
+                  style={{ color: ensureReadableOnWhite(colorTheme.primary) }}
                 >
                   費用包含
                 </h3>
@@ -82,7 +83,7 @@ export const CostExplanationSection: React.FC<CostExplanationSectionProps> = ({
                 />
                 <h3
                   className="text-lg font-bold"
-                  style={{ color: colorTheme.primary }}
+                  style={{ color: ensureReadableOnWhite(colorTheme.primary) }}
                 >
                   費用不包含
                 </h3>
@@ -112,7 +113,7 @@ export const CostExplanationSection: React.FC<CostExplanationSectionProps> = ({
               />
               <h3
                 className="text-lg font-bold"
-                style={{ color: colorTheme.primary }}
+                style={{ color: ensureReadableOnWhite(colorTheme.primary) }}
               >
                 額外費用說明
               </h3>
@@ -143,12 +144,12 @@ export const CostExplanationSection: React.FC<CostExplanationSectionProps> = ({
             <div className="flex items-start gap-2">
               <Info
                 className="h-5 w-5 flex-shrink-0 mt-0.5"
-                style={{ color: colorTheme.accent }}
+                style={{ color: ensureReadableOnWhite(colorTheme.accent) }}
               />
               <div>
                 <h4
                   className="font-bold mb-1.5"
-                  style={{ color: colorTheme.primary }}
+                  style={{ color: ensureReadableOnWhite(colorTheme.primary) }}
                 >
                   重要提醒
                 </h4>

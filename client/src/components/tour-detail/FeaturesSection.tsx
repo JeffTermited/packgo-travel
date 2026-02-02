@@ -7,6 +7,7 @@ import React from "react";
 import { EditableText } from "./EditableText";
 import { EditableImage } from "./EditableImage";
 import { useEditMode } from "@/contexts/EditModeContext";
+import { ensureReadableOnWhite } from "@/lib/colorUtils";
 
 export interface Feature {
   label: string;
@@ -51,7 +52,7 @@ export const FeaturesSection: React.FC<FeaturesSectionProps> = ({
         <div className="text-center mb-10 lg:mb-14">
           <h2
             className="text-3xl lg:text-4xl font-serif font-bold mb-3"
-            style={{ color: colorTheme.primary }}
+            style={{ color: ensureReadableOnWhite(colorTheme.primary) }}
           >
             行程特色
           </h2>

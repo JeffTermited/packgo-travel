@@ -5,6 +5,7 @@
 
 import React from "react";
 import { AlertCircle, FileText, Heart, Phone } from "lucide-react";
+import { ensureReadableOnWhite } from "@/lib/colorUtils";
 
 export interface NoticeDetailed {
   preparation?: string[];
@@ -82,7 +83,7 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
       <div className="container mx-auto px-4">
         <h2
           className="text-2xl lg:text-3xl font-serif font-bold text-center mb-6"
-          style={{ color: colorTheme.primary }}
+          style={{ color: ensureReadableOnWhite(colorTheme.primary) }}
         >
           注意事項
         </h2>
@@ -98,12 +99,12 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
                 >
                   <FileText
                     className="h-4 w-4"
-                    style={{ color: colorTheme.accent }}
+                    style={{ color: ensureReadableOnWhite(colorTheme.accent) }}
                   />
                 </div>
                 <h3
                   className="text-lg font-bold"
-                  style={{ color: colorTheme.primary }}
+                  style={{ color: ensureReadableOnWhite(colorTheme.primary) }}
                 >
                   行前準備
                 </h3>
@@ -139,7 +140,7 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
                 </div>
                 <h3
                   className="text-lg font-bold"
-                  style={{ color: colorTheme.primary }}
+                  style={{ color: ensureReadableOnWhite(colorTheme.primary) }}
                 >
                   文化禮儀
                 </h3>
@@ -175,7 +176,7 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
                 </div>
                 <h3
                   className="text-lg font-bold"
-                  style={{ color: colorTheme.primary }}
+                  style={{ color: ensureReadableOnWhite(colorTheme.primary) }}
                 >
                   健康安全
                 </h3>
@@ -211,7 +212,7 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
                 </div>
                 <h3
                   className="text-lg font-bold"
-                  style={{ color: colorTheme.primary }}
+                  style={{ color: ensureReadableOnWhite(colorTheme.primary) }}
                 >
                   緊急聯絡
                 </h3>
@@ -244,12 +245,12 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
           <div className="flex items-start gap-3">
             <AlertCircle
               className="h-6 w-6 flex-shrink-0 mt-0.5"
-              style={{ color: colorTheme.accent }}
+              style={{ color: ensureReadableOnWhite(colorTheme.accent) }}
             />
             <div>
               <h4
                 className="font-bold mb-2"
-                style={{ color: colorTheme.primary }}
+                style={{ color: ensureReadableOnWhite(colorTheme.primary) }}
               >
                 重要提醒
               </h4>

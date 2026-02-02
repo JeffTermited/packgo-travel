@@ -12,6 +12,7 @@ import { EditableText } from "./EditableText";
 import { EditableImage } from "./EditableImage";
 import { useEditMode } from "@/contexts/EditModeContext";
 import { cn } from "@/lib/utils";
+import { ensureReadableOnWhite } from "@/lib/colorUtils";
 
 export interface DailyActivity {
   time: string;
@@ -89,7 +90,7 @@ export const DailyItinerarySection: React.FC<DailyItinerarySectionProps> = ({
         <div className="text-center mb-10">
           <h2
             className="text-3xl lg:text-4xl font-serif font-bold mb-3"
-            style={{ color: colorTheme.primary }}
+            style={{ color: ensureReadableOnWhite(colorTheme.primary) }}
           >
             每日行程
           </h2>
@@ -134,13 +135,13 @@ export const DailyItinerarySection: React.FC<DailyItinerarySectionProps> = ({
                         }}
                         isEditable={isEditMode}
                         className="text-xl lg:text-2xl font-bold"
-                        style={{ color: colorTheme.primary }}
+                        style={{ color: ensureReadableOnWhite(colorTheme.primary) }}
                         as="h3"
                       />
                     ) : (
                       <h3
                         className="text-xl lg:text-2xl font-bold truncate"
-                        style={{ color: colorTheme.primary }}
+                        style={{ color: ensureReadableOnWhite(colorTheme.primary) }}
                       >
                         {day.title}
                       </h3>
@@ -259,13 +260,13 @@ export const DailyItinerarySection: React.FC<DailyItinerarySectionProps> = ({
                                 }}
                                 isEditable={isEditMode}
                                 className="text-lg font-bold mb-2"
-                                style={{ color: colorTheme.primary }}
+                                style={{ color: ensureReadableOnWhite(colorTheme.primary) }}
                                 as="h4"
                               />
                             ) : (
                               <h4
                                 className="text-lg font-bold mb-2"
-                                style={{ color: colorTheme.primary }}
+                                style={{ color: ensureReadableOnWhite(colorTheme.primary) }}
                               >
                                 {activity.title}
                               </h4>
@@ -295,13 +296,13 @@ export const DailyItinerarySection: React.FC<DailyItinerarySectionProps> = ({
                             <div className="flex flex-wrap gap-3 mt-3">
                               {activity.location && (
                                 <div className="inline-flex items-center gap-1.5 text-sm text-gray-600">
-                                  <MapPin className="h-4 w-4" style={{ color: colorTheme.accent }} />
+                                  <MapPin className="h-4 w-4" style={{ color: ensureReadableOnWhite(colorTheme.accent) }} />
                                   {activity.location}
                                 </div>
                               )}
                               {activity.transportation && (
                                 <div className="inline-flex items-center gap-1.5 text-sm text-gray-600">
-                                  <Car className="h-4 w-4" style={{ color: colorTheme.accent }} />
+                                  <Car className="h-4 w-4" style={{ color: ensureReadableOnWhite(colorTheme.accent) }} />
                                   {activity.transportation}
                                 </div>
                               )}
@@ -316,8 +317,8 @@ export const DailyItinerarySection: React.FC<DailyItinerarySectionProps> = ({
                       {/* Meals Card */}
                       <div className="bg-white rounded-xl p-5 shadow-sm">
                         <div className="flex items-center gap-2 mb-4">
-                          <Utensils className="h-5 w-5" style={{ color: colorTheme.accent }} />
-                          <h5 className="font-bold text-lg" style={{ color: colorTheme.primary }}>
+                          <Utensils className="h-5 w-5" style={{ color: ensureReadableOnWhite(colorTheme.accent) }} />
+                          <h5 className="font-bold text-lg" style={{ color: ensureReadableOnWhite(colorTheme.primary) }}>
                             今日餐食
                           </h5>
                         </div>
@@ -356,8 +357,8 @@ export const DailyItinerarySection: React.FC<DailyItinerarySectionProps> = ({
                       {day.accommodation && (
                         <div className="bg-white rounded-xl p-5 shadow-sm">
                           <div className="flex items-center gap-2 mb-4">
-                            <Hotel className="h-5 w-5" style={{ color: colorTheme.accent }} />
-                            <h5 className="font-bold text-lg" style={{ color: colorTheme.primary }}>
+                            <Hotel className="h-5 w-5" style={{ color: ensureReadableOnWhite(colorTheme.accent) }} />
+                            <h5 className="font-bold text-lg" style={{ color: ensureReadableOnWhite(colorTheme.primary) }}>
                               今晚住宿
                             </h5>
                           </div>

@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ensureReadableOnWhite } from "@/lib/colorUtils";
 
 interface PriceEditDialogProps {
   open: boolean;
@@ -90,7 +91,7 @@ export const PriceEditDialog: React.FC<PriceEditDialogProps> = ({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <DollarSign className="h-5 w-5" style={{ color: colorTheme.accent }} />
+            <DollarSign className="h-5 w-5" style={{ color: ensureReadableOnWhite(colorTheme.accent) }} />
             編輯價格與日期
           </DialogTitle>
         </DialogHeader>

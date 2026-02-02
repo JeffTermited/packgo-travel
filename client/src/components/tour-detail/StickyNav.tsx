@@ -4,6 +4,7 @@
  */
 
 import React from "react";
+import { ensureReadableOnWhite } from "@/lib/colorUtils";
 
 export interface StickyNavProps {
   tourTitle: string;
@@ -73,7 +74,7 @@ export const StickyNav: React.FC<StickyNavProps> = ({ tourTitle, colorTheme, tra
           {/* 行程名稱 */}
           <h2
             className="text-sm lg:text-base font-bold truncate max-w-[300px] lg:max-w-[500px]"
-            style={{ color: colorTheme.primary }}
+            style={{ color: ensureReadableOnWhite(colorTheme.primary) }}
             title={tourTitle}
           >
             {tourTitle.length > 40 ? tourTitle.slice(0, 40) + '...' : tourTitle}

@@ -8,6 +8,7 @@ import { Star } from "lucide-react";
 import { EditableText } from "./EditableText";
 import { EditableImage } from "./EditableImage";
 import { useEditMode } from "@/contexts/EditModeContext";
+import { ensureReadableOnWhite } from "@/lib/colorUtils";
 
 export interface ImageTextBlockProps {
   title: string;
@@ -148,13 +149,13 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
                 }}
                 isEditable={isEditMode}
                 className="text-2xl lg:text-4xl font-serif font-bold"
-                style={{ color: colorTheme.primary }}
+                style={{ color: ensureReadableOnWhite(colorTheme.primary) }}
                 as="h2"
               />
             ) : (
               <h2
                 className="text-2xl lg:text-4xl font-serif font-bold"
-                style={{ color: colorTheme.primary }}
+                style={{ color: ensureReadableOnWhite(colorTheme.primary) }}
               >
                 {title}
               </h2>

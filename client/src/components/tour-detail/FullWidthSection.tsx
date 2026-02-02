@@ -4,6 +4,7 @@
  */
 
 import React from "react";
+import { ensureReadableOnWhite } from "@/lib/colorUtils";
 
 export interface FullWidthSectionProps {
   title: string;
@@ -44,7 +45,7 @@ export const FullWidthSection: React.FC<FullWidthSectionProps> = ({
           <div className="w-full lg:w-1/2 flex flex-col gap-6">
             <h2
               className="text-3xl lg:text-4xl font-serif font-bold"
-              style={{ color: colorTheme.primary }}
+              style={{ color: ensureReadableOnWhite(colorTheme.primary) }}
             >
               {title}
             </h2>

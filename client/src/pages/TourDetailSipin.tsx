@@ -30,6 +30,7 @@ import { TransportationInfoSection } from "@/components/tour-detail/Transportati
 import { NoticeSection } from "@/components/tour-detail/NoticeSection";
 import { BackToTop } from "@/components/tour-detail/BackToTop";
 import { PriceEditDialog } from "@/components/tour-detail/PriceEditDialog";
+import { ensureReadableOnWhite, getReadableColor } from "@/lib/colorUtils";
 
 // 解析 JSON 字串
 const parseJSON = (str: string | null | undefined, defaultValue: any = null) => {
@@ -261,13 +262,13 @@ function TourDetailContent() {
           <div className="flex flex-wrap items-center justify-center gap-6 lg:gap-12">
             {/* 天數 */}
             <div className="flex items-center gap-2 text-gray-700">
-              <Calendar className="h-5 w-5" style={{ color: colorTheme.accent }} />
+              <Calendar className="h-5 w-5" style={{ color: ensureReadableOnWhite(colorTheme.accent) }} />
               <span className="font-medium">{tour.duration} 天 {tour.nights || tour.duration - 1} 夜</span>
             </div>
             
             {/* 目的地 */}
             <div className="flex items-center gap-2 text-gray-700">
-              <MapPin className="h-5 w-5" style={{ color: colorTheme.accent }} />
+              <MapPin className="h-5 w-5" style={{ color: ensureReadableOnWhite(colorTheme.accent) }} />
               <span className="font-medium">{tour.destinationCountry} {tour.destinationCity}</span>
             </div>
             
@@ -276,8 +277,8 @@ function TourDetailContent() {
               className={`flex items-center gap-2 ${canEdit ? 'cursor-pointer hover:bg-gray-100 px-3 py-1 rounded-lg transition-colors' : ''}`}
               onClick={() => canEdit && setShowPriceDialog(true)}
             >
-              <DollarSign className="h-5 w-5" style={{ color: colorTheme.accent }} />
-              <span className="text-2xl font-bold" style={{ color: colorTheme.accent }}>
+              <DollarSign className="h-5 w-5" style={{ color: ensureReadableOnWhite(colorTheme.accent) }} />
+              <span className="text-2xl font-bold" style={{ color: ensureReadableOnWhite(colorTheme.accent) }}>
                 NT$ {tour.price.toLocaleString()}
               </span>
               <span className="text-gray-500 text-sm">{tour.priceUnit || "人/起"}</span>

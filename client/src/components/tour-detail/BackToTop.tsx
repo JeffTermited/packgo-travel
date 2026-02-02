@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect } from "react";
 import { ArrowUp } from "lucide-react";
+import { ensureReadableOnWhite } from "@/lib/colorUtils";
 
 export interface BackToTopProps {
   colorTheme: {

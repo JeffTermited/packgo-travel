@@ -5,6 +5,7 @@
 
 import React from "react";
 import { Plane, Train, Ship, Car, Bus, Clock, MapPin } from "lucide-react";
+import { ensureReadableOnWhite } from "@/lib/colorUtils";
 
 // 交通類型
 export type TransportationType = 'FLIGHT' | 'TRAIN' | 'CAR' | 'CRUISE' | 'BUS' | 'UNKNOWN';
@@ -180,7 +181,7 @@ export const TransportationInfoSection: React.FC<TransportationInfoSectionProps>
       <div className="container mx-auto px-4">
         <h2
           className="text-2xl lg:text-3xl font-serif font-bold text-center mb-6"
-          style={{ color: colorTheme.primary }}
+          style={{ color: ensureReadableOnWhite(colorTheme.primary) }}
         >
           {sectionTitle}
         </h2>
@@ -189,7 +190,7 @@ export const TransportationInfoSection: React.FC<TransportationInfoSectionProps>
         {(displayName || description) && (
           <div className="text-center mb-6">
             {displayName && (
-              <p className="text-lg font-bold mb-1.5" style={{ color: colorTheme.primary }}>
+              <p className="text-lg font-bold mb-1.5" style={{ color: ensureReadableOnWhite(colorTheme.primary) }}>
                 {displayName}
               </p>
             )}
@@ -237,12 +238,12 @@ export const TransportationInfoSection: React.FC<TransportationInfoSectionProps>
                 >
                   <TransportIcon
                     className="h-4 w-4"
-                    style={{ color: colorTheme.accent }}
+                    style={{ color: ensureReadableOnWhite(colorTheme.accent) }}
                   />
                 </div>
                 <h3
                   className="text-lg font-bold"
-                  style={{ color: colorTheme.primary }}
+                  style={{ color: ensureReadableOnWhite(colorTheme.primary) }}
                 >
                   {labels.outboundTitle}
                 </h3>
@@ -258,7 +259,7 @@ export const TransportationInfoSection: React.FC<TransportationInfoSectionProps>
 
                 {outbound.departurePoint && (
                   <div className="flex items-start gap-3">
-                    <MapPin className="h-5 w-5 flex-shrink-0 mt-0.5" style={{ color: colorTheme.accent }} />
+                    <MapPin className="h-5 w-5 flex-shrink-0 mt-0.5" style={{ color: ensureReadableOnWhite(colorTheme.accent) }} />
                     <div>
                       <p className="text-gray-900 font-medium">{outbound.departurePoint}</p>
                       {outbound.departureTime && (
@@ -270,7 +271,7 @@ export const TransportationInfoSection: React.FC<TransportationInfoSectionProps>
 
                 {outbound.arrivalPoint && (
                   <div className="flex items-start gap-3">
-                    <MapPin className="h-5 w-5 flex-shrink-0 mt-0.5" style={{ color: colorTheme.accent }} />
+                    <MapPin className="h-5 w-5 flex-shrink-0 mt-0.5" style={{ color: ensureReadableOnWhite(colorTheme.accent) }} />
                     <div>
                       <p className="text-gray-900 font-medium">{outbound.arrivalPoint}</p>
                       {outbound.arrivalTime && (
@@ -282,7 +283,7 @@ export const TransportationInfoSection: React.FC<TransportationInfoSectionProps>
 
                 {outbound.duration && (
                   <div className="flex items-start gap-3">
-                    <Clock className="h-5 w-5 flex-shrink-0 mt-0.5" style={{ color: colorTheme.accent }} />
+                    <Clock className="h-5 w-5 flex-shrink-0 mt-0.5" style={{ color: ensureReadableOnWhite(colorTheme.accent) }} />
                     <span className="text-gray-900">{labels.duration}{outbound.duration}</span>
                   </div>
                 )}
@@ -300,12 +301,12 @@ export const TransportationInfoSection: React.FC<TransportationInfoSectionProps>
                 >
                   <TransportIcon
                     className={`h-4 w-4 ${type === 'FLIGHT' ? 'transform rotate-180' : ''}`}
-                    style={{ color: colorTheme.accent }}
+                    style={{ color: ensureReadableOnWhite(colorTheme.accent) }}
                   />
                 </div>
                 <h3
                   className="text-lg font-bold"
-                  style={{ color: colorTheme.primary }}
+                  style={{ color: ensureReadableOnWhite(colorTheme.primary) }}
                 >
                   {labels.inboundTitle}
                 </h3>
@@ -321,7 +322,7 @@ export const TransportationInfoSection: React.FC<TransportationInfoSectionProps>
 
                 {inbound.departurePoint && (
                   <div className="flex items-start gap-3">
-                    <MapPin className="h-5 w-5 flex-shrink-0 mt-0.5" style={{ color: colorTheme.accent }} />
+                    <MapPin className="h-5 w-5 flex-shrink-0 mt-0.5" style={{ color: ensureReadableOnWhite(colorTheme.accent) }} />
                     <div>
                       <p className="text-gray-900 font-medium">{inbound.departurePoint}</p>
                       {inbound.departureTime && (
@@ -333,7 +334,7 @@ export const TransportationInfoSection: React.FC<TransportationInfoSectionProps>
 
                 {inbound.arrivalPoint && (
                   <div className="flex items-start gap-3">
-                    <MapPin className="h-5 w-5 flex-shrink-0 mt-0.5" style={{ color: colorTheme.accent }} />
+                    <MapPin className="h-5 w-5 flex-shrink-0 mt-0.5" style={{ color: ensureReadableOnWhite(colorTheme.accent) }} />
                     <div>
                       <p className="text-gray-900 font-medium">{inbound.arrivalPoint}</p>
                       {inbound.arrivalTime && (
@@ -345,7 +346,7 @@ export const TransportationInfoSection: React.FC<TransportationInfoSectionProps>
 
                 {inbound.duration && (
                   <div className="flex items-start gap-3">
-                    <Clock className="h-5 w-5 flex-shrink-0 mt-0.5" style={{ color: colorTheme.accent }} />
+                    <Clock className="h-5 w-5 flex-shrink-0 mt-0.5" style={{ color: ensureReadableOnWhite(colorTheme.accent) }} />
                     <span className="text-gray-900">{labels.duration}{inbound.duration}</span>
                   </div>
                 )}
