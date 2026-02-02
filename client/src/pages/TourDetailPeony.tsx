@@ -555,27 +555,43 @@ const DayCard = ({
             </button>
           )}
           
-          {/* Meals & Accommodation */}
-          <div className="mt-6 pt-6 border-t border-gray-100 flex flex-wrap gap-4 text-sm text-gray-500">
-            {(day.breakfast || day.lunch || day.dinner) && (
-              <div className="flex items-center gap-2">
-                <Utensils className="h-4 w-4" />
-                <span>
-                  {[
-                    day.breakfast && "早",
-                    day.lunch && "午",
-                    day.dinner && "晚"
-                  ].filter(Boolean).join("/")}餐
-                </span>
+          {/* Meals Section - 獨立區塊 */}
+          {day.meals && (day.meals.breakfast || day.meals.lunch || day.meals.dinner) && (
+            <div className="mt-6 pt-6 border-t border-gray-100">
+              <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                <Utensils className="h-4 w-4" style={{ color: themeColor.secondary }} />
+                今日餐食
+              </h4>
+              <div className="grid grid-cols-3 gap-3">
+                {/* 早餐 */}
+                <div className="bg-amber-50 rounded-lg p-3 text-center">
+                  <div className="text-xs text-amber-600 font-medium mb-1">早餐</div>
+                  <div className="text-sm text-gray-700">{day.meals.breakfast || '自理'}</div>
+                </div>
+                {/* 午餐 */}
+                <div className="bg-orange-50 rounded-lg p-3 text-center">
+                  <div className="text-xs text-orange-600 font-medium mb-1">午餐</div>
+                  <div className="text-sm text-gray-700">{day.meals.lunch || '自理'}</div>
+                </div>
+                {/* 晚餐 */}
+                <div className="bg-indigo-50 rounded-lg p-3 text-center">
+                  <div className="text-xs text-indigo-600 font-medium mb-1">晚餐</div>
+                  <div className="text-sm text-gray-700">{day.meals.dinner || '自理'}</div>
+                </div>
               </div>
-            )}
-            {day.accommodation && (
-              <div className="flex items-center gap-2">
-                <Building className="h-4 w-4" />
+            </div>
+          )}
+          
+          {/* Accommodation */}
+          {day.accommodation && (
+            <div className="mt-4 pt-4 border-t border-gray-100">
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Building className="h-4 w-4" style={{ color: themeColor.secondary }} />
+                <span className="font-medium">今晚住宿：</span>
                 <span>{day.accommodation}</span>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
