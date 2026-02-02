@@ -15,6 +15,7 @@ import {
   ChevronRight, ChevronDown, ChevronUp, Search, X, SlidersHorizontal, Filter
 } from "lucide-react";
 import { DestinationAutocomplete } from "@/components/DestinationAutocomplete";
+import { groupDestinationsByContinent, continentOrder } from "@shared/continentMapping";
 
 // 智能標籤生成函數 - 根據行程資料自動生成正確的標籤
 const generateSmartTags = (tour: any) => {
@@ -116,6 +117,28 @@ export default function SearchResults() {
 
   // 獲取智能篩選選項
   const { data: filterOptions } = trpc.tours.getFilterOptions.useQuery();
+
+  // 洲別展開狀態
+  const [expandedContinents, setExpandedContinents] = useState<Set<string>>(new Set(["亞洲"]));
+
+  // 將目的地按洲別分組
+  const groupedDestinations = useMemo(() => {
+    if (!filterOptions?.destinations) return {};
+    return groupDestinationsByContinent(filterOptions.destinations);
+  }, [filterOptions?.destinations]);
+
+  // 切換洲別展開狀態
+  const toggleContinent = (continent: string) => {
+    setExpandedContinents(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(continent)) {
+        newSet.delete(continent);
+      } else {
+        newSet.add(continent);
+      }
+      return newSet;
+    });
+  };
 
   // 當獲取到篩選選項時，初始化範圍
   useEffect(() => {
@@ -336,20 +359,46 @@ export default function SearchResults() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {/* 目的地篩選 */}
-                  {filterOptions.destinations.length > 0 && (
-                    <div>
+                  {/* 目的地篩選 - 按洲別分組 */}
+                  {Object.keys(groupedDestinations).length > 0 && (
+                    <div className="md:col-span-2">
                       <h4 className="text-sm font-medium text-gray-700 mb-3">目的地</h4>
-                      <div className="space-y-2 max-h-40 overflow-y-auto">
-                        {filterOptions.destinations.slice(0, 10).map(({ country, count }) => (
-                          <label key={country} className="flex items-center gap-2 cursor-pointer">
-                            <Checkbox
-                              checked={selectedDestinations.includes(country)}
-                              onCheckedChange={() => toggleDestination(country)}
-                            />
-                            <span className="text-sm text-gray-600">{country}</span>
-                            <span className="text-xs text-gray-400">({count})</span>
-                          </label>
+                      <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
+                        {Object.entries(groupedDestinations).map(([continent, destinations]) => (
+                          <div key={continent} className="border border-gray-200 rounded-lg overflow-hidden">
+                            {/* 洲別標題 */}
+                            <button
+                              onClick={() => toggleContinent(continent)}
+                              className="w-full flex items-center justify-between px-3 py-2 bg-gray-100 hover:bg-gray-200 transition-colors"
+                            >
+                              <span className="font-medium text-gray-800">{continent}</span>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-gray-500">
+                                  {destinations.reduce((sum, d) => sum + d.count, 0)} 個行程
+                                </span>
+                                {expandedContinents.has(continent) ? (
+                                  <ChevronUp className="h-4 w-4 text-gray-500" />
+                                ) : (
+                                  <ChevronDown className="h-4 w-4 text-gray-500" />
+                                )}
+                              </div>
+                            </button>
+                            {/* 國家列表 */}
+                            {expandedContinents.has(continent) && (
+                              <div className="p-3 bg-white space-y-2">
+                                {destinations.map(({ country, count }) => (
+                                  <label key={country} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                                    <Checkbox
+                                      checked={selectedDestinations.includes(country)}
+                                      onCheckedChange={() => toggleDestination(country)}
+                                    />
+                                    <span className="text-sm text-gray-600 flex-1">{country}</span>
+                                    <span className="text-xs text-gray-400">({count})</span>
+                                  </label>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         ))}
                       </div>
                     </div>
