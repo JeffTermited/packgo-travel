@@ -90,13 +90,13 @@ const regionConfig: Record<string, {
   name: string;
   label: string;
 }> = {
-  "europe": { name: "歐洲", label: "Europe" },
-  "asia": { name: "中國 & 亞洲", label: "China & Asia" },
-  "south-america": { name: "南美洲", label: "South America" },
-  "middle-east": { name: "以色列 & 約旦", label: "Israel & Jordan" },
-  "africa": { name: "埃及 & 非洲", label: "Egypt & Africa" },
+  "europe": { name: "歐洲地區", label: "Europe" },
+  "asia": { name: "亞洲地區", label: "Asia" },
+  "south-america": { name: "美洲地區", label: "Americas" },
+  "middle-east": { name: "中東地區", label: "Middle East" },
+  "africa": { name: "非洲地區", label: "Africa" },
   "cruise": { name: "郵輪之旅", label: "Cruises" },
-  "oceania": { name: "大洋洲", label: "Oceania" }
+  "oceania": { name: "大洋洲地區", label: "Oceania" }
 };
 
 // 國家圖片映射

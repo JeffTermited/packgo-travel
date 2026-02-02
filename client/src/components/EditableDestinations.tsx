@@ -79,7 +79,8 @@ export default function EditableDestinations() {
 
   const handleDestinationClick = (region: string) => {
     if (!isEditMode) {
-      setLocation(`/tours?region=${region}`);
+      // 導向國家分類頁面，讓用戶先選擇國家
+      setLocation(`/destinations/${region}`);
     }
   };
 
