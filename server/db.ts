@@ -1386,6 +1386,12 @@ export async function reorderDestinations(orderedIds: number[]): Promise<boolean
 export async function getFilterOptions(): Promise<{
   destinations: { country: string; count: number }[];
   tags: { tag: string; count: number }[];
+  smartTags: {
+    duration: { label: string; count: number }[];
+    price: { label: string; count: number }[];
+    transport: { label: string; count: number }[];
+    feature: { label: string; count: number }[];
+  };
   durationRange: { min: number; max: number };
   priceRange: { min: number; max: number };
 }> {
@@ -1446,9 +1452,67 @@ export async function getFilterOptions(): Promise<{
     max: prices.length > 0 ? Math.max(...prices) : 500000,
   };
 
+  // 5. 智能標籤分類
+  const smartTags = {
+    duration: [] as { label: string; count: number }[],
+    price: [] as { label: string; count: number }[],
+    transport: [] as { label: string; count: number }[],
+    feature: [] as { label: string; count: number }[],
+  };
+
+  // 天數分類
+  const durationCounts = { "深度旅遊": 0, "經典行程": 0, "輕旅行": 0, "一般行程": 0 };
+  allTours.forEach(tour => {
+    if (tour.duration >= 10) durationCounts["深度旅遊"]++;
+    else if (tour.duration >= 7) durationCounts["經典行程"]++;
+    else if (tour.duration <= 4) durationCounts["輕旅行"]++;
+    else durationCounts["一般行程"]++;
+  });
+  Object.entries(durationCounts).forEach(([label, count]) => {
+    if (count > 0) smartTags.duration.push({ label, count });
+  });
+
+  // 價格分類
+  const priceCounts = { "精緻行程": 0, "超值優惠": 0 };
+  allTours.forEach(tour => {
+    if (tour.price && tour.price >= 80000) priceCounts["精緻行程"]++;
+    else if (tour.price && tour.price < 30000) priceCounts["超值優惠"]++;
+  });
+  Object.entries(priceCounts).forEach(([label, count]) => {
+    if (count > 0) smartTags.price.push({ label, count });
+  });
+
+  // 交通方式分類
+  const transportCounts = { "航空": 0, "鐵道": 0, "郵輪": 0, "巴士": 0 };
+  allTours.forEach(tour => {
+    const combinedText = `${tour.title || ''} ${tour.description || ''} ${tour.category || ''}`.toLowerCase();
+    if (tour.outboundAirline || combinedText.includes('航空') || combinedText.includes('飛機')) transportCounts["航空"]++;
+    if (combinedText.includes('高鐵') || combinedText.includes('火車') || combinedText.includes('列車')) transportCounts["鐵道"]++;
+    if (tour.category === 'cruise' || combinedText.includes('郵輪') || combinedText.includes('遊輪')) transportCounts["郵輪"]++;
+    if (combinedText.includes('巴士') || combinedText.includes('遊覽車')) transportCounts["巴士"]++;
+  });
+  Object.entries(transportCounts).forEach(([label, count]) => {
+    if (count > 0) smartTags.transport.push({ label, count });
+  });
+
+  // 特色活動分類
+  const featureCounts = { "美食之旅": 0, "攝影之旅": 0, "團體旅遊": 0, "永續旅遊": 0, "溫泉": 0 };
+  allTours.forEach(tour => {
+    const combinedText = `${tour.title || ''} ${tour.description || ''}`.toLowerCase();
+    if (combinedText.includes('美食') || combinedText.includes('料理') || combinedText.includes('餐廳')) featureCounts["美食之旅"]++;
+    if (combinedText.includes('攝影') || combinedText.includes('拍照') || combinedText.includes('打卡')) featureCounts["攝影之旅"]++;
+    if (tour.category === 'group' || combinedText.includes('團體')) featureCounts["團體旅遊"]++;
+    if (combinedText.includes('esg') || combinedText.includes('永續')) featureCounts["永續旅遊"]++;
+    if (combinedText.includes('溫泉')) featureCounts["溫泉"]++;
+  });
+  Object.entries(featureCounts).forEach(([label, count]) => {
+    if (count > 0) smartTags.feature.push({ label, count });
+  });
+
   return {
     destinations,
     tags,
+    smartTags,
     durationRange,
     priceRange,
   };

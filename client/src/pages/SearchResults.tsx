@@ -170,32 +170,68 @@ export default function SearchResults() {
   }, [keyword, selectedDestinations]);
 
   // 搜尋行程
+  // 智能標籤篩選在前端執行，不傳遞到後端
   const { data, isLoading } = trpc.tours.search.useQuery({
     destination: searchKeyword,
     minDays: durationRange[0],
     maxDays: durationRange[1],
     minPrice: priceRange[0],
     maxPrice: priceRange[1],
-    tags: selectedTags.length > 0 ? selectedTags : undefined,
     sortBy,
-    page: currentPage,
-    pageSize,
+    page: 1, // 當使用前端篩選時，先獲取所有資料
+    pageSize: 100, // 獲取較多資料以便前端篩選
   });
   
-  // 在前端過濾多個目的地（當選擇多個目的地時）
+  // 在前端過濾多個目的地和智能標籤
   const filteredTours = useMemo(() => {
-    const allTours = data?.tours || [];
-    if (selectedDestinations.length <= 1) {
-      return allTours;
+    let result = data?.tours || [];
+    
+    // 1. 多個目的地篩選
+    if (selectedDestinations.length > 1) {
+      result = result.filter(tour => 
+        selectedDestinations.some(dest => 
+          tour.destinationCountry?.includes(dest) || 
+          tour.destination?.includes(dest)
+        )
+      );
     }
-    // 多個目的地時，在前端過濾
-    return allTours.filter(tour => 
-      selectedDestinations.some(dest => 
-        tour.destinationCountry?.includes(dest) || 
-        tour.destination?.includes(dest)
-      )
-    );
-  }, [data?.tours, selectedDestinations]);
+    
+    // 2. 智能標籤篩選（前端過濾）
+    if (selectedTags.length > 0) {
+      result = result.filter(tour => {
+        const combinedText = `${tour.title || ''} ${tour.description || ''} ${tour.category || ''}`.toLowerCase();
+        
+        return selectedTags.every(tag => {
+          // 天數分類
+          if (tag === '深度旅遊') return tour.duration >= 10;
+          if (tag === '經典行程') return tour.duration >= 7 && tour.duration < 10;
+          if (tag === '輕旅行') return tour.duration <= 4;
+          if (tag === '一般行程') return tour.duration > 4 && tour.duration < 7;
+          
+          // 價格分類
+          if (tag === '精緻行程') return tour.price && tour.price >= 80000;
+          if (tag === '超值優惠') return tour.price && tour.price < 30000;
+          
+          // 交通方式
+          if (tag === '航空') return tour.outboundAirline || combinedText.includes('航空') || combinedText.includes('飛機');
+          if (tag === '鐵道') return combinedText.includes('高鐵') || combinedText.includes('火車') || combinedText.includes('列車');
+          if (tag === '郵輪') return tour.category === 'cruise' || combinedText.includes('郵輪') || combinedText.includes('遊輪');
+          if (tag === '巴士') return combinedText.includes('巴士') || combinedText.includes('遊覽車');
+          
+          // 特色活動
+          if (tag === '美食之旅') return combinedText.includes('美食') || combinedText.includes('料理') || combinedText.includes('餐廳');
+          if (tag === '攝影之旅') return combinedText.includes('攝影') || combinedText.includes('拍照') || combinedText.includes('打卡');
+          if (tag === '團體旅遊') return tour.category === 'group' || combinedText.includes('團體');
+          if (tag === '永續旅遊') return combinedText.includes('esg') || combinedText.includes('永續');
+          if (tag === '溫泉') return combinedText.includes('溫泉');
+          
+          return true;
+        });
+      });
+    }
+    
+    return result;
+  }, [data?.tours, selectedDestinations, selectedTags]);
 
   const tours = filteredTours;
   const pagination = data?.pagination;
@@ -404,27 +440,106 @@ export default function SearchResults() {
                     </div>
                   )}
 
-                  {/* 標籤篩選 */}
-                  {filterOptions.tags.length > 0 && (
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-700 mb-3">行程類型</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {filterOptions.tags.slice(0, 12).map(({ tag, count }) => (
-                          <Badge
-                            key={tag}
-                            variant={selectedTags.includes(tag) ? "default" : "outline"}
-                            className={`cursor-pointer transition-colors ${
-                              selectedTags.includes(tag) 
-                                ? 'bg-black text-white hover:bg-gray-800' 
-                                : 'hover:bg-gray-100'
-                            }`}
-                            onClick={() => toggleTag(tag)}
-                          >
-                            {tag}
-                            <span className="ml-1 text-xs opacity-70">({count})</span>
-                          </Badge>
-                        ))}
-                      </div>
+                  {/* 智能標籤篩選 - 按分類顯示 */}
+                  {filterOptions.smartTags && (
+                    <div className="md:col-span-2 space-y-4">
+                      <h4 className="text-sm font-medium text-gray-700">行程類型</h4>
+                      
+                      {/* 天數分類 */}
+                      {filterOptions.smartTags.duration.length > 0 && (
+                        <div>
+                          <span className="text-xs text-gray-500 mb-2 block">天數</span>
+                          <div className="flex flex-wrap gap-2">
+                            {filterOptions.smartTags.duration.map(({ label, count }) => (
+                              <Badge
+                                key={label}
+                                variant={selectedTags.includes(label) ? "default" : "outline"}
+                                className={`cursor-pointer transition-colors ${
+                                  selectedTags.includes(label) 
+                                    ? 'bg-black text-white hover:bg-gray-800' 
+                                    : 'hover:bg-gray-100 border-gray-300'
+                                }`}
+                                onClick={() => toggleTag(label)}
+                              >
+                                {label}
+                                <span className="ml-1 text-xs opacity-70">({count})</span>
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 價格分類 */}
+                      {filterOptions.smartTags.price.length > 0 && (
+                        <div>
+                          <span className="text-xs text-gray-500 mb-2 block">價格</span>
+                          <div className="flex flex-wrap gap-2">
+                            {filterOptions.smartTags.price.map(({ label, count }) => (
+                              <Badge
+                                key={label}
+                                variant={selectedTags.includes(label) ? "default" : "outline"}
+                                className={`cursor-pointer transition-colors ${
+                                  selectedTags.includes(label) 
+                                    ? 'bg-black text-white hover:bg-gray-800' 
+                                    : 'hover:bg-gray-100 border-gray-300'
+                                }`}
+                                onClick={() => toggleTag(label)}
+                              >
+                                {label}
+                                <span className="ml-1 text-xs opacity-70">({count})</span>
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 交通方式 */}
+                      {filterOptions.smartTags.transport.length > 0 && (
+                        <div>
+                          <span className="text-xs text-gray-500 mb-2 block">交通方式</span>
+                          <div className="flex flex-wrap gap-2">
+                            {filterOptions.smartTags.transport.map(({ label, count }) => (
+                              <Badge
+                                key={label}
+                                variant={selectedTags.includes(label) ? "default" : "outline"}
+                                className={`cursor-pointer transition-colors ${
+                                  selectedTags.includes(label) 
+                                    ? 'bg-black text-white hover:bg-gray-800' 
+                                    : 'hover:bg-gray-100 border-gray-300'
+                                }`}
+                                onClick={() => toggleTag(label)}
+                              >
+                                {label}
+                                <span className="ml-1 text-xs opacity-70">({count})</span>
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 特色活動 */}
+                      {filterOptions.smartTags.feature.length > 0 && (
+                        <div>
+                          <span className="text-xs text-gray-500 mb-2 block">特色活動</span>
+                          <div className="flex flex-wrap gap-2">
+                            {filterOptions.smartTags.feature.map(({ label, count }) => (
+                              <Badge
+                                key={label}
+                                variant={selectedTags.includes(label) ? "default" : "outline"}
+                                className={`cursor-pointer transition-colors ${
+                                  selectedTags.includes(label) 
+                                    ? 'bg-black text-white hover:bg-gray-800' 
+                                    : 'hover:bg-gray-100 border-gray-300'
+                                }`}
+                                onClick={() => toggleTag(label)}
+                              >
+                                {label}
+                                <span className="ml-1 text-xs opacity-70">({count})</span>
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
 
