@@ -281,7 +281,7 @@ function TourDetailContent() {
               <span className="text-2xl font-bold" style={{ color: ensureReadableOnWhite(colorTheme.accent) }}>
                 NT$ {tour.price.toLocaleString()}
               </span>
-              <span className="text-gray-500 text-sm">{tour.priceUnit || "人/起"}</span>
+              <span className="text-gray-700 text-sm">{tour.priceUnit || "人/起"}</span>
               {canEdit && <Pencil className="h-4 w-4 text-gray-400 ml-1" />}
             </div>
           </div>

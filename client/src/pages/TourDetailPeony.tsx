@@ -1037,11 +1037,11 @@ const DayCard = ({
                       <ChevronRight className="h-4 w-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
                     {activity.description && isExpanded && (
-                      <p className="text-base text-gray-500 mt-1 line-clamp-2">{activity.description}</p>
+                      <p className="text-base text-gray-700 mt-1 line-clamp-2">{activity.description}</p>
                     )}
                     {/* 顯示快速資訊標籤 */}
                     {(activity.duration || activity.ticketPrice || activity.openingHours) && (
-                      <div className="flex items-center gap-3 mt-1 text-xs text-gray-400">
+                      <div className="flex items-center gap-3 mt-1 text-xs text-gray-600">
                         {activity.duration && (
                           <span className="flex items-center gap-1">
                             <Clock className="h-3 w-3" />
@@ -1803,7 +1803,7 @@ export default function TourDetailPeony() {
       {/* Breadcrumb */}
       <div className="bg-gray-50 py-3 border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="flex items-center gap-2 text-sm text-gray-500">
+          <div className="flex items-center gap-2 text-sm text-gray-700">
             <button onClick={() => navigate("/")} className="hover:text-black transition-colors">首頁</button>
             <span>&gt;</span>
             <button onClick={() => navigate("/search")} className="hover:text-black transition-colors">行程搜尋</button>
@@ -2063,7 +2063,7 @@ export default function TourDetailPeony() {
                             value={featureDescription}
                             onSave={(newValue) => handleFeatureUpdate('description', newValue)}
                             isEditing={isEditMode}
-                            className="text-base text-gray-500 leading-relaxed line-clamp-2 block"
+                            className="text-base text-gray-700 leading-relaxed line-clamp-2 block"
                             placeholder="輸入描述..."
                             multiline
                             as="p"
@@ -2075,7 +2075,7 @@ export default function TourDetailPeony() {
                             {featureTitle}
                           </h3>
                           {featureDescription && (
-                            <p className="text-base text-gray-500 leading-relaxed line-clamp-2">{featureDescription}</p>
+                            <p className="text-base text-gray-700 leading-relaxed line-clamp-2">{featureDescription}</p>
                           )}
                         </>
                       )}
@@ -2089,13 +2089,13 @@ export default function TourDetailPeony() {
           {/* Quick Info Cards */}
           <div className="grid md:grid-cols-4 gap-4 mt-12">
             <div className="text-center p-6 bg-gray-50">
-              <Clock className="h-10 w-10 mx-auto mb-3 text-gray-400" />
-              <p className="text-base text-gray-500 mb-1">行程天數</p>
+              <Clock className="h-10 w-10 mx-auto mb-3 text-gray-600" />
+              <p className="text-base text-gray-700 mb-1">行程天數</p>
               <p className="font-bold text-xl">{tour.duration || "多日行程"}</p>
             </div>
             <div className="text-center p-6 bg-gray-50">
-              <MapPin className="h-10 w-10 mx-auto mb-3 text-gray-400" />
-              <p className="text-base text-gray-500 mb-1">目的地</p>
+              <MapPin className="h-10 w-10 mx-auto mb-3 text-gray-600" />
+              <p className="text-base text-gray-700 mb-1">目的地</p>
               <p className="font-bold text-xl">{(() => {
                 const cities = (tour.destinationCity || tour.destinationCountry || '').split(/[,、]/).map((c: string) => c.trim()).filter(Boolean);
                 if (cities.length <= 4) return cities.join('、');
@@ -2103,13 +2103,13 @@ export default function TourDetailPeony() {
               })()}</p>
             </div>
             <div className="text-center p-6 bg-gray-50">
-              <Users className="h-10 w-10 mx-auto mb-3 text-gray-400" />
-              <p className="text-base text-gray-500 mb-1">成團人數</p>
+              <Users className="h-10 w-10 mx-auto mb-3 text-gray-600" />
+              <p className="text-base text-gray-700 mb-1">成團人數</p>
               <p className="font-bold text-xl">{(tour as any).minGroupSize || 10}-{(tour as any).maxGroupSize || 25}人</p>
             </div>
             <div className="text-center p-6 bg-gray-50">
-              <Calendar className="h-10 w-10 mx-auto mb-3 text-gray-400" />
-              <p className="text-base text-gray-500 mb-1">出發日期</p>
+              <Calendar className="h-10 w-10 mx-auto mb-3 text-gray-600" />
+              <p className="text-base text-gray-700 mb-1">出發日期</p>
               <p className="font-bold text-xl">多日期可選</p>
             </div>
           </div>
@@ -2122,7 +2122,7 @@ export default function TourDetailPeony() {
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-4" style={{ color: themeColor.primary }}>
             精彩行程
           </h2>
-          <p className="text-lg text-gray-500 text-center mb-16">每一天都是獨特的旅程體驗</p>
+          <p className="text-lg text-gray-700 text-center mb-16">每一天都是獨特的旅程體驗</p>
 
           {/* Daily Itinerary */}
           <div className="space-y-16">
@@ -2161,7 +2161,7 @@ export default function TourDetailPeony() {
                 )
               ))
             ) : (
-              <div className="text-center py-12 text-gray-500">
+              <div className="text-center py-12 text-gray-700">
                 <Info className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                 <p>詳細行程資訊即將更新</p>
               </div>
@@ -2176,7 +2176,7 @@ export default function TourDetailPeony() {
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-4" style={{ color: themeColor.primary }}>
             內容特色 & 升等選項
           </h2>
-          <p className="text-lg text-gray-500 text-center mb-12">精心安排的行程亮點</p>
+          <p className="text-lg text-gray-700 text-center mb-12">精心安排的行程亮點</p>
 
           {/* Attractions */}
           {attractions.length > 0 && (
@@ -2197,7 +2197,7 @@ export default function TourDetailPeony() {
                         {typeof attraction === 'string' ? attraction : attraction.name || attraction.title}
                       </span>
                       {typeof attraction !== 'string' && attraction.description && (
-                        <p className="text-sm text-gray-500 mt-1">{attraction.description}</p>
+                        <p className="text-sm text-gray-700 mt-1">{attraction.description}</p>
                       )}
                     </div>
                   </div>
@@ -2281,7 +2281,7 @@ export default function TourDetailPeony() {
             <h2 className="text-3xl md:text-4xl font-bold text-center mb-4" style={{ color: themeColor.primary }}>
               豪華酒店
             </h2>
-            <p className="text-lg text-gray-500 text-center mb-12">嚴選優質住宿，讓您的旅程更加舒適</p>
+            <p className="text-lg text-gray-700 text-center mb-12">嚴選優質住宿，讓您的旅程更加舒適</p>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {hotels.map((hotel: any, index: number) => (
@@ -2298,7 +2298,7 @@ export default function TourDetailPeony() {
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-4" style={{ color: themeColor.primary }}>
             出發日期 / 售價
           </h2>
-          <p className="text-lg text-gray-500 text-center mb-12">選擇您理想的出發日期</p>
+          <p className="text-lg text-gray-700 text-center mb-12">選擇您理想的出發日期</p>
 
           {/* Dynamic Price Calendar */}
           <DeparturePriceCalendar 
@@ -2328,7 +2328,7 @@ export default function TourDetailPeony() {
           </div>
 
           {/* Contact Info */}
-          <div className="mt-12 text-center text-gray-500">
+          <div className="mt-12 text-center text-gray-700">
             <p className="mb-4">如需更多資訊，歡迎聯繫我們的旅遊顧問</p>
             <div className="flex flex-wrap justify-center gap-6">
               <a href="tel:+1234567890" className="flex items-center gap-2 hover:text-black transition-colors">
@@ -2350,7 +2350,7 @@ export default function TourDetailPeony() {
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-4" style={{ color: themeColor.primary }}>
             注意事項
           </h2>
-          <p className="text-lg text-gray-500 text-center mb-12">出發前請詳閱以下資訊</p>
+          <p className="text-lg text-gray-700 text-center mb-12">出發前請詳閱以下資訊</p>
 
           {noticeDetailed ? (
             <div className="grid md:grid-cols-2 gap-6">
@@ -2455,7 +2455,7 @@ export default function TourDetailPeony() {
               )}
             </div>
           ) : (
-            <div className="text-center py-12 text-gray-500">
+            <div className="text-center py-12 text-gray-700">
               <Info className="h-12 w-12 mx-auto mb-4 text-gray-300" />
               <p>詳細注意事項請洽詢旅遊顧問</p>
             </div>
@@ -2467,7 +2467,7 @@ export default function TourDetailPeony() {
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 md:hidden z-50">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <p className="text-xs text-gray-500">每人售價起</p>
+            <p className="text-xs text-gray-700">每人售價起</p>
             <p className="text-xl font-bold" style={{ color: themeColor.primary }}>
               NT$ {tour.price ? tour.price.toLocaleString() : "洽詢"}
             </p>

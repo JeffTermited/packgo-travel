@@ -3781,3 +3781,54 @@
 - [x] LocaleSwitcher.tsx 下拉選單 - 已使用 rounded-lg
 - [x] AITravelAdvisorDialog.tsx 對話框 - 已使用 rounded-2xl
 
+
+
+---
+
+## Phase 37: 修正行程詳情頁面文字對比度問題（2026-02-02）
+
+### 37.1 問題識別
+- [ ] 目的地標籤（白字灰底）- 在 HeroSection 或其他組件中
+- [ ] DAY 標籤（白字灰底）- 在 DailyItinerarySection 中
+- [ ] 今日餐食標題（灰字淺背景）- 在 DailyItinerarySection 中
+- [ ] 時間軸圓點（灰色難以辨識）- 在景點列表中
+- [ ] 景點描述文字（灰字對比度不足）- 在多個組件中
+
+### 37.2 修正方案
+- [ ] 修正 DailyItinerarySection 的 Day Badge 顏色
+- [ ] 修正餐食區塊的圖標和標題顏色
+- [ ] 修正時間軸圓點的顏色
+- [ ] 修正景點描述文字的顏色
+- [ ] 確保所有文字在白色/淺色背景上有足夠對比度
+
+
+
+---
+
+## Phase 37: 修正行程詳情頁面文字對比度問題（2026-02-02）
+
+### 37.1 TourDetailPeony.tsx 對比度修正
+- [x] 景點描述文字：text-gray-500 → text-gray-700
+- [x] 快速資訊標籤：text-gray-400 → text-gray-600
+- [x] 特色描述：text-gray-500 → text-gray-700
+- [x] 快速資訊卡片圖標：text-gray-400 → text-gray-600
+- [x] 快速資訊卡片標籤：text-gray-500 → text-gray-700
+- [x] 麵包屑導航：text-gray-500 → text-gray-700
+- [x] 精彩行程副標題：text-gray-500 → text-gray-700
+- [x] 內容特色副標題：text-gray-500 → text-gray-700
+- [x] 景點描述：text-gray-500 → text-gray-700
+- [x] 酒店副標題：text-gray-500 → text-gray-700
+- [x] 出發日期副標題：text-gray-500 → text-gray-700
+- [x] 聯繫資訊區塊：text-gray-500 → text-gray-700
+- [x] 注意事項副標題：text-gray-500 → text-gray-700
+- [x] 空狀態文字：text-gray-500 → text-gray-700
+- [x] 底部價格標籤：text-gray-500 → text-gray-700
+
+### 37.2 TourDetailSipin.tsx 對比度修正
+- [x] 價格單位：text-gray-500 → text-gray-700
+
+### 37.3 驗證
+- [x] 瀏覽行程詳情頁面確認修正效果
+- [x] DAY 標籤（黃色背景白字）清晰可讀
+- [x] 餐食區塊圖標和文字對比度良好
+- [x] 景點列表時間軸圓點使用主題色，清晰可見

@@ -325,7 +325,7 @@ export const DailyItinerarySection: React.FC<DailyItinerarySectionProps> = ({
                         <div className="space-y-3">
                           {day.meals.breakfast && (
                             <div className="flex items-start gap-3">
-                              <div className="flex-shrink-0 w-20 flex items-center gap-1.5 text-sm font-medium text-gray-500">
+                              <div className="flex-shrink-0 w-20 flex items-center gap-1.5 text-sm font-medium text-gray-700">
                                 {getMealIcon('breakfast')}
                                 早餐
                               </div>
@@ -334,7 +334,7 @@ export const DailyItinerarySection: React.FC<DailyItinerarySectionProps> = ({
                           )}
                           {day.meals.lunch && (
                             <div className="flex items-start gap-3">
-                              <div className="flex-shrink-0 w-20 flex items-center gap-1.5 text-sm font-medium text-gray-500">
+                              <div className="flex-shrink-0 w-20 flex items-center gap-1.5 text-sm font-medium text-gray-700">
                                 {getMealIcon('lunch')}
                                 午餐
                               </div>
@@ -343,7 +343,7 @@ export const DailyItinerarySection: React.FC<DailyItinerarySectionProps> = ({
                           )}
                           {day.meals.dinner && (
                             <div className="flex items-start gap-3">
-                              <div className="flex-shrink-0 w-20 flex items-center gap-1.5 text-sm font-medium text-gray-500">
+                              <div className="flex-shrink-0 w-20 flex items-center gap-1.5 text-sm font-medium text-gray-700">
                                 {getMealIcon('dinner')}
                                 晚餐
                               </div>

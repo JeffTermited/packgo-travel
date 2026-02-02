@@ -163,7 +163,7 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
 
             {/* 位置（如果有） */}
             {location && (
-              <p className="text-sm text-gray-500 flex items-center gap-2">
+              <p className="text-sm text-gray-700 flex items-center gap-2">
                 <span
                   className="w-2 h-2 rounded-full"
                   style={{ backgroundColor: colorTheme.accent }}
