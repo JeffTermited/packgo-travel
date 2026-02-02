@@ -5,6 +5,8 @@ import { publicProcedure, protectedProcedure, adminProcedure, router } from "./_
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import * as db from "./db";
+import * as skillDb from "./skillDb";
+import { learnFromPdfContent, initializeBuiltInSkills } from "./agents/learningAgent";
 import { invokeLLM } from "./_core/llm";
 import { extractTourInfoWithManus } from "./manusApi";
 import { quickExtractTourInfo } from "./webScraper";
@@ -1873,6 +1875,181 @@ Important guidelines:
         }
         return { success: true };
       }),
+  }),
+
+  // Agent Skills management router
+  skills: router({
+    // Get all skills
+    list: adminProcedure.query(async () => {
+      return await skillDb.getAllSkills(true);
+    }),
+
+    // Get skills by type
+    listByType: adminProcedure
+      .input(z.object({ skillType: z.string() }))
+      .query(async ({ input }) => {
+        return await skillDb.getSkillsByType(input.skillType);
+      }),
+
+    // Get single skill
+    getById: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        const skill = await skillDb.getSkillById(input.id);
+        if (!skill) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Skill not found",
+          });
+        }
+        return skill;
+      }),
+
+    // Create new skill
+    create: adminProcedure
+      .input(z.object({
+        skillType: z.enum(["feature_classification", "tag_rule", "itinerary_structure", "highlight_detection", "transportation_type", "meal_classification", "accommodation_type"]),
+        skillName: z.string(),
+        skillNameEn: z.string().optional(),
+        keywords: z.array(z.string()),
+        rules: z.any(),
+        outputLabels: z.array(z.string()).optional(),
+        outputFormat: z.string().optional(),
+        description: z.string().optional(),
+        source: z.string().optional(),
+        sourceUrl: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const skillId = await skillDb.createSkill({
+          skillType: input.skillType,
+          skillName: input.skillName,
+          skillNameEn: input.skillNameEn,
+          keywords: JSON.stringify(input.keywords),
+          rules: JSON.stringify(input.rules),
+          outputLabels: input.outputLabels ? JSON.stringify(input.outputLabels) : undefined,
+          outputFormat: input.outputFormat,
+          description: input.description,
+          source: input.source,
+          sourceUrl: input.sourceUrl,
+          createdBy: ctx.user.id,
+          isActive: true,
+          isBuiltIn: false,
+        });
+        return { id: skillId };
+      }),
+
+    // Update skill
+    update: adminProcedure
+      .input(z.object({
+        id: z.number(),
+        skillName: z.string().optional(),
+        skillNameEn: z.string().optional(),
+        keywords: z.array(z.string()).optional(),
+        rules: z.any().optional(),
+        outputLabels: z.array(z.string()).optional(),
+        outputFormat: z.string().optional(),
+        description: z.string().optional(),
+        isActive: z.boolean().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, keywords, rules, outputLabels, ...rest } = input;
+        const updates: any = { ...rest };
+        if (keywords) updates.keywords = JSON.stringify(keywords);
+        if (rules) updates.rules = JSON.stringify(rules);
+        if (outputLabels) updates.outputLabels = JSON.stringify(outputLabels);
+        
+        await skillDb.updateSkill(id, updates);
+        return { success: true };
+      }),
+
+    // Delete skill
+    delete: adminProcedure
+      .input(z.object({ id: z.number(), hardDelete: z.boolean().optional() }))
+      .mutation(async ({ input }) => {
+        await skillDb.deleteSkill(input.id, input.hardDelete);
+        return { success: true };
+      }),
+
+    // Match skills to content
+    matchToContent: adminProcedure
+      .input(z.object({
+        content: z.string(),
+        skillType: z.string().optional(),
+      }))
+      .query(async ({ input }) => {
+        const matches = await skillDb.matchSkillsToContent(input.content, input.skillType);
+        return matches.map(m => ({
+          skill: m.skill,
+          score: m.score,
+          matchedKeywords: m.matchedKeywords,
+        }));
+      }),
+
+    // Apply skill rules to content
+    applyRules: adminProcedure
+      .input(z.object({
+        skillId: z.number(),
+        content: z.string(),
+        metadata: z.any().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const skill = await skillDb.getSkillById(input.skillId);
+        if (!skill) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Skill not found",
+          });
+        }
+        const labels = skillDb.applySkillRules(skill, input.content, input.metadata);
+        return { labels };
+      }),
+
+    // Seed built-in skills
+    seedBuiltIn: adminProcedure.mutation(async () => {
+      await skillDb.seedBuiltInSkills();
+      return { success: true };
+    }),
+
+    // Get learning sessions
+    getLearningSessions: adminProcedure
+      .input(z.object({ limit: z.number().optional() }))
+      .query(async ({ input }) => {
+        return await skillDb.getRecentLearningSessions(input.limit);
+      }),
+
+    // Get skill application history
+    getApplicationHistory: adminProcedure
+      .input(z.object({
+        skillId: z.number().optional(),
+        tourId: z.number().optional(),
+        limit: z.number().optional(),
+      }))
+      .query(async ({ input }) => {
+        return await skillDb.getSkillApplicationHistory(input.skillId, input.tourId, input.limit);
+      }),
+
+    // Learn from PDF content
+    learnFromPdf: adminProcedure
+      .input(z.object({
+        pdfContent: z.string(),
+        sourceName: z.string(),
+        sourceUrl: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const result = await learnFromPdfContent(
+          input.pdfContent,
+          input.sourceName,
+          input.sourceUrl,
+          ctx.user.id
+        );
+        return result;
+      }),
+
+    // Initialize built-in skills
+    initializeBuiltIn: adminProcedure.mutation(async () => {
+      await initializeBuiltInSkills();
+      return { success: true };
+    }),
   }),
 });
 export type AppRouter = typeof appRouter;

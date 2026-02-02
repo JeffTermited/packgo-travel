@@ -2794,3 +2794,81 @@
 - [ ] 住宿多選項顯示
 - [ ] 注意事項區塊（體重限制、年齡限制等）
 
+
+
+---
+
+## Phase 49: Agent 學習系統設計與實作（2026-02-02）
+
+### 49.1 設計 Agent 學習系統架構
+- [ ] 設計技能資料庫結構（skills table）
+- [ ] 設計知識提取流程
+- [ ] 設計知識應用機制
+- [ ] 定義技能類型（行程結構、特色分類、標籤規則等）
+
+### 49.2 建立技能資料庫結構和 API
+- [ ] 創建 drizzle/schema.ts 中的 agentSkills 表
+- [ ] 實作 CRUD API（新增、查詢、更新、刪除技能）
+- [ ] 實作技能搜尋功能（根據關鍵字匹配適用技能）
+
+### 49.3 實作學習機制（從 PDF 提取新知識）
+- [ ] 創建 LearningAgent（專門從 PDF 學習新知識）
+- [ ] 實作特色分類識別（ESG、主題旅遊等）
+- [ ] 實作標籤規則學習
+- [ ] 實作行程結構模式學習
+
+### 49.4 實作知識應用機制（生成時自動套用）
+- [ ] 修改 masterAgent 在生成前查詢相關技能
+- [ ] 根據行程類型自動套用對應的提取策略
+- [ ] 根據學習到的標籤規則自動生成標籤
+
+### 49.5 測試學習系統
+- [ ] 測試從 ESG 永續旅遊 PDF 學習
+- [ ] 測試學習到的知識是否正確應用
+- [ ] 驗證新行程是否自動獲得正確標籤
+
+
+
+---
+
+## Phase 49: Agent 學習系統（2026-02-02）
+
+### 49.1 設計 Agent 學習系統架構
+- [x] 設計 Agent 學習系統架構 (docs/AGENT_LEARNING_SYSTEM.md)
+- [x] 定義技能類型（feature_classification, tag_rule, itinerary_structure 等）
+- [x] 設計學習流程（PDF → LLM 分析 → 提取技能 → 儲存）
+
+### 49.2 建立技能資料庫結構
+- [x] 建立 agentSkills 表（技能儲存）
+- [x] 建立 learningSessions 表（學習記錄）
+- [x] 建立 skillApplicationLogs 表（應用記錄）
+- [x] 建立 skillDb.ts 資料庫查詢函數
+
+### 49.3 實作學習機制
+- [x] 建立 learningAgent.ts
+- [x] 實作 learnFromPdfContent 函數（從 PDF 學習新技能）
+- [x] 實作 applyLearnedSkills 函數（應用已學習的技能）
+- [x] 實作 initializeBuiltInSkills 函數（初始化內建技能）
+
+### 49.4 實作知識應用機制
+- [x] 整合 applyLearnedSkills 到 masterAgent.ts
+- [x] 在行程生成時自動應用已學習的技能生成標籤
+- [x] 合併智能標籤和學習標籤
+
+### 49.5 建立 API 端點
+- [x] skills.list - 列出所有技能
+- [x] skills.listByType - 按類型列出技能
+- [x] skills.getById - 取得單一技能
+- [x] skills.create - 建立新技能
+- [x] skills.update - 更新技能
+- [x] skills.delete - 刪除技能
+- [x] skills.matchToContent - 匹配技能到內容
+- [x] skills.applyRules - 應用技能規則
+- [x] skills.seedBuiltIn - 初始化內建技能
+- [x] skills.learnFromPdf - 從 PDF 學習新技能
+- [x] skills.initializeBuiltIn - 初始化內建技能
+
+### 49.6 測試
+- [x] skillDb.test.ts 單元測試通過（5 tests）
+- [x] learningAgent.test.ts 單元測試通過（10 tests）
+

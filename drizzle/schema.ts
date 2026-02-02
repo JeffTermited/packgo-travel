@@ -469,3 +469,118 @@ export const destinations = mysqlTable("destinations", {
 
 export type Destination = typeof destinations.$inferSelect;
 export type InsertDestination = typeof destinations.$inferInsert;
+
+
+/**
+ * Agent Skills table for storing learned knowledge and rules.
+ * Allows AI agents to learn from PDF documents and apply knowledge in future generations.
+ */
+export const agentSkills = mysqlTable("agentSkills", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  // Skill identification
+  skillType: mysqlEnum("skillType", [
+    "feature_classification",  // 特色分類（ESG、美食、文化等）
+    "tag_rule",               // 標籤規則（天數、價格等）
+    "itinerary_structure",    // 行程結構模式
+    "highlight_detection",    // 亮點識別
+    "transportation_type",    // 交通類型識別
+    "meal_classification",    // 餐食分類
+    "accommodation_type"      // 住宿類型
+  ]).notNull(),
+  
+  skillName: varchar("skillName", { length: 100 }).notNull(), // 技能名稱
+  skillNameEn: varchar("skillNameEn", { length: 100 }), // 英文名稱
+  
+  // Matching rules
+  keywords: text("keywords").notNull(), // JSON array of trigger keywords
+  rules: text("rules").notNull(), // JSON object defining conditions and actions
+  
+  // Output configuration
+  outputLabels: text("outputLabels"), // JSON array of output labels
+  outputFormat: text("outputFormat"), // JSON schema for structured output
+  
+  // Metadata
+  description: text("description"), // 技能描述
+  source: varchar("source", { length: 255 }), // 學習來源（如 PDF 檔名）
+  sourceUrl: varchar("sourceUrl", { length: 1024 }), // 來源 URL
+  
+  // Quality metrics
+  confidence: decimal("confidence", { precision: 3, scale: 2 }).default("1.00"), // 信心度（0-1）
+  usageCount: int("usageCount").default(0).notNull(), // 使用次數
+  successCount: int("successCount").default(0).notNull(), // 成功次數
+  lastUsedAt: timestamp("lastUsedAt"), // 最後使用時間
+  
+  // Status
+  isActive: boolean("isActive").default(true).notNull(),
+  isBuiltIn: boolean("isBuiltIn").default(false).notNull(), // 是否為內建技能
+  
+  // Audit
+  createdBy: int("createdBy"), // 創建者（null 表示系統自動學習）
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type AgentSkill = typeof agentSkills.$inferSelect;
+export type InsertAgentSkill = typeof agentSkills.$inferInsert;
+
+/**
+ * Skill Application Logs table for tracking skill usage history.
+ * Records when and how skills are applied during tour generation.
+ */
+export const skillApplicationLogs = mysqlTable("skillApplicationLogs", {
+  id: int("id").autoincrement().primaryKey(),
+  skillId: int("skillId").notNull(),
+  tourId: int("tourId"), // 可能為 null（預覽模式）
+  
+  // Application context
+  inputContent: text("inputContent"), // 輸入內容摘要
+  matchScore: decimal("matchScore", { precision: 3, scale: 2 }), // 匹配分數
+  
+  // Results
+  outputResult: text("outputResult"), // JSON - 應用結果
+  success: boolean("success").default(true).notNull(),
+  errorMessage: text("errorMessage"), // 錯誤訊息（如果失敗）
+  
+  // Timing
+  appliedAt: timestamp("appliedAt").defaultNow().notNull(),
+  processingTimeMs: int("processingTimeMs"), // 處理時間（毫秒）
+});
+
+export type SkillApplicationLog = typeof skillApplicationLogs.$inferSelect;
+export type InsertSkillApplicationLog = typeof skillApplicationLogs.$inferInsert;
+
+/**
+ * Learning Sessions table for tracking PDF learning history.
+ * Records each learning session when new knowledge is extracted from PDFs.
+ */
+export const learningSessions = mysqlTable("learningSessions", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  // Source information
+  sourceType: mysqlEnum("sourceType", ["pdf", "url", "manual"]).notNull(),
+  sourceName: varchar("sourceName", { length: 255 }).notNull(), // 檔名或 URL
+  sourceContent: text("sourceContent"), // 原始內容摘要
+  
+  // Learning results
+  skillsLearned: int("skillsLearned").default(0).notNull(), // 學習到的技能數量
+  skillIds: text("skillIds"), // JSON array of created skill IDs
+  
+  // Status
+  status: mysqlEnum("status", [
+    "pending",     // 等待處理
+    "processing",  // 處理中
+    "completed",   // 完成
+    "failed",      // 失敗
+    "cancelled"    // 取消
+  ]).default("pending").notNull(),
+  errorMessage: text("errorMessage"),
+  
+  // Audit
+  initiatedBy: int("initiatedBy").notNull(), // 發起者
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  completedAt: timestamp("completedAt"),
+});
+
+export type LearningSession = typeof learningSessions.$inferSelect;
+export type InsertLearningSession = typeof learningSessions.$inferInsert;

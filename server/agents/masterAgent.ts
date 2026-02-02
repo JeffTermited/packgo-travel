@@ -41,6 +41,7 @@ import { progressTracker } from "./progressTracker";
 import generationCache from "../cache/generation-cache";
 import { generateSmartTags, mergeWithExistingTags } from "../utils/tagGenerator";
 import { TourType } from "./itineraryExtractAgent";
+import { applyLearnedSkills } from "./learningAgent";
 
 export interface MasterAgentResult {
   success: boolean;
@@ -690,8 +691,32 @@ export class MasterAgent {
         tourType as TourType
       );
       
-      // 合併現有標籤和生成的標籤
-      const finalTags = mergeWithExistingTags(rawData.basicInfo?.tags, smartTags);
+      // 應用學習系統的技能生成額外標籤
+      let learnedTags: string[] = [];
+      try {
+        const contentForSkills = [
+          analyzedContent.title,
+          analyzedContent.description,
+          rawData.basicInfo?.title,
+          rawData.basicInfo?.description,
+          ...(rawData.highlights || []),
+        ].filter(Boolean).join(' ');
+        
+        const skillResult = await applyLearnedSkills(contentForSkills, {
+          duration: rawData.duration?.days,
+          price: rawData.pricing?.price,
+        });
+        learnedTags = skillResult.labels;
+        if (learnedTags.length > 0) {
+          console.log(`[MasterAgent] Applied ${skillResult.appliedSkills.length} learned skills, generated tags: ${learnedTags.join(', ')}`);
+        }
+      } catch (error) {
+        console.warn(`[MasterAgent] Failed to apply learned skills:`, error);
+      }
+      
+      // 合併現有標籤、智能標籤和學習標籤
+      const allTags = [...smartTags, ...learnedTags];
+      const finalTags = mergeWithExistingTags(rawData.basicInfo?.tags, allTags);
       console.log(`[MasterAgent] Generated smart tags: ${finalTags.join(', ')}`);
       
       const finalData = {
