@@ -7,7 +7,7 @@ import { Send, Loader2, User, ThumbsUp, ThumbsDown, Sparkles, X, Minimize2 } fro
 import { trpc } from "@/lib/trpc";
 import { Streamdown } from "streamdown";
 
-// 企鵝表情圖像 URLs
+// 企鵝表情圖像 URLs (透明背景版本)
 const PENGUIN_EXPRESSIONS = {
   default: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663159191204/bJsbScmQpKmVdhut.png",
   thinking: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663159191204/SjvtTEmhuOMPCozg.png",
@@ -157,33 +157,46 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg h-[600px] flex flex-col p-0 border-2 border-black rounded-none gap-0 overflow-hidden">
+      <DialogContent className="max-w-md w-[95vw] sm:w-full h-[85vh] sm:h-[650px] flex flex-col p-0 border-2 border-black gap-0 overflow-hidden bg-white shadow-2xl">
         {/* Hidden DialogTitle and Description for accessibility */}
         <VisuallyHidden>
           <DialogTitle>AI 旅遊顧問對話框</DialogTitle>
           <DialogDescription>與 PACK&GO AI 旅遊顧問對話，獲取行程推薦和旅遊資訊</DialogDescription>
         </VisuallyHidden>
         
-        {/* Header with Animated Character */}
-        <div className="bg-black text-white px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        {/* Header with Animated Penguin Character */}
+        <div className="bg-black text-white px-5 py-4 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-4">
+            {/* Penguin Avatar with Animation */}
             <div 
-              className={`w-12 h-12 bg-white flex items-center justify-center overflow-hidden transition-transform duration-300 ${
+              className={`relative w-14 h-14 bg-gradient-to-br from-gray-100 to-white rounded-full flex items-center justify-center overflow-hidden border-2 border-white shadow-lg transition-transform duration-300 ${
                 isAnimating ? "scale-110" : "scale-100"
               }`}
             >
               <img
                 src={currentPenguinImage}
                 alt="AI 旅遊顧問"
-                className={`w-11 h-11 object-contain transition-all duration-300 ${
+                className={`w-12 h-12 object-contain transition-all duration-300 ${
                   chatMutation.isPending ? "animate-bounce" : ""
                 }`}
               />
+              {/* Online Status Indicator */}
+              <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-white"></div>
             </div>
             <div>
-              <h3 className="font-bold text-base">AI 旅遊顧問</h3>
-              <p className="text-xs text-gray-300">
-                {chatMutation.isPending ? "思考中..." : "隨時為您服務"}
+              <h3 className="font-bold text-lg tracking-wide">AI 旅遊顧問</h3>
+              <p className="text-sm text-gray-300 flex items-center gap-1.5">
+                {chatMutation.isPending ? (
+                  <>
+                    <span className="inline-block w-1.5 h-1.5 bg-yellow-400 rounded-full animate-pulse"></span>
+                    思考中...
+                  </>
+                ) : (
+                  <>
+                    <span className="inline-block w-1.5 h-1.5 bg-green-400 rounded-full"></span>
+                    在線 · 隨時為您服務
+                  </>
+                )}
               </p>
             </div>
           </div>
@@ -191,7 +204,7 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 w-8 p-0 text-white hover:bg-white/20"
+              className="h-9 w-9 p-0 text-white hover:bg-white/20 rounded-full"
               onClick={() => onOpenChange(false)}
               aria-label="最小化對話框"
             >
@@ -200,24 +213,24 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 w-8 p-0 text-white hover:bg-white/20"
+              className="h-9 w-9 p-0 text-white hover:bg-white/20 rounded-full"
               onClick={() => onOpenChange(false)}
               aria-label="關閉對話框"
             >
-              <X className="h-4 w-4" />
+              <X className="h-5 w-5" />
             </Button>
           </div>
         </div>
 
         {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 bg-gray-50">
+        <div className="flex-1 overflow-y-auto px-4 py-5 space-y-5 bg-gradient-to-b from-gray-50 to-white">
           {messages.map((message, index) => (
             <div key={index}>
               <div
                 className={`flex gap-3 ${message.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 {message.role === "assistant" && (
-                  <div className="flex-shrink-0 w-8 h-8 bg-white border border-black flex items-center justify-center overflow-hidden">
+                  <div className="flex-shrink-0 w-9 h-9 bg-gradient-to-br from-gray-100 to-white rounded-full border border-gray-200 flex items-center justify-center overflow-hidden shadow-sm">
                     <img
                       src={PENGUIN_EXPRESSIONS.default}
                       alt="AI"
@@ -226,22 +239,22 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
                   </div>
                 )}
                 <div
-                  className={`max-w-[75%] px-4 py-3 ${
+                  className={`max-w-[80%] px-4 py-3 shadow-sm ${
                     message.role === "user"
-                      ? "bg-black text-white"
-                      : "bg-white border-2 border-black text-black"
+                      ? "bg-black text-white rounded-2xl rounded-br-md"
+                      : "bg-white border border-gray-200 text-gray-800 rounded-2xl rounded-bl-md"
                   }`}
                 >
                   {message.role === "assistant" ? (
-                    <div className="text-sm prose prose-sm max-w-none">
+                    <div className="text-sm prose prose-sm max-w-none leading-relaxed">
                       <Streamdown>{message.content}</Streamdown>
                     </div>
                   ) : (
-                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                    <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
                   )}
                 </div>
                 {message.role === "user" && (
-                  <div className="flex-shrink-0 w-8 h-8 bg-black text-white flex items-center justify-center">
+                  <div className="flex-shrink-0 w-9 h-9 bg-black text-white rounded-full flex items-center justify-center shadow-sm">
                     <User className="h-5 w-5" />
                   </div>
                 )}
@@ -249,10 +262,10 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
               
               {/* Triggered Skills & Feedback */}
               {message.role === "assistant" && index > 0 && (
-                <div className="ml-11 mt-2 flex flex-wrap items-center gap-2">
+                <div className="ml-12 mt-2 flex flex-wrap items-center gap-2">
                   {message.triggeredSkills && message.triggeredSkills.length > 0 && (
-                    <div className="flex items-center gap-1 text-xs text-gray-500 bg-gray-100 px-2 py-1">
-                      <Sparkles className="h-3 w-3" />
+                    <div className="flex items-center gap-1.5 text-xs text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full">
+                      <Sparkles className="h-3 w-3 text-yellow-500" />
                       <span>
                         {message.triggeredSkills.map(s => s.skillName).join(", ")}
                       </span>
@@ -260,15 +273,15 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
                   )}
                   
                   {message.usageLogIds && message.usageLogIds.length > 0 && (
-                    <div className="flex items-center gap-1 ml-auto">
-                      <span className="text-xs text-gray-400 mr-1">這個回答有幫助嗎？</span>
+                    <div className="flex items-center gap-1.5 ml-auto">
+                      <span className="text-xs text-gray-400">有幫助嗎？</span>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className={`h-7 w-7 p-0 border ${
+                        className={`h-7 w-7 p-0 rounded-full transition-all ${
                           message.feedbackGiven === "positive" 
-                            ? "bg-black text-white border-black" 
-                            : "border-gray-300 text-gray-500 hover:border-black hover:text-black"
+                            ? "bg-green-100 text-green-600 border border-green-300" 
+                            : "text-gray-400 hover:text-green-600 hover:bg-green-50"
                         }`}
                         onClick={() => handleFeedback(index, "positive")}
                         disabled={!!message.feedbackGiven || feedbackMutation.isPending}
@@ -279,10 +292,10 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
                       <Button
                         variant="ghost"
                         size="sm"
-                        className={`h-7 w-7 p-0 border ${
+                        className={`h-7 w-7 p-0 rounded-full transition-all ${
                           message.feedbackGiven === "negative" 
-                            ? "bg-black text-white border-black" 
-                            : "border-gray-300 text-gray-500 hover:border-black hover:text-black"
+                            ? "bg-red-100 text-red-600 border border-red-300" 
+                            : "text-gray-400 hover:text-red-600 hover:bg-red-50"
                         }`}
                         onClick={() => handleFeedback(index, "negative")}
                         disabled={!!message.feedbackGiven || feedbackMutation.isPending}
@@ -297,24 +310,24 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
             </div>
           ))}
           
-          {/* Loading State with Thinking Expression */}
+          {/* Loading indicator */}
           {chatMutation.isPending && (
             <div className="flex gap-3 justify-start">
-              <div className="flex-shrink-0 w-8 h-8 bg-white border border-black flex items-center justify-center overflow-hidden">
+              <div className="flex-shrink-0 w-9 h-9 bg-gradient-to-br from-gray-100 to-white rounded-full border border-gray-200 flex items-center justify-center overflow-hidden shadow-sm">
                 <img
                   src={PENGUIN_EXPRESSIONS.thinking}
                   alt="AI"
-                  className="w-7 h-7 object-contain"
+                  className="w-7 h-7 object-contain animate-pulse"
                 />
               </div>
-              <div className="bg-white border-2 border-black px-4 py-3">
-                <div className="flex items-center gap-2">
-                  <div className="flex gap-1">
-                    <span className="w-2 h-2 bg-black rounded-full animate-bounce" style={{ animationDelay: "0ms" }}></span>
-                    <span className="w-2 h-2 bg-black rounded-full animate-bounce" style={{ animationDelay: "150ms" }}></span>
-                    <span className="w-2 h-2 bg-black rounded-full animate-bounce" style={{ animationDelay: "300ms" }}></span>
+              <div className="bg-white border border-gray-200 px-4 py-3 rounded-2xl rounded-bl-md shadow-sm">
+                <div className="flex items-center gap-3">
+                  <div className="flex gap-1.5">
+                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }}></span>
+                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }}></span>
+                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }}></span>
                   </div>
-                  <span className="text-sm text-gray-600">正在思考中...</span>
+                  <span className="text-sm text-gray-500">正在思考...</span>
                 </div>
               </div>
             </div>
@@ -323,31 +336,31 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
         </div>
 
         {/* Input Area */}
-        <div className="px-4 py-3 border-t-2 border-black bg-white">
-          <div className="flex gap-2">
+        <div className="px-4 py-4 border-t border-gray-200 bg-white shrink-0">
+          <div className="flex gap-3 items-center">
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="輸入您的問題..."
-              className="flex-1 border-2 border-black rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-black"
+              className="flex-1 h-11 border border-gray-300 rounded-full px-5 focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-0 focus-visible:border-black bg-gray-50"
               disabled={chatMutation.isPending}
               aria-label="輸入您的旅遊問題"
             />
             <Button
               onClick={handleSend}
               disabled={!input.trim() || chatMutation.isPending}
-              className="bg-black hover:bg-gray-800 rounded-none px-4"
+              className="h-11 w-11 bg-black hover:bg-gray-800 rounded-full p-0 flex items-center justify-center shadow-lg transition-transform hover:scale-105"
               aria-label="傳送訊息"
             >
               {chatMutation.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="h-5 w-5 animate-spin" />
               ) : (
-                <Send className="h-4 w-4" />
+                <Send className="h-5 w-5" />
               )}
             </Button>
           </div>
-          <p className="text-xs text-gray-400 mt-2 text-center">
+          <p className="text-xs text-gray-400 mt-3 text-center">
             AI 回答僅供參考，實際行程請以客服確認為準
           </p>
         </div>
