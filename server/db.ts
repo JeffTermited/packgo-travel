@@ -920,6 +920,7 @@ export async function searchTours(filters: {
   airlines?: string[];
   hotelGrades?: string[];
   specialActivities?: string[];
+  tags?: string[];
   sortBy?: string;
 }): Promise<Tour[]> {
   const db = await getDb();
@@ -997,6 +998,20 @@ export async function searchTours(filters: {
         const activities = JSON.parse(tour.specialActivities);
         if (!Array.isArray(activities)) return false;
         return filters.specialActivities!.some(activity => activities.includes(activity));
+      } catch {
+        return false;
+      }
+    });
+  }
+
+  // Filter by tags if specified (in-memory filtering for JSON field)
+  if (filters.tags && filters.tags.length > 0) {
+    results = results.filter(tour => {
+      if (!tour.tags) return false;
+      try {
+        const tourTags = typeof tour.tags === 'string' ? JSON.parse(tour.tags) : tour.tags;
+        if (!Array.isArray(tourTags)) return false;
+        return filters.tags!.some(tag => tourTags.includes(tag));
       } catch {
         return false;
       }
@@ -1359,4 +1374,82 @@ export async function reorderDestinations(orderedIds: number[]): Promise<boolean
     console.error("[Database] Failed to reorder destinations:", error);
     return false;
   }
+}
+
+// ============================================
+// Filter Options Functions (Smart Filters)
+// ============================================
+
+/**
+ * 獲取智能篩選選項 - 根據現有行程自動生成
+ */
+export async function getFilterOptions(): Promise<{
+  destinations: { country: string; count: number }[];
+  tags: { tag: string; count: number }[];
+  durationRange: { min: number; max: number };
+  priceRange: { min: number; max: number };
+}> {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  // 獲取所有有效行程
+  const allTours = await db
+    .select()
+    .from(tours)
+    .where(eq(tours.status, "active"));
+
+  // 1. 統計目的地國家
+  const destinationMap = new Map<string, number>();
+  allTours.forEach(tour => {
+    const country = tour.destinationCountry || tour.destination;
+    if (country) {
+      destinationMap.set(country, (destinationMap.get(country) || 0) + 1);
+    }
+  });
+  const destinations = Array.from(destinationMap.entries())
+    .map(([country, count]) => ({ country, count }))
+    .sort((a, b) => b.count - a.count);
+
+  // 2. 統計標籤
+  const tagMap = new Map<string, number>();
+  allTours.forEach(tour => {
+    if (tour.tags) {
+      try {
+        const parsedTags = typeof tour.tags === 'string' ? JSON.parse(tour.tags) : tour.tags;
+        if (Array.isArray(parsedTags)) {
+          parsedTags.forEach((tag: string) => {
+            tagMap.set(tag, (tagMap.get(tag) || 0) + 1);
+          });
+        }
+      } catch {
+        // 忽略解析錯誤
+      }
+    }
+  });
+  const tags = Array.from(tagMap.entries())
+    .map(([tag, count]) => ({ tag, count }))
+    .sort((a, b) => b.count - a.count);
+
+  // 3. 計算天數範圍
+  const durations = allTours.map(t => t.duration).filter(d => d && d > 0);
+  const durationRange = {
+    min: durations.length > 0 ? Math.min(...durations) : 1,
+    max: durations.length > 0 ? Math.max(...durations) : 30,
+  };
+
+  // 4. 計算價格範圍
+  const prices = allTours.map(t => t.price).filter(p => p && p > 0);
+  const priceRange = {
+    min: prices.length > 0 ? Math.min(...prices) : 0,
+    max: prices.length > 0 ? Math.max(...prices) : 500000,
+  };
+
+  return {
+    destinations,
+    tags,
+    durationRange,
+    priceRange,
+  };
 }

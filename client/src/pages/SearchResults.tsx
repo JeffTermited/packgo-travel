@@ -6,11 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Slider } from "@/components/ui/slider";
 import { trpc } from "@/lib/trpc";
 import { 
   MapPin, Calendar, Heart, Star, Plane, Bus, Ship, Train, 
   Sparkles, Mountain, Utensils, Camera, Users, Clock, 
-  ChevronRight, Search, X, SlidersHorizontal
+  ChevronRight, ChevronDown, ChevronUp, Search, X, SlidersHorizontal, Filter
 } from "lucide-react";
 import { DestinationAutocomplete } from "@/components/DestinationAutocomplete";
 
@@ -95,7 +97,7 @@ export default function SearchResults() {
   const [location, setLocation] = useLocation();
   const searchParams = new URLSearchParams(window.location.search);
   
-  // 簡化的篩選狀態
+  // 篩選狀態
   const [keyword, setKeyword] = useState(searchParams.get("keyword") || searchParams.get("destination") || "");
   const [sortBy, setSortBy] = useState<"popular" | "price_asc" | "price_desc" | "days_asc" | "days_desc">(
     searchParams.get("sortBy") as any || "popular"
@@ -103,7 +105,25 @@ export default function SearchResults() {
   const [favorites, setFavorites] = useState<Set<number>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
+  
+  // 進階篩選狀態
+  const [selectedDestinations, setSelectedDestinations] = useState<string[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [durationRange, setDurationRange] = useState<[number, number]>([1, 30]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 500000]);
+  
   const pageSize = 12;
+
+  // 獲取智能篩選選項
+  const { data: filterOptions } = trpc.tours.getFilterOptions.useQuery();
+
+  // 當獲取到篩選選項時，初始化範圍
+  useEffect(() => {
+    if (filterOptions) {
+      setDurationRange([filterOptions.durationRange.min, filterOptions.durationRange.max]);
+      setPriceRange([filterOptions.priceRange.min, filterOptions.priceRange.max]);
+    }
+  }, [filterOptions]);
 
   // 同步篩選到 URL
   useEffect(() => {
@@ -117,16 +137,57 @@ export default function SearchResults() {
     }
   }, [keyword, sortBy]);
 
+  // 組合搜尋關鍵字（包含選中的目的地）
+  const searchKeyword = useMemo(() => {
+    if (selectedDestinations.length === 1) {
+      // 如果只選了一個目的地，用它作為搜尋關鍵字
+      return keyword || selectedDestinations[0];
+    }
+    return keyword;
+  }, [keyword, selectedDestinations]);
+
   // 搜尋行程
   const { data, isLoading } = trpc.tours.search.useQuery({
-    destination: keyword,
+    destination: searchKeyword,
+    minDays: durationRange[0],
+    maxDays: durationRange[1],
+    minPrice: priceRange[0],
+    maxPrice: priceRange[1],
+    tags: selectedTags.length > 0 ? selectedTags : undefined,
     sortBy,
     page: currentPage,
     pageSize,
   });
   
-  const tours = data?.tours || [];
+  // 在前端過濾多個目的地（當選擇多個目的地時）
+  const filteredTours = useMemo(() => {
+    const allTours = data?.tours || [];
+    if (selectedDestinations.length <= 1) {
+      return allTours;
+    }
+    // 多個目的地時，在前端過濾
+    return allTours.filter(tour => 
+      selectedDestinations.some(dest => 
+        tour.destinationCountry?.includes(dest) || 
+        tour.destination?.includes(dest)
+      )
+    );
+  }, [data?.tours, selectedDestinations]);
+
+  const tours = filteredTours;
   const pagination = data?.pagination;
+
+  // 計算已套用的篩選數量
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (selectedDestinations.length > 0) count++;
+    if (selectedTags.length > 0) count++;
+    if (filterOptions) {
+      if (durationRange[0] !== filterOptions.durationRange.min || durationRange[1] !== filterOptions.durationRange.max) count++;
+      if (priceRange[0] !== filterOptions.priceRange.min || priceRange[1] !== filterOptions.priceRange.max) count++;
+    }
+    return count;
+  }, [selectedDestinations, selectedTags, durationRange, priceRange, filterOptions]);
 
   const handleSearch = () => {
     setCurrentPage(1);
@@ -139,6 +200,16 @@ export default function SearchResults() {
     setLocation("/search");
   };
 
+  const handleClearFilters = () => {
+    setSelectedDestinations([]);
+    setSelectedTags([]);
+    if (filterOptions) {
+      setDurationRange([filterOptions.durationRange.min, filterOptions.durationRange.max]);
+      setPriceRange([filterOptions.priceRange.min, filterOptions.priceRange.max]);
+    }
+    setCurrentPage(1);
+  };
+
   const toggleFavorite = (tourId: number) => {
     setFavorites(prev => {
       const newFavorites = new Set(prev);
@@ -149,6 +220,24 @@ export default function SearchResults() {
       }
       return newFavorites;
     });
+  };
+
+  const toggleTag = (tag: string) => {
+    setSelectedTags(prev => 
+      prev.includes(tag) 
+        ? prev.filter(t => t !== tag)
+        : [...prev, tag]
+    );
+    setCurrentPage(1);
+  };
+
+  const toggleDestination = (destination: string) => {
+    setSelectedDestinations(prev => 
+      prev.includes(destination) 
+        ? prev.filter(d => d !== destination)
+        : [...prev, destination]
+    );
+    setCurrentPage(1);
   };
 
   return (
@@ -164,7 +253,7 @@ export default function SearchResults() {
           </div>
         </section>
 
-        {/* 簡化的搜尋欄 */}
+        {/* 搜尋欄 */}
         <section className="bg-white border-b border-gray-200 sticky top-0 z-40">
           <div className="container py-4">
             <div className="flex flex-col md:flex-row gap-4 items-center">
@@ -189,8 +278,23 @@ export default function SearchResults() {
                 </div>
               </div>
 
-              {/* 排序選擇 */}
+              {/* 篩選按鈕 + 排序選擇 */}
               <div className="flex items-center gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowFilters(!showFilters)}
+                  className={`h-12 px-4 rounded-full border-gray-300 ${showFilters ? 'bg-black text-white border-black' : ''}`}
+                >
+                  <Filter className="h-4 w-4 mr-2" />
+                  篩選
+                  {activeFilterCount > 0 && (
+                    <Badge className="ml-2 bg-black text-white text-xs px-1.5 py-0.5">
+                      {activeFilterCount}
+                    </Badge>
+                  )}
+                  {showFilters ? <ChevronUp className="h-4 w-4 ml-2" /> : <ChevronDown className="h-4 w-4 ml-2" />}
+                </Button>
+
                 <Select value={sortBy} onValueChange={(value) => setSortBy(value as any)}>
                   <SelectTrigger className="w-40 h-12 rounded-full border-gray-300">
                     <SelectValue placeholder="排序方式" />
@@ -213,17 +317,140 @@ export default function SearchResults() {
               </div>
             </div>
 
-            {/* 搜尋結果摘要 */}
-            {keyword && (
-              <div className="mt-4 flex items-center gap-2">
-                <span className="text-sm text-gray-500">搜尋：</span>
-                <Badge 
-                  variant="secondary" 
-                  className="bg-black text-white hover:bg-gray-800 cursor-pointer"
-                  onClick={handleClearSearch}
-                >
-                  {keyword} <X className="h-3 w-3 ml-1" />
-                </Badge>
+            {/* 可展開的篩選面板 */}
+            {showFilters && filterOptions && (
+              <div className="mt-4 p-6 bg-gray-50 rounded-2xl border border-gray-200 animate-in slide-in-from-top-2 duration-200">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="font-bold text-gray-900">進階篩選</h3>
+                  {activeFilterCount > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleClearFilters}
+                      className="text-gray-500 hover:text-gray-700"
+                    >
+                      <X className="h-4 w-4 mr-1" />
+                      清除所有篩選
+                    </Button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {/* 目的地篩選 */}
+                  {filterOptions.destinations.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-700 mb-3">目的地</h4>
+                      <div className="space-y-2 max-h-40 overflow-y-auto">
+                        {filterOptions.destinations.slice(0, 10).map(({ country, count }) => (
+                          <label key={country} className="flex items-center gap-2 cursor-pointer">
+                            <Checkbox
+                              checked={selectedDestinations.includes(country)}
+                              onCheckedChange={() => toggleDestination(country)}
+                            />
+                            <span className="text-sm text-gray-600">{country}</span>
+                            <span className="text-xs text-gray-400">({count})</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 標籤篩選 */}
+                  {filterOptions.tags.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-700 mb-3">行程類型</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {filterOptions.tags.slice(0, 12).map(({ tag, count }) => (
+                          <Badge
+                            key={tag}
+                            variant={selectedTags.includes(tag) ? "default" : "outline"}
+                            className={`cursor-pointer transition-colors ${
+                              selectedTags.includes(tag) 
+                                ? 'bg-black text-white hover:bg-gray-800' 
+                                : 'hover:bg-gray-100'
+                            }`}
+                            onClick={() => toggleTag(tag)}
+                          >
+                            {tag}
+                            <span className="ml-1 text-xs opacity-70">({count})</span>
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 天數範圍 */}
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-700 mb-3">
+                      天數範圍：{durationRange[0]} - {durationRange[1]} 天
+                    </h4>
+                    <Slider
+                      value={durationRange}
+                      onValueChange={(value) => {
+                        setDurationRange(value as [number, number]);
+                        setCurrentPage(1);
+                      }}
+                      min={filterOptions.durationRange.min}
+                      max={filterOptions.durationRange.max}
+                      step={1}
+                      className="mt-4"
+                    />
+                  </div>
+
+                  {/* 價格範圍 */}
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-700 mb-3">
+                      價格範圍：NT$ {priceRange[0].toLocaleString()} - {priceRange[1].toLocaleString()}
+                    </h4>
+                    <Slider
+                      value={priceRange}
+                      onValueChange={(value) => {
+                        setPriceRange(value as [number, number]);
+                        setCurrentPage(1);
+                      }}
+                      min={filterOptions.priceRange.min}
+                      max={filterOptions.priceRange.max}
+                      step={1000}
+                      className="mt-4"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 已套用的篩選標籤 */}
+            {(keyword || selectedTags.length > 0 || selectedDestinations.length > 0) && (
+              <div className="mt-4 flex items-center gap-2 flex-wrap">
+                <span className="text-sm text-gray-500">篩選條件：</span>
+                {keyword && (
+                  <Badge 
+                    variant="secondary" 
+                    className="bg-black text-white hover:bg-gray-800 cursor-pointer"
+                    onClick={handleClearSearch}
+                  >
+                    搜尋：{keyword} <X className="h-3 w-3 ml-1" />
+                  </Badge>
+                )}
+                {selectedDestinations.map(dest => (
+                  <Badge 
+                    key={dest}
+                    variant="secondary" 
+                    className="bg-gray-200 text-gray-700 hover:bg-gray-300 cursor-pointer"
+                    onClick={() => toggleDestination(dest)}
+                  >
+                    {dest} <X className="h-3 w-3 ml-1" />
+                  </Badge>
+                ))}
+                {selectedTags.map(tag => (
+                  <Badge 
+                    key={tag}
+                    variant="secondary" 
+                    className="bg-gray-200 text-gray-700 hover:bg-gray-300 cursor-pointer"
+                    onClick={() => toggleTag(tag)}
+                  >
+                    {tag} <X className="h-3 w-3 ml-1" />
+                  </Badge>
+                ))}
               </div>
             )}
           </div>
@@ -273,7 +500,7 @@ export default function SearchResults() {
                           )}
                           
                           {/* 天數標籤 */}
-                          <div className="absolute top-4 left-4 bg-black/80 text-white px-3 py-1.5 rounded-full text-sm font-medium backdrop-blur-sm">
+                          <div className="absolute top-4 left-4 bg-black/80 text-white px-3 py-1.5 text-sm font-medium rounded-full">
                             {tour.duration} 天
                           </div>
                           
@@ -404,14 +631,25 @@ export default function SearchResults() {
                   <MapPin className="h-10 w-10 text-gray-400" />
                 </div>
                 <h3 className="text-xl font-bold text-gray-700 mb-2">找不到符合條件的行程</h3>
-                <p className="text-gray-500 mb-6">請嘗試其他搜尋關鍵字</p>
-                <Button 
-                  onClick={handleClearSearch}
-                  variant="outline"
-                  className="rounded-full"
-                >
-                  清除搜尋條件
-                </Button>
+                <p className="text-gray-500 mb-6">請嘗試其他搜尋關鍵字或調整篩選條件</p>
+                <div className="flex gap-3 justify-center">
+                  <Button 
+                    onClick={handleClearSearch}
+                    variant="outline"
+                    className="rounded-full"
+                  >
+                    清除搜尋條件
+                  </Button>
+                  {activeFilterCount > 0 && (
+                    <Button 
+                      onClick={handleClearFilters}
+                      variant="outline"
+                      className="rounded-full"
+                    >
+                      清除篩選條件
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </div>

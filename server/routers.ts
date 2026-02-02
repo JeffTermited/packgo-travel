@@ -293,6 +293,11 @@ Important guidelines:
         return tour;
       }),
 
+    // Get filter options for smart filtering (public)
+    getFilterOptions: publicProcedure.query(async () => {
+      return await db.getFilterOptions();
+    }),
+
     // Search tours with filters (public)
     search: publicProcedure
       .input(
@@ -305,6 +310,7 @@ Important guidelines:
           airlines: z.array(z.string()).optional(),
           hotelGrades: z.array(z.string()).optional(),
           specialActivities: z.array(z.string()).optional(),
+          tags: z.array(z.string()).optional(),
           sortBy: z.enum(["popular", "price_asc", "price_desc", "days_asc", "days_desc"]).optional(),
           page: z.number().min(1).default(1),
           pageSize: z.number().min(1).max(100).default(12),
