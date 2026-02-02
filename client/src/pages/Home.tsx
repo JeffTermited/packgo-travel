@@ -86,7 +86,7 @@ function HomeContent() {
           aria-label="AI 旅遊顧問"
         >
           <img
-            src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663159191204/LYrZeAxRcJBrlkrV.png"
+            src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663159191204/kRwMMXsirdgDAaRf.png"
             alt="AI 旅遊顧問"
             className="w-full h-full object-contain drop-shadow-xl animate-penguin-wobble"
           />

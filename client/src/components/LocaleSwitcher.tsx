@@ -1,4 +1,4 @@
-import { useLocale, Language, Currency, languageNames, currencyInfo } from '@/contexts/LocaleContext';
+import { useLocale, Language, Currency } from '@/contexts/LocaleContext';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -6,45 +6,44 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
-  DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
-import { Globe, DollarSign, ChevronDown } from 'lucide-react';
+import { Globe, ChevronDown } from 'lucide-react';
 
-// 語言切換組件
+// 語言切換組件 - 黑白簡潔風格
 export function LanguageSwitcher() {
   const { language, setLanguage, languageName } = useLocale();
 
-  const languages: { code: Language; name: string; flag: string }[] = [
-    { code: 'zh-TW', name: '繁體中文', flag: '🇹🇼' },
-    { code: 'en', name: 'English', flag: '🇺🇸' },
-    { code: 'es', name: 'Español', flag: '🇪🇸' },
+  const languages: { code: Language; name: string }[] = [
+    { code: 'zh-TW', name: '繁體中文' },
+    { code: 'en', name: 'English' },
+    { code: 'es', name: 'Español' },
   ];
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-8 px-2 text-sm font-normal">
-          <Globe className="h-4 w-4 mr-1" />
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="h-8 px-2 text-sm font-normal text-black hover:bg-transparent hover:text-black/70 border-none"
+        >
+          <Globe className="h-4 w-4 mr-1.5" />
           <span className="hidden sm:inline">{languageName}</span>
-          <ChevronDown className="h-3 w-3 ml-1 opacity-50" />
+          <ChevronDown className="h-3 w-3 ml-1" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-40">
-        <DropdownMenuLabel className="text-xs text-muted-foreground">
-          選擇語言 / Language
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
+      <DropdownMenuContent align="end" className="w-36 bg-white border-2 border-black rounded-none shadow-none">
         {languages.map((lang) => (
           <DropdownMenuItem
             key={lang.code}
             onClick={() => setLanguage(lang.code)}
-            className={language === lang.code ? 'bg-accent' : ''}
+            className={`cursor-pointer rounded-none ${
+              language === lang.code 
+                ? 'bg-black text-white' 
+                : 'hover:bg-gray-100'
+            }`}
           >
-            <span className="mr-2">{lang.flag}</span>
             {lang.name}
-            {language === lang.code && (
-              <span className="ml-auto text-primary">✓</span>
-            )}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>
@@ -52,45 +51,46 @@ export function LanguageSwitcher() {
   );
 }
 
-// 幣值切換組件
+// 幣值切換組件 - 黑白簡潔風格
 export function CurrencySwitcher() {
-  const { currency, setCurrency, currencySymbol, currencyName } = useLocale();
+  const { currency, setCurrency, currencySymbol } = useLocale();
 
   const currencies: { code: Currency; name: string; symbol: string }[] = [
-    { code: 'TWD', name: '新台幣 (TWD)', symbol: 'NT$' },
-    { code: 'USD', name: '美金 (USD)', symbol: '$' },
+    { code: 'TWD', name: 'NTS', symbol: 'NT$' },
+    { code: 'USD', name: 'USD', symbol: '$' },
   ];
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-8 px-2 text-sm font-normal">
-          <DollarSign className="h-4 w-4 mr-1" />
-          <span className="hidden sm:inline">{currencySymbol}</span>
-          <ChevronDown className="h-3 w-3 ml-1 opacity-50" />
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="h-8 px-2 text-sm font-normal text-black hover:bg-transparent hover:text-black/70 border-none"
+        >
+          <span className="font-medium">$</span>
+          <span className="hidden sm:inline ml-1">{currencySymbol}</span>
+          <ChevronDown className="h-3 w-3 ml-1" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-44">
-        <DropdownMenuLabel className="text-xs text-muted-foreground">
-          選擇幣值 / Currency
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
+      <DropdownMenuContent align="end" className="w-32 bg-white border-2 border-black rounded-none shadow-none">
         {currencies.map((curr) => (
           <DropdownMenuItem
             key={curr.code}
             onClick={() => setCurrency(curr.code)}
-            className={currency === curr.code ? 'bg-accent' : ''}
+            className={`cursor-pointer rounded-none ${
+              currency === curr.code 
+                ? 'bg-black text-white' 
+                : 'hover:bg-gray-100'
+            }`}
           >
             <span className="font-mono mr-2">{curr.symbol}</span>
-            {curr.name}
-            {currency === curr.code && (
-              <span className="ml-auto text-primary">✓</span>
-            )}
+            {curr.code}
           </DropdownMenuItem>
         ))}
-        <DropdownMenuSeparator />
-        <div className="px-2 py-1.5 text-[10px] text-muted-foreground leading-tight">
-          ※ 轉換價格僅供參考，實際價格以屆時人員提供的報價為準
+        <DropdownMenuSeparator className="bg-black" />
+        <div className="px-2 py-1.5 text-[10px] text-gray-500 leading-tight">
+          ※ 轉換價格僅供參考
         </div>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -100,7 +100,7 @@ export function CurrencySwitcher() {
 // 組合組件 - 同時顯示語言和幣值切換
 export function LocaleSwitcher() {
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center">
       <LanguageSwitcher />
       <CurrencySwitcher />
     </div>
