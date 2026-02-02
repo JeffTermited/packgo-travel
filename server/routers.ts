@@ -2499,6 +2499,237 @@ Important guidelines:
         );
         return { success };
       }),
+
+    // === 學習分析儀表板 API ===
+    
+    // 獲取儀表板統計數據
+    getDashboardStats: adminProcedure.query(async () => {
+      const { getDashboardStats } = await import('./services/learningAnalyticsService');
+      return await getDashboardStats();
+    }),
+
+    // 獲取學習趨勢數據
+    getLearningTrends: adminProcedure
+      .input(z.object({ days: z.number().min(7).max(90).optional() }).optional())
+      .query(async ({ input }) => {
+        const { getLearningTrends } = await import('./services/learningAnalyticsService');
+        return await getLearningTrends(input?.days || 30);
+      }),
+
+    // 獲取技能採納率數據
+    getAdoptionRates: adminProcedure.query(async () => {
+      const { getSkillAdoptionRates } = await import('./services/learningAnalyticsService');
+      return await getSkillAdoptionRates();
+    }),
+
+    // 獲取學習來源分佈
+    getSourceDistribution: adminProcedure.query(async () => {
+      const { getSourceDistribution } = await import('./services/learningAnalyticsService');
+      return await getSourceDistribution();
+    }),
+
+    // 獲取熱門行程排名
+    getTopTours: adminProcedure
+      .input(z.object({ limit: z.number().min(1).max(50).optional() }).optional())
+      .query(async ({ input }) => {
+        const { getTopToursByPopularity } = await import('./services/learningAnalyticsService');
+        return await getTopToursByPopularity(input?.limit || 10);
+      }),
+
+    // 獲取優先學習的行程
+    getPrioritizedTours: adminProcedure
+      .input(z.object({ limit: z.number().min(1).max(20).optional() }).optional())
+      .query(async ({ input }) => {
+        const { getPrioritizedToursForLearning } = await import('./services/learningAnalyticsService');
+        return await getPrioritizedToursForLearning(input?.limit || 5);
+      }),
+
+    // === 審核佇列 API ===
+    
+    // 獲取待審核的技能
+    getReviewQueue: adminProcedure
+      .input(z.object({
+        status: z.enum(['pending', 'approved', 'rejected', 'merged']).optional(),
+        limit: z.number().min(1).max(100).optional(),
+        offset: z.number().min(0).optional(),
+      }).optional())
+      .query(async ({ input }) => {
+        const { getDb } = await import('./db');
+        const { skillReviewQueue } = await import('../drizzle/schema');
+        const { eq, desc } = await import('drizzle-orm');
+        
+        const db = await getDb();
+        if (!db) return { items: [], total: 0 };
+        
+        let query = db.select().from(skillReviewQueue);
+        
+        if (input?.status) {
+          query = query.where(eq(skillReviewQueue.status, input.status)) as typeof query;
+        }
+        
+        const items = await query
+          .orderBy(desc(skillReviewQueue.createdAt))
+          .limit(input?.limit || 20)
+          .offset(input?.offset || 0);
+        
+        // Get total count
+        const { count } = await import('drizzle-orm');
+        let countQuery = db.select({ count: count() }).from(skillReviewQueue);
+        if (input?.status) {
+          countQuery = countQuery.where(eq(skillReviewQueue.status, input.status)) as typeof countQuery;
+        }
+        const [totalResult] = await countQuery;
+        
+        return { items, total: Number(totalResult?.count) || 0 };
+      }),
+
+    // 批准技能
+    approveSkill: adminProcedure
+      .input(z.object({
+        reviewId: z.number(),
+        notes: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { getDb } = await import('./db');
+        const { skillReviewQueue, agentSkills } = await import('../drizzle/schema');
+        const { eq } = await import('drizzle-orm');
+        
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Database not available' });
+        
+        // Get the review item
+        const [review] = await db.select().from(skillReviewQueue).where(eq(skillReviewQueue.id, input.reviewId));
+        if (!review) throw new TRPCError({ code: 'NOT_FOUND', message: 'Review item not found' });
+        if (review.status !== 'pending') throw new TRPCError({ code: 'BAD_REQUEST', message: 'Item already reviewed' });
+        
+        // Create the actual skill
+        // Map review skillType to agentSkills skillType
+        const skillTypeMapping: Record<string, 'feature_classification' | 'tag_rule' | 'itinerary_structure' | 'highlight_detection' | 'transportation_type' | 'meal_classification' | 'accommodation_type'> = {
+          'technique': 'feature_classification',
+          'pattern': 'tag_rule',
+          'reference': 'itinerary_structure',
+        };
+        const mappedSkillType = skillTypeMapping[review.skillType] || 'feature_classification';
+        
+        const [insertResult] = await db.insert(agentSkills).values({
+          skillType: mappedSkillType,
+          skillCategory: review.skillType as 'technique' | 'pattern' | 'reference',
+          skillName: review.skillName,
+          keywords: review.keywords,
+          rules: review.rules,
+          outputLabels: review.outputLabels,
+          description: review.description,
+          confidence: review.confidence,
+          isActive: true,
+          isBuiltIn: false,
+          createdBy: ctx.user.id,
+        });
+        
+        const skillId = insertResult.insertId;
+        
+        // Update review status
+        await db.update(skillReviewQueue)
+          .set({
+            status: 'approved',
+            reviewedBy: ctx.user.id,
+            reviewedAt: new Date(),
+            reviewNotes: input.notes,
+            createdSkillId: Number(skillId),
+          })
+          .where(eq(skillReviewQueue.id, input.reviewId));
+        
+        return { success: true, skillId: Number(skillId) };
+      }),
+
+    // 拒絕技能
+    rejectSkill: adminProcedure
+      .input(z.object({
+        reviewId: z.number(),
+        notes: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { getDb } = await import('./db');
+        const { skillReviewQueue } = await import('../drizzle/schema');
+        const { eq } = await import('drizzle-orm');
+        
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Database not available' });
+        
+        // Get the review item
+        const [review] = await db.select().from(skillReviewQueue).where(eq(skillReviewQueue.id, input.reviewId));
+        if (!review) throw new TRPCError({ code: 'NOT_FOUND', message: 'Review item not found' });
+        if (review.status !== 'pending') throw new TRPCError({ code: 'BAD_REQUEST', message: 'Item already reviewed' });
+        
+        // Update review status
+        await db.update(skillReviewQueue)
+          .set({
+            status: 'rejected',
+            reviewedBy: ctx.user.id,
+            reviewedAt: new Date(),
+            reviewNotes: input.notes,
+          })
+          .where(eq(skillReviewQueue.id, input.reviewId));
+        
+        return { success: true };
+      }),
+
+    // 新增待審核的技能（從 AI 學習結果）
+    addToReviewQueue: adminProcedure
+      .input(z.object({
+        skillName: z.string(),
+        skillType: z.enum(['technique', 'pattern', 'reference']),
+        category: z.string(),
+        keywords: z.array(z.string()),
+        rules: z.any(),
+        description: z.string().optional(),
+        outputLabels: z.array(z.string()).optional(),
+        confidence: z.number().min(0).max(1).optional(),
+        sourceType: z.enum(['ai_learning', 'scheduled', 'manual']),
+        sourceTourId: z.number().optional(),
+        learningHistoryId: z.number().optional(),
+        priority: z.enum(['low', 'medium', 'high']).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { getDb } = await import('./db');
+        const { skillReviewQueue } = await import('../drizzle/schema');
+        
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Database not available' });
+        
+        const [result] = await db.insert(skillReviewQueue).values({
+          skillName: input.skillName,
+          skillType: input.skillType,
+          category: input.category,
+          keywords: JSON.stringify(input.keywords),
+          rules: JSON.stringify(input.rules),
+          description: input.description,
+          outputLabels: input.outputLabels ? JSON.stringify(input.outputLabels) : null,
+          confidence: input.confidence?.toFixed(2) || '0.80',
+          sourceType: input.sourceType,
+          sourceTourId: input.sourceTourId,
+          learningHistoryId: input.learningHistoryId,
+          priority: input.priority || 'medium',
+          status: 'pending',
+        });
+        
+        return { success: true, reviewId: Number(result.insertId) };
+      }),
+
+    // 更新行程統計（用於智能優先級）
+    recordTourView: adminProcedure
+      .input(z.object({ tourId: z.number() }))
+      .mutation(async ({ input }) => {
+        const { recordTourView } = await import('./services/learningAnalyticsService');
+        await recordTourView(input.tourId);
+        return { success: true };
+      }),
+
+    // 更新熱門度分數
+    updatePopularityScores: adminProcedure.mutation(async () => {
+      const { updatePopularityScores } = await import('./services/learningAnalyticsService');
+      await updatePopularityScores();
+      return { success: true };
+    }),
   }),
 });
 export type AppRouter = typeof appRouter;

@@ -736,3 +736,135 @@ export const skillLearningSchedule = mysqlTable("skillLearningSchedule", {
 
 export type SkillLearningSchedule = typeof skillLearningSchedule.$inferSelect;
 export type InsertSkillLearningSchedule = typeof skillLearningSchedule.$inferInsert;
+
+
+/**
+ * Skill Review Queue table for managing pending skill approvals.
+ * AI-suggested skills require admin approval before being activated.
+ */
+export const skillReviewQueue = mysqlTable("skillReviewQueue", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  // Skill information (stored before creating actual skill)
+  skillName: varchar("skillName", { length: 100 }).notNull(),
+  skillType: mysqlEnum("skillType", ["technique", "pattern", "reference"]).notNull(),
+  category: varchar("category", { length: 100 }).notNull(),
+  keywords: text("keywords").notNull(), // JSON array
+  rules: text("rules").notNull(), // JSON object
+  description: text("description"),
+  outputLabels: text("outputLabels"), // JSON array
+  confidence: decimal("confidence", { precision: 3, scale: 2 }).default("0.80"),
+  
+  // Source information
+  sourceType: mysqlEnum("sourceType", ["ai_learning", "scheduled", "manual"]).notNull(),
+  sourceTourId: int("sourceTourId"), // Tour that triggered this suggestion
+  learningHistoryId: int("learningHistoryId"), // Reference to skillLearningHistory
+  
+  // Review status
+  status: mysqlEnum("status", [
+    "pending",     // 等待審核
+    "approved",    // 已批准
+    "rejected",    // 已拒絕
+    "merged"       // 已合併到現有技能
+  ]).default("pending").notNull(),
+  
+  // Review details
+  reviewedBy: int("reviewedBy"), // Admin who reviewed
+  reviewedAt: timestamp("reviewedAt"),
+  reviewNotes: text("reviewNotes"), // Admin's notes
+  createdSkillId: int("createdSkillId"), // ID of created skill if approved
+  
+  // Priority for review
+  priority: mysqlEnum("priority", ["low", "medium", "high"]).default("medium").notNull(),
+  
+  // Audit
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type SkillReviewQueue = typeof skillReviewQueue.$inferSelect;
+export type InsertSkillReviewQueue = typeof skillReviewQueue.$inferInsert;
+
+/**
+ * Tour Statistics table for tracking tour popularity metrics.
+ * Used for intelligent learning prioritization.
+ */
+export const tourStatistics = mysqlTable("tourStatistics", {
+  id: int("id").autoincrement().primaryKey(),
+  tourId: int("tourId").notNull().unique(),
+  
+  // View metrics
+  viewCount: int("viewCount").default(0).notNull(),
+  uniqueViewCount: int("uniqueViewCount").default(0).notNull(),
+  
+  // Engagement metrics
+  favoriteCount: int("favoriteCount").default(0).notNull(),
+  shareCount: int("shareCount").default(0).notNull(),
+  inquiryCount: int("inquiryCount").default(0).notNull(),
+  
+  // Booking metrics
+  bookingCount: int("bookingCount").default(0).notNull(),
+  conversionRate: decimal("conversionRate", { precision: 5, scale: 4 }).default("0.0000"), // bookings / views
+  
+  // Revenue metrics
+  totalRevenue: int("totalRevenue").default(0).notNull(), // in TWD
+  
+  // Popularity score (calculated)
+  popularityScore: decimal("popularityScore", { precision: 10, scale: 4 }).default("0.0000"),
+  
+  // Learning status
+  hasBeenLearned: boolean("hasBeenLearned").default(false).notNull(),
+  lastLearnedAt: timestamp("lastLearnedAt"),
+  learningPriority: int("learningPriority").default(0).notNull(), // Higher = more priority
+  
+  // Timestamps
+  lastViewedAt: timestamp("lastViewedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type TourStatistics = typeof tourStatistics.$inferSelect;
+export type InsertTourStatistics = typeof tourStatistics.$inferInsert;
+
+/**
+ * Learning Analytics table for tracking learning system performance.
+ * Aggregated daily statistics for dashboard visualization.
+ */
+export const learningAnalytics = mysqlTable("learningAnalytics", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  // Date for aggregation
+  date: timestamp("date").notNull(),
+  
+  // Learning activity metrics
+  learningSessionsCount: int("learningSessionsCount").default(0).notNull(),
+  toursAnalyzed: int("toursAnalyzed").default(0).notNull(),
+  keywordsSuggested: int("keywordsSuggested").default(0).notNull(),
+  skillsSuggested: int("skillsSuggested").default(0).notNull(),
+  
+  // Adoption metrics
+  keywordsAccepted: int("keywordsAccepted").default(0).notNull(),
+  keywordsRejected: int("keywordsRejected").default(0).notNull(),
+  skillsApproved: int("skillsApproved").default(0).notNull(),
+  skillsRejected: int("skillsRejected").default(0).notNull(),
+  
+  // Calculated rates
+  keywordAdoptionRate: decimal("keywordAdoptionRate", { precision: 5, scale: 4 }).default("0.0000"),
+  skillAdoptionRate: decimal("skillAdoptionRate", { precision: 5, scale: 4 }).default("0.0000"),
+  
+  // Source distribution
+  sourceDistribution: text("sourceDistribution"), // JSON: {tour: n, batch: n, scheduled: n, manual: n}
+  
+  // Performance metrics
+  avgProcessingTimeMs: int("avgProcessingTimeMs"),
+  totalProcessingTimeMs: int("totalProcessingTimeMs"),
+  
+  // Timestamps
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  uniqueDate: unique().on(table.date),
+}));
+
+export type LearningAnalytics = typeof learningAnalytics.$inferSelect;
+export type InsertLearningAnalytics = typeof learningAnalytics.$inferInsert;

@@ -10,7 +10,7 @@
 
 import { getDb } from "../db";
 import { skillLearnerAgent, LearningResult } from "../agents/skillLearnerAgent";
-import { tours, skillLearningHistory, skillLearningSchedule } from "../../drizzle/schema";
+import { tours, skillLearningHistory, skillLearningSchedule, tourStatistics } from "../../drizzle/schema";
 import { eq, and, gt, desc, sql, isNull, or } from "drizzle-orm";
 import { notifyOwner } from "../_core/notification";
 import { skillLearningQueue } from "../queue";
@@ -231,21 +231,43 @@ class ScheduledLearningService {
       // @ts-ignore
       const historyId = historyResult[0]?.insertId;
 
-      // 獲取需要學習的行程
+      // 獲取需要學習的行程 - 使用智能優先級排序
       const lastRunAt = schedule.lastRunAt || new Date(0);
       const minAge = new Date();
       minAge.setDate(minAge.getDate() - (schedule.minTourAge || 0));
 
+      // 先獲取尚未學習的行程，根據熱門度排序
+      // 熱門度 = viewCount * 1 + bookingCount * 10 + favoriteCount * 5
+      // 使用 LEFT JOIN tourStatistics 來獲取統計數據
       const toursToLearn = await db
-        .select()
+        .select({
+          id: tours.id,
+          title: tours.title,
+          description: tours.description,
+          highlights: tours.highlights,
+          dailyItinerary: tours.dailyItinerary,
+          destinationCountry: tours.destinationCountry,
+          destinationCity: tours.destinationCity,
+          price: tours.price,
+          duration: tours.duration,
+          status: tours.status,
+          createdAt: tours.createdAt,
+          viewCount: tourStatistics.viewCount,
+          bookingCount: tourStatistics.bookingCount,
+          favoriteCount: tourStatistics.favoriteCount,
+        })
         .from(tours)
+        .leftJoin(tourStatistics, eq(tours.id, tourStatistics.tourId))
         .where(
           and(
             gt(tours.createdAt, lastRunAt),
             eq(tours.status, 'active')
           )
         )
-        .orderBy(desc(tours.createdAt))
+        .orderBy(
+          // 根據熱門度排序：瀏覽量 + 預訂量*10 + 收藏量*5
+          sql`(COALESCE(${tourStatistics.viewCount}, 0) + COALESCE(${tourStatistics.bookingCount}, 0) * 10 + COALESCE(${tourStatistics.favoriteCount}, 0) * 5) DESC`
+        )
         .limit(schedule.maxToursPerRun || 10);
 
       if (toursToLearn.length === 0) {

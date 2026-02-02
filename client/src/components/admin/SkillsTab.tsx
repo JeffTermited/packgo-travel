@@ -1310,6 +1310,368 @@ export default function SkillsTab() {
     );
   };
 
+  // Analytics Tab Component
+  const AnalyticsTab = () => {
+    const { data: dashboardStats, isLoading: statsLoading } = trpc.skills.getDashboardStats.useQuery();
+    const { data: learningTrends, isLoading: trendsLoading } = trpc.skills.getLearningTrends.useQuery({ days: 30 });
+    const { data: adoptionRates, isLoading: adoptionLoading } = trpc.skills.getAdoptionRates.useQuery();
+    const { data: sourceDistribution, isLoading: sourceLoading } = trpc.skills.getSourceDistribution.useQuery();
+    const { data: prioritizedTours, isLoading: toursLoading } = trpc.skills.getPrioritizedTours.useQuery({ limit: 5 });
+
+    const isLoading = statsLoading || trendsLoading || adoptionLoading || sourceLoading;
+
+    if (isLoading) {
+      return (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-6">
+        {/* Dashboard Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <p className="text-2xl font-bold">{dashboardStats?.totalLearnings || 0}</p>
+                <p className="text-sm text-muted-foreground">總學習次數</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <p className="text-2xl font-bold">{dashboardStats?.totalKeywordsSuggested || 0}</p>
+                <p className="text-sm text-muted-foreground">建議關鍵字</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <p className="text-2xl font-bold">{dashboardStats?.totalSkillsSuggested || 0}</p>
+                <p className="text-sm text-muted-foreground">建議技能</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-green-600">{dashboardStats?.overallAdoptionRate?.toFixed(1) || 0}%</p>
+                <p className="text-sm text-muted-foreground">採納率</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-amber-600">{dashboardStats?.pendingReviews || 0}</p>
+                <p className="text-sm text-muted-foreground">待審核</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-primary">{dashboardStats?.activeSkills || 0}</p>
+                <p className="text-sm text-muted-foreground">已啟用技能</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Charts Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Learning Trends */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-primary" />
+                學習趨勢 (過去 30 天)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {learningTrends && learningTrends.length > 0 ? (
+                <div className="space-y-2">
+                  <div className="flex items-end gap-1 h-32">
+                    {learningTrends.slice(-14).map((day: any, idx: number) => (
+                      <div
+                        key={idx}
+                        className="flex-1 bg-primary/20 hover:bg-primary/40 transition-colors rounded-t"
+                        style={{ height: `${Math.max(10, (day.learningCount / Math.max(...learningTrends.map((d: any) => d.learningCount || 1))) * 100)}%` }}
+                        title={`${day.date}: ${day.learningCount} 次學習`}
+                      />
+                    ))}
+                  </div>
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>{learningTrends[learningTrends.length - 14]?.date || ''}</span>
+                    <span>{learningTrends[learningTrends.length - 1]?.date || ''}</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <TrendingUp className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>尚無學習趨勢數據</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Adoption Rates */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="h-5 w-5 text-primary" />
+                技能採納率
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {adoptionRates && adoptionRates.length > 0 ? (
+                <div className="space-y-3">
+                  {adoptionRates.map((rate: any, idx: number) => (
+                    <div key={idx} className="space-y-1">
+                      <div className="flex justify-between text-sm">
+                        <span>{rate.category}</span>
+                        <span className="font-medium">{rate.count} ({rate.percentage.toFixed(1)}%)</span>
+                      </div>
+                      <div className="h-2 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full ${
+                            rate.category === '已批准' ? 'bg-green-500' :
+                            rate.category === '已拒絕' ? 'bg-red-500' :
+                            rate.category === '待審核' ? 'bg-amber-500' : 'bg-blue-500'
+                          }`}
+                          style={{ width: `${rate.percentage}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <BarChart3 className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>尚無採納率數據</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Source Distribution & Prioritized Tours */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Source Distribution */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Database className="h-5 w-5 text-primary" />
+                學習來源分佈
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {sourceDistribution && sourceDistribution.length > 0 ? (
+                <div className="space-y-3">
+                  {sourceDistribution.map((source: any, idx: number) => (
+                    <div key={idx} className="flex items-center justify-between p-2 border rounded-lg">
+                      <span className="font-medium">{source.source}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">{source.count} 次</span>
+                        <Badge variant="outline">{source.percentage.toFixed(1)}%</Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Database className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>尚無來源分佈數據</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Prioritized Tours for Learning */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Target className="h-5 w-5 text-primary" />
+                優先學習行程
+              </CardTitle>
+              <CardDescription>
+                根據熱門度排名，尚未學習的行程
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {prioritizedTours && prioritizedTours.length > 0 ? (
+                <div className="space-y-2">
+                  {prioritizedTours.map((tour: any, idx: number) => (
+                    <div key={idx} className="flex items-center justify-between p-2 border rounded-lg">
+                      <div>
+                        <p className="font-medium text-sm">{tour.title}</p>
+                        <p className="text-xs text-muted-foreground">{tour.destination}</p>
+                      </div>
+                      <div className="text-right text-xs">
+                        <p>瀏覽: {tour.viewCount}</p>
+                        <p>預訂: {tour.bookingCount}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Target className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>所有行程已學習完成</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  };
+
+  // Review Queue Tab Component
+  const ReviewQueueTab = () => {
+    const [statusFilter, setStatusFilter] = useState<'pending' | 'approved' | 'rejected' | 'merged' | undefined>('pending');
+    const { data: reviewQueue, isLoading, refetch } = trpc.skills.getReviewQueue.useQuery({ status: statusFilter, limit: 20 });
+    const approveSkill = trpc.skills.approveSkill.useMutation({
+      onSuccess: () => {
+        toast.success('技能已批准並建立');
+        refetch();
+      },
+      onError: (error) => toast.error(`批准失敗: ${error.message}`),
+    });
+    const rejectSkill = trpc.skills.rejectSkill.useMutation({
+      onSuccess: () => {
+        toast.success('技能已拒絕');
+        refetch();
+      },
+      onError: (error) => toast.error(`拒絕失敗: ${error.message}`),
+    });
+
+    if (isLoading) {
+      return (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-6">
+        {/* Filter */}
+        <div className="flex items-center gap-4">
+          <Label>狀態篩選：</Label>
+          <Select value={statusFilter || 'all'} onValueChange={(v) => setStatusFilter(v === 'all' ? undefined : v as any)}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">全部</SelectItem>
+              <SelectItem value="pending">待審核</SelectItem>
+              <SelectItem value="approved">已批准</SelectItem>
+              <SelectItem value="rejected">已拒絕</SelectItem>
+              <SelectItem value="merged">已合併</SelectItem>
+            </SelectContent>
+          </Select>
+          <span className="text-sm text-muted-foreground">
+            共 {reviewQueue?.total || 0} 項
+          </span>
+          <Button variant="outline" size="sm" onClick={() => refetch()}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            重新整理
+          </Button>
+        </div>
+
+        {/* Review Items */}
+        {reviewQueue?.items && reviewQueue.items.length > 0 ? (
+          <div className="space-y-4">
+            {reviewQueue.items.map((item: any) => (
+              <Card key={item.id}>
+                <CardContent className="pt-6">
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold">{item.skillName}</h3>
+                        <Badge variant={item.status === 'pending' ? 'secondary' : item.status === 'approved' ? 'default' : 'destructive'}>
+                          {item.status === 'pending' ? '待審核' : item.status === 'approved' ? '已批准' : item.status === 'rejected' ? '已拒絕' : '已合併'}
+                        </Badge>
+                        <Badge variant="outline">{item.skillType}</Badge>
+                        {item.confidence && (
+                          <Badge variant="outline" className="bg-blue-50">
+                            信心度: {(Number(item.confidence) * 100).toFixed(0)}%
+                          </Badge>
+                        )}
+                      </div>
+                      {item.description && (
+                        <p className="text-sm text-muted-foreground">{item.description}</p>
+                      )}
+                      <div className="flex flex-wrap gap-1">
+                        {item.keywords && JSON.parse(item.keywords).slice(0, 5).map((kw: string, idx: number) => (
+                          <Badge key={idx} variant="secondary" className="text-xs">{kw}</Badge>
+                        ))}
+                        {item.keywords && JSON.parse(item.keywords).length > 5 && (
+                          <Badge variant="secondary" className="text-xs">+{JSON.parse(item.keywords).length - 5}</Badge>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        來源: {item.sourceType === 'ai_learning' ? 'AI 學習' : item.sourceType === 'scheduled' ? '排程學習' : '手動新增'}
+                        {item.sourceTourId && ` | 行程 ID: ${item.sourceTourId}`}
+                        {' | '}建立時間: {new Date(item.createdAt).toLocaleString('zh-TW')}
+                      </p>
+                    </div>
+                    {item.status === 'pending' && (
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                          onClick={() => approveSkill.mutate({ reviewId: item.id })}
+                          disabled={approveSkill.isPending}
+                        >
+                          {approveSkill.isPending ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <ThumbsUp className="h-4 w-4 mr-1" />
+                          )}
+                          批准
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          onClick={() => rejectSkill.mutate({ reviewId: item.id })}
+                          disabled={rejectSkill.isPending}
+                        >
+                          {rejectSkill.isPending ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <ThumbsDown className="h-4 w-4 mr-1" />
+                          )}
+                          拒絕
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <Card>
+            <CardContent className="py-12">
+              <div className="text-center text-muted-foreground">
+                <Shield className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>沒有{statusFilter === 'pending' ? '待審核' : ''}的技能</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -1378,6 +1740,14 @@ export default function SkillsTab() {
           <TabsTrigger value="scheduled-learning" className="flex items-center gap-1">
             <Clock className="h-3 w-3" />
             自動排程
+          </TabsTrigger>
+          <TabsTrigger value="analytics" className="flex items-center gap-1">
+            <BarChart3 className="h-3 w-3" />
+            學習分析
+          </TabsTrigger>
+          <TabsTrigger value="review" className="flex items-center gap-1">
+            <Shield className="h-3 w-3" />
+            審核佇列
           </TabsTrigger>
         </TabsList>
 
@@ -1606,6 +1976,16 @@ export default function SkillsTab() {
         {/* Scheduled Learning Tab */}
         <TabsContent value="scheduled-learning" className="mt-4">
           <ScheduledLearningTab />
+        </TabsContent>
+
+        {/* Analytics Tab */}
+        <TabsContent value="analytics" className="mt-4">
+          <AnalyticsTab />
+        </TabsContent>
+
+        {/* Review Queue Tab */}
+        <TabsContent value="review" className="mt-4">
+          <ReviewQueueTab />
         </TabsContent>
       </Tabs>
 
