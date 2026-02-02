@@ -1,57 +1,49 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import Destinations from "@/components/Destinations";
+import EditableDestinations from "@/components/EditableDestinations";
 import FeaturedTours from "@/components/FeaturedTours";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
-import Hero from "@/components/Hero";
+import EditableHero from "@/components/EditableHero";
 import NewsletterSection from "@/components/NewsletterSection";
 import { Button } from "@/components/ui/button";
-import { Mail, MessageCircle } from "lucide-react";
+import { MessageCircle, Pencil, X } from "lucide-react";
 import { useState } from "react";
 import AITravelAdvisorDialog from "@/components/AITravelAdvisorDialog";
+import { HomeEditProvider, useHomeEdit } from "@/contexts/HomeEditContext";
 
-export default function Home() {
-  // The userAuth hooks provides authentication state
-  // To implement login/logout functionality, simply call logout() or redirect to getLoginUrl()
-  let { user, loading, error, isAuthenticated, logout } = useAuth();
+function HomeContent() {
+  const { user } = useAuth();
+  const { isEditMode, toggleEditMode, canEdit } = useHomeEdit();
   const [aiDialogOpen, setAiDialogOpen] = useState(false);
 
   return (
     <div className="min-h-screen flex flex-col bg-white font-sans">
       <Header />
       
+      {/* Edit Mode Banner */}
+      {isEditMode && (
+        <div className="bg-yellow-500 text-black py-2 px-4 text-center font-medium flex items-center justify-center gap-2">
+          <Pencil className="h-4 w-4" />
+          您正在編輯模式中 — 點擊任何區塊的編輯按鈕即可修改內容
+          <Button
+            onClick={toggleEditMode}
+            variant="outline"
+            size="sm"
+            className="ml-4 bg-white hover:bg-gray-100"
+          >
+            <X className="h-4 w-4 mr-1" />
+            退出編輯
+          </Button>
+        </div>
+      )}
+      
       <main className="flex-grow">
-        <Hero />
-        <Destinations />
+        <EditableHero />
+        <EditableDestinations />
         <FeaturedTours />
         
         {/* Newsletter Section */}
         <NewsletterSection />
-
-        {/* Trustpilot Section - Removed old newsletter code */}
-        <section className="hidden bg-black py-16 border-b border-gray-800">
-          <div className="container">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-              <div className="text-white md:w-1/2">
-                <h3 className="text-2xl font-serif font-bold mb-2">訂閱時事通訊</h3>
-                <p className="text-gray-300">訂閱我們的電子報,獲取最新的旅遊資訊及優惠活動</p>
-              </div>
-              <div className="w-full md:w-1/2 flex gap-0">
-                <div className="relative flex-grow">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
-                  <input 
-                    type="email" 
-                    placeholder="輸入您的電子郵件地址" 
-                    className="w-full h-12 pl-12 pr-4 bg-white/10 border border-white/20 text-white placeholder:text-gray-500 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all"
-                  />
-                </div>
-                <Button className="h-12 px-8 bg-white hover:bg-gray-200 text-black rounded-none font-bold tracking-wide">
-                  訂閱
-                </Button>
-              </div>
-            </div>
-          </div>
-        </section>
 
         {/* Trustpilot Section */}
         <section className="py-12 bg-white border-b border-gray-200">
@@ -97,8 +89,28 @@ export default function Home() {
         </span>
       </button>
 
+      {/* Admin Edit Mode Button */}
+      {canEdit && !isEditMode && (
+        <button
+          onClick={toggleEditMode}
+          className="fixed bottom-8 left-8 bg-black hover:bg-gray-800 text-white px-4 py-3 rounded-full shadow-2xl flex items-center gap-2 transition-all hover:scale-105 z-50"
+          aria-label="進入編輯模式"
+        >
+          <Pencil className="h-5 w-5" />
+          <span className="font-medium">編輯首頁</span>
+        </button>
+      )}
+
       {/* AI Travel Advisor Dialog */}
       <AITravelAdvisorDialog open={aiDialogOpen} onOpenChange={setAiDialogOpen} />
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <HomeEditProvider>
+      <HomeContent />
+    </HomeEditProvider>
   );
 }

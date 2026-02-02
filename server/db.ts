@@ -10,7 +10,9 @@ import {
   inquiries, InsertInquiry, Inquiry,
   inquiryMessages, InsertInquiryMessage, InquiryMessage,
   newsletterSubscribers, InsertNewsletterSubscriber, NewsletterSubscriber,
-  imageLibrary, InsertImageLibraryItem, ImageLibraryItem
+  imageLibrary, InsertImageLibraryItem, ImageLibraryItem,
+  homepageContent, HomepageContent, InsertHomepageContent,
+  destinations, Destination, InsertDestination
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -1147,5 +1149,214 @@ export async function getImageById(id: number): Promise<ImageLibraryItem | null>
   } catch (error) {
     console.error("[Database] Failed to get image:", error);
     return null;
+  }
+}
+
+
+// ============================================================
+// Homepage Content Functions
+// ============================================================
+
+/**
+ * Get homepage content by section key
+ */
+export async function getHomepageContent(sectionKey: string): Promise<HomepageContent | null> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get homepage content: database not available");
+    return null;
+  }
+
+  try {
+    const [content] = await db.select().from(homepageContent).where(eq(homepageContent.sectionKey, sectionKey));
+    return content || null;
+  } catch (error) {
+    console.error("[Database] Failed to get homepage content:", error);
+    return null;
+  }
+}
+
+/**
+ * Get all homepage content
+ */
+export async function getAllHomepageContent(): Promise<HomepageContent[]> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get homepage content: database not available");
+    return [];
+  }
+
+  try {
+    return await db.select().from(homepageContent);
+  } catch (error) {
+    console.error("[Database] Failed to get all homepage content:", error);
+    return [];
+  }
+}
+
+/**
+ * Update or create homepage content
+ */
+export async function upsertHomepageContent(sectionKey: string, content: string, updatedBy?: number): Promise<boolean> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot upsert homepage content: database not available");
+    return false;
+  }
+
+  try {
+    const existing = await getHomepageContent(sectionKey);
+    if (existing) {
+      await db.update(homepageContent)
+        .set({ content, updatedBy })
+        .where(eq(homepageContent.sectionKey, sectionKey));
+    } else {
+      await db.insert(homepageContent).values({ sectionKey, content, updatedBy });
+    }
+    return true;
+  } catch (error) {
+    console.error("[Database] Failed to upsert homepage content:", error);
+    return false;
+  }
+}
+
+// ============================================================
+// Destinations Functions
+// ============================================================
+
+/**
+ * Get all destinations
+ */
+export async function getAllDestinations(): Promise<Destination[]> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get destinations: database not available");
+    return [];
+  }
+
+  try {
+    return await db.select().from(destinations).orderBy(destinations.sortOrder);
+  } catch (error) {
+    console.error("[Database] Failed to get destinations:", error);
+    return [];
+  }
+}
+
+/**
+ * Get active destinations for homepage display
+ */
+export async function getActiveDestinations(): Promise<Destination[]> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get destinations: database not available");
+    return [];
+  }
+
+  try {
+    return await db.select().from(destinations)
+      .where(eq(destinations.isActive, true))
+      .orderBy(destinations.sortOrder);
+  } catch (error) {
+    console.error("[Database] Failed to get active destinations:", error);
+    return [];
+  }
+}
+
+/**
+ * Get destination by ID
+ */
+export async function getDestinationById(id: number): Promise<Destination | null> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get destination: database not available");
+    return null;
+  }
+
+  try {
+    const [destination] = await db.select().from(destinations).where(eq(destinations.id, id));
+    return destination || null;
+  } catch (error) {
+    console.error("[Database] Failed to get destination:", error);
+    return null;
+  }
+}
+
+/**
+ * Create a new destination
+ */
+export async function createDestination(data: InsertDestination): Promise<number | null> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot create destination: database not available");
+    return null;
+  }
+
+  try {
+    const result = await db.insert(destinations).values(data);
+    return result[0].insertId;
+  } catch (error) {
+    console.error("[Database] Failed to create destination:", error);
+    return null;
+  }
+}
+
+/**
+ * Update a destination
+ */
+export async function updateDestination(id: number, data: Partial<InsertDestination>): Promise<boolean> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot update destination: database not available");
+    return false;
+  }
+
+  try {
+    await db.update(destinations).set(data).where(eq(destinations.id, id));
+    return true;
+  } catch (error) {
+    console.error("[Database] Failed to update destination:", error);
+    return false;
+  }
+}
+
+/**
+ * Delete a destination
+ */
+export async function deleteDestination(id: number): Promise<boolean> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot delete destination: database not available");
+    return false;
+  }
+
+  try {
+    await db.delete(destinations).where(eq(destinations.id, id));
+    return true;
+  } catch (error) {
+    console.error("[Database] Failed to delete destination:", error);
+    return false;
+  }
+}
+
+/**
+ * Reorder destinations
+ */
+export async function reorderDestinations(orderedIds: number[]): Promise<boolean> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot reorder destinations: database not available");
+    return false;
+  }
+
+  try {
+    for (let i = 0; i < orderedIds.length; i++) {
+      await db.update(destinations)
+        .set({ sortOrder: i + 1 })
+        .where(eq(destinations.id, orderedIds[i]));
+    }
+    return true;
+  } catch (error) {
+    console.error("[Database] Failed to reorder destinations:", error);
+    return false;
   }
 }

@@ -1734,5 +1734,139 @@ Important guidelines:
         return { success: true };
       }),
   }),
+
+  // Homepage content management
+  homepage: router({
+    // Get homepage content by section key
+    getContent: publicProcedure
+      .input(z.object({ sectionKey: z.string() }))
+      .query(async ({ input }) => {
+        const content = await db.getHomepageContent(input.sectionKey);
+        if (!content) return null;
+        try {
+          return { ...content, content: JSON.parse(content.content) };
+        } catch {
+          return content;
+        }
+      }),
+
+    // Get all homepage content
+    getAllContent: publicProcedure.query(async () => {
+      const contents = await db.getAllHomepageContent();
+      return contents.map(c => {
+        try {
+          return { ...c, content: JSON.parse(c.content) };
+        } catch {
+          return c;
+        }
+      });
+    }),
+
+    // Update homepage content (admin only)
+    updateContent: adminProcedure
+      .input(z.object({
+        sectionKey: z.string(),
+        content: z.any(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const contentStr = typeof input.content === 'string' 
+          ? input.content 
+          : JSON.stringify(input.content);
+        const success = await db.upsertHomepageContent(
+          input.sectionKey, 
+          contentStr, 
+          ctx.user.id
+        );
+        if (!success) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to update homepage content",
+          });
+        }
+        return { success: true };
+      }),
+
+    // Get all destinations
+    getDestinations: publicProcedure.query(async () => {
+      return await db.getActiveDestinations();
+    }),
+
+    // Get all destinations (including inactive) for admin
+    getAllDestinations: adminProcedure.query(async () => {
+      return await db.getAllDestinations();
+    }),
+
+    // Create destination (admin only)
+    createDestination: adminProcedure
+      .input(z.object({
+        name: z.string(),
+        label: z.string().optional(),
+        image: z.string().optional(),
+        region: z.string().optional(),
+        sortOrder: z.number().optional(),
+        isActive: z.boolean().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const id = await db.createDestination(input);
+        if (!id) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to create destination",
+          });
+        }
+        return { id };
+      }),
+
+    // Update destination (admin only)
+    updateDestination: adminProcedure
+      .input(z.object({
+        id: z.number(),
+        name: z.string().optional(),
+        label: z.string().optional(),
+        image: z.string().optional(),
+        region: z.string().optional(),
+        sortOrder: z.number().optional(),
+        isActive: z.boolean().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...data } = input;
+        const success = await db.updateDestination(id, data);
+        if (!success) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to update destination",
+          });
+        }
+        return { success: true };
+      }),
+
+    // Delete destination (admin only)
+    deleteDestination: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        const success = await db.deleteDestination(input.id);
+        if (!success) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Destination not found",
+          });
+        }
+        return { success: true };
+      }),
+
+    // Reorder destinations (admin only)
+    reorderDestinations: adminProcedure
+      .input(z.object({ orderedIds: z.array(z.number()) }))
+      .mutation(async ({ input }) => {
+        const success = await db.reorderDestinations(input.orderedIds);
+        if (!success) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to reorder destinations",
+          });
+        }
+        return { success: true };
+      }),
+  }),
 });
 export type AppRouter = typeof appRouter;

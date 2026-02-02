@@ -1,4 +1,4 @@
-import { decimal, int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { boolean, decimal, int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -433,3 +433,39 @@ export const imageLibrary = mysqlTable("imageLibrary", {
 
 export type ImageLibraryItem = typeof imageLibrary.$inferSelect;
 export type InsertImageLibraryItem = typeof imageLibrary.$inferInsert;
+
+
+/**
+ * Homepage content table for storing editable homepage sections.
+ * Allows admins to edit hero, destinations, and other homepage content.
+ */
+export const homepageContent = mysqlTable("homepageContent", {
+  id: int("id").autoincrement().primaryKey(),
+  sectionKey: varchar("sectionKey", { length: 100 }).notNull().unique(), // e.g., 'hero', 'destinations', 'trustpilot'
+  content: text("content").notNull(), // JSON content for the section
+  updatedBy: int("updatedBy"), // User ID who last updated
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type HomepageContent = typeof homepageContent.$inferSelect;
+export type InsertHomepageContent = typeof homepageContent.$inferInsert;
+
+/**
+ * Destinations table for storing editable destination cards.
+ * Allows admins to manage destination cards on the homepage.
+ */
+export const destinations = mysqlTable("destinations", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(), // e.g., '歐洲'
+  label: varchar("label", { length: 100 }), // e.g., 'Europe'
+  image: varchar("image", { length: 1024 }), // Image URL
+  region: varchar("region", { length: 100 }), // e.g., 'europe'
+  sortOrder: int("sortOrder").default(0).notNull(), // Display order
+  isActive: boolean("isActive").default(true).notNull(), // Whether to show on homepage
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Destination = typeof destinations.$inferSelect;
+export type InsertDestination = typeof destinations.$inferInsert;
