@@ -79,16 +79,23 @@ function HomeContent() {
 
       {/* Floating AI Advisor Button with Penguin Character */}
       <div className="fixed bottom-4 right-4 z-50">
-        {/* Penguin Button - Travel Penguin with Hat and Suitcase (transparent background) */}
         <button
           onClick={() => setAiDialogOpen(true)}
-          className="w-40 h-40 flex items-center justify-center transition-all hover:scale-110 group"
+          className="flex flex-col items-end transition-all hover:scale-105 group"
           aria-label="AI 旅遊顧問"
         >
+          {/* Speech Bubble */}
+          <div className="mb-1 mr-4 px-4 py-2 bg-white border-2 border-black text-black text-sm font-medium relative">
+            點我問問題！
+            {/* Bubble Arrow */}
+            <div className="absolute -bottom-2 right-6 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-black"></div>
+            <div className="absolute -bottom-[6px] right-[26px] w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-white"></div>
+          </div>
+          {/* Penguin Image - Original Design */}
           <img
-            src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663159191204/kRwMMXsirdgDAaRf.png"
+            src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663159191204/hMxYifNCWvwTKSJa.png"
             alt="AI 旅遊顧問"
-            className="w-full h-full object-contain drop-shadow-xl animate-penguin-wobble"
+            className="w-28 h-28 object-contain drop-shadow-lg animate-penguin-wobble"
           />
         </button>
       </div>
