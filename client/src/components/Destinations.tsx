@@ -2,11 +2,11 @@ import { ArrowRight } from "lucide-react";
 import { useLocation } from "wouter";
 
 const destinations = [
-  { id: 1, name: "歐洲", image: "/images/dest-europe.webp", label: "Europe", region: "europe" },
-  { id: 2, name: "中國 & 亞洲", image: "/images/dest-asia.webp", label: "China & Asia", region: "asia" },
-  { id: 3, name: "南美洲", image: "/images/dest-southamerica.webp", label: "South America", region: "south-america" },
-  { id: 4, name: "以色列 & 約旦", image: "/images/dest-israel.webp", label: "Israel & Jordan", region: "middle-east" },
-  { id: 5, name: "埃及 & 非洲", image: "/images/dest-africa.webp", label: "Egypt & Africa", region: "africa" },
+  { id: 1, name: "歐洲地區", image: "/images/dest-europe.webp", label: "Europe", region: "europe" },
+  { id: 2, name: "亞洲地區", image: "/images/dest-asia.webp", label: "Asia", region: "asia" },
+  { id: 3, name: "美洲地區", image: "/images/dest-southamerica.webp", label: "Americas", region: "south-america" },
+  { id: 4, name: "中東地區", image: "/images/dest-israel.webp", label: "Middle East", region: "middle-east" },
+  { id: 5, name: "非洲地區", image: "/images/dest-africa.webp", label: "Africa", region: "africa" },
   { id: 6, name: "郵輪之旅", image: "/images/dest-cruise.webp", label: "Cruises", region: "cruise" },
 ];
 

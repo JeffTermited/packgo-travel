@@ -15,36 +15,36 @@ const regionConfig: Record<string, {
   continents: string[]; // 對應的洲別
 }> = {
   "europe": {
-    name: "歐洲",
+    name: "歐洲地區",
     label: "Europe",
     description: "探索歐洲的歷史古蹟、藝術文化與自然風光",
     image: "/images/dest-europe.webp",
     continents: ["歐洲"]
   },
   "asia": {
-    name: "中國 & 亞洲",
-    label: "China & Asia",
+    name: "亞洲地區",
+    label: "Asia",
     description: "體驗亞洲的多元文化、美食與自然奇觀",
     image: "/images/dest-asia.webp",
     continents: ["亞洲"]
   },
   "south-america": {
-    name: "南美洲",
-    label: "South America",
+    name: "美洲地區",
+    label: "Americas",
     description: "探索南美洲的熱情、自然奇觀與古文明遺跡",
     image: "/images/dest-southamerica.webp",
     continents: ["美洲"]
   },
   "middle-east": {
-    name: "以色列 & 約旦",
-    label: "Israel & Jordan",
+    name: "中東地區",
+    label: "Middle East",
     description: "走訪中東的聖地、古城與沙漠奇景",
     image: "/images/dest-israel.webp",
     continents: ["中東"]
   },
   "africa": {
-    name: "埃及 & 非洲",
-    label: "Egypt & Africa",
+    name: "非洲地區",
+    label: "Africa",
     description: "探索非洲的野生動物、古文明與自然奇觀",
     image: "/images/dest-africa.webp",
     continents: ["非洲"]
@@ -57,7 +57,7 @@ const regionConfig: Record<string, {
     continents: [] // 郵輪是特殊類別，不按洲別分
   },
   "oceania": {
-    name: "大洋洲",
+    name: "大洋洲地區",
     label: "Oceania",
     description: "探索澳洲、紐西蘭與太平洋島嶼的自然美景",
     image: "/images/dest-europe.webp",
@@ -65,19 +65,24 @@ const regionConfig: Record<string, {
   }
 };
 
-// 國家圖片映射（預設圖片）
+// 國家圖片映射（使用本地圖片優先，備用 Unsplash）
 const countryImages: Record<string, string> = {
-  // 亞洲
-  "日本": "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800",
-  "韓國": "https://images.unsplash.com/photo-1517154421773-0529f29ea451?w=800",
-  "台灣": "https://images.unsplash.com/photo-1470004914212-05527e49370b?w=800",
-  "中國": "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=800",
-  "泰國": "https://images.unsplash.com/photo-1528181304800-259b08848526?w=800",
-  "越南": "https://images.unsplash.com/photo-1557750255-c76072a7aad1?w=800",
-  "新加坡": "https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=800",
-  "馬來西亞": "https://images.unsplash.com/photo-1596422846543-75c6fc197f07?w=800",
+  // 亞洲 - 使用本地高品質圖片
+  "台灣": "/images/countries/taiwan.jpg",
+  "日本": "/images/countries/japan.jpg",
+  "中國": "/images/countries/china.jpg",
+  "韓國": "/images/countries/korea.jpg",
+  "泰國": "/images/countries/thailand.jpg",
+  "越南": "/images/countries/vietnam.jpg",
+  "新加坡": "/images/countries/singapore.jpg",
+  "馬來西亞": "/images/countries/malaysia.jpg",
   "印尼": "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800",
   "印度": "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800",
+  "菲律賓": "https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?w=800",
+  "柬埔寨": "https://images.unsplash.com/photo-1569242840510-9fe6f0112cee?w=800",
+  "緬甸": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800",
+  "尼泊爾": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=800",
+  "斯里蘭卡": "https://images.unsplash.com/photo-1586523969990-d8e3c tried-a5f9-4b8a-b3e4-8c8c8c8c8c8c?w=800",
   // 歐洲
   "英國": "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=800",
   "法國": "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800",
@@ -90,6 +95,11 @@ const countryImages: Record<string, string> = {
   "捷克": "https://images.unsplash.com/photo-1519677100203-a0e668c92439?w=800",
   "奧地利": "https://images.unsplash.com/photo-1516550893923-42d28e5677af?w=800",
   "巴爾幹半島": "https://images.unsplash.com/photo-1555990538-1e6c0c1b1b0c?w=800",
+  "葡萄牙": "https://images.unsplash.com/photo-1555881400-74d7acaacd8b?w=800",
+  "比利時": "https://images.unsplash.com/photo-1491557345352-5929e343eb89?w=800",
+  "北歐": "https://images.unsplash.com/photo-1507272931001-fc06c17e4f43?w=800",
+  "冰島": "https://images.unsplash.com/photo-1504893524553-b855bce32c67?w=800",
+  "克羅埃西亞": "https://images.unsplash.com/photo-1555990538-1e6c0c1b1b0c?w=800",
   // 大洋洲
   "澳洲": "https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?w=800",
   "紐西蘭": "https://images.unsplash.com/photo-1507699622108-4be3abd695ad?w=800",
@@ -100,16 +110,20 @@ const countryImages: Record<string, string> = {
   "巴西": "https://images.unsplash.com/photo-1483729558449-99ef09a8c325?w=800",
   "阿根廷": "https://images.unsplash.com/photo-1612294037637-ec328d0e075e?w=800",
   "秘魯": "https://images.unsplash.com/photo-1526392060635-9d6019884377?w=800",
+  "智利": "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800",
+  "古巴": "https://images.unsplash.com/photo-1500759285222-a95626b934cb?w=800",
   // 非洲
   "埃及": "https://images.unsplash.com/photo-1539650116574-8efeb43e2750?w=800",
   "南非": "https://images.unsplash.com/photo-1484318571209-661cf29a69c3?w=800",
   "摩洛哥": "https://images.unsplash.com/photo-1489749798305-4fea3ae63d43?w=800",
   "肯亞": "https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?w=800",
+  "坦尚尼亞": "https://images.unsplash.com/photo-1516426122078-c23e76319801?w=800",
   // 中東
   "阿聯酋": "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800",
   "杜拜": "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800",
   "約旦": "https://images.unsplash.com/photo-1548786811-dd6e453ccca7?w=800",
   "以色列": "https://images.unsplash.com/photo-1544967082-d9d25d867d66?w=800",
+  "土耳其": "https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?w=800",
 };
 
 export default function RegionPage() {
