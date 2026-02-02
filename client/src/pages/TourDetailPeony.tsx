@@ -806,8 +806,8 @@ const MealCard = ({
             )}
             {/* 特色餐食標籤 */}
             {isSpecialMeal && (
-              <div className="absolute top-2 right-2 bg-white/95 backdrop-blur-sm rounded-full px-2 py-0.5 shadow-sm">
-                <span className="text-xs font-medium" style={{ color: themeColor.secondary }}>特色餐食</span>
+              <div className="absolute top-2 right-2 bg-white backdrop-blur-sm rounded-full px-2 py-0.5 shadow-md border border-gray-200">
+                <span className="text-xs font-medium text-gray-800">特色餐食</span>
               </div>
             )}
           </>
@@ -989,8 +989,8 @@ const DayCard = ({
     <div className="relative animate-fade-in" style={{ animationDelay: `${index * 100}ms` }}>
       {/* Day Badge */}
       <div 
-        className="absolute left-1/2 -translate-x-1/2 -top-5 z-10 px-6 py-2 text-white text-base font-bold tracking-wider"
-        style={{ backgroundColor: themeColor.secondary }}
+        className="absolute left-1/2 -translate-x-1/2 -top-5 z-10 px-6 py-2 text-base font-bold tracking-wider bg-white border-2 shadow-md"
+        style={{ color: themeColor.primary, borderColor: themeColor.primary }}
       >
         DAY {day.day || index + 1}
       </div>
@@ -1029,7 +1029,7 @@ const DayCard = ({
                 >
                   <div 
                     className="w-3 h-3 rounded-full mt-2 flex-shrink-0 group-hover:scale-125 transition-transform"
-                    style={{ backgroundColor: themeColor.secondary }}
+                    style={{ backgroundColor: themeColor.primary }}
                   />
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
@@ -1878,8 +1878,8 @@ export default function TourDetailPeony() {
             {/* Destination Country Badge */}
             {tour.destinationCountry && (
               <div 
-                className="flex items-center gap-2 px-3 py-1 rounded-full text-white text-sm"
-                style={{ backgroundColor: themeColor.secondary }}
+                className="flex items-center gap-2 px-3 py-1 rounded-full text-sm bg-white/95 backdrop-blur-sm shadow-md"
+                style={{ color: themeColor.primary }}
               >
                 <Globe className="h-4 w-4" />
                 <span>{tour.destinationCountry}</span>
@@ -2190,7 +2190,7 @@ export default function TourDetailPeony() {
                   <div key={index} className="flex items-start gap-3 p-4 bg-gray-50">
                     <div 
                       className="w-2 h-2 rounded-full mt-2 flex-shrink-0"
-                      style={{ backgroundColor: themeColor.secondary }}
+                      style={{ backgroundColor: themeColor.primary }}
                     />
                     <div>
                       <span className="font-medium">
