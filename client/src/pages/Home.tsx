@@ -90,7 +90,7 @@ function HomeContent() {
           </div>
           {/* Penguin Image - Original Design */}
           <img
-            src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663159191204/wTinuVnIWQdXzibs.png"
+            src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663159191204/jeyVKrdLKJdFniJk.png"
             alt="AI 旅遊顧問"
             className="w-28 h-28 object-contain drop-shadow-lg animate-penguin-wobble"
           />
