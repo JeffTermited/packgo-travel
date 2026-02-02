@@ -48,7 +48,7 @@ export default function NewsletterSection() {
             <Button 
               type="submit"
               disabled={subscribe.isPending}
-              className="h-12 px-8 bg-white hover:bg-gray-200 text-black rounded-none font-bold tracking-wide"
+              className="h-12 px-8 bg-white hover:bg-gray-200 text-black rounded-full font-bold tracking-wide"
             >
               {subscribe.isPending ? "訂閱中..." : "訂閱"}
             </Button>

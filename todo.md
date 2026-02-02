@@ -3725,3 +3725,59 @@
 - [x] 使用 rembg 工具徹底移除企鵝圖片的灰色棋盤格背景
 - [x] 確保企鵝完全融入任何背景色
 
+
+---
+
+## Phase 42: 統一網站圓角設計（2026-02-02）
+
+### 42.1 全域 UI 組件圓角修改
+- [ ] Button 組件 - 統一圓角樣式
+- [ ] Card 組件 - 統一圓角樣式
+- [ ] Input 組件 - 統一圓角樣式
+- [ ] Select 組件 - 統一圓角樣式
+- [ ] Dialog 組件 - 統一圓角樣式
+- [ ] Dropdown Menu 組件 - 統一圓角樣式
+
+### 42.2 頁面組件圓角修改
+- [ ] Header 導航選單
+- [ ] Hero 搜尋區塊
+- [ ] 服務卡片
+- [ ] 行程卡片
+- [ ] Footer 區塊
+
+
+
+---
+
+## Phase 36: 統一圓角設計（2026-02-02）
+
+### 36.1 UI 組件庫圓角修正
+- [x] 修正 command.tsx 的圓角樣式（rounded-lg → rounded-xl）
+- [x] 修正 context-menu.tsx 的圓角樣式
+- [x] 修正 dropdown-menu.tsx 的圓角樣式
+- [x] 修正 item.tsx 的圓角樣式
+- [x] 修正 kbd.tsx 的圓角樣式
+- [x] 修正 menubar.tsx 的圓角樣式
+- [x] 修正 navigation-menu.tsx 的圓角樣式
+- [x] 修正 alert.tsx 的圓角樣式（rounded-lg → rounded-xl）
+- [x] 修正 sheet.tsx 的關閉按鈕圓角樣式（rounded-xs → rounded-full）
+- [x] 修正 sonner.tsx toast 的圓角樣式（新增 rounded-xl）
+
+### 36.2 已確認圓角設計的組件
+- [x] button.tsx - 已使用 rounded-full
+- [x] card.tsx - 已使用 rounded-xl
+- [x] input.tsx - 已使用 rounded-full
+- [x] textarea.tsx - 已使用 rounded-xl
+- [x] select.tsx - 已使用 rounded-full (trigger) 和 rounded-xl (content)
+- [x] dialog.tsx - 已使用 rounded-2xl
+- [x] popover.tsx - 已使用 rounded-xl
+- [x] badge.tsx - 已使用 rounded-full
+- [x] tooltip.tsx - 已使用 rounded-full
+
+### 36.3 頁面組件圓角確認
+- [x] Hero.tsx 搜尋區塊 - 已使用圓角設計
+- [x] FeaturedTours.tsx 卡片 - 已使用 rounded-3xl
+- [x] Destinations.tsx 卡片 - 已使用 rounded-3xl
+- [x] LocaleSwitcher.tsx 下拉選單 - 已使用 rounded-lg
+- [x] AITravelAdvisorDialog.tsx 對話框 - 已使用 rounded-2xl
+

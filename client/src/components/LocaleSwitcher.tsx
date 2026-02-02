@@ -37,7 +37,7 @@ export function LanguageSwitcher() {
           <DropdownMenuItem
             key={lang.code}
             onClick={() => setLanguage(lang.code)}
-            className={`cursor-pointer rounded-md ${
+            className={`cursor-pointer rounded-lg ${
               language === lang.code 
                 ? 'bg-black text-white' 
                 : 'hover:bg-gray-100'
@@ -78,7 +78,7 @@ export function CurrencySwitcher() {
           <DropdownMenuItem
             key={curr.code}
             onClick={() => setCurrency(curr.code)}
-            className={`cursor-pointer rounded-md ${
+            className={`cursor-pointer rounded-lg ${
               currency === curr.code 
                 ? 'bg-black text-white' 
                 : 'hover:bg-gray-100'
