@@ -119,7 +119,7 @@ export default function TourPrintView() {
   }
   
   const themeColor = getThemeColor(tour.destinationCountry || "");
-  const dailyItinerary = parseJSON(tour.dailyItinerary, []);
+  const dailyItinerary = parseJSON(tour.itineraryDetailed, []);
   const inclusions = parseJSON(tour.includes, []);
   const exclusions = parseJSON(tour.excludes, []);
   const notes = parseJSON(tour.notes, []);
@@ -306,15 +306,15 @@ export default function TourPrintView() {
               <div className="print-meals-grid">
                 <div className="print-meal-item">
                   <span className="print-meal-label">早餐</span>
-                  <span className="print-meal-value">{day.breakfast || "飯店內用"}</span>
+                  <span className="print-meal-value">{day.meals?.breakfast || day.breakfast || "飯店內用"}</span>
                 </div>
                 <div className="print-meal-item">
                   <span className="print-meal-label">午餐</span>
-                  <span className="print-meal-value">{day.lunch || "當地風味餐"}</span>
+                  <span className="print-meal-value">{day.meals?.lunch || day.lunch || "當地風味餐"}</span>
                 </div>
                 <div className="print-meal-item">
                   <span className="print-meal-label">晚餐</span>
-                  <span className="print-meal-value">{day.dinner || "飯店內用"}</span>
+                  <span className="print-meal-value">{day.meals?.dinner || day.dinner || "飯店內用"}</span>
                 </div>
               </div>
             </div>
