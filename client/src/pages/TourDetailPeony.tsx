@@ -907,11 +907,48 @@ const parseStarRating = (stars: string | undefined): number => {
   return 0;
 };
 
+// 飯店詳情資料類型
+interface HotelDetail {
+  name: string;
+  description?: string;
+  location?: string;
+  address?: string;
+  phone?: string;
+  website?: string;
+  checkIn?: string;
+  checkOut?: string;
+  images?: string[];
+  roomTypes?: {
+    name: string;
+    description: string;
+    price?: string;
+    image?: string;
+  }[];
+  amenities?: string[];
+  reviews?: {
+    author: string;
+    rating: number;
+    comment: string;
+    date?: string;
+  }[];
+  rating?: number;
+  totalReviews?: number;
+}
+
 // 飯店卡片組件 - 重新設計版（含彈窗功能）
 const HotelCard = ({ hotel, themeColor }: { hotel: any; themeColor: ReturnType<typeof getThemeColorByDestination> }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const starRating = hotel.rating || parseStarRating(hotel.stars);
   const facilities = hotel.facilities || [];
+  
+  // 解析飯店詳情資料
+  const detail: HotelDetail | null = hotel.detail ? 
+    (typeof hotel.detail === 'string' ? JSON.parse(hotel.detail) : hotel.detail) : null;
+  
+  // 合併圖片源（detail.images 優先，否則使用 hotel.image）
+  const images = detail?.images?.length ? detail.images : (hotel.image ? [hotel.image] : []);
+  const hasImages = images.length > 0;
   
   // 飯店詳情彈窗
   const HotelDetailDialog = () => (
@@ -930,48 +967,116 @@ const HotelCard = ({ hotel, themeColor }: { hotel: any; themeColor: ReturnType<t
           </DialogTitle>
         </DialogHeader>
         
-        {/* 圖片區域 */}
-        <div className="relative aspect-video overflow-hidden rounded-lg mb-6">
-          <img 
-            src={hotel.image || "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800"}
-            alt={hotel.imageAlt || hotel.name}
-            className="w-full h-full object-cover"
-          />
-        </div>
+        {/* 圖片輪播 */}
+        {hasImages && (
+          <div className="relative aspect-video overflow-hidden rounded-lg mb-6">
+            <img 
+              src={images[currentImageIndex]}
+              alt={hotel.imageAlt || hotel.name}
+              className="w-full h-full object-cover"
+            />
+            {images.length > 1 && (
+              <>
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+                  }}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCurrentImageIndex((prev) => (prev + 1) % images.length);
+                  }}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </button>
+                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+                  {images.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCurrentImageIndex(idx);
+                      }}
+                      className={`w-2 h-2 rounded-full transition-all ${idx === currentImageIndex ? 'bg-white w-4' : 'bg-white/50'}`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        )}
+        
+        {/* 評分和評價數 */}
+        {(detail?.rating || detail?.totalReviews) && (
+          <div className="flex items-center gap-4 mb-4">
+            {detail.rating && (
+              <div className="flex items-center gap-1">
+                <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                <span className="font-bold text-lg">{detail.rating}</span>
+              </div>
+            )}
+            {detail.totalReviews && (
+              <span className="text-gray-500">({detail.totalReviews} 則評價)</span>
+            )}
+          </div>
+        )}
         
         {/* 位置資訊 */}
-        {hotel.location && hotel.location !== '待確認' && (
+        {(detail?.address || hotel.location) && (hotel.location !== '待確認') && (
           <div className="flex items-center gap-2 text-gray-600 mb-4">
             <MapPin className="h-5 w-5" style={{ color: themeColor.secondary }} />
-            <span className="text-lg">{hotel.location}</span>
+            <span className="text-lg">{detail?.address || hotel.location}</span>
+          </div>
+        )}
+        
+        {/* 入住/退房時間 */}
+        {(detail?.checkIn || detail?.checkOut) && (
+          <div className="flex items-center gap-6 mb-4 text-gray-600">
+            {detail.checkIn && (
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4" style={{ color: themeColor.secondary }} />
+                <span>入住：{detail.checkIn}</span>
+              </div>
+            )}
+            {detail.checkOut && (
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4" style={{ color: themeColor.secondary }} />
+                <span>退房：{detail.checkOut}</span>
+              </div>
+            )}
           </div>
         )}
         
         {/* 詳細描述 */}
-        {hotel.description && hotel.description !== '待確認' && (
+        {(detail?.description || hotel.description) && (hotel.description !== '待確認') && (
           <div className="mb-6">
             <h4 className="font-semibold text-lg mb-2" style={{ color: themeColor.primary }}>飯店介紹</h4>
-            <p className="text-gray-600 leading-relaxed">{hotel.description}</p>
+            <p className="text-gray-600 leading-relaxed">{detail?.description || hotel.description}</p>
           </div>
         )}
         
         {/* 設施列表 */}
-        {facilities.length > 0 && (
+        {(detail?.amenities?.length || facilities.length > 0) && (
           <div className="mb-6">
             <h4 className="font-semibold text-lg mb-3" style={{ color: themeColor.primary }}>飯店設施</h4>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {facilities.map((facility: string, idx: number) => {
+              {(detail?.amenities || facilities).map((facility: string, idx: number) => {
                 const facilityInfo = facilityIcons[facility.toLowerCase()];
-                if (!facilityInfo) return null;
                 return (
                   <div 
                     key={idx} 
                     className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
                   >
                     <span className="p-2 rounded-full" style={{ backgroundColor: themeColor.light, color: themeColor.secondary }}>
-                      {facilityInfo.icon}
+                      {facilityInfo?.icon || <Check className="h-4 w-4" />}
                     </span>
-                    <span className="font-medium">{facilityInfo.label}</span>
+                    <span className="font-medium">{facilityInfo?.label || facility}</span>
                   </div>
                 );
               })}
@@ -983,28 +1088,105 @@ const HotelCard = ({ hotel, themeColor }: { hotel: any; themeColor: ReturnType<t
         <div className="mb-6">
           <h4 className="font-semibold text-lg mb-3" style={{ color: themeColor.primary }}>房型資訊</h4>
           <div className="grid gap-3">
-            <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
-              <div>
-                <p className="font-medium">標準雙人房</p>
-                <p className="text-sm text-gray-500">兩張單人床 / 一張雙人床、含早餐</p>
-              </div>
-              <div className="text-right">
-                <p className="text-sm text-gray-500">每晚價格</p>
-                <p className="font-bold" style={{ color: themeColor.secondary }}>已含在團費</p>
-              </div>
-            </div>
-            <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
-              <div>
-                <p className="font-medium">升等豪華房</p>
-                <p className="text-sm text-gray-500">更寬敢空間、景觀陽台、迷你吧檯</p>
-              </div>
-              <div className="text-right">
-                <p className="text-sm text-gray-500">每晚加價</p>
-                <p className="font-bold" style={{ color: themeColor.secondary }}>+NT$2,000</p>
-              </div>
-            </div>
+            {detail?.roomTypes?.length ? (
+              detail.roomTypes.map((room, idx) => (
+                <div key={idx} className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
+                  {room.image && (
+                    <img src={room.image} alt={room.name} className="w-24 h-16 object-cover rounded-lg flex-shrink-0" />
+                  )}
+                  <div className="flex-grow">
+                    <p className="font-medium">{room.name}</p>
+                    <p className="text-sm text-gray-500">{room.description}</p>
+                  </div>
+                  {room.price && (
+                    <div className="text-right flex-shrink-0">
+                      <p className="font-bold" style={{ color: themeColor.secondary }}>{room.price}</p>
+                    </div>
+                  )}
+                </div>
+              ))
+            ) : (
+              <>
+                <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
+                  <div>
+                    <p className="font-medium">標準雙人房</p>
+                    <p className="text-sm text-gray-500">兩張單人床 / 一張雙人床、含早餐</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm text-gray-500">每晚價格</p>
+                    <p className="font-bold" style={{ color: themeColor.secondary }}>已含在團費</p>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
+                  <div>
+                    <p className="font-medium">升等豪華房</p>
+                    <p className="text-sm text-gray-500">更寬敢空間、景觀陽台、迷你吧檯</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm text-gray-500">每晚加價</p>
+                    <p className="font-bold" style={{ color: themeColor.secondary }}>+NT$2,000</p>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
+        
+        {/* 住客評價 */}
+        {detail?.reviews && detail.reviews.length > 0 && (
+          <div className="mb-6">
+            <h4 className="font-semibold text-lg mb-3" style={{ color: themeColor.primary }}>住客評價</h4>
+            <div className="space-y-4">
+              {detail.reviews.map((review, idx) => (
+                <div key={idx} className="p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-white font-medium">
+                        {review.author.charAt(0)}
+                      </div>
+                      <span className="font-medium">{review.author}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {[...Array(5)].map((_, i) => (
+                        <Star 
+                          key={i} 
+                          className={`h-4 w-4 ${i < review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} 
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <p className="text-gray-600 text-sm">{review.comment}</p>
+                  {review.date && (
+                    <p className="text-gray-400 text-xs mt-2">{review.date}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {/* 聯絡資訊 */}
+        {(detail?.phone || detail?.website) && (
+          <div className="mb-6 pt-4 border-t border-gray-100">
+            <h4 className="font-semibold text-lg mb-3" style={{ color: themeColor.primary }}>聯絡資訊</h4>
+            <div className="space-y-2">
+              {detail.phone && (
+                <div className="flex items-center gap-2 text-gray-600">
+                  <Phone className="h-4 w-4" style={{ color: themeColor.secondary }} />
+                  <span>{detail.phone}</span>
+                </div>
+              )}
+              {detail.website && (
+                <div className="flex items-center gap-2 text-gray-600">
+                  <Building className="h-4 w-4" style={{ color: themeColor.secondary }} />
+                  <a href={detail.website} target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: themeColor.secondary }}>
+                    官方網站
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
         
         {/* 備註 */}
         <div className="p-4 bg-gray-50 rounded-lg">
