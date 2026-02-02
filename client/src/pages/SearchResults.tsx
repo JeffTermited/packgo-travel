@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { DestinationAutocomplete } from "@/components/DestinationAutocomplete";
 import { groupDestinationsByContinent, continentOrder } from "@shared/continentMapping";
+import { FavoriteButton } from "@/components/FavoriteButton";
 
 // 智能標籤生成函數 - 根據行程資料自動生成正確的標籤
 const generateSmartTags = (tour: any) => {
@@ -669,17 +670,9 @@ export default function SearchResults() {
                           </div>
                           
                           {/* 收藏按鈕 */}
-                          <button
-                            className="absolute top-4 right-4 p-2 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleFavorite(tour.id);
-                            }}
-                          >
-                            <Heart 
-                              className={`h-5 w-5 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-600'}`}
-                            />
-                          </button>
+                          <div className="absolute top-4 right-4">
+                            <FavoriteButton tourId={tour.id} size="md" />
+                          </div>
                         </div>
 
                         {/* 內容區域 */}

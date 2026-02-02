@@ -5,7 +5,7 @@ import { getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { 
   Loader2, User, Calendar, LogOut, Heart, ShoppingBag, 
-  MapPin, TrendingUp, Award, MessageSquare, ChevronRight, Package
+  MapPin, TrendingUp, Award, MessageSquare, ChevronRight, Package, Clock
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
@@ -474,29 +474,114 @@ export default function Profile() {
             </Card>
 
             {/* Favorites */}
-            <Card className="rounded-3xl border border-gray-200 bg-white shadow-sm">
-              <CardHeader className="border-b border-gray-200">
-                <CardTitle className="text-lg text-black">收藏的行程</CardTitle>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="text-center py-16">
-                  <div className="h-20 w-20 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
-                    <Heart className="h-10 w-10 text-gray-400" />
-                  </div>
-                  <p className="text-gray-600 font-medium mb-2">尚未收藏任何行程</p>
-                  <p className="text-sm text-gray-500 mb-6">瀏覽行程並加入收藏，方便日後查看</p>
-                  <Button 
-                    className="rounded-full bg-black text-white hover:bg-gray-800 px-8"
-                    onClick={() => setLocation("/")}
-                  >
-                    探索行程
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            <FavoritesSection setLocation={setLocation} />
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+// Favorites Section Component
+function FavoritesSection({ setLocation }: { setLocation: (path: string) => void }) {
+  const { data: favorites, isLoading } = trpc.favorites.list.useQuery();
+  const utils = trpc.useUtils();
+  
+  const removeMutation = trpc.favorites.remove.useMutation({
+    onSuccess: () => {
+      utils.favorites.list.invalidate();
+      utils.favorites.getIds.invalidate();
+    },
+  });
+
+  return (
+    <Card className="rounded-3xl border border-gray-200 bg-white shadow-sm">
+      <CardHeader className="border-b border-gray-200">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg text-black">收藏的行程</CardTitle>
+          {favorites && favorites.length > 0 && (
+            <span className="text-sm text-gray-500">{favorites.length} 個行程</span>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent className="p-6">
+        {isLoading ? (
+          <div className="text-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin text-gray-400 mx-auto" />
+          </div>
+        ) : favorites && favorites.length > 0 ? (
+          <div className="space-y-4">
+            {favorites.map((tour: any) => (
+              <div 
+                key={tour.id}
+                className="flex items-center gap-4 p-4 rounded-2xl border border-gray-200 hover:border-black hover:bg-gray-50 transition-all cursor-pointer group"
+                onClick={() => setLocation(`/tours/${tour.id}`)}
+              >
+                {/* Tour Image */}
+                <div className="h-20 w-28 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
+                  {tour.mainImage || tour.heroImage || tour.imageUrl ? (
+                    <img 
+                      src={tour.mainImage || tour.heroImage || tour.imageUrl} 
+                      alt={tour.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <MapPin className="h-8 w-8 text-gray-300" />
+                    </div>
+                  )}
+                </div>
+                
+                {/* Tour Info */}
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-medium text-black truncate group-hover:text-gray-700">
+                    {tour.title}
+                  </h4>
+                  <div className="flex items-center gap-4 mt-1 text-sm text-gray-500">
+                    <span className="flex items-center gap-1">
+                      <MapPin className="h-3.5 w-3.5" />
+                      {tour.destinationCountry || tour.destination}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="h-3.5 w-3.5" />
+                      {tour.duration}天
+                    </span>
+                  </div>
+                  <p className="text-primary font-bold mt-1">
+                    NT$ {tour.price?.toLocaleString()}
+                  </p>
+                </div>
+                
+                {/* Remove Button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeMutation.mutate({ tourId: tour.id });
+                  }}
+                  className="p-2 rounded-full hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"
+                  title="取消收藏"
+                >
+                  <Heart className="h-5 w-5 fill-red-500 text-red-500" />
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-16">
+            <div className="h-20 w-20 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+              <Heart className="h-10 w-10 text-gray-400" />
+            </div>
+            <p className="text-gray-600 font-medium mb-2">尚未收藏任何行程</p>
+            <p className="text-sm text-gray-500 mb-6">瀏覽行程並加入收藏，方便日後查看</p>
+            <Button 
+              className="rounded-full bg-black text-white hover:bg-gray-800 px-8"
+              onClick={() => setLocation("/")}
+            >
+              探索行程
+            </Button>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }

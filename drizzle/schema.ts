@@ -1,4 +1,4 @@
-import { boolean, decimal, int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { boolean, decimal, int, mysqlEnum, mysqlTable, text, timestamp, varchar, unique } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -584,3 +584,36 @@ export const learningSessions = mysqlTable("learningSessions", {
 
 export type LearningSession = typeof learningSessions.$inferSelect;
 export type InsertLearningSession = typeof learningSessions.$inferInsert;
+
+
+/**
+ * User Favorites table for storing user's favorite tours.
+ * Allows users to save tours for later viewing.
+ */
+export const userFavorites = mysqlTable("userFavorites", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(), // User who favorited
+  tourId: int("tourId").notNull(), // Tour that was favorited
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  // Unique constraint to prevent duplicate favorites
+  uniqueUserTour: unique().on(table.userId, table.tourId),
+}));
+
+export type UserFavorite = typeof userFavorites.$inferSelect;
+export type InsertUserFavorite = typeof userFavorites.$inferInsert;
+
+/**
+ * User Browsing History table for storing user's recently viewed tours.
+ * Allows users to see their browsing history.
+ */
+export const userBrowsingHistory = mysqlTable("userBrowsingHistory", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(), // User who viewed
+  tourId: int("tourId").notNull(), // Tour that was viewed
+  viewedAt: timestamp("viewedAt").defaultNow().notNull(),
+  viewCount: int("viewCount").default(1).notNull(), // Number of times viewed
+});
+
+export type UserBrowsingHistory = typeof userBrowsingHistory.$inferSelect;
+export type InsertUserBrowsingHistory = typeof userBrowsingHistory.$inferInsert;

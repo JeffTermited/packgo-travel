@@ -4,6 +4,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { trpc } from "@/lib/trpc";
 import { Clock, MapPin, Star, Loader2 } from "lucide-react";
 import { Link } from "wouter";
+import { FavoriteButton } from "@/components/FavoriteButton";
 
 export default function FeaturedTours() {
   const { data: tours, isLoading, error } = trpc.tours.list.useQuery();
@@ -55,6 +56,9 @@ export default function FeaturedTours() {
                       <Badge className="bg-black text-white hover:bg-black px-4 py-1 text-xs font-bold tracking-wider shadow-lg rounded-full">
                         精選行程
                       </Badge>
+                    </div>
+                    <div className="absolute top-4 right-4">
+                      <FavoriteButton tourId={tour.id} size="md" />
                     </div>
                     <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/80 to-transparent p-6">
                       <div className="flex items-center justify-between text-white">

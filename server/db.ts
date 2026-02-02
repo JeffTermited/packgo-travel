@@ -12,7 +12,9 @@ import {
   newsletterSubscribers, InsertNewsletterSubscriber, NewsletterSubscriber,
   imageLibrary, InsertImageLibraryItem, ImageLibraryItem,
   homepageContent, HomepageContent, InsertHomepageContent,
-  destinations, Destination, InsertDestination
+  destinations, Destination, InsertDestination,
+  userFavorites, UserFavorite, InsertUserFavorite,
+  userBrowsingHistory, UserBrowsingHistory, InsertUserBrowsingHistory
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -1516,4 +1518,216 @@ export async function getFilterOptions(): Promise<{
     durationRange,
     priceRange,
   };
+}
+
+
+// ==================== User Favorites ====================
+
+/**
+ * Add a tour to user's favorites
+ */
+export async function addFavorite(userId: number, tourId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  try {
+    await db.insert(userFavorites).values({
+      userId,
+      tourId,
+    }).onDuplicateKeyUpdate({
+      set: { userId }, // No-op update, just to handle duplicate
+    });
+  } catch (error) {
+    console.error("[Database] Failed to add favorite:", error);
+    throw error;
+  }
+}
+
+/**
+ * Remove a tour from user's favorites
+ */
+export async function removeFavorite(userId: number, tourId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  try {
+    await db.delete(userFavorites).where(
+      and(
+        eq(userFavorites.userId, userId),
+        eq(userFavorites.tourId, tourId)
+      )
+    );
+  } catch (error) {
+    console.error("[Database] Failed to remove favorite:", error);
+    throw error;
+  }
+}
+
+/**
+ * Check if a tour is in user's favorites
+ */
+export async function isFavorite(userId: number, tourId: number): Promise<boolean> {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  const result = await db
+    .select()
+    .from(userFavorites)
+    .where(
+      and(
+        eq(userFavorites.userId, userId),
+        eq(userFavorites.tourId, tourId)
+      )
+    )
+    .limit(1);
+
+  return result.length > 0;
+}
+
+/**
+ * Get user's favorite tours with tour details
+ */
+export async function getUserFavorites(userId: number): Promise<Tour[]> {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  const favorites = await db
+    .select({
+      tourId: userFavorites.tourId,
+      createdAt: userFavorites.createdAt,
+    })
+    .from(userFavorites)
+    .where(eq(userFavorites.userId, userId))
+    .orderBy(desc(userFavorites.createdAt));
+
+  if (favorites.length === 0) {
+    return [];
+  }
+
+  const tourIds = favorites.map(f => f.tourId);
+  const tourList = await db
+    .select()
+    .from(tours)
+    .where(inArray(tours.id, tourIds));
+
+  // Sort by favorite order
+  const tourMap = new Map(tourList.map(t => [t.id, t]));
+  return tourIds.map(id => tourMap.get(id)).filter(Boolean) as Tour[];
+}
+
+/**
+ * Get user's favorite tour IDs (for quick checking)
+ */
+export async function getUserFavoriteIds(userId: number): Promise<number[]> {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  const favorites = await db
+    .select({ tourId: userFavorites.tourId })
+    .from(userFavorites)
+    .where(eq(userFavorites.userId, userId));
+
+  return favorites.map(f => f.tourId);
+}
+
+// ==================== User Browsing History ====================
+
+/**
+ * Record a tour view in user's browsing history
+ */
+export async function recordBrowsingHistory(userId: number, tourId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  try {
+    // Check if entry exists
+    const existing = await db
+      .select()
+      .from(userBrowsingHistory)
+      .where(
+        and(
+          eq(userBrowsingHistory.userId, userId),
+          eq(userBrowsingHistory.tourId, tourId)
+        )
+      )
+      .limit(1);
+
+    if (existing.length > 0) {
+      // Update existing entry
+      await db
+        .update(userBrowsingHistory)
+        .set({
+          viewedAt: new Date(),
+          viewCount: sql`${userBrowsingHistory.viewCount} + 1`,
+        })
+        .where(eq(userBrowsingHistory.id, existing[0].id));
+    } else {
+      // Insert new entry
+      await db.insert(userBrowsingHistory).values({
+        userId,
+        tourId,
+      });
+    }
+  } catch (error) {
+    console.error("[Database] Failed to record browsing history:", error);
+    throw error;
+  }
+}
+
+/**
+ * Get user's browsing history with tour details
+ */
+export async function getUserBrowsingHistory(userId: number, limit: number = 20): Promise<Tour[]> {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  const history = await db
+    .select({
+      tourId: userBrowsingHistory.tourId,
+      viewedAt: userBrowsingHistory.viewedAt,
+    })
+    .from(userBrowsingHistory)
+    .where(eq(userBrowsingHistory.userId, userId))
+    .orderBy(desc(userBrowsingHistory.viewedAt))
+    .limit(limit);
+
+  if (history.length === 0) {
+    return [];
+  }
+
+  const tourIds = history.map(h => h.tourId);
+  const tourList = await db
+    .select()
+    .from(tours)
+    .where(inArray(tours.id, tourIds));
+
+  // Sort by viewing order
+  const tourMap = new Map(tourList.map(t => [t.id, t]));
+  return tourIds.map(id => tourMap.get(id)).filter(Boolean) as Tour[];
+}
+
+/**
+ * Clear user's browsing history
+ */
+export async function clearBrowsingHistory(userId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  await db.delete(userBrowsingHistory).where(eq(userBrowsingHistory.userId, userId));
 }

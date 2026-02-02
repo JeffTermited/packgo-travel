@@ -264,6 +264,73 @@ Important guidelines:
       }),
   }),
 
+  // User Favorites router
+  favorites: router({
+    // Get user's favorite tour IDs (for quick checking)
+    getIds: protectedProcedure.query(async ({ ctx }) => {
+      return await db.getUserFavoriteIds(ctx.user.id);
+    }),
+
+    // Get user's favorite tours with details
+    list: protectedProcedure.query(async ({ ctx }) => {
+      return await db.getUserFavorites(ctx.user.id);
+    }),
+
+    // Add a tour to favorites
+    add: protectedProcedure
+      .input(z.object({ tourId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await db.addFavorite(ctx.user.id, input.tourId);
+        return { success: true };
+      }),
+
+    // Remove a tour from favorites
+    remove: protectedProcedure
+      .input(z.object({ tourId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await db.removeFavorite(ctx.user.id, input.tourId);
+        return { success: true };
+      }),
+
+    // Toggle favorite status
+    toggle: protectedProcedure
+      .input(z.object({ tourId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const isFav = await db.isFavorite(ctx.user.id, input.tourId);
+        if (isFav) {
+          await db.removeFavorite(ctx.user.id, input.tourId);
+          return { isFavorite: false };
+        } else {
+          await db.addFavorite(ctx.user.id, input.tourId);
+          return { isFavorite: true };
+        }
+      }),
+  }),
+
+  // User Browsing History router
+  browsingHistory: router({
+    // Get user's browsing history
+    list: protectedProcedure
+      .input(z.object({ limit: z.number().optional().default(20) }).optional())
+      .query(async ({ ctx, input }) => {
+        return await db.getUserBrowsingHistory(ctx.user.id, input?.limit);
+      }),
+
+    // Record a tour view
+    record: protectedProcedure
+      .input(z.object({ tourId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await db.recordBrowsingHistory(ctx.user.id, input.tourId);
+        return { success: true };
+      }),
+
+    // Clear browsing history
+    clear: protectedProcedure.mutation(async ({ ctx }) => {
+      await db.clearBrowsingHistory(ctx.user.id);
+      return { success: true };
+    }),
+  }),
+
   // Tour management router (admin only)
   tours: router({
     // Get all tours (public)

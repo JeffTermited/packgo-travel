@@ -27,6 +27,7 @@ import { useLocation, useRoute, Link } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { FavoriteButton } from "@/components/FavoriteButton";
 import "../defensive.css";
 import "../print.css";
 
@@ -813,18 +814,29 @@ export default function TourDetail() {
                       )}
                     </div>
 
-                    {/* CTA Button */}
-                    <Link href={`/book/${tour.id}`}>
-                      <Button 
-                        className="w-full bg-primary hover:bg-red-700 text-white py-6 text-lg font-bold"
-                        disabled={tour.availableSeats !== null && tour.availableSeats !== undefined && tour.availableSeats <= 0}
-                      >
-                        {(tour.availableSeats !== null && tour.availableSeats !== undefined && tour.availableSeats <= 0) 
-                          ? '已額滿' 
-                          : '立即報名'}
-                        <ChevronRight className="h-5 w-5 ml-2" />
-                      </Button>
-                    </Link>
+                    {/* Action Buttons */}
+                    <div className="flex gap-3 mb-4">
+                      <Link href={`/book/${tour.id}`} className="flex-1">
+                        <Button 
+                          className="w-full bg-primary hover:bg-red-700 text-white py-6 text-lg font-bold"
+                          disabled={tour.availableSeats !== null && tour.availableSeats !== undefined && tour.availableSeats <= 0}
+                        >
+                          {(tour.availableSeats !== null && tour.availableSeats !== undefined && tour.availableSeats <= 0) 
+                            ? '已額滿' 
+                            : '立即報名'}
+                          <ChevronRight className="h-5 w-5 ml-2" />
+                        </Button>
+                      </Link>
+                    </div>
+                    
+                    {/* Favorite Button */}
+                    <FavoriteButton 
+                      tourId={tour.id} 
+                      variant="button" 
+                      showText 
+                      size="md" 
+                      className="w-full justify-center"
+                    />
                   </CardContent>
                 </Card>
 
