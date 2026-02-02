@@ -156,8 +156,15 @@ export function EditableImage({
               throw new Error("上傳失敗");
             }
 
-            const { url } = await response.json();
-            uploadedUrl = url;
+                  const result = await response.json();
+                  const { url, optimization } = result;
+                  
+                  // 顯示壓縮資訊
+                  if (optimization) {
+                    const savedKB = ((optimization.originalSize - optimization.optimizedSize) / 1024).toFixed(1);
+                    toast.success(`圖片已壓縮：節省 ${savedKB}KB (${optimization.compressionRatio})`);
+                  }
+                  uploadedUrl = url;
           } else {
             // 使用通用圖片上傳 API
             const formData = new FormData();
@@ -426,7 +433,7 @@ export function EditableImage({
                     )}
                   </Button>
                   <p className="text-xs text-gray-500 mt-2">
-                    支援 JPG、PNG、GIF、WebP 格式，最大 10MB
+                    支援 JPG、PNG、GIF、WebP 格式，最大 10MB，上傳時自動壓縮優化
                   </p>
                   <p className="text-xs text-gray-400 mt-1">
                     可直接拖放圖片到上方區域，上傳後可進行裁切
