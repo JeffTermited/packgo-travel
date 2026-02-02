@@ -23,7 +23,7 @@ import { trpc } from "@/lib/trpc";
 import DeparturesManagement from "./DeparturesManagement";
 import { GenerationProgressComponent } from "./GenerationProgress";
 import { TourEditDialog } from "./TourEditDialog";
-import { Calendar, Edit, Eye, EyeOff, ExternalLink, FileUp, Loader2, Plus, RefreshCw, Search, Sparkles, Star, Trash2, Upload } from "lucide-react";
+import { Calendar, Copy, Edit, Eye, EyeOff, ExternalLink, FileUp, Loader2, Plus, RefreshCw, Search, Sparkles, Star, Trash2, Upload } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
@@ -162,6 +162,24 @@ export default function ToursTab() {
       toast.error(`精選狀態更新失敗：${error.message}`);
     },
   });
+
+  // 複製行程 mutation
+  const duplicateTourMutation = trpc.tours.duplicate.useMutation({
+    onSuccess: (newTour) => {
+      utils.tours.list.invalidate();
+      toast.success(`行程已複製成功！新行程：${newTour.title}`);
+    },
+    onError: (error) => {
+      toast.error(`複製失敗：${error.message}`);
+    },
+  });
+
+  // 複製行程處理函數
+  const handleDuplicate = (tourId: number, tourTitle: string) => {
+    if (confirm(`確定要複製「${tourTitle}」嗎？`)) {
+      duplicateTourMutation.mutate({ id: tourId });
+    }
+  };
 
   // 異步生成 mutation
   const submitAsyncGenerationMutation = trpc.tours.submitAsyncGeneration.useMutation({
@@ -733,6 +751,16 @@ export default function ToursTab() {
                           title="編輯行程"
                         >
                           <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDuplicate(tour.id, tour.title)}
+                          className="h-9 w-9 p-0 rounded-full hover:bg-green-50 hover:text-green-600 transition-colors"
+                          title="複製行程"
+                          disabled={duplicateTourMutation.isPending}
+                        >
+                          <Copy className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="ghost"

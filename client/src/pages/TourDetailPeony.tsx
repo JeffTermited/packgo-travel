@@ -67,7 +67,9 @@ import {
   ChevronRight,
   ChevronLeft,
   ImageIcon,
-  Globe
+  Globe,
+  Ticket,
+  ExternalLink
 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -476,7 +478,7 @@ const NavTabs = ({
   );
 };
 
-// 餐廳詳情資料型別
+// 餐廠詳情資料型別
 interface MealDetail {
   name: string;
   description?: string;
@@ -487,6 +489,204 @@ interface MealDetail {
   rating?: number;
   priceRange?: string;
 }
+
+// 景點詳情資料型別
+interface AttractionDetail {
+  name: string;
+  title?: string;
+  description?: string;
+  address?: string;
+  phone?: string;
+  openingHours?: string;
+  ticketPrice?: string;
+  ticketInfo?: string;
+  images?: string[];
+  rating?: number;
+  website?: string;
+  tips?: string[];
+  highlights?: string[];
+  duration?: string;
+}
+
+// 景點詳情彈窗組件
+const AttractionDetailDialog = ({
+  isOpen,
+  onClose,
+  detail,
+  themeColor
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  detail: AttractionDetail | null;
+  themeColor: ReturnType<typeof getThemeColorByDestination>;
+}) => {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  
+  if (!detail) return null;
+  
+  const images = detail.images || [];
+  const hasImages = images.length > 0;
+  const name = detail.name || detail.title || '景點';
+  
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-bold" style={{ color: themeColor.primary }}>
+            {name}
+          </DialogTitle>
+        </DialogHeader>
+        
+        {/* 圖片輪播 */}
+        {hasImages && (
+          <div className="relative aspect-[16/9] rounded-lg overflow-hidden mb-4">
+            <img 
+              src={images[currentImageIndex]} 
+              alt={name}
+              className="w-full h-full object-cover"
+            />
+            {images.length > 1 && (
+              <>
+                <button 
+                  onClick={() => setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length)}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+                <button 
+                  onClick={() => setCurrentImageIndex((prev) => (prev + 1) % images.length)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </button>
+                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+                  {images.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setCurrentImageIndex(idx)}
+                      className={`w-2 h-2 rounded-full transition-all ${idx === currentImageIndex ? 'bg-white w-4' : 'bg-white/50'}`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        )}
+        
+        {/* 景點資訊 */}
+        <div className="space-y-4">
+          {/* 評分和建議遊覽時間 */}
+          <div className="flex items-center gap-4 flex-wrap">
+            {detail.rating && (
+              <div className="flex items-center gap-1">
+                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                <span className="font-medium">{detail.rating}</span>
+              </div>
+            )}
+            {detail.duration && (
+              <div className="flex items-center gap-1 text-gray-600">
+                <Clock className="h-4 w-4" style={{ color: themeColor.secondary }} />
+                <span>建議遊覽：{detail.duration}</span>
+              </div>
+            )}
+          </div>
+          
+          {/* 景點介紹 */}
+          {detail.description && (
+            <div>
+              <h4 className="font-semibold text-gray-900 mb-2">景點介紹</h4>
+              <p className="text-gray-600 leading-relaxed">{detail.description}</p>
+            </div>
+          )}
+          
+          {/* 亮點特色 */}
+          {detail.highlights && detail.highlights.length > 0 && (
+            <div>
+              <h4 className="font-semibold text-gray-900 mb-2">亮點特色</h4>
+              <div className="grid grid-cols-1 gap-2">
+                {detail.highlights.map((item, idx) => (
+                  <div key={idx} className="flex items-start gap-2 text-gray-600">
+                    <Sparkles className="h-4 w-4 mt-0.5 flex-shrink-0" style={{ color: themeColor.secondary }} />
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {/* 開放時間和門票資訊 */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {detail.openingHours && (
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                  <Clock className="h-4 w-4" style={{ color: themeColor.secondary }} />
+                  開放時間
+                </h4>
+                <p className="text-gray-600 text-sm">{detail.openingHours}</p>
+              </div>
+            )}
+            {(detail.ticketPrice || detail.ticketInfo) && (
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                  <Ticket className="h-4 w-4" style={{ color: themeColor.secondary }} />
+                  門票資訊
+                </h4>
+                <p className="text-gray-600 text-sm">{detail.ticketPrice || detail.ticketInfo}</p>
+              </div>
+            )}
+          </div>
+          
+          {/* 貼心提示 */}
+          {detail.tips && detail.tips.length > 0 && (
+            <div className="bg-amber-50 rounded-lg p-4">
+              <h4 className="font-semibold text-amber-800 mb-2 flex items-center gap-2">
+                <AlertCircle className="h-4 w-4" />
+                貼心提示
+              </h4>
+              <ul className="space-y-1">
+                {detail.tips.map((tip, idx) => (
+                  <li key={idx} className="text-amber-700 text-sm flex items-start gap-2">
+                    <span>•</span>
+                    <span>{tip}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          
+          {/* 地址、電話和網站 */}
+          <div className="pt-4 border-t border-gray-100 space-y-2">
+            {detail.address && (
+              <div className="flex items-start gap-2 text-gray-600">
+                <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" style={{ color: themeColor.secondary }} />
+                <span>{detail.address}</span>
+              </div>
+            )}
+            {detail.phone && (
+              <div className="flex items-center gap-2 text-gray-600">
+                <Phone className="h-4 w-4 flex-shrink-0" style={{ color: themeColor.secondary }} />
+                <span>{detail.phone}</span>
+              </div>
+            )}
+            {detail.website && (
+              <div className="flex items-center gap-2">
+                <ExternalLink className="h-4 w-4 flex-shrink-0" style={{ color: themeColor.secondary }} />
+                <a 
+                  href={detail.website} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline"
+                >
+                  官方網站
+                </a>
+              </div>
+            )}
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
 
 /// 餐食卡片組件 - 統一高度設計
 const MealCard = ({
@@ -771,7 +971,8 @@ const DayCard = ({
   themeColor,
   isExpanded,
   onToggle,
-  onShowMealDetail
+  onShowMealDetail,
+  onShowAttractionDetail
 }: { 
   day: any; 
   index: number;
@@ -779,6 +980,7 @@ const DayCard = ({
   isExpanded: boolean;
   onToggle: () => void;
   onShowMealDetail: (detail: MealDetail) => void;
+  onShowAttractionDetail: (activity: any) => void;
 }) => {
   const isEven = index % 2 === 0;
   const dayImage = day.image || day.imageUrl || `https://images.unsplash.com/photo-${1500000000000 + index * 1000}?w=800`;
@@ -816,19 +1018,43 @@ const DayCard = ({
             {day.description || day.summary || "精彩行程內容"}
           </p>
           
-          {/* Activities Preview */}
+          {/* Activities Preview - 點擊可查看詳情 */}
           {day.activities && day.activities.length > 0 && (
             <div className="space-y-3 mb-6">
               {day.activities.slice(0, isExpanded ? undefined : 3).map((activity: any, actIndex: number) => (
-                <div key={actIndex} className="flex items-start gap-3">
+                <div 
+                  key={actIndex} 
+                  className="flex items-start gap-3 cursor-pointer group hover:bg-gray-50 rounded-lg p-2 -ml-2 transition-colors"
+                  onClick={() => onShowAttractionDetail(activity)}
+                >
                   <div 
-                    className="w-3 h-3 rounded-full mt-2 flex-shrink-0"
+                    className="w-3 h-3 rounded-full mt-2 flex-shrink-0 group-hover:scale-125 transition-transform"
                     style={{ backgroundColor: themeColor.secondary }}
                   />
-                  <div>
-                    <span className="font-medium text-lg">{activity.title || activity.name}</span>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-lg group-hover:underline">{activity.title || activity.name}</span>
+                      <ChevronRight className="h-4 w-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
                     {activity.description && isExpanded && (
-                      <p className="text-base text-gray-500 mt-1">{activity.description}</p>
+                      <p className="text-base text-gray-500 mt-1 line-clamp-2">{activity.description}</p>
+                    )}
+                    {/* 顯示快速資訊標籤 */}
+                    {(activity.duration || activity.ticketPrice || activity.openingHours) && (
+                      <div className="flex items-center gap-3 mt-1 text-xs text-gray-400">
+                        {activity.duration && (
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {activity.duration}
+                          </span>
+                        )}
+                        {activity.ticketPrice && (
+                          <span className="flex items-center gap-1">
+                            <Ticket className="h-3 w-3" />
+                            {activity.ticketPrice}
+                          </span>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -1399,8 +1625,32 @@ export default function TourDetailPeony() {
   const [expandedDays, setExpandedDays] = useState<Set<number>>(new Set());
   const [selectedMealDetail, setSelectedMealDetail] = useState<MealDetail | null>(null);
   const [isMealDetailOpen, setIsMealDetailOpen] = useState(false);
+  const [selectedAttractionDetail, setSelectedAttractionDetail] = useState<AttractionDetail | null>(null);
+  const [isAttractionDetailOpen, setIsAttractionDetailOpen] = useState(false);
 
-  // 餐廳詳情彈窗處理
+  // 景點詳情彈窗處理
+  const handleShowAttractionDetail = (activity: any) => {
+    // 將 activity 轉換為 AttractionDetail 格式
+    const detail: AttractionDetail = {
+      name: activity.title || activity.name || '景點',
+      description: activity.description || activity.summary,
+      address: activity.address || activity.location,
+      phone: activity.phone,
+      openingHours: activity.openingHours || activity.hours,
+      ticketPrice: activity.ticketPrice || activity.price,
+      ticketInfo: activity.ticketInfo,
+      images: activity.images || (activity.image ? [activity.image] : []),
+      rating: activity.rating,
+      website: activity.website || activity.url,
+      tips: activity.tips,
+      highlights: activity.highlights || activity.features,
+      duration: activity.duration || activity.visitTime,
+    };
+    setSelectedAttractionDetail(detail);
+    setIsAttractionDetailOpen(true);
+  };
+
+  // 餐廠詳情彈窗處理
   const handleShowMealDetail = (detail: MealDetail) => {
     setSelectedMealDetail(detail);
     setIsMealDetailOpen(true);
@@ -1721,7 +1971,7 @@ export default function TourDetailPeony() {
             )}
           </div>
 
-          {/* Key Features Grid - 重新設計的特色卡片 */}
+          {/* Key Features Grid - 重新設計的特色卡片（支援編輯模式） */}
           {keyFeatures.length > 0 && (
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
               {keyFeatures.map((feature: any, index: number) => {
@@ -1745,18 +1995,44 @@ export default function TourDetailPeony() {
                 
                 // 檢查 feature 是否有圖片
                 const featureImage = typeof feature !== 'string' ? (feature.image || feature.imageUrl || feature.photo) : null;
+                const featureTitle = typeof feature === 'string' ? feature : (feature.title || feature.name || '');
+                const featureDescription = typeof feature !== 'string' ? (feature.description || '') : '';
+                
+                // 編輯模式下更新特色卡片
+                const handleFeatureUpdate = (field: 'title' | 'description' | 'image', newValue: string) => {
+                  const updatedFeatures = [...keyFeatures];
+                  if (typeof updatedFeatures[index] === 'string') {
+                    // 將字串轉換為物件
+                    updatedFeatures[index] = { title: updatedFeatures[index], description: '', image: '' };
+                  }
+                  updatedFeatures[index] = { ...updatedFeatures[index], [field]: newValue };
+                  setEditedTour((prev: any) => ({
+                    ...prev,
+                    keyFeatures: updatedFeatures
+                  }));
+                };
                 
                 return (
                   <div 
                     key={index} 
-                    className="group rounded-xl border border-gray-100 hover:shadow-lg transition-all duration-300 bg-white hover:-translate-y-1 overflow-hidden"
+                    className={`group rounded-xl border border-gray-100 hover:shadow-lg transition-all duration-300 bg-white hover:-translate-y-1 overflow-hidden ${isEditMode ? 'ring-2 ring-yellow-200' : ''}`}
                   >
-                    {/* 圖片區域 */}
-                    {featureImage ? (
+                    {/* 圖片區域 - 支援編輯 */}
+                    {isEditMode ? (
+                      <EditableImage
+                        src={featureImage || `https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=400&h=300&fit=crop&q=80&sig=${index}`}
+                        alt={featureTitle}
+                        onSave={(newSrc) => handleFeatureUpdate('image', newSrc)}
+                        isEditing={isEditMode}
+                        className="h-40 w-full"
+                        tourId={tour.id}
+                        imagePath={`keyFeatures.${index}.image`}
+                      />
+                    ) : featureImage ? (
                       <div className="relative h-40 overflow-hidden">
                         <img 
                           src={featureImage} 
-                          alt={typeof feature === 'string' ? feature : feature.title || feature.name}
+                          alt={featureTitle}
                           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
@@ -1769,13 +2045,37 @@ export default function TourDetailPeony() {
                         <IconComponent className="h-16 w-16 transition-transform duration-300 group-hover:scale-110" style={{ color: style.color }} />
                       </div>
                     )}
-                    {/* 文字區域 */}
+                    {/* 文字區域 - 支援編輯 */}
                     <div className="p-5">
-                      <h3 className="font-bold text-lg text-gray-800 mb-2 leading-tight">
-                        {typeof feature === 'string' ? feature : feature.title || feature.name}
-                      </h3>
-                      {typeof feature !== 'string' && feature.description && (
-                        <p className="text-base text-gray-500 leading-relaxed line-clamp-2">{feature.description}</p>
+                      {isEditMode ? (
+                        <>
+                          <EditableText
+                            value={featureTitle}
+                            onSave={(newValue) => handleFeatureUpdate('title', newValue)}
+                            isEditing={isEditMode}
+                            className="font-bold text-lg text-gray-800 mb-2 leading-tight block"
+                            placeholder="輸入標題..."
+                            as="h3"
+                          />
+                          <EditableText
+                            value={featureDescription}
+                            onSave={(newValue) => handleFeatureUpdate('description', newValue)}
+                            isEditing={isEditMode}
+                            className="text-base text-gray-500 leading-relaxed line-clamp-2 block"
+                            placeholder="輸入描述..."
+                            multiline
+                            as="p"
+                          />
+                        </>
+                      ) : (
+                        <>
+                          <h3 className="font-bold text-lg text-gray-800 mb-2 leading-tight">
+                            {featureTitle}
+                          </h3>
+                          {featureDescription && (
+                            <p className="text-base text-gray-500 leading-relaxed line-clamp-2">{featureDescription}</p>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>
@@ -1854,6 +2154,7 @@ export default function TourDetailPeony() {
                     isExpanded={expandedDays.has(index)}
                     onToggle={() => toggleDay(index)}
                     onShowMealDetail={handleShowMealDetail}
+                    onShowAttractionDetail={handleShowAttractionDetail}
                   />
                 )
               ))
@@ -2182,11 +2483,19 @@ export default function TourDetailPeony() {
       {/* Add padding for fixed bottom CTA on mobile */}
       <div className="h-20 md:hidden" />
 
-      {/* 餐廳詳情彈窗 */}
+      {/* 餐廠詳情彈窗 */}
       <MealDetailDialog
         isOpen={isMealDetailOpen}
         onClose={() => setIsMealDetailOpen(false)}
         detail={selectedMealDetail}
+        themeColor={themeColor}
+      />
+
+      {/* 景點詳情彈窗 */}
+      <AttractionDetailDialog
+        isOpen={isAttractionDetailOpen}
+        onClose={() => setIsAttractionDetailOpen(false)}
+        detail={selectedAttractionDetail}
         themeColor={themeColor}
       />
 

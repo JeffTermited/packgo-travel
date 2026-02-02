@@ -559,6 +559,44 @@ Important guidelines:
         return { success: true };
       }),
 
+    // Duplicate tour (admin only) - 複製行程作為模板
+    duplicate: protectedProcedure
+      .input(z.object({ 
+        id: z.number(),
+        newTitle: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Check if user is admin
+        if (ctx.user.role !== "admin") {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Only admins can duplicate tours",
+          });
+        }
+
+        // Get original tour
+        const originalTour = await db.getTourById(input.id);
+        if (!originalTour) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Tour not found",
+          });
+        }
+
+        // Create a copy with modified title
+        const { id, createdAt, updatedAt, ...tourData } = originalTour;
+        const newTour = await db.createTour({
+          ...tourData,
+          title: input.newTitle || `${originalTour.title} (副本)`,
+          status: "inactive", // New copy starts as inactive
+          featured: 0, // Not featured by default
+          createdBy: ctx.user.id,
+          productCode: originalTour.productCode ? `${originalTour.productCode}-COPY` : undefined,
+        });
+
+        return newTour;
+      }),
+
     // Get tour generation jobs for current user
     getMyGenerationJobs: protectedProcedure
       .query(async ({ ctx }) => {
