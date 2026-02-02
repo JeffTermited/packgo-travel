@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -158,9 +158,10 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg h-[600px] flex flex-col p-0 border-2 border-black rounded-none gap-0 overflow-hidden">
-        {/* Hidden DialogTitle for accessibility */}
+        {/* Hidden DialogTitle and Description for accessibility */}
         <VisuallyHidden>
           <DialogTitle>AI 旅遊顧問對話框</DialogTitle>
+          <DialogDescription>與 PACK&GO AI 旅遊顧問對話，獲取行程推薦和旅遊資訊</DialogDescription>
         </VisuallyHidden>
         
         {/* Header with Animated Character */}
@@ -192,6 +193,7 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
               size="sm"
               className="h-8 w-8 p-0 text-white hover:bg-white/20"
               onClick={() => onOpenChange(false)}
+              aria-label="最小化對話框"
             >
               <Minimize2 className="h-4 w-4" />
             </Button>
@@ -200,6 +202,7 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
               size="sm"
               className="h-8 w-8 p-0 text-white hover:bg-white/20"
               onClick={() => onOpenChange(false)}
+              aria-label="關閉對話框"
             >
               <X className="h-4 w-4" />
             </Button>
@@ -269,6 +272,7 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
                         }`}
                         onClick={() => handleFeedback(index, "positive")}
                         disabled={!!message.feedbackGiven || feedbackMutation.isPending}
+                        aria-label="這個回答有幫助"
                       >
                         <ThumbsUp className="h-3.5 w-3.5" />
                       </Button>
@@ -282,6 +286,7 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
                         }`}
                         onClick={() => handleFeedback(index, "negative")}
                         disabled={!!message.feedbackGiven || feedbackMutation.isPending}
+                        aria-label="這個回答沒有幫助"
                       >
                         <ThumbsDown className="h-3.5 w-3.5" />
                       </Button>
@@ -327,11 +332,13 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
               placeholder="輸入您的問題..."
               className="flex-1 border-2 border-black rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-black"
               disabled={chatMutation.isPending}
+              aria-label="輸入您的旅遊問題"
             />
             <Button
               onClick={handleSend}
               disabled={!input.trim() || chatMutation.isPending}
               className="bg-black hover:bg-gray-800 rounded-none px-4"
+              aria-label="傳送訊息"
             >
               {chatMutation.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />

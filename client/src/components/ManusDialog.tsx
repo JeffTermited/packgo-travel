@@ -8,6 +8,7 @@ import {
   DialogFooter,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 interface ManusDialogProps {
   title?: string;
@@ -68,9 +69,13 @@ export function ManusDialog({
             <DialogTitle className="text-xl font-semibold text-[#34322d] leading-[26px] tracking-[-0.44px]">
               {title}
             </DialogTitle>
-          ) : null}
+          ) : (
+            <VisuallyHidden>
+              <DialogTitle>登入對話框</DialogTitle>
+            </VisuallyHidden>
+          )}
           <DialogDescription className="text-sm text-[#858481] leading-5 tracking-[-0.154px]">
-            Please login with Manus to continue
+            請使用 Manus 帳號登入以繼續
           </DialogDescription>
         </div>
 
@@ -79,6 +84,7 @@ export function ManusDialog({
           <Button
             onClick={onLogin}
             className="w-full h-10 bg-[#1a1a19] hover:bg-[#1a1a19]/90 text-white rounded-[10px] text-sm font-medium leading-5 tracking-[-0.154px]"
+            aria-label="使用 Manus 帳號登入"
           >
             Login with Manus
           </Button>

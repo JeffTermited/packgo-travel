@@ -3605,3 +3605,23 @@
 - [x] 測試 AI 回應成功後的開心表情
 - [x] 驗證整體表情切換流暢度
 
+
+
+---
+
+## Phase 35: Dialog 組件無障礙優化（2026-02-02）
+
+### 35.1 檢查所有 Dialog 組件
+- [x] AITravelAdvisorDialog.tsx - 已修復（添加 DialogTitle + DialogDescription + VisuallyHidden）
+- [x] ManusDialog.tsx - 已修復（添加 DialogTitle + VisuallyHidden + 更新 DialogDescription）
+- [x] 其他組件已有 DialogTitle（無需修改）
+
+### 35.2 添加 ARIA 標籤
+- [x] AITravelAdvisorDialog.tsx - 輸入框和按鈕添加 aria-label
+- [x] ManusDialog.tsx - 登入按鈕添加 aria-label
+
+### 35.3 驗證鍵盤導航
+- [x] 確認 Tab 鍵可以在對話框內切換焦點（Radix UI 內建支援）
+- [x] 確認 Escape 鍵可以關閉對話框（dialog.tsx 已實作 handleEscapeKeyDown）
+- [x] 確認 Enter 鍵可以觸發主要操作（handleKeyPress 已實作）
+
