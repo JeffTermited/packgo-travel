@@ -74,19 +74,21 @@ export function EditableText({
         className={cn(
           className,
           "cursor-pointer relative group transition-all",
-          "hover:bg-yellow-100/50 hover:outline hover:outline-2 hover:outline-yellow-400 hover:outline-dashed rounded"
+          "hover:bg-black/30 hover:outline hover:outline-2 hover:outline-yellow-400 hover:outline-dashed rounded",
+          // 為文字添加背景陰影以確保在任何背景上都可讀
+          "[text-shadow:_0_2px_8px_rgba(0,0,0,0.8),_0_1px_3px_rgba(0,0,0,0.9)]"
         )}
         onClick={() => setIsActive(true)}
       >
-        {value || <span className="text-gray-400 italic">{placeholder}</span>}
-        <Pencil className="absolute -right-6 top-1/2 -translate-y-1/2 h-4 w-4 text-yellow-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+        {value || <span className="text-gray-300 italic">{placeholder}</span>}
+        <Pencil className="absolute -right-8 top-1/2 -translate-y-1/2 h-5 w-5 text-yellow-400 opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg" />
       </Component>
     );
   }
 
   // 編輯模式且激活：顯示輸入框
   return (
-    <div className="inline-flex items-center gap-2 bg-yellow-50 rounded-lg p-1 border-2 border-yellow-400">
+    <div className="inline-flex items-center gap-2 bg-white/95 rounded-lg p-2 border-2 border-yellow-400 shadow-xl backdrop-blur-sm">
       {multiline ? (
         <textarea
           ref={inputRef as React.RefObject<HTMLTextAreaElement>}

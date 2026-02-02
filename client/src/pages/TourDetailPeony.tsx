@@ -488,7 +488,7 @@ interface MealDetail {
   priceRange?: string;
 }
 
-/// 餐食卡片組件 - 帶圖片輪播功能
+/// 餐食卡片組件 - 統一高度設計
 const MealCard = ({
   type,
   name,
@@ -510,25 +510,35 @@ const MealCard = ({
   const mealConfig = {
     breakfast: { 
       label: '早餐', 
+      icon: Coffee,
+      borderColor: 'border-amber-200',
       bgColor: 'bg-amber-50', 
       textColor: 'text-amber-600',
-      hoverBg: 'hover:bg-amber-100'
+      iconBg: 'bg-amber-100',
+      hoverBg: 'hover:bg-amber-100/50'
     },
     lunch: { 
       label: '午餐', 
+      icon: UtensilsCrossed,
+      borderColor: 'border-orange-200',
       bgColor: 'bg-orange-50', 
       textColor: 'text-orange-600',
-      hoverBg: 'hover:bg-orange-100'
+      iconBg: 'bg-orange-100',
+      hoverBg: 'hover:bg-orange-100/50'
     },
     dinner: { 
       label: '晚餐', 
+      icon: Wine,
+      borderColor: 'border-indigo-200',
       bgColor: 'bg-indigo-50', 
       textColor: 'text-indigo-600',
-      hoverBg: 'hover:bg-indigo-100'
+      iconBg: 'bg-indigo-100',
+      hoverBg: 'hover:bg-indigo-100/50'
     }
   };
   
   const config = mealConfig[type];
+  const IconComponent = config.icon;
   const hasImages = images && images.length > 0;
   const isSpecialMeal = name !== '自理' && name !== '飯店內用';
   
@@ -552,65 +562,75 @@ const MealCard = ({
   
   return (
     <div 
-      className={`${config.bgColor} rounded-lg overflow-hidden transition-all duration-300 ${config.hoverBg} ${isSpecialMeal ? 'cursor-pointer' : ''}`}
+      className={`bg-white border ${config.borderColor} rounded-xl overflow-hidden transition-all duration-300 ${config.hoverBg} ${isSpecialMeal ? 'cursor-pointer hover:shadow-md' : ''} flex flex-col h-full`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleClick}
     >
-      {/* 圖片輪播區域 */}
-      {hasImages && (
-        <div className="relative aspect-[4/3] overflow-hidden">
-          <img 
-            src={images[currentImageIndex]} 
-            alt={name}
-            className="w-full h-full object-cover transition-transform duration-500"
-            style={{ transform: isHovered ? 'scale(1.05)' : 'scale(1)' }}
-          />
-          {/* 滑動指示器 */}
-          {images.length > 1 && (
-            <>
-              {/* 左右箭頭 */}
-              <button 
-                onClick={(e) => { e.stopPropagation(); prevImage(); }}
-                className="absolute left-1 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                style={{ opacity: isHovered ? 1 : 0 }}
-              >
-                <ChevronLeft className="h-3 w-3" />
-              </button>
-              <button 
-                onClick={(e) => { e.stopPropagation(); nextImage(); }}
-                className="absolute right-1 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                style={{ opacity: isHovered ? 1 : 0 }}
-              >
-                <ChevronRight className="h-3 w-3" />
-              </button>
-              {/* 圖片指示點 */}
-              <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-1">
-                {images.map((_, idx) => (
-                  <div 
-                    key={idx}
-                    className={`w-1.5 h-1.5 rounded-full transition-all ${idx === currentImageIndex ? 'bg-white w-3' : 'bg-white/50'}`}
-                  />
-                ))}
+      {/* 圖片區域 - 固定高度 */}
+      <div className="relative h-32 overflow-hidden bg-gray-100">
+        {hasImages ? (
+          <>
+            <img 
+              src={images[currentImageIndex]} 
+              alt={name}
+              className="w-full h-full object-cover transition-transform duration-500"
+              style={{ transform: isHovered ? 'scale(1.05)' : 'scale(1)' }}
+            />
+            {/* 滑動指示器 */}
+            {images.length > 1 && (
+              <>
+                <button 
+                  onClick={(e) => { e.stopPropagation(); prevImage(); }}
+                  className="absolute left-1 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-full p-1 transition-opacity"
+                  style={{ opacity: isHovered ? 1 : 0 }}
+                >
+                  <ChevronLeft className="h-3 w-3" />
+                </button>
+                <button 
+                  onClick={(e) => { e.stopPropagation(); nextImage(); }}
+                  className="absolute right-1 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-full p-1 transition-opacity"
+                  style={{ opacity: isHovered ? 1 : 0 }}
+                >
+                  <ChevronRight className="h-3 w-3" />
+                </button>
+                <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-1">
+                  {images.map((_, idx) => (
+                    <div 
+                      key={idx}
+                      className={`w-1.5 h-1.5 rounded-full transition-all ${idx === currentImageIndex ? 'bg-white w-3' : 'bg-white/50'}`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+            {/* 特色餐食標籤 */}
+            {isSpecialMeal && (
+              <div className="absolute top-2 right-2 bg-white/95 backdrop-blur-sm rounded-full px-2 py-0.5 shadow-sm">
+                <span className="text-xs font-medium" style={{ color: themeColor.secondary }}>特色餐食</span>
               </div>
-            </>
-          )}
-          {/* 特色餐食標籤 */}
-          {isSpecialMeal && (
-            <div className="absolute top-1 right-1 bg-white/90 backdrop-blur-sm rounded px-2 py-1">
-              <span className="text-xs font-medium" style={{ color: themeColor.secondary }}>特色餐食</span>
+            )}
+          </>
+        ) : (
+          // 無圖片時顯示圖示
+          <div className={`w-full h-full ${config.bgColor} flex items-center justify-center`}>
+            <div className={`${config.iconBg} rounded-full p-4`}>
+              <IconComponent className={`h-8 w-8 ${config.textColor}`} />
             </div>
-          )}
-        </div>
-      )}
+          </div>
+        )}
+      </div>
       
-      {/* 餐食資訊 */}
-      <div className="p-4 text-center">
-        <div className={`text-sm ${config.textColor} font-medium mb-1`}>{config.label}</div>
-        <div className="text-base text-gray-700 font-medium line-clamp-2">{name}</div>
+      {/* 餐食資訊 - 固定高度 */}
+      <div className="p-3 text-center flex-1 flex flex-col justify-center">
+        <div className={`text-sm ${config.textColor} font-semibold mb-1 flex items-center justify-center gap-1`}>
+          <IconComponent className="h-4 w-4" />
+          {config.label}
+        </div>
+        <div className="text-base text-gray-800 font-medium line-clamp-2">{name}</div>
         {hasImages && (
           <div className="mt-1 flex items-center justify-center gap-1 text-xs text-gray-400">
-            <ImageIcon className="h-4 w-4" />
+            <ImageIcon className="h-3 w-3" />
             <span>{images.length} 張照片</span>
           </div>
         )}
