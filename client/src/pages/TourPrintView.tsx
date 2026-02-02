@@ -124,6 +124,8 @@ export default function TourPrintView() {
   const exclusions = parseJSON(tour.excludes, []);
   const notes = parseJSON(tour.notes, []);
   const keyFeatures = parseJSON(tour.keyFeatures, []);
+  const hotels = parseJSON(tour.hotels, []);
+  const itinerary = dailyItinerary;
   
   return (
     <>
@@ -170,6 +172,8 @@ export default function TourPrintView() {
               </div>
             </div>
             <div className="text-right text-sm text-gray-500">
+              <p className="font-medium text-gray-700">電話：+886-2-1234-5678</p>
+              <p>Email：info@packgo.travel</p>
               <p>行程編號：{tour.productCode || `T${tour.id}`}</p>
               <p>列印日期：{new Date().toLocaleDateString("zh-TW")}</p>
             </div>
@@ -278,18 +282,40 @@ export default function TourPrintView() {
                 </h3>
                 <div className="print-activities-list">
                   {day.activities.map((activity: any, actIdx: number) => (
-                    <div key={actIdx} className="print-activity-item">
-                      <div 
-                        className="print-activity-time"
-                        style={{ color: themeColor.primary }}
-                      >
-                        {activity.time || `${9 + actIdx}:00`}
-                      </div>
-                      <div className="print-activity-content">
-                        <span className="font-medium">{activity.title || activity.name || activity}</span>
+                    <div key={actIdx} className="print-activity-card">
+                      {/* 景點圖片 */}
+                      {activity.image && (
+                        <div className="print-activity-image">
+                          <img src={activity.image} alt={activity.title || activity.name} />
+                        </div>
+                      )}
+                      <div className="print-activity-details">
+                        <div className="print-activity-header">
+                          <div 
+                            className="print-activity-time"
+                            style={{ color: themeColor.primary }}
+                          >
+                            {activity.time || `${9 + actIdx}:00`}
+                          </div>
+                          <span className="font-medium">{activity.title || activity.name || activity}</span>
+                        </div>
                         {activity.description && (
-                          <span className="text-gray-500 text-sm ml-2">- {activity.description}</span>
+                          <p className="print-activity-desc">{activity.description}</p>
                         )}
+                        {/* 開放時間和票價 */}
+                        <div className="print-activity-info">
+                          {activity.openingHours && (
+                            <span className="print-activity-hours">
+                              <Clock className="inline h-3 w-3 mr-1" />
+                              {activity.openingHours}
+                            </span>
+                          )}
+                          {activity.ticketPrice && (
+                            <span className="print-activity-price">
+                              票價: {activity.ticketPrice}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -345,6 +371,81 @@ export default function TourPrintView() {
             </div>
           </div>
         ))}
+        
+        {/* ===== 飯店資訊頁 ===== */}
+        {hotels && hotels.length > 0 && (
+          <div className="print-page print-hotels-page">
+            {/* 頁眉 */}
+            <div className="print-page-header">
+              <span className="font-medium">{tour.title}</span>
+              <span className="text-gray-500">飯店資訊</span>
+            </div>
+            
+            <h2 className="print-section-title" style={{ color: themeColor.primary }}>
+              精選住宿
+            </h2>
+            
+            <div className="print-hotels-grid">
+              {hotels.map((hotel: any, idx: number) => (
+                <div key={idx} className="print-hotel-card">
+                  {/* 飯店圖片 */}
+                  {hotel.image && (
+                    <div className="print-hotel-image">
+                      <img src={hotel.image} alt={hotel.name} />
+                    </div>
+                  )}
+                  
+                  {/* 飯店資訊 */}
+                  <div className="print-hotel-details">
+                    <div className="print-hotel-header">
+                      <h3 className="print-hotel-name">{hotel.name}</h3>
+                      {hotel.rating && (
+                        <div className="print-hotel-rating">
+                          {Array.from({ length: hotel.rating }).map((_, i) => (
+                            <span key={i} className="text-yellow-500">★</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    
+                    {hotel.address && (
+                      <p className="print-hotel-address">
+                        <MapPin className="inline h-3 w-3 mr-1" />
+                        {hotel.address}
+                      </p>
+                    )}
+                    
+                    {hotel.description && (
+                      <p className="print-hotel-description">{hotel.description}</p>
+                    )}
+                    
+                    {/* 飯店設施 */}
+                    {hotel.amenities && hotel.amenities.length > 0 && (
+                      <div className="print-hotel-amenities">
+                        <span className="font-medium text-gray-700">設施：</span>
+                        <span className="text-gray-600">{hotel.amenities.join('、')}</span>
+                      </div>
+                    )}
+                    
+                    {/* 入住日期 */}
+                    {hotel.nights && (
+                      <p className="print-hotel-nights">
+                        <Calendar className="inline h-3 w-3 mr-1" />
+                        入住 {hotel.nights} 晚
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            {/* 頁腳 */}
+            <div className="print-page-footer">
+              <span>PACK&GO 旅行社</span>
+              <span>第 {itinerary.length + 2} 頁</span>
+            </div>
+          </div>
+        )}
         
         {/* ===== 費用說明頁 ===== */}
         <div className="print-page print-pricing-page">
@@ -470,6 +571,8 @@ export default function TourPrintView() {
                     <li>建議攜帶輕便衣物和防曬用品</li>
                     <li>準備舒適的步行鞋</li>
                     <li>攜帶個人常用藥物</li>
+                    <li>建議攜帶雨具或折疊傘</li>
+                    <li>建議攜帶行動電源和充電器</li>
                   </ul>
                 </div>
                 <div className="print-note-section">
@@ -477,6 +580,17 @@ export default function TourPrintView() {
                   <ul className="print-note-list">
                     <li>請於出發前 30 分鐘抵達集合地點</li>
                     <li>領隊會於出發前一天以簡訊通知詳細集合資訊</li>
+                    <li>請保持手機暢通以便聯繫</li>
+                  </ul>
+                </div>
+                <div className="print-note-section">
+                  <h3 className="print-note-title">旅遊提示</h3>
+                  <ul className="print-note-list">
+                    <li>請尊重當地風俗民情和文化習俗</li>
+                    <li>拍照前請先征得當事人同意</li>
+                    <li>請妥善保管貴重物品和證件</li>
+                    <li>建議購買旅遊保險以保障旅途安全</li>
+                    <li>注意飲食衛生，避免食用生冷食物</li>
                   </ul>
                 </div>
                 <div className="print-note-section">
@@ -487,6 +601,14 @@ export default function TourPrintView() {
                     <li>出發前 2-20 天取消，收取團費 30%</li>
                     <li>出發前 1 天取消，收取團費 50%</li>
                     <li>出發當天取消或未到，恕不退費</li>
+                  </ul>
+                </div>
+                <div className="print-note-section">
+                  <h3 className="print-note-title">緊急聯絡</h3>
+                  <ul className="print-note-list">
+                    <li>台灣緊急電話：110（警察）/ 119（消防、救護）</li>
+                    <li>旅行社 24 小時緊急專線：+886-2-1234-5678</li>
+                    <li>領隊隨身電話將於出發前通知</li>
                   </ul>
                 </div>
               </>
@@ -859,6 +981,132 @@ export default function TourPrintView() {
           align-items: center;
           gap: 4px;
           font-size: 10pt;
+        }
+        
+        /* 飯店資訊頁樣式 */
+        .print-hotels-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 6mm;
+        }
+        
+        .print-hotel-card {
+          border: 1px solid #e5e7eb;
+          border-radius: 6px;
+          overflow: hidden;
+          page-break-inside: avoid;
+        }
+        
+        .print-hotel-image {
+          height: 35mm;
+          overflow: hidden;
+        }
+        
+        .print-hotel-image img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+        
+        .print-hotel-details {
+          padding: 4mm;
+        }
+        
+        .print-hotel-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 2mm;
+        }
+        
+        .print-hotel-name {
+          font-size: 11pt;
+          font-weight: 600;
+          color: #1f2937;
+          margin: 0;
+        }
+        
+        .print-hotel-rating {
+          font-size: 10pt;
+        }
+        
+        .print-hotel-address {
+          font-size: 9pt;
+          color: #6b7280;
+          margin: 0 0 2mm 0;
+        }
+        
+        .print-hotel-description {
+          font-size: 9pt;
+          color: #4b5563;
+          line-height: 1.4;
+          margin: 0 0 2mm 0;
+        }
+        
+        .print-hotel-amenities {
+          font-size: 9pt;
+          margin-bottom: 2mm;
+        }
+        
+        .print-hotel-nights {
+          font-size: 9pt;
+          color: #6b7280;
+          margin: 0;
+        }
+        
+        /* 景點卡片樣式 */
+        .print-activity-card {
+          display: flex;
+          gap: 3mm;
+          padding: 3mm;
+          background: #fafafa;
+          border-radius: 4px;
+          margin-bottom: 2mm;
+        }
+        
+        .print-activity-image {
+          width: 25mm;
+          height: 20mm;
+          flex-shrink: 0;
+          border-radius: 4px;
+          overflow: hidden;
+        }
+        
+        .print-activity-image img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+        
+        .print-activity-details {
+          flex: 1;
+        }
+        
+        .print-activity-header {
+          display: flex;
+          align-items: baseline;
+          gap: 8px;
+          margin-bottom: 1mm;
+        }
+        
+        .print-activity-desc {
+          font-size: 9pt;
+          color: #6b7280;
+          margin: 0 0 1mm 0;
+          line-height: 1.4;
+        }
+        
+        .print-activity-info {
+          display: flex;
+          gap: 10px;
+          font-size: 8pt;
+          color: #9ca3af;
+        }
+        
+        .print-activity-hours,
+        .print-activity-price {
+          display: flex;
+          align-items: center;
         }
       `}</style>
     </>
