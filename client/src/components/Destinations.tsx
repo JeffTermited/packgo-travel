@@ -14,7 +14,7 @@ export default function Destinations() {
   const [, setLocation] = useLocation();
 
   const handleDestinationClick = (region: string) => {
-    setLocation(`/tours?region=${region}`);
+    setLocation(`/destinations/${region}`);
   };
 
   return (
