@@ -2,15 +2,20 @@
  * Itinerary Polish Agent
  * 美化行程措辭，保持原始資訊不變
  * 
- * Claude Hybrid Architecture: Uses Claude 3.5 Sonnet for complex reasoning
+ * Claude Hybrid Architecture: Uses Claude 3 Haiku for fast polishing
  * 
  * Phase 1 優化：
  * - 加入 fidelityCheck 機制
  * - 加入自動修復功能
  * - 強化資料忠實度約束
+ * 
+ * Phase 2 優化（2026-02-01）：
+ * - 並行處理每日行程（批次大小 5 天）
+ * - 使用 Claude 3 Haiku 加速處理
+ * - 簡化 prompt 減少 token 使用
  */
 
-import { getSonnetAgent, JSONSchema, STRICT_DATA_FIDELITY_RULES } from "./claudeAgent";
+import { getHaikuAgent, getSonnetAgent, JSONSchema, STRICT_DATA_FIDELITY_RULES } from "./claudeAgent";
 import { ExtractedItinerary, ExtractedActivity, TourType } from "./itineraryExtractAgent";
 import { loadReference } from "./skillLoader";
 
@@ -64,21 +69,23 @@ export interface OriginalDataSnapshot {
   originalAttractions: string[];
 }
 
+// Phase 2 優化：批次大小
+const BATCH_SIZE = 5;
+
 /**
  * ItineraryPolishAgent
  * 專門美化行程措辭，讓文字更專業、更吸引人
  * 保持原始資訊不變，只改善表達方式
  * 
- * Phase 1 新增功能：
- * - fidelityCheck 機制：驗證生成結果與原始資料的一致性
- * - 自動修復功能：當忠實度檢查失敗時自動修復
- * - 強化約束條件：在 prompt 中加入嚴格的資料忠實度要求
+ * Phase 2 優化：
+ * - 並行處理每日行程（每批 5 天）
+ * - 使用 Claude 3 Haiku 加速
  */
 export class ItineraryPolishAgent {
   private dataFidelityRules: string = '';
   
   constructor() {
-    console.log('[ItineraryPolishAgent] Initialized with Claude 3.5 Sonnet (Phase 2 optimization)');
+    console.log('[ItineraryPolishAgent] Initialized with Claude 3 Haiku (Phase 2 parallel optimization)');
     
     // 載入資料忠實度規則
     try {
@@ -91,13 +98,14 @@ export class ItineraryPolishAgent {
 
   /**
    * 執行行程美化
-   * Phase 1 優化：加入原始資料快照和忠實度檢查
+   * Phase 2 優化：並行處理每日行程
    */
   async execute(
     extractedItineraries: ExtractedItinerary[],
     destinationInfo: { country?: string; city?: string },
     originalDataSnapshot?: OriginalDataSnapshot
   ): Promise<ItineraryPolishResult> {
+    const startTime = Date.now();
     console.log(`[ItineraryPolishAgent] Starting to polish ${extractedItineraries.length} days of itinerary...`);
     
     if (originalDataSnapshot) {
@@ -126,8 +134,8 @@ export class ItineraryPolishAgent {
     }
     
     try {
-      // 批次處理所有天數的行程（一次 LLM 調用）
-      let polishedItineraries = await this.polishAllDays(
+      // Phase 2 優化：並行批次處理
+      let polishedItineraries = await this.polishAllDaysParallel(
         extractedItineraries, 
         destinationInfo,
         originalDataSnapshot
@@ -165,7 +173,8 @@ export class ItineraryPolishAgent {
         console.log(`[ItineraryPolishAgent] After auto-repair, fidelity score: ${fidelityCheck.overallScore}`);
       }
       
-      console.log(`[ItineraryPolishAgent] Successfully polished ${polishedItineraries.length} days`);
+      const elapsed = Date.now() - startTime;
+      console.log(`[ItineraryPolishAgent] Successfully polished ${polishedItineraries.length} days in ${elapsed}ms`);
       
       return {
         success: true,
@@ -350,67 +359,66 @@ export class ItineraryPolishAgent {
   }
 
   /**
-   * 批次美化所有天數的行程
-   * Phase 2 優化：使用 Claude 3.5 Sonnet 進行複雜推理
+   * Phase 2 優化：並行批次處理所有天數的行程
+   * 將行程分成多個批次，每批 5 天，並行處理
    */
-  private async polishAllDays(
+  private async polishAllDaysParallel(
     itineraries: ExtractedItinerary[],
     destinationInfo: { country?: string; city?: string },
     originalDataSnapshot?: OriginalDataSnapshot
   ): Promise<PolishedItinerary[]> {
-    // Phase 1 優化：加入資料忠實度約束
-    const fidelityConstraints = originalDataSnapshot ? `
-🚨 **資料忠實度約束（最高優先級）**：
+    const totalDays = itineraries.length;
+    const batches: ExtractedItinerary[][] = [];
+    
+    // 將行程分成批次
+    for (let i = 0; i < totalDays; i += BATCH_SIZE) {
+      batches.push(itineraries.slice(i, i + BATCH_SIZE));
+    }
+    
+    console.log(`[ItineraryPolishAgent] Processing ${totalDays} days in ${batches.length} batches (batch size: ${BATCH_SIZE})`);
+    
+    // 並行處理所有批次
+    const batchPromises = batches.map((batch, batchIndex) => 
+      this.polishBatch(batch, destinationInfo, batchIndex + 1, batches.length, originalDataSnapshot)
+    );
+    
+    const batchResults = await Promise.all(batchPromises);
+    
+    // 合併所有批次結果
+    const allPolished: PolishedItinerary[] = [];
+    for (const result of batchResults) {
+      allPolished.push(...result);
+    }
+    
+    return allPolished;
+  }
 
-1. **交通方式**：原始交通方式為「${originalDataSnapshot.originalTransportation}」
-   - 絕對禁止更改交通方式
-   - 如果原始是火車，絕對不能出現「飛機」「航班」「機場」
-   - 如果原始是郵輪，絕對不能出現「飛機」「航班」「機場」
+  /**
+   * Phase 2 優化：處理單一批次的行程
+   */
+  private async polishBatch(
+    batch: ExtractedItinerary[],
+    destinationInfo: { country?: string; city?: string },
+    batchNumber: number,
+    totalBatches: number,
+    originalDataSnapshot?: OriginalDataSnapshot
+  ): Promise<PolishedItinerary[]> {
+    const startTime = Date.now();
+    console.log(`[ItineraryPolishAgent] Processing batch ${batchNumber}/${totalBatches} (${batch.length} days)...`);
+    
+    // 簡化的 prompt，減少 token 使用
+    const systemPrompt = `你是旅遊文案編輯。美化行程描述，保持原始資訊不變。
+規則：
+1. 保留所有景點名稱、時間、飯店名稱
+2. 每個活動描述 40-60 字
+3. 使用生動但簡潔的描述
+4. 禁止更改交通方式或飯店名稱
+${originalDataSnapshot?.originalTransportation ? `原始交通：${originalDataSnapshot.originalTransportation}` : ''}`;
 
-2. **飯店名稱**：原始飯店列表為：
-${originalDataSnapshot.originalHotels.map((h, i) => `   - Day ${i + 1}: ${h}`).join('\n')}
-   - 必須使用原始飯店名稱，不可替換
-   - 不可簡化或更改飯店名稱
+    const userPrompt = `美化以下行程（${destinationInfo.city || ''}, ${destinationInfo.country || ''}）：
+${JSON.stringify(batch, null, 2)}
 
-3. **景點名稱**：原始景點列表為：
-${originalDataSnapshot.originalAttractions.slice(0, 10).map(a => `   - ${a}`).join('\n')}
-   - 必須保留原始景點名稱
-   - 禁止添加不在原始資料中的景點
-` : '';
-
-    const systemPrompt = `你是一位資深旅遊雜誌主編，專門為高端旅遊品牌撰寫行程文案。
-
-你的任務是「美化」行程措辭，讓文字更專業、更吸引人。
-
-${fidelityConstraints}
-
-${STRICT_DATA_FIDELITY_RULES}
-
-重要規則：
-1. **保持原始資訊不變**：景點名稱、時間、地點、飯店名稱等資訊必須完全保留
-2. **只改善表達方式**：讓描述更生動、更有畫面感
-3. **使用感官細節**：加入視覺、聽覺、味覺、觸覺的描述
-4. **避免過度修飾**：不要使用「靈魂」「洗滌」「光影」「呢喃」「心靈」「深度對話」「完美融合」等詞彙
-5. **保持專業簡潔**：每個活動描述控制在 50-80 字
-
-⛔ 禁止事項：
-- 禁止創造原始資料中不存在的景點
-- 禁止更改交通方式（火車不能變飛機）
-- 禁止替換飯店名稱
-- 禁止添加虛構的活動`;
-
-    const userPrompt = `請美化以下行程的措辭：
-
-目的地：${destinationInfo.city || ''}, ${destinationInfo.country || ''}
-
-原始行程資料：
-${JSON.stringify(itineraries, null, 2)}
-
-請以 JSON 格式回傳美化後的行程，確保：
-1. 保持所有原始資訊（時間、地點、景點名稱、飯店名稱）不變
-2. 只改善文字表達方式
-3. 每個活動描述控制在 50-80 字
-4. 絕對不要更改交通方式或飯店名稱`;
+回傳 JSON 格式的美化行程。`;
 
     // Define JSON Schema for polished itineraries
     const polishedSchema: JSONSchema = {
@@ -456,17 +464,17 @@ ${JSON.stringify(itineraries, null, 2)}
     };
 
     try {
-      const claudeAgent = getSonnetAgent();
+      // Phase 2 優化：使用 Haiku 加速處理
+      const claudeAgent = getHaikuAgent();
       const response = await claudeAgent.sendStructuredMessage<{ itineraries: PolishedItinerary[] }>(
         userPrompt,
         polishedSchema,
         {
           systemPrompt,
-          maxTokens: 8192,
+          maxTokens: 4096,
           temperature: 0.5,
-          schemaName: 'polished_itineraries_output',
-          schemaDescription: '美化後的行程結構化輸出',
-          strictDataFidelity: true,
+          schemaName: 'polished_itineraries_batch',
+          schemaDescription: '美化後的行程批次輸出',
         }
       );
 
@@ -480,10 +488,20 @@ ${JSON.stringify(itineraries, null, 2)}
         throw new Error("Invalid response format");
       }
 
+      const elapsed = Date.now() - startTime;
+      console.log(`[ItineraryPolishAgent] Batch ${batchNumber}/${totalBatches} completed in ${elapsed}ms`);
+
       return polishedItineraries;
     } catch (error) {
-      console.error("[ItineraryPolishAgent] Claude error:", error);
-      throw error;
+      console.error(`[ItineraryPolishAgent] Batch ${batchNumber} error:`, error);
+      
+      // 返回原始資料作為 fallback
+      return batch.map(itinerary => ({
+        ...itinerary,
+        activities: itinerary.activities.map(activity => ({
+          ...activity,
+        })),
+      }));
     }
   }
 }

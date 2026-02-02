@@ -26,7 +26,7 @@ export default function SearchResults() {
   const [minDays, setMinDays] = useState(Number(searchParams.get("minDays")) || 1);
   const [maxDays, setMaxDays] = useState(Number(searchParams.get("maxDays")) || 30);
   const [minPrice, setMinPrice] = useState(Number(searchParams.get("minPrice")) || 0);
-  const [maxPrice, setMaxPrice] = useState(Number(searchParams.get("maxPrice")) || 100000);
+  const [maxPrice, setMaxPrice] = useState(Number(searchParams.get("maxPrice")) || 500000);
   const [sortBy, setSortBy] = useState<"popular" | "price_asc" | "price_desc" | "days_asc" | "days_desc">(searchParams.get("sortBy") as any || "popular");
   
   // New filter states - initialize from URL
@@ -73,8 +73,11 @@ export default function SearchResults() {
   }, [destination, minDays, maxDays, minPrice, maxPrice, sortBy, tourType, weekdays, airlines, hotelGrade, specialActivities]);
 
   // Fetch tours with filters and pagination
+  // 使用 keyword 或 destination 作為搜尋條件
+  const searchDestination = keyword || (destination === "all" ? "" : destination);
+  
   const { data, isLoading } = trpc.tours.search.useQuery({
-    destination: destination === "all" ? "" : destination,
+    destination: searchDestination,
     minDays,
     maxDays,
     minPrice,

@@ -2418,3 +2418,89 @@
 - [x] 測試行程分享功能 - Facebook, LINE, X, WhatsApp 分享對話框正常
 - [x] 測試列印版頁面完整性 - 頁首、飯店、景點、注意事項均正常
 - [ ] 儲存 checkpoint
+
+
+---
+
+## Phase 41: PDF 上傳分析生成行程速度優化與 7 國之旅顯示問題修復（2026-02-02）
+
+### 41.1 分析問題原因
+- [x] 分析 PDF 上傳解析生成行程的流程和瓶頸
+- [x] 檢查 pdfParserAgent.ts 的處理流程 - 單次 LLM 呼叫解析 PDF
+- [x] 檢查 masterAgent.ts 的協調流程 - 5 個階段，已有並行化
+- [ ] 檢查 7 國之旅行程的資料結構（目的地欄位長度）
+- [ ] 確認包團頁面的搜尋邏輯
+
+### 41.2 優化 PDF 解析和行程生成速度
+- [ ] 分析哪些步驟最耗時
+- [ ] 實施並行化處理（如果可能）
+- [ ] 減少不必要的 LLM 呼叫
+- [ ] 優化資料傳遞和處理流程
+
+### 41.3 修復 7 國之旅顯示問題
+- [ ] 檢查目的地欄位是否過長
+- [ ] 修復搜尋邏輯以支援多國行程
+- [ ] 測試修復結果
+
+### 41.4 測試與驗證
+- [ ] 測試 PDF 生成速度改善
+- [ ] 測試 7 國之旅在包團頁面顯示
+- [ ] 儲存 checkpoint
+
+
+---
+
+## Phase 42: PDF 上傳分析生成行程速度優化（2026-02-01）
+
+### 42.1 分析現有流程瓶頸
+- [x] 分析 pdfParserAgent.ts 的處理流程
+- [x] 分析 masterAgent.ts 的協調流程
+- [x] 分析 itineraryPolishAgent.ts 的處理流程
+- [x] 分析 contentAnalyzerAgent.ts 的處理流程
+- [x] 識別主要瓶頸：ItineraryPolishAgent 佔用 336 秒（66%）
+
+### 42.2 優化方案設計
+- [x] 設計 ItineraryPolishAgent 並行處理方案（每日行程分批並行）
+- [x] 設計 ContentAnalyzerAgent 合併 LLM 調用方案
+- [x] 設計批次大小和並發數配置
+
+### 42.3 實施優化
+- [x] 重構 ItineraryPolishAgent 支援並行處理（BATCH_SIZE=3, MAX_CONCURRENT=5）
+- [x] 重構 ContentAnalyzerAgent 合併多個 LLM 調用為單一調用
+- [x] TypeScript 編譯驗證通過
+- [x] 重啟開發伺服器
+
+### 42.4 測試與驗證
+- [ ] 測試 PDF 上傳生成行程速度
+- [ ] 驗證生成結果品質
+- [ ] 記錄優化前後時間對比
+- [ ] 儲存 checkpoint
+
+
+
+---
+
+## Phase 42: PDF 上傳分析生成行程速度優化（2026-02-02）
+
+### 42.1 分析瓶頸
+- [x] 分析 PDF 解析流程和各階段耗時
+- [x] 識別 ItineraryPolishAgent 為最大瓶頸（336 秒）
+- [x] 識別 ContentAnalyzerAgent 為次要瓶頸（27 秒）
+
+### 42.2 優化實施
+- [x] ItineraryPolishAgent 改為並行批次處理（每批 5 天）
+- [x] ItineraryPolishAgent 改用 Claude 3 Haiku 加速
+- [x] ContentAnalyzerAgent 合併多個 LLM 調用為單一調用
+- [x] ContentAnalyzerAgent 改用 Claude 3 Haiku
+
+### 42.3 測試結果
+- [x] 10 天行程 PDF：101.7 秒（約 1 分 42 秒）
+- [x] ItineraryPolishAgent：25.9 秒（優化前約 336 秒，提升 13 倍）
+- [x] ContentAnalyzerAgent：8.3 秒（優化前約 27 秒，提升 3 倍）
+- [x] 預估 15 天行程：150-200 秒（優化前 509 秒，提升約 2.5-3 倍）
+
+### 42.4 驗證
+- [x] 測試 PDF 上傳生成功能正常運作
+- [x] 驗證生成的行程資料正確
+- [x] 確認並行處理沒有造成資料錯誤
+

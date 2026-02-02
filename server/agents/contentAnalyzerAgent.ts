@@ -2,9 +2,14 @@
  * Content Analyzer Agent
  * Responsible for analyzing content and copyright cleansing
  * Now using Claude API for better performance and cost-effectiveness
+ * 
+ * Phase 2 優化（2026-02-01）：
+ * - 合併多個 LLM 調用為單一調用
+ * - 使用 Haiku 進行快速生成
+ * - 減少總體處理時間
  */
 
-import { getOpusAgent, ClaudeAgent } from './claudeAgent';
+import { getHaikuAgent, getSonnetAgent, ClaudeAgent, JSONSchema } from './claudeAgent';
 import { COPYWRITER_SKILL } from "./skillLibrary";
 import { getKeyInstructions, extractJsonSchema } from "./skillLoader";
 
@@ -28,9 +33,40 @@ export interface ContentAnalyzerResult {
   error?: string;
 }
 
+// Phase 2 優化：合併輸出的 JSON Schema
+const COMBINED_OUTPUT_SCHEMA: JSONSchema = {
+  type: "object",
+  properties: {
+    poeticTitle: { 
+      type: "string", 
+      description: "詩意化的行程標題，15-25 個中文字" 
+    },
+    title: { 
+      type: "string", 
+      description: "行銷標題，20-30 個中文字" 
+    },
+    description: { 
+      type: "string", 
+      description: "行程介紹，100-120 個中文字" 
+    },
+    heroSubtitle: { 
+      type: "string", 
+      description: "Hero 副標題，30-40 個中文字" 
+    },
+    highlights: {
+      type: "array",
+      items: { type: "string" },
+      description: "6-10 個行程亮點，每個 10-30 個中文字"
+    },
+  },
+  required: ["poeticTitle", "title", "description", "heroSubtitle", "highlights"],
+};
+
 /**
  * Content Analyzer Agent
  * Analyzes and rewrites content to ensure originality
+ * 
+ * Phase 2 優化：合併多個 LLM 調用為單一調用
  */
 export class ContentAnalyzerAgent {
   private skillInstructions: string;
@@ -41,64 +77,65 @@ export class ContentAnalyzerAgent {
     // Load SKILL.md instructions (only key sections for token optimization)
     this.skillInstructions = getKeyInstructions('ContentAnalyzerAgent');
     this.jsonSchema = extractJsonSchema('ContentAnalyzerAgent');
-    // Use Opus 4.5 for complex content analysis and creative writing
-    this.claudeAgent = getOpusAgent();
+    // Phase 2 優化：使用 Haiku 加速處理
+    this.claudeAgent = getHaikuAgent();
     console.log('[ContentAnalyzerAgent] SKILL loaded:', this.skillInstructions.length, 'chars');
-    console.log('[ContentAnalyzerAgent] Using Claude Opus 4.5 for content generation');
+    console.log('[ContentAnalyzerAgent] Using Claude 3 Haiku for fast content generation');
   }
+
   /**
    * Execute content analysis and copyright cleansing
+   * Phase 2 優化：合併多個步驟為單一 LLM 調用
    */
   async execute(rawData: any): Promise<ContentAnalyzerResult> {
-    console.log("[ContentAnalyzerAgent] Starting content analysis...");
+    const startTime = Date.now();
+    console.log("[ContentAnalyzerAgent] Starting optimized content analysis...");
     
     try {
-      // Step 1: Generate poetic title and highlights (Sipincollection style)
-      const { poeticTitle, highlights: poeticHighlights } = await this.generatePoeticTitle(rawData);
+      // Phase 2 優化：單一 LLM 調用生成所有內容
+      const combinedResult = await this.generateAllContent(rawData);
       
-      // Step 2: Rewrite title (marketing-focused, fallback)
-      const title = await this.rewriteTitle(rawData);
+      // Step 5: Generate key features (不需要 LLM)
+      const keyFeatures = this.generateKeyFeatures(rawData);
       
-      // Step 3: Rewrite description (100-150 words)
-      const description = await this.rewriteDescription(rawData);
+      // Step 6: Generate poetic content (不需要 LLM)
+      const poeticContent = this.generatePoeticContent(rawData);
       
-      // Step 4: Generate hero subtitle
-      const heroSubtitle = await this.generateHeroSubtitle(rawData);
-      
-      // Step 5: Use poetic highlights (from Step 1)
-      const highlights = poeticHighlights.length > 0 ? poeticHighlights : await this.generateHighlights(rawData);
-      
-      // Step 5: Generate key features
-      const keyFeatures = await this.generateKeyFeatures(rawData);
-      
-      // Step 6: Generate poetic content
-      const poeticContent = await this.generatePoeticContent(rawData);
-      
-      // Step 7: Verify originality
-      const originalityScore = await this.verifyOriginality({
-        title,
-        description,
-        heroSubtitle,
+      // Step 7: Verify originality (簡單計算)
+      const originalityScore = this.verifyOriginality({
+        title: combinedResult.title,
+        description: combinedResult.description,
+        heroSubtitle: combinedResult.heroSubtitle,
       });
       
-      console.log("[ContentAnalyzerAgent] Content analysis completed");
+      const elapsed = Date.now() - startTime;
+      console.log(`[ContentAnalyzerAgent] Content analysis completed in ${elapsed}ms`);
       console.log("[ContentAnalyzerAgent] Originality score:", originalityScore);
       
       return {
         success: true,
         data: {
-          poeticTitle, // 新增: 詩意化標題
-          title,
-          description,
-          heroSubtitle,
-          highlights,
+          poeticTitle: combinedResult.poeticTitle,
+          title: combinedResult.title,
+          description: combinedResult.description,
+          heroSubtitle: combinedResult.heroSubtitle,
+          highlights: combinedResult.highlights.map((h: string, i: number) => ({
+            id: i + 1,
+            image: "",
+            imageAlt: h,
+            title: h,
+            subtitle: i === 0 ? "STAY" : "EXPLORE",
+            description: h,
+            labelColor: "#F39C12",
+            labelPosition: "bottom-right",
+          })),
           keyFeatures,
           poeticContent,
-          poeticSubtitle: "", // TODO: 將由 PoeticAgent 生成
-          attractions: [], // TODO: 將由 AttractionAgent 生成
-          hotels: [], // TODO: 將由 HotelAgent 生成
-          meals: [], // TODO: 將由 MealAgent 生成
-          flights: {}, // TODO: 將由 FlightAgent 生成
+          poeticSubtitle: "",
+          attractions: [],
+          hotels: [],
+          meals: [],
+          flights: {},
           originalityScore,
         },
       };
@@ -110,380 +147,107 @@ export class ContentAnalyzerAgent {
       };
     }
   }
-  
+
   /**
-   * Generate poetic title and highlights (Sipincollection style) with JSON Schema
+   * Phase 2 優化：單一 LLM 調用生成所有內容
    */
-  private async generatePoeticTitle(rawData: any): Promise<{ poeticTitle: string; highlights: string[] }> {
+  private async generateAllContent(rawData: any): Promise<{
+    poeticTitle: string;
+    title: string;
+    description: string;
+    heroSubtitle: string;
+    highlights: string[];
+  }> {
     const destinationCountry = rawData.location?.destinationCountry || "";
     const destinationCity = rawData.location?.destinationCity || "";
     const days = rawData.duration?.days || "";
     const nights = rawData.duration?.nights || "";
+    const originalTitle = rawData.basicInfo?.title || "";
+    const originalDescription = rawData.basicInfo?.description || "";
     const highlights = rawData.highlights || [];
     const hotelGrade = rawData.accommodation?.hotelGrade || "";
     const specialExperiences = rawData.specialExperiences || [];
     
-    // Data validation
-    if (!destinationCity && !destinationCountry) {
-      console.warn("[ContentAnalyzerAgent] Insufficient data for poetic title generation");
-      return { poeticTitle: "精選行程", highlights: [] }; // Fallback
-    }
-    
-    // Use SKILL.md instructions instead of hardcoded prompt
-    const systemPrompt = this.skillInstructions || `你是一位資深旅遊雜誌主編 (Senior Travel Magazine Editor)，專門為旅遊業撰寫有資訊量的銷售標題。
+    // 簡化的系統提示
+    const systemPrompt = `你是資深旅遊雜誌主編，專門撰寫有吸引力的旅遊文案。
 
-你的標題風格特點:
-1. 使用精煉的形容詞修飾目的地或體驗 (例如: 雅奢、秘境、極致)
-2. 加入動詞增加動感 (例如: 尋蹤、漫遊、走進、探索)
-3. 使用比喻和意象,讓標題更有畫面感
-4. 保持簡潔,15-25 個中文字
-5. 突出行程的核心賣點和獨特性
+風格要求：
+1. 使用精煉的形容詞（雅奢、秘境、極致）
+2. 加入動詞增加動感（尋蹤、漫遊、探索）
+3. 使用感官細節描寫
+4. 保持簡潔專業
 
-參考範例:
-- "北海道二世谷雅奢6日" (強調奢華體驗)
-- "秘境尋蹤 中島漫遊" (強調神秘探索)
-- "京都禪意之旅 米其林懷石料理" (強調文化與美食)
-- "托斯卡尼艷陽下 品味義式慢活" (強調生活方式)
+禁用詞彙：靈魂、洗滯、光影、呵喃、心靈、深度對話、完美融合`;
 
-禁用詞彙 (Negative Constraints):
-- 禁止使用：靈魂、洗滯、光影、呵喃、心靈、深度對話、完美融合
-- 避免過於哲學化或抽象的詞彙
+    const userPrompt = `請根據以下資訊生成旅遊文案：
 
-請根據行程資訊,生成一個符合上述風格的詩意化標題。`;
-    
-    const userPrompt = `請根據以下資訊生成一個詩意化的行程標題和亮點:
+目的地：${destinationCity}, ${destinationCountry}
+天數：${days}天${nights}夜
+原標題：${originalTitle}
+原描述：${originalDescription}
+行程亮點：${highlights.slice(0, 5).join("、")}
+飯店等級：${hotelGrade}
+特色體驗：${specialExperiences.join("、")}
 
-目的地國家: ${destinationCountry}
-目的地城市: ${destinationCity}
-天數: ${days}天${nights}夜
-行程亮點: ${highlights.slice(0, 3).join("、")}
-飯店等級: ${hotelGrade}
-特色體驗: ${specialExperiences.join("、")}
+請生成：
+1. poeticTitle: 詩意化標題（15-25字）
+2. title: 行銷標題（20-30字）
+3. description: 行程介紹（100-120字）
+4. heroSubtitle: Hero副標題（30-40字）
+5. highlights: 6-10個行程亮點（每個10-30字）`;
 
-範例風格:
-- "北海道二世谷雅奢6日" (強調奢華)
-- "秘境尋蹤 中島漫遊" (強調探索)
-
-請以 JSON 格式回傳:
-{
-  "poeticTitle": "詩意化的行程標題,15-25 個中文字",
-  "highlights": ["亮點1", "亮點2", ...],  // 6-10 個行程亮點,每個 10-30 個中文字
-  "reasoning": "標題設計的理由",
-  "keywords": ["關鍵詞1", "關鍵詞2", ...]
-}`;
-    
     try {
-      const result = await this.claudeAgent.extractStructuredData(
+      const response = await this.claudeAgent.sendStructuredMessage<{
+        poeticTitle: string;
+        title: string;
+        description: string;
+        heroSubtitle: string;
+        highlights: string[];
+      }>(
         userPrompt,
-        {
-          description: '從旅遊行程資訊中生成詩意化標題和亮點',
-          fields: {
-            poeticTitle: { type: 'string', description: '詩意化的行程標題,15-25 個中文字' },
-            highlights: { type: 'array', description: '6-10 個行程亮點,每個 10-30 個中文字的純文字描述' },
-            reasoning: { type: 'string', description: '標題設計的理由' },
-            keywords: { type: 'array', description: '標題中使用的關鍵詞' },
-          },
-        },
+        COMBINED_OUTPUT_SCHEMA,
         {
           systemPrompt,
           maxTokens: 2000,
+          temperature: 0.7,
+          schemaName: 'content_analysis_output',
+          schemaDescription: '旅遊文案生成輸出',
         }
       );
-      
-      if (!result.success || !result.data) {
-        throw new Error(result.error || 'Failed to generate poetic title');
+
+      if (!response.success || !response.data) {
+        throw new Error(response.error || 'Failed to generate content');
       }
-      
-      const poeticTitle = result.data.poeticTitle;
-      const highlightsArray = result.data.highlights || [];
-      
-      // Validate length (寬容檢查：±30% 誤差，15-30 字 → 10-39 字)
-      if (poeticTitle && poeticTitle.length >= 10 && poeticTitle.length <= 39) {
-        console.log(`[ContentAnalyzerAgent] Poetic title generated: ${poeticTitle}`);
-        console.log(`[ContentAnalyzerAgent] Highlights count: ${highlightsArray.length}`);
-        console.log(`[ContentAnalyzerAgent] Reasoning: ${result.data.reasoning}`);
-        return { poeticTitle, highlights: highlightsArray };
-      }
-      
-      // If too long, truncate
-      if (poeticTitle && poeticTitle.length > 39) {
-        console.warn(`[ContentAnalyzerAgent] Poetic title too long (${poeticTitle.length} chars), truncating...`);
-        return { poeticTitle: poeticTitle.substring(0, 30), highlights: highlightsArray };
-      }
-      
-      // If too short, use fallback
-      console.warn(`[ContentAnalyzerAgent] Poetic title too short, using fallback`);
+
+      console.log(`[ContentAnalyzerAgent] Generated poetic title: ${response.data.poeticTitle}`);
+      console.log(`[ContentAnalyzerAgent] Generated ${response.data.highlights?.length || 0} highlights`);
+
       return {
-        poeticTitle: `${destinationCity}${days}日精選之旅`,
-        highlights: []
+        poeticTitle: response.data.poeticTitle || `${destinationCity}${days}日精選之旅`,
+        title: response.data.title || originalTitle || "精選行程",
+        description: response.data.description || originalDescription || "探索精彩行程，體驗難忘旅程。",
+        heroSubtitle: response.data.heroSubtitle || `${destinationCity}深度遊．${days}天${nights}夜`,
+        highlights: response.data.highlights || highlights.slice(0, 6),
       };
-      
     } catch (error) {
-      console.error("[ContentAnalyzerAgent] Poetic title generation failed:", error);
-      // Fallback: simple template
+      console.error("[ContentAnalyzerAgent] Combined generation failed:", error);
+      
+      // Fallback
       return {
         poeticTitle: `${destinationCity}${days}日精選之旅`,
-        highlights: []
+        title: originalTitle || "精選行程",
+        description: originalDescription || "探索精彩行程，體驗難忘旅程。",
+        heroSubtitle: `${destinationCity}深度遊．${days}天${nights}夜`,
+        highlights: highlights.slice(0, 6),
       };
     }
-  }
-  
-  /**
-   * Rewrite title as marketing copy with retry mechanism
-   */
-  private async rewriteTitle(rawData: any): Promise<string> {
-    const originalTitle = rawData.basicInfo?.title || "";
-    const destination = rawData.location?.destinationCity || rawData.location?.destinationCountry || "";
-    const days = rawData.duration?.days || "";
-    
-    // Data validation
-    if (!originalTitle && !destination) {
-      console.warn("[ContentAnalyzerAgent] Insufficient data for title generation");
-      return "精選行程"; // Fallback
-    }
-    
-    const userPrompt = `請根據以下資訊重新撰寫一個簡潔、吸引人的行銷標題：
-
-原標題：${originalTitle}
-目的地：${destination}
-天數：${days}天
-
-範例：「北海道雪國秘境 5 日｜米其林溫泉旅宿 × 洞爺湖心中島探索」
-
-只回傳標題文字，不要其他說明。`;
-    
-    // Retry up to 2 times
-    for (let attempt = 1; attempt <= 2; attempt++) {
-      try {
-        const result = await this.claudeAgent.sendMessage(userPrompt, {
-          systemPrompt: COPYWRITER_SKILL,
-          maxTokens: 200,
-          temperature: 0.7,
-        });
-        
-        if (!result.success || !result.content) {
-          throw new Error(result.error || 'Failed to generate title');
-        }
-        
-        const title = result.content.trim();
-        
-        // Validate word count (寬容檢查：±30% 誤差，20-30 字 → 14-39 字)
-        if (title && title.length >= 14 && title.length <= 39) {
-          return title;
-        }
-        
-        // If word count is invalid, force truncate or retry
-        if (title && title.length > 39) {
-          console.warn(`[ContentAnalyzerAgent] Title too long (${title.length} chars), truncating...`);
-          return title.substring(0, 30);
-        }
-        
-        console.warn(`[ContentAnalyzerAgent] Title too short or invalid, attempt ${attempt}/2`);
-      } catch (error) {
-        console.error(`[ContentAnalyzerAgent] Title generation failed, attempt ${attempt}/2:`, error);
-      }
-    }
-    
-    // Fallback: use original title or default
-    return originalTitle || "精選行程";
-  }
-  
-  /**
-   * Rewrite description (100-120 words) with retry mechanism
-   */
-  private async rewriteDescription(rawData: any): Promise<string> {
-    const originalDescription = rawData.basicInfo?.description || "";
-    const destination = rawData.location?.destinationCity || rawData.location?.destinationCountry || "";
-    const highlights = rawData.highlights || [];
-    
-    // Data validation
-    if (!originalDescription && !destination && highlights.length === 0) {
-      console.warn("[ContentAnalyzerAgent] Insufficient data for description generation");
-      return "探索精彩行程，體驗難忘旅程。"; // Fallback
-    }
-    
-    const userPrompt = `請根據以下資訊重新撰寫一段精彩的行程介紹：
-
-原描述：${originalDescription}
-目的地：${destination}
-行程亮點：${highlights.join("、")}
-
-風格要求：
-1. 使用感官細節描寫，但不要過度哲學化
-2. 場景化敘事，但保持具體景點名稱
-3. 喚起情緒共鳴，但不要延伸到心靈層面
-4. 長度控制在 100-120 字
-
-禁用詞彙 (Negative Constraints):
-- 禁止使用：靈魂、洗滯、光影、呵喃、心靈、深度對話、完美融合
-- 避免過於哲學化或抽象的詞彙
-
-範例：「在北海道的雪白世界中，踩著雪地吱吱作響。入住洞爺湖米其林一星鑰旅宿，泡在露天溫泉看雪花飄落。搭乘遊船探索中島，欣賞湖光山色。前往二世谷滑雪度假村，體驗粉雪飄落的刺激。參觀札幌市區，品嚐剛捕撈的海膽在舌尖融化。」
-
-只回傳介紹文字，不要其他說明。`;
-    
-    // Retry up to 2 times
-    for (let attempt = 1; attempt <= 2; attempt++) {
-      try {
-        const result = await this.claudeAgent.sendMessage(userPrompt, {
-          systemPrompt: COPYWRITER_SKILL,
-          maxTokens: 500,
-          temperature: 0.7,
-        });
-        
-        if (!result.success || !result.content) {
-          throw new Error(result.error || 'Failed to generate description');
-        }
-        
-        const description = result.content.trim();
-        
-        // Validate word count (寬容檢查：±30% 誤差，100-120 字 → 70-156 字)
-        if (description && description.length >= 70 && description.length <= 156) {
-          return description;
-        }
-        
-        // If word count is invalid, force truncate or retry
-        if (description && description.length > 156) {
-          console.warn(`[ContentAnalyzerAgent] Description too long (${description.length} chars), truncating...`);
-          return description.substring(0, 120);
-        }
-        
-        console.warn(`[ContentAnalyzerAgent] Description too short or invalid, attempt ${attempt}/2`);
-      } catch (error) {
-        console.error(`[ContentAnalyzerAgent] Description generation failed, attempt ${attempt}/2:`, error);
-      }
-    }
-    
-    // Fallback: use original description or default
-    return originalDescription || "探索精彩行程，體驗難忘旅程。";
-  }
-  
-  /**
-   * Generate hero subtitle (30-40 words) with retry mechanism
-   */
-  private async generateHeroSubtitle(rawData: any): Promise<string> {
-    const hotelGrade = rawData.accommodation?.hotelGrade || "";
-    const destinationCity = rawData.location?.destinationCity || "";
-    const days = rawData.duration?.days || "";
-    const nights = rawData.duration?.nights || "";
-    const highlights = rawData.highlights?.slice(0, 3) || [];
-    
-    // Data validation
-    if (highlights.length === 0 && !destinationCity) {
-      console.warn("[ContentAnalyzerAgent] Insufficient data for hero subtitle generation");
-      return "精選行程．深度體驗"; // Fallback
-    }
-    
-    const userPrompt = `請根據以下資訊生成一個精彩的 Hero 副標題：
-
-目的地：${destinationCity}
-飯店等級：${hotelGrade}
-天數：${days}天${nights}夜
-行程亮點：${highlights.join("、")}
-
-範例：「米其林溫泉旅宿．洞爺湖心中島探索．二世谷秘境漫遊」
-
-只回傳副標題文字，不要其他說明。`;
-    
-    // Retry up to 2 times
-    for (let attempt = 1; attempt <= 2; attempt++) {
-      try {
-        const result = await this.claudeAgent.sendMessage(userPrompt, {
-          systemPrompt: COPYWRITER_SKILL,
-          maxTokens: 200,
-          temperature: 0.7,
-        });
-        
-        if (!result.success || !result.content) {
-          throw new Error(result.error || 'Failed to generate hero subtitle');
-        }
-        
-        const subtitle = result.content.trim();
-        
-        // Validate word count (寬容檢查：±30% 誤差，30-40 字 → 21-52 字)
-        if (subtitle && subtitle.length >= 21 && subtitle.length <= 52) {
-          return subtitle;
-        }
-        
-        // If word count is invalid, force truncate or retry
-        if (subtitle && subtitle.length > 52) {
-          console.warn(`[ContentAnalyzerAgent] Hero subtitle too long (${subtitle.length} chars), truncating...`);
-          return subtitle.substring(0, 40);
-        }
-        
-        console.warn(`[ContentAnalyzerAgent] Hero subtitle too short or invalid, attempt ${attempt}/2`);
-      } catch (error) {
-        console.error(`[ContentAnalyzerAgent] Hero subtitle generation failed, attempt ${attempt}/2:`, error);
-      }
-    }
-    
-    // Fallback: use highlights or default
-    if (highlights.length > 0) {
-      return highlights.join("．");
-    }
-    return `${hotelGrade ? hotelGrade + "．" : ""}${destinationCity}深度遊．${days}天${nights}夜`;
-  }
-  
-  /**
-   * Generate highlights (3-5 items)
-   */
-  private async generateHighlights(rawData: any): Promise<any[]> {
-    const highlights = rawData.highlights || [];
-    const accommodation = rawData.accommodation || {};
-    const attractions = rawData.attractions || [];
-    
-    // Transform to new structure
-    const result: any[] = [];
-    
-    // Add accommodation highlight
-    if (accommodation.hotelName) {
-      result.push({
-        id: 1,
-        image: "", // Will be generated by Image Generation Agent
-        imageAlt: `${accommodation.hotelName}`,
-        title: accommodation.hotelName,
-        subtitle: "STAY",
-        description: accommodation.hotelDescription || `入住${accommodation.hotelGrade || ""}酒店，享受舒適與便利`,
-        labelColor: "#F39C12",
-        labelPosition: "bottom-right",
-      });
-    }
-    
-    // Add attraction highlights
-    attractions.slice(0, 2).forEach((attraction: any, index: number) => {
-      result.push({
-        id: index + 2,
-        image: "", // Will be generated by Image Generation Agent
-        imageAlt: attraction.name || `景點 ${index + 1}`,
-        title: attraction.name || `特色景點 ${index + 1}`,
-        subtitle: "EXPLORE",
-        description: attraction.description || "探索當地特色景點",
-        labelColor: "#F39C12",
-        labelPosition: "bottom-right",
-      });
-    });
-    
-    // Ensure at least 3 highlights
-    while (result.length < 3) {
-      result.push({
-        id: result.length + 1,
-        image: "",
-        imageAlt: `行程亮點 ${result.length + 1}`,
-        title: highlights[result.length - 1] || `精彩體驗 ${result.length + 1}`,
-        subtitle: "EXPERIENCE",
-        description: "深度體驗當地文化與風情",
-        labelColor: "#F39C12",
-        labelPosition: "bottom-right",
-      });
-    }
-    
-    return result.slice(0, 5); // Max 5 highlights
   }
   
   /**
    * Generate key features (vertical text layout)
+   * 不需要 LLM，直接生成
    */
-  private async generateKeyFeatures(rawData: any): Promise<any[]> {
+  private generateKeyFeatures(rawData: any): any[] {
     const accommodation = rawData.accommodation || {};
     const destination = rawData.location?.destinationCity || rawData.location?.destinationCountry || "";
     
@@ -492,7 +256,7 @@ export class ContentAnalyzerAgent {
         id: 1,
         keyword: "雅奢旅宿",
         keywordStyle: "vertical",
-        image: "", // Will be generated by Image Generation Agent
+        image: "",
         imageAlt: `${destination}雅奢旅宿`,
         phrases: [
           "覽秘境無邊風月",
@@ -528,8 +292,9 @@ export class ContentAnalyzerAgent {
   
   /**
    * Generate poetic content
+   * 不需要 LLM，直接生成
    */
-  private async generatePoeticContent(rawData: any): Promise<any> {
+  private generatePoeticContent(rawData: any): any {
     const destination = rawData.location?.destinationCity || rawData.location?.destinationCountry || "";
     const accommodation = rawData.accommodation || {};
     
@@ -546,15 +311,13 @@ export class ContentAnalyzerAgent {
   
   /**
    * Verify originality (simple check)
+   * 不需要 LLM，直接計算
    */
-  private async verifyOriginality(content: {
+  private verifyOriginality(content: {
     title: string;
     description: string;
     heroSubtitle: string;
-  }): Promise<number> {
-    // Simple originality check based on content length and uniqueness
-    // In production, this could be enhanced with more sophisticated checks
-    
+  }): number {
     const totalLength = content.title.length + content.description.length + content.heroSubtitle.length;
     
     // Basic score: longer content = higher originality
@@ -569,6 +332,6 @@ export class ContentAnalyzerAgent {
     
     score -= commonCount * 5;
     
-    return Math.max(60, Math.min(100, score)); // Ensure score is between 60-100
+    return Math.max(60, Math.min(100, score));
   }
 }
