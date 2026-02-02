@@ -32,12 +32,12 @@ export function LanguageSwitcher() {
           <ChevronDown className="h-3 w-3 ml-1" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-36 bg-white border-2 border-black rounded-none shadow-none">
+      <DropdownMenuContent align="end" className="w-36 bg-white border border-gray-200 rounded-lg shadow-lg">
         {languages.map((lang) => (
           <DropdownMenuItem
             key={lang.code}
             onClick={() => setLanguage(lang.code)}
-            className={`cursor-pointer rounded-none ${
+            className={`cursor-pointer rounded-md ${
               language === lang.code 
                 ? 'bg-black text-white' 
                 : 'hover:bg-gray-100'
@@ -73,12 +73,12 @@ export function CurrencySwitcher() {
           <ChevronDown className="h-3 w-3 ml-1" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-32 bg-white border-2 border-black rounded-none shadow-none">
+      <DropdownMenuContent align="end" className="w-32 bg-white border border-gray-200 rounded-lg shadow-lg">
         {currencies.map((curr) => (
           <DropdownMenuItem
             key={curr.code}
             onClick={() => setCurrency(curr.code)}
-            className={`cursor-pointer rounded-none ${
+            className={`cursor-pointer rounded-md ${
               currency === curr.code 
                 ? 'bg-black text-white' 
                 : 'hover:bg-gray-100'
@@ -88,7 +88,7 @@ export function CurrencySwitcher() {
             {curr.code}
           </DropdownMenuItem>
         ))}
-        <DropdownMenuSeparator className="bg-black" />
+        <DropdownMenuSeparator className="bg-gray-200" />
         <div className="px-2 py-1.5 text-[10px] text-gray-500 leading-tight">
           ※ 轉換價格僅供參考
         </div>
