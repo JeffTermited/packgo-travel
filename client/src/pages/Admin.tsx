@@ -1,7 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Home, LogOut, LayoutDashboard, Plane, ShoppingCart, MessageSquare, Star } from "lucide-react";
+import { Home, LogOut, LayoutDashboard, Plane, ShoppingCart, MessageSquare, Star, Brain } from "lucide-react";
 import { useEffect } from "react";
 import { useLocation } from "wouter";
 
@@ -11,6 +11,7 @@ import ToursTab from "@/components/admin/ToursTab";
 import BookingsTab from "@/components/admin/BookingsTab";
 import InquiriesTab from "@/components/admin/InquiriesTab";
 import ReviewsTab from "@/components/admin/ReviewsTab";
+import SkillsTab from "@/components/admin/SkillsTab";
 
 export default function Admin() {
   const { user, loading, isAuthenticated, logout } = useAuth();
@@ -98,6 +99,10 @@ export default function Admin() {
               <Star className="h-4 w-4 mr-2" />
               評價管理
             </TabsTrigger>
+            <TabsTrigger value="skills" className="rounded-full">
+              <Brain className="h-4 w-4 mr-2" />
+              技能管理
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="dashboard">
@@ -118,6 +123,10 @@ export default function Admin() {
 
           <TabsContent value="reviews">
             <ReviewsTab />
+          </TabsContent>
+
+          <TabsContent value="skills">
+            <SkillsTab />
           </TabsContent>
         </Tabs>
       </main>
