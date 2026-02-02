@@ -695,9 +695,9 @@ export default function SearchResults() {
                             {tour.title}
                           </h3>
 
-                          {/* 智能標籤 */}
-                          <div className="flex flex-wrap gap-1.5 mb-4">
-                            {tags.map((tag, idx) => {
+                          {/* 智能標籤 - 最多顯示3個，超過顯示... */}
+                          <div className="flex flex-wrap gap-1.5 mb-4 h-[26px] overflow-hidden">
+                            {tags.slice(0, 3).map((tag, idx) => {
                               const Icon = tag.icon;
                               return (
                                 <Badge 
@@ -710,6 +710,14 @@ export default function SearchResults() {
                                 </Badge>
                               );
                             })}
+                            {tags.length > 3 && (
+                              <Badge 
+                                variant="secondary" 
+                                className="bg-gray-100 text-gray-500 text-xs font-normal px-2 py-0.5"
+                              >
+                                +{tags.length - 3}
+                              </Badge>
+                            )}
                           </div>
 
                           {/* 價格 */}
