@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Send, Loader2, User, ThumbsUp, ThumbsDown, Sparkles, X, Minimize2 } from "lucide-react";
@@ -157,6 +158,11 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg h-[600px] flex flex-col p-0 border-2 border-black rounded-none gap-0 overflow-hidden">
+        {/* Hidden DialogTitle for accessibility */}
+        <VisuallyHidden>
+          <DialogTitle>AI 旅遊顧問對話框</DialogTitle>
+        </VisuallyHidden>
+        
         {/* Header with Animated Character */}
         <div className="bg-black text-white px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
