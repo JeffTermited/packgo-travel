@@ -33,12 +33,25 @@ export interface PartialResults {
 /**
  * Job progress structure
  */
+/**
+ * 技能學習通知
+ */
+export interface SkillLearned {
+  name: string;
+  category: string;
+  timestamp: number;
+}
+
+/**
+ * Job progress structure
+ */
 export interface TourGenerationProgress {
   step: string;
   progress: number; // 0-100
   message: string;
   timestamp: number;
   partialResults?: PartialResults;
+  skillsLearned?: SkillLearned[];
 }
 
 /**

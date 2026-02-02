@@ -37,6 +37,7 @@ import SearchResults from "./pages/SearchResults";
 import Tours from "./pages/Tours";
 import RegionPage from "./pages/RegionPage";
 import CountryPage from "./pages/CountryPage";
+import CruisePage from "./pages/CruisePage";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentFailure from "./pages/PaymentFailure";
 
@@ -48,6 +49,7 @@ function Router() {
       <Route path={"/search"} component={SearchResults} />
       <Route path={"/destinations/:region"} component={RegionPage} />
       <Route path={"/destinations/:region/:country"} component={CountryPage} />
+      <Route path={"/cruises"} component={CruisePage} />
       <Route path={"/tours"} component={Tours} />
       <Route path={"/login"} component={Login} />
       <Route path={"/forgot-password"} component={ForgotPassword} />

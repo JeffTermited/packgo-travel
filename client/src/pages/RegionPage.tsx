@@ -83,15 +83,15 @@ const countryImages: Record<string, string> = {
   "緬甸": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800",
   "尼泊爾": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=800",
   "斯里蘭卡": "https://images.unsplash.com/photo-1586523969990-d8e3c tried-a5f9-4b8a-b3e4-8c8c8c8c8c8c?w=800",
-  // 歐洲
-  "英國": "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=800",
-  "法國": "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800",
-  "德國": "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=800",
-  "義大利": "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=800",
-  "西班牙": "https://images.unsplash.com/photo-1543783207-ec64e4d95325?w=800",
-  "瑞士": "https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?w=800",
-  "荷蘭": "https://images.unsplash.com/photo-1534351590666-13e3e96b5017?w=800",
-  "希臘": "https://images.unsplash.com/photo-1533105079780-92b9be482077?w=800",
+  // 歐洲 - 使用本地高品質圖片
+  "英國": "/images/countries/uk.jpg",
+  "法國": "/images/countries/france.jpg",
+  "德國": "/images/countries/germany.jpg",
+  "義大利": "/images/countries/italy.jpg",
+  "西班牙": "/images/countries/spain.jpg",
+  "瑞士": "/images/countries/switzerland.jpg",
+  "荷蘭": "/images/countries/netherlands.jpg",
+  "希臘": "/images/countries/greece.jpg",
   "捷克": "https://images.unsplash.com/photo-1519677100203-a0e668c92439?w=800",
   "奧地利": "https://images.unsplash.com/photo-1516550893923-42d28e5677af?w=800",
   "巴爾幹半島": "https://images.unsplash.com/photo-1555990538-1e6c0c1b1b0c?w=800",
@@ -100,30 +100,30 @@ const countryImages: Record<string, string> = {
   "北歐": "https://images.unsplash.com/photo-1507272931001-fc06c17e4f43?w=800",
   "冰島": "https://images.unsplash.com/photo-1504893524553-b855bce32c67?w=800",
   "克羅埃西亞": "https://images.unsplash.com/photo-1555990538-1e6c0c1b1b0c?w=800",
-  // 大洋洲
-  "澳洲": "https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?w=800",
+  // 大洋洲 - 使用本地高品質圖片
+  "澳洲": "/images/countries/australia.jpg",
   "紐西蘭": "https://images.unsplash.com/photo-1507699622108-4be3abd695ad?w=800",
-  // 美洲
-  "美國": "https://images.unsplash.com/photo-1485738422979-f5c462d49f74?w=800",
-  "加拿大": "https://images.unsplash.com/photo-1517935706615-2717063c2225?w=800",
+  // 美洲 - 使用本地高品質圖片
+  "美國": "/images/countries/usa.jpg",
+  "加拿大": "/images/countries/canada.jpg",
   "墨西哥": "https://images.unsplash.com/photo-1518105779142-d975f22f1b0a?w=800",
-  "巴西": "https://images.unsplash.com/photo-1483729558449-99ef09a8c325?w=800",
+  "巴西": "/images/countries/brazil.jpg",
   "阿根廷": "https://images.unsplash.com/photo-1612294037637-ec328d0e075e?w=800",
   "秘魯": "https://images.unsplash.com/photo-1526392060635-9d6019884377?w=800",
   "智利": "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800",
   "古巴": "https://images.unsplash.com/photo-1500759285222-a95626b934cb?w=800",
-  // 非洲
-  "埃及": "https://images.unsplash.com/photo-1539650116574-8efeb43e2750?w=800",
+  // 非洲 - 使用本地高品質圖片
+  "埃及": "/images/countries/egypt.jpg",
   "南非": "https://images.unsplash.com/photo-1484318571209-661cf29a69c3?w=800",
   "摩洛哥": "https://images.unsplash.com/photo-1489749798305-4fea3ae63d43?w=800",
   "肯亞": "https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?w=800",
   "坦尚尼亞": "https://images.unsplash.com/photo-1516426122078-c23e76319801?w=800",
-  // 中東
+  // 中東 - 使用本地高品質圖片
   "阿聯酋": "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800",
   "杜拜": "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800",
-  "約旦": "https://images.unsplash.com/photo-1548786811-dd6e453ccca7?w=800",
+  "約旦": "/images/countries/jordan.jpg",
   "以色列": "https://images.unsplash.com/photo-1544967082-d9d25d867d66?w=800",
-  "土耳其": "https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?w=800",
+  "土耳其": "/images/countries/turkey.jpg",
 };
 
 export default function RegionPage() {

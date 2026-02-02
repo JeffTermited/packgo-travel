@@ -693,6 +693,8 @@ export class MasterAgent {
       
       // 應用學習系統的技能生成額外標籤
       let learnedTags: string[] = [];
+      let appliedSkillNames: string[] = [];
+      onProgress?.('applying_skills', 85);
       try {
         const contentForSkills = [
           analyzedContent.title,
@@ -707,8 +709,11 @@ export class MasterAgent {
           price: rawData.pricing?.price,
         });
         learnedTags = skillResult.labels;
+        appliedSkillNames = skillResult.labels; // 用於通知
         if (learnedTags.length > 0) {
           console.log(`[MasterAgent] Applied ${skillResult.appliedSkills.length} learned skills, generated tags: ${learnedTags.join(', ')}`);
+          // 發送技能學習通知進度
+          onProgress?.('learning_new_skills', 88);
         }
       } catch (error) {
         console.warn(`[MasterAgent] Failed to apply learned skills:`, error);
