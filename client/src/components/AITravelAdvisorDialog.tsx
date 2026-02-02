@@ -1,14 +1,17 @@
 import { useState, useRef, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Send, Loader2, Bot, User } from "lucide-react";
+import { Send, Loader2, User, ThumbsUp, ThumbsDown, Sparkles, X, Minimize2 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { Streamdown } from "streamdown";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
+  triggeredSkills?: Array<{ skillId: number; skillName: string; confidence: number }>;
+  usageLogIds?: number[];
+  feedbackGiven?: "positive" | "negative" | null;
 }
 
 interface AITravelAdvisorDialogProps {
@@ -17,6 +20,7 @@ interface AITravelAdvisorDialogProps {
 }
 
 export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAdvisorDialogProps) {
+  const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
@@ -27,13 +31,15 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const chatMutation = trpc.ai.chat.useMutation({
-    onSuccess: (data: { response: string | any[] }) => {
-      const responseContent = typeof data.response === 'string' ? data.response : JSON.stringify(data.response);
+    onSuccess: (data) => {
       setMessages((prev) => [
         ...prev,
         {
           role: "assistant",
-          content: responseContent,
+          content: typeof data.response === 'string' ? data.response : JSON.stringify(data.response),
+          triggeredSkills: data.triggeredSkills,
+          usageLogIds: data.usageLogIds,
+          feedbackGiven: null,
         },
       ]);
     },
@@ -45,6 +51,12 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
           content: "抱歉，我遇到了一些問題。請稍後再試。",
         },
       ]);
+    },
+  });
+
+  const feedbackMutation = trpc.ai.recordFeedback.useMutation({
+    onSuccess: () => {
+      console.log("感謝您的回饋！");
     },
   });
 
@@ -62,7 +74,6 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
     const userMessage = input.trim();
     setInput("");
 
-    // Add user message
     setMessages((prev) => [
       ...prev,
       {
@@ -71,10 +82,27 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
       },
     ]);
 
-    // Send to AI
     chatMutation.mutate({
       message: userMessage,
-      conversationHistory: messages,
+      conversationHistory: messages.map(m => ({ role: m.role, content: m.content })),
+      sessionId,
+    });
+  };
+
+  const handleFeedback = (messageIndex: number, feedback: "positive" | "negative") => {
+    const message = messages[messageIndex];
+    if (!message.usageLogIds || message.usageLogIds.length === 0) return;
+    if (message.feedbackGiven) return;
+
+    setMessages((prev) => 
+      prev.map((m, i) => 
+        i === messageIndex ? { ...m, feedbackGiven: feedback } : m
+      )
+    );
+
+    feedbackMutation.mutate({
+      usageLogIds: message.usageLogIds,
+      feedback,
     });
   };
 
@@ -87,74 +115,164 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl h-[600px] flex flex-col p-0">
-        <DialogHeader className="px-6 py-4 border-b">
-          <DialogTitle className="flex items-center gap-2">
-            <Bot className="h-5 w-5 text-primary" />
-            AI 旅遊顧問
-          </DialogTitle>
-        </DialogHeader>
-
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
-          {messages.map((message, index) => (
-            <div
-              key={index}
-              className={`flex gap-3 ${message.role === "user" ? "justify-end" : "justify-start"}`}
+      <DialogContent className="max-w-lg h-[600px] flex flex-col p-0 border-2 border-black rounded-none gap-0 overflow-hidden">
+        {/* Header with Character */}
+        <div className="bg-black text-white px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-white flex items-center justify-center overflow-hidden">
+              <img
+                src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663159191204/bJsbScmQpKmVdhut.png"
+                alt="AI 旅遊顧問"
+                className="w-9 h-9 object-contain"
+              />
+            </div>
+            <div>
+              <h3 className="font-bold text-base">AI 旅遊顧問</h3>
+              <p className="text-xs text-gray-300">隨時為您服務</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0 text-white hover:bg-white/20"
+              onClick={() => onOpenChange(false)}
             >
-              {message.role === "assistant" && (
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Bot className="h-5 w-5 text-primary" />
-                </div>
-              )}
+              <Minimize2 className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0 text-white hover:bg-white/20"
+              onClick={() => onOpenChange(false)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+
+        {/* Messages Area */}
+        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 bg-gray-50">
+          {messages.map((message, index) => (
+            <div key={index}>
               <div
-                className={`max-w-[70%] rounded-lg px-4 py-3 ${
-                  message.role === "user"
-                    ? "bg-black text-white"
-                    : "bg-gray-100 text-gray-900"
-                }`}
+                className={`flex gap-3 ${message.role === "user" ? "justify-end" : "justify-start"}`}
               >
-                {message.role === "assistant" ? (
-                  <Streamdown>{message.content}</Streamdown>
-                ) : (
-                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                {message.role === "assistant" && (
+                  <div className="flex-shrink-0 w-8 h-8 bg-white border border-black flex items-center justify-center overflow-hidden">
+                    <img
+                      src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663159191204/bJsbScmQpKmVdhut.png"
+                      alt="AI"
+                      className="w-7 h-7 object-contain"
+                    />
+                  </div>
+                )}
+                <div
+                  className={`max-w-[75%] px-4 py-3 ${
+                    message.role === "user"
+                      ? "bg-black text-white"
+                      : "bg-white border-2 border-black text-black"
+                  }`}
+                >
+                  {message.role === "assistant" ? (
+                    <div className="text-sm prose prose-sm max-w-none">
+                      <Streamdown>{message.content}</Streamdown>
+                    </div>
+                  ) : (
+                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                  )}
+                </div>
+                {message.role === "user" && (
+                  <div className="flex-shrink-0 w-8 h-8 bg-black text-white flex items-center justify-center">
+                    <User className="h-5 w-5" />
+                  </div>
                 )}
               </div>
-              {message.role === "user" && (
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-black text-white flex items-center justify-center">
-                  <User className="h-5 w-5" />
+              
+              {/* Triggered Skills & Feedback */}
+              {message.role === "assistant" && index > 0 && (
+                <div className="ml-11 mt-2 flex flex-wrap items-center gap-2">
+                  {message.triggeredSkills && message.triggeredSkills.length > 0 && (
+                    <div className="flex items-center gap-1 text-xs text-gray-500 bg-gray-100 px-2 py-1">
+                      <Sparkles className="h-3 w-3" />
+                      <span>
+                        {message.triggeredSkills.map(s => s.skillName).join(", ")}
+                      </span>
+                    </div>
+                  )}
+                  
+                  {message.usageLogIds && message.usageLogIds.length > 0 && (
+                    <div className="flex items-center gap-1 ml-auto">
+                      <span className="text-xs text-gray-400 mr-1">這個回答有幫助嗎？</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className={`h-7 w-7 p-0 border ${
+                          message.feedbackGiven === "positive" 
+                            ? "bg-black text-white border-black" 
+                            : "border-gray-300 text-gray-500 hover:border-black hover:text-black"
+                        }`}
+                        onClick={() => handleFeedback(index, "positive")}
+                        disabled={!!message.feedbackGiven || feedbackMutation.isPending}
+                      >
+                        <ThumbsUp className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className={`h-7 w-7 p-0 border ${
+                          message.feedbackGiven === "negative" 
+                            ? "bg-black text-white border-black" 
+                            : "border-gray-300 text-gray-500 hover:border-black hover:text-black"
+                        }`}
+                        onClick={() => handleFeedback(index, "negative")}
+                        disabled={!!message.feedbackGiven || feedbackMutation.isPending}
+                      >
+                        <ThumbsDown className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
           ))}
+          
+          {/* Loading State */}
           {chatMutation.isPending && (
             <div className="flex gap-3 justify-start">
-              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                <Bot className="h-5 w-5 text-primary" />
+              <div className="flex-shrink-0 w-8 h-8 bg-white border border-black flex items-center justify-center overflow-hidden">
+                <img
+                  src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663159191204/bJsbScmQpKmVdhut.png"
+                  alt="AI"
+                  className="w-7 h-7 object-contain animate-pulse"
+                />
               </div>
-              <div className="bg-gray-100 rounded-lg px-4 py-3">
-                <Loader2 className="h-5 w-5 animate-spin text-gray-600" />
+              <div className="bg-white border-2 border-black px-4 py-3">
+                <div className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin text-black" />
+                  <span className="text-sm text-gray-600">正在思考中...</span>
+                </div>
               </div>
             </div>
           )}
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input */}
-        <div className="px-6 py-4 border-t">
+        {/* Input Area */}
+        <div className="px-4 py-3 border-t-2 border-black bg-white">
           <div className="flex gap-2">
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="輸入您的問題..."
-              className="flex-1"
+              className="flex-1 border-2 border-black rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-black"
               disabled={chatMutation.isPending}
             />
             <Button
               onClick={handleSend}
               disabled={!input.trim() || chatMutation.isPending}
-              className="bg-black hover:bg-gray-800"
+              className="bg-black hover:bg-gray-800 rounded-none px-4"
             >
               {chatMutation.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -163,6 +281,9 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
               )}
             </Button>
           </div>
+          <p className="text-xs text-gray-400 mt-2 text-center">
+            AI 回答僅供參考，實際行程請以客服確認為準
+          </p>
         </div>
       </DialogContent>
     </Dialog>

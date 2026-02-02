@@ -77,17 +77,27 @@ function HomeContent() {
 
       <Footer />
 
-      {/* Floating AI Advisor Button */}
-      <button
-        onClick={() => setAiDialogOpen(true)}
-        className="fixed bottom-8 right-8 w-16 h-16 bg-black hover:bg-gray-800 text-white rounded-full shadow-2xl flex items-center justify-center transition-all hover:scale-110 z-50 group"
-        aria-label="AI 旅遊顧問"
-      >
-        <MessageCircle className="h-7 w-7" />
-        <span className="absolute -top-10 right-0 bg-black text-white text-xs px-3 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-          AI 旅遊顧問
-        </span>
-      </button>
+      {/* Floating AI Advisor Button with Penguin Character */}
+      <div className="fixed bottom-6 right-6 z-50">
+        {/* Speech Bubble */}
+        <div className="absolute -top-16 right-0 bg-white border-2 border-black px-4 py-2 rounded-2xl shadow-lg animate-bounce-slow">
+          <p className="text-sm font-medium text-black whitespace-nowrap">點我問問題！🐧</p>
+          <div className="absolute -bottom-2 right-8 w-4 h-4 bg-white border-r-2 border-b-2 border-black transform rotate-45"></div>
+        </div>
+        
+        {/* Penguin Button */}
+        <button
+          onClick={() => setAiDialogOpen(true)}
+          className="w-20 h-20 bg-white hover:bg-gray-50 rounded-full shadow-2xl flex items-center justify-center transition-all hover:scale-110 border-2 border-black overflow-hidden group"
+          aria-label="AI 旅遊顧問"
+        >
+          <img
+            src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663159191204/bJsbScmQpKmVdhut.png"
+            alt="AI 旅遊顧問"
+            className="w-16 h-16 object-contain transition-transform group-hover:scale-110"
+          />
+        </button>
+      </div>
 
       {/* Admin Edit Mode Button */}
       {canEdit && !isEditMode && (
