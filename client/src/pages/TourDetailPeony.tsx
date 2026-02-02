@@ -589,7 +589,11 @@ export default function TourDetailPeony() {
             </div>
             <div className="flex items-center gap-2">
               <MapPin className="h-4 w-4" />
-              <span>{tour.destinationCity || tour.destinationCountry}</span>
+              <span>{(() => {
+                const cities = (tour.destinationCity || tour.destinationCountry || '').split(/[,、]/).map((c: string) => c.trim()).filter(Boolean);
+                if (cities.length <= 4) return cities.join('、');
+                return cities.slice(0, 4).join('、') + '…';
+              })()}</span>
             </div>
             {transportationInfo?.type && (
               <div className="flex items-center gap-2">
@@ -687,7 +691,11 @@ export default function TourDetailPeony() {
             <div className="text-center p-6 bg-gray-50">
               <MapPin className="h-8 w-8 mx-auto mb-3 text-gray-400" />
               <p className="text-sm text-gray-500 mb-1">目的地</p>
-              <p className="font-bold text-lg">{tour.destinationCity || tour.destinationCountry}</p>
+              <p className="font-bold text-lg">{(() => {
+                const cities = (tour.destinationCity || tour.destinationCountry || '').split(/[,、]/).map((c: string) => c.trim()).filter(Boolean);
+                if (cities.length <= 4) return cities.join('、');
+                return cities.slice(0, 4).join('、') + '…';
+              })()}</p>
             </div>
             <div className="text-center p-6 bg-gray-50">
               <Users className="h-8 w-8 mx-auto mb-3 text-gray-400" />
