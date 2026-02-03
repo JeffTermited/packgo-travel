@@ -1,4 +1,4 @@
-import { boolean, decimal, int, mysqlEnum, mysqlTable, text, timestamp, varchar, unique } from "drizzle-orm/mysql-core";
+import { boolean, decimal, int, mysqlEnum, mysqlTable, text, timestamp, varchar, unique, index } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -1033,3 +1033,83 @@ export const skillPerformanceMetrics = mysqlTable("skillPerformanceMetrics", {
 
 export type SkillPerformanceMetrics = typeof skillPerformanceMetrics.$inferSelect;
 export type InsertSkillPerformanceMetrics = typeof skillPerformanceMetrics.$inferInsert;
+
+
+/**
+ * Translations table for storing translated content.
+ * Supports multi-language translations for tours, pages, and UI elements.
+ */
+export const translations = mysqlTable("translations", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  // Entity reference
+  entityType: mysqlEnum("entityType", ["tour", "tour_departure", "page", "ui_element", "notification"]).notNull(),
+  entityId: int("entityId").notNull(),
+  fieldName: varchar("fieldName", { length: 100 }).notNull(), // e.g., "title", "description", "dailyItinerary"
+  
+  // Language information
+  sourceLanguage: varchar("sourceLanguage", { length: 10 }).default("zh-TW").notNull(),
+  targetLanguage: varchar("targetLanguage", { length: 10 }).notNull(), // e.g., "en", "es", "ja", "ko"
+  
+  // Content
+  originalText: text("originalText").notNull(),
+  translatedText: text("translatedText").notNull(),
+  
+  // Metadata
+  translatedBy: varchar("translatedBy", { length: 100 }), // "auto", "user:123", "admin"
+  isVerified: boolean("isVerified").default(false).notNull(), // Human verified
+  verifiedBy: int("verifiedBy"),
+  verifiedAt: timestamp("verifiedAt"),
+  
+  // Timestamps
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  entityIdx: index("entity_idx").on(table.entityType, table.entityId),
+  langIdx: index("lang_idx").on(table.targetLanguage),
+  uniqueTranslation: unique().on(table.entityType, table.entityId, table.fieldName, table.targetLanguage),
+}));
+
+export type Translation = typeof translations.$inferSelect;
+export type InsertTranslation = typeof translations.$inferInsert;
+
+/**
+ * Translation Jobs table for tracking batch translation tasks.
+ */
+export const translationJobs = mysqlTable("translationJobs", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  // Job type
+  jobType: mysqlEnum("jobType", ["tour_full", "tour_update", "batch_tours", "ui_elements", "custom"]).notNull(),
+  
+  // Entity information
+  entityType: varchar("entityType", { length: 50 }), // "tour", "page", etc.
+  entityIds: text("entityIds"), // JSON array of entity IDs
+  
+  // Target languages
+  targetLanguages: text("targetLanguages").notNull(), // JSON array of language codes
+  
+  // Progress tracking
+  status: mysqlEnum("status", ["pending", "processing", "completed", "failed", "partial"]).default("pending").notNull(),
+  totalItems: int("totalItems").default(0).notNull(),
+  completedItems: int("completedItems").default(0).notNull(),
+  failedItems: int("failedItems").default(0).notNull(),
+  
+  // Results and errors
+  results: text("results"), // JSON object with translation results
+  errors: text("errors"), // JSON array of error messages
+  
+  // Performance metrics
+  processingTimeMs: int("processingTimeMs"),
+  
+  // User tracking
+  createdBy: int("createdBy").notNull(),
+  
+  // Timestamps
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  startedAt: timestamp("startedAt"),
+  completedAt: timestamp("completedAt"),
+});
+
+export type TranslationJob = typeof translationJobs.$inferSelect;
+export type InsertTranslationJob = typeof translationJobs.$inferInsert;

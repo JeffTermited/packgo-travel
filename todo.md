@@ -4142,3 +4142,40 @@
 - [x] 測試 FAQ 頁面語言切換
 - [x] 測試 About Us 頁面語言切換
 - [x] 驗證所有翻譯正確顯示
+
+
+---
+
+## Phase 30: Translation Agent 系統（2026-02-03）
+
+### 30.1 設計 Translation Agent 架構
+- [x] 設計翻譯系統架構（使用 Claude API）
+- [x] 定義支援的語言（zh-TW, en, es, ja, ko, fr, de）
+- [x] 設計翻譯快取機制
+
+### 30.2 後端實作
+- [x] 創建 `server/translation.ts` 核心翻譯模組
+- [x] 創建 translations 和 translationJobs 資料表
+- [x] 實作 translateText、translateBatch、translateObject 函數
+- [x] 實作 translateTour 行程翻譯功能
+- [x] 實作翻譯快取機制（內存快取）
+- [x] 擴展 translation router 添加翻譯管理 API
+
+### 30.3 API 端點
+- [x] `translation.translateText` - 翻譯單一文字
+- [x] `translation.translateBatch` - 批量翻譯
+- [x] `translation.translateTour` - 翻譯整個行程
+- [x] `translation.getTranslations` - 查詢翻譯記錄
+- [x] `translation.getSupportedLanguages` - 獲取支援的語言列表
+
+### 30.4 測試
+- [x] 創建 translation.test.ts 單元測試
+- [x] 測試翻譯功能正常運作
+- [x] 驗證開發伺服器無錯誤
+
+### 30.5 功能特色
+- 使用 Claude API 進行高品質翻譯
+- 支援 7 種語言（繁體中文、英文、西班牙文、日文、韓文、法文、德文）
+- 翻譯快取機制減少 API 調用
+- 自動翻譯行程內容（標題、描述、亮點、包含項目、注意事項等）
+- 翻譯記錄儲存到資料庫供查詢和管理
