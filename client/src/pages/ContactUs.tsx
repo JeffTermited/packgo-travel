@@ -1,46 +1,49 @@
 import GenericPage from "@/components/GenericPage";
+import { useLocale } from "@/contexts/LocaleContext";
 
 export default function ContactUs() {
+  const { t } = useLocale();
+  
   return (
     <GenericPage
-      title="聯絡我們"
-      subtitle="我們隨時為您服務"
+      title={t('contactUs.title')}
+      subtitle={t('contactUs.subtitle')}
     >
       <div className="space-y-6 text-gray-700">
         <p className="text-lg">
-          有任何問題或需求，歡迎隨時與我們聯絡。我們的專業團隊將竭誠為您服務。
+          {t('contactUs.intro')}
         </p>
         
         <div className="grid md:grid-cols-2 gap-8 mt-8">
           <div className="border border-gray-200 p-6">
-            <h3 className="text-xl font-bold text-black mb-4">聯絡資訊</h3>
+            <h3 className="text-xl font-bold text-black mb-4">{t('contactUs.contactInfo')}</h3>
             <div className="space-y-3">
-              <p><strong>地址：</strong><br />39055 Cedar Blvd #126<br />Newark CA 94560</p>
-              <p><strong>電話：</strong><br />+1 (510) 634-2307</p>
-              <p><strong>Email：</strong><br />Jeffhsieh09@gmail.com</p>
+              <p><strong>{t('contactUs.address')}：</strong><br />39055 Cedar Blvd #126<br />Newark CA 94560</p>
+              <p><strong>{t('contactUs.phone')}：</strong><br />+1 (510) 634-2307</p>
+              <p><strong>{t('contactUs.email')}：</strong><br />Jeffhsieh09@gmail.com</p>
             </div>
           </div>
           
           <div className="border border-gray-200 p-6">
-            <h3 className="text-xl font-bold text-black mb-4">營業時間</h3>
+            <h3 className="text-xl font-bold text-black mb-4">{t('contactUs.businessHours')}</h3>
             <div className="space-y-2">
-              <p><strong>週一至週五：</strong><br />9:00 AM - 6:00 PM</p>
-              <p><strong>週六：</strong><br />10:00 AM - 4:00 PM</p>
-              <p><strong>週日：</strong><br />休息</p>
+              <p><strong>{t('contactUs.weekdays')}：</strong><br />9:00 AM - 6:00 PM</p>
+              <p><strong>{t('contactUs.saturday')}：</strong><br />10:00 AM - 4:00 PM</p>
+              <p><strong>{t('contactUs.sunday')}：</strong><br />{t('contactUs.closed')}</p>
             </div>
           </div>
         </div>
         
         <div className="bg-gray-50 p-6 border border-gray-200 mt-8">
-          <h3 className="text-xl font-bold text-black mb-4">快速諮詢</h3>
+          <h3 className="text-xl font-bold text-black mb-4">{t('contactUs.quickInquiry')}</h3>
           <p className="mb-4">
-            如需立即諮詢，請填寫我們的線上表單，我們會盡快與您聯絡。
+            {t('contactUs.quickInquiryDesc')}
           </p>
           <a 
             href="/inquiry" 
             className="inline-block bg-black text-white px-6 py-3 hover:bg-gray-800 transition-colors"
           >
-            前往諮詢表單
+            {t('contactUs.goToForm')}
           </a>
         </div>
       </div>

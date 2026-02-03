@@ -16,12 +16,14 @@ import { profileEditSchema, type ProfileEditFormData } from "@/lib/validationSch
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useLocale } from "@/contexts/LocaleContext";
 
 export default function Profile() {
   const { user, loading, isAuthenticated, logout } = useAuth();
   const [, setLocation] = useLocation();
   const utils = trpc.useUtils();
   const [isEditing, setIsEditing] = useState(false);
+  const { t } = useLocale();
   
   // Form setup
   const { register, handleSubmit, formState: { errors }, reset } = useForm<ProfileEditFormData>({
@@ -47,7 +49,6 @@ export default function Profile() {
   // Avatar upload mutation
   const uploadAvatarMutation = trpc.auth.uploadAvatar.useMutation({
     onSuccess: () => {
-      // Refresh user data
       utils.auth.me.invalidate();
     },
   });
@@ -55,7 +56,6 @@ export default function Profile() {
   // Avatar delete mutation
   const deleteAvatarMutation = trpc.auth.deleteAvatar.useMutation({
     onSuccess: () => {
-      // Refresh user data
       utils.auth.me.invalidate();
     },
   });
@@ -65,18 +65,18 @@ export default function Profile() {
       await uploadAvatarMutation.mutateAsync({ avatarUrl });
     } catch (error) {
       console.error("Failed to update avatar:", error);
-      alert("更新頭像失敗，請稍後再試");
+      alert(t('profile.avatarUpdateFailed'));
     }
   };
   
   const handleAvatarDelete = async () => {
-    if (!confirm("確定要刪除頭像嗎？")) return;
+    if (!confirm(t('profile.confirmDeleteAvatar'))) return;
     
     try {
       await deleteAvatarMutation.mutateAsync();
     } catch (error) {
       console.error("Failed to delete avatar:", error);
-      alert("刪除頭像失敗，請稍後再試");
+      alert(t('profile.avatarDeleteFailed'));
     }
   };
   
@@ -85,11 +85,11 @@ export default function Profile() {
     onSuccess: () => {
       utils.auth.me.invalidate();
       setIsEditing(false);
-      alert("個人資料更新成功！");
+      alert(t('profile.updateSuccess'));
     },
     onError: (error: any) => {
       console.error("Failed to update profile:", error);
-      alert("更新失敗，請稍後再試");
+      alert(t('profile.updateFailed'));
     },
   });
   
@@ -148,7 +148,7 @@ export default function Profile() {
         <div className="container py-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-black mb-1">會員中心</h1>
+              <h1 className="text-3xl font-bold text-black mb-1">{t('profile.title')}</h1>
               <p className="text-gray-500">Hi, {user.name}</p>
             </div>
             <div className="flex gap-3">
@@ -157,7 +157,7 @@ export default function Profile() {
                 variant="outline" 
                 className="rounded-full border-2 border-black hover:bg-black hover:text-white px-6"
               >
-                返回首頁
+                {t('common.backToHome')}
               </Button>
               <Button 
                 onClick={handleLogout}
@@ -165,7 +165,7 @@ export default function Profile() {
                 className="rounded-full border-2 border-black hover:bg-black hover:text-white px-6"
               >
                 <LogOut className="h-4 w-4 mr-2" />
-                登出
+                {t('nav.logout')}
               </Button>
             </div>
           </div>
@@ -189,7 +189,7 @@ export default function Profile() {
                   <p className="text-sm text-gray-500 mt-1">{user.email}</p>
                   {user.role === 'admin' && (
                     <div className="mt-3 px-4 py-1 bg-black text-white text-xs font-bold rounded-full">
-                      管理員
+                      {t('profile.admin')}
                     </div>
                   )}
                 </div>
@@ -203,7 +203,7 @@ export default function Profile() {
                           <User className="h-5 w-5 text-gray-600" />
                         </div>
                         <div className="flex-1">
-                          <p className="text-gray-500 text-xs">會員編號</p>
+                          <p className="text-gray-500 text-xs">{t('profile.memberId')}</p>
                           <p className="text-black font-medium">#{user.id}</p>
                         </div>
                       </div>
@@ -212,7 +212,7 @@ export default function Profile() {
                           <Calendar className="h-5 w-5 text-gray-600" />
                         </div>
                         <div className="flex-1">
-                          <p className="text-gray-500 text-xs">註冊日期</p>
+                          <p className="text-gray-500 text-xs">{t('profile.registrationDate')}</p>
                           <p className="text-black font-medium">
                             {new Date(user.createdAt).toLocaleDateString('zh-TW')}
                           </p>
@@ -223,9 +223,9 @@ export default function Profile() {
                           <Award className="h-5 w-5 text-gray-600" />
                         </div>
                         <div className="flex-1">
-                          <p className="text-gray-500 text-xs">會員等級</p>
+                          <p className="text-gray-500 text-xs">{t('profile.memberLevel')}</p>
                           <p className="text-black font-medium">
-                            {user.role === 'admin' ? 'VIP 會員' : '一般會員'}
+                            {user.role === 'admin' ? t('profile.vipMember') : t('profile.regularMember')}
                           </p>
                         </div>
                       </div>
@@ -233,20 +233,20 @@ export default function Profile() {
                         onClick={() => setIsEditing(true)}
                         className="w-full mt-4 rounded-full bg-black hover:bg-gray-800 text-white"
                       >
-                        編輯個人資料
+                        {t('profile.editProfile')}
                       </Button>
                     </div>
                   ) : (
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                       <div>
                         <Label htmlFor="name" className="text-sm font-medium text-gray-700">
-                          姓名
+                          {t('auth.register.name')}
                         </Label>
                         <Input
                           id="name"
                           {...register("name")}
                           className="mt-1 rounded-full border-2 border-gray-300 focus:border-black"
-                          placeholder="請輸入姓名"
+                          placeholder={t('auth.register.namePlaceholder')}
                         />
                         {errors.name && (
                           <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>
@@ -254,13 +254,13 @@ export default function Profile() {
                       </div>
                       <div>
                         <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
-                          電話
+                          {t('quickInquiry.form.phone')}
                         </Label>
                         <Input
                           id="phone"
                           {...register("phone")}
                           className="mt-1 rounded-full border-2 border-gray-300 focus:border-black"
-                          placeholder="請輸入電話號碼"
+                          placeholder={t('quickInquiry.form.phonePlaceholder')}
                         />
                         {errors.phone && (
                           <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>
@@ -268,13 +268,13 @@ export default function Profile() {
                       </div>
                       <div>
                         <Label htmlFor="address" className="text-sm font-medium text-gray-700">
-                          地址
+                          {t('contactUs.address')}
                         </Label>
                         <Textarea
                           id="address"
                           {...register("address")}
                           className="mt-1 rounded-2xl border-2 border-gray-300 focus:border-black"
-                          placeholder="請輸入地址"
+                          placeholder={t('profile.addressPlaceholder')}
                           rows={3}
                         />
                         {errors.address && (
@@ -287,7 +287,7 @@ export default function Profile() {
                           disabled={updateProfileMutation.isPending}
                           className="flex-1 rounded-full bg-black hover:bg-gray-800 text-white"
                         >
-                          {updateProfileMutation.isPending ? "儲存中..." : "儲存"}
+                          {updateProfileMutation.isPending ? t('common.saving') : t('common.save')}
                         </Button>
                         <Button 
                           type="button"
@@ -295,7 +295,7 @@ export default function Profile() {
                           variant="outline"
                           className="flex-1 rounded-full border-2 border-black hover:bg-black hover:text-white"
                         >
-                          取消
+                          {t('common.cancel')}
                         </Button>
                       </div>
                     </form>
@@ -313,9 +313,9 @@ export default function Profile() {
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="text-sm text-gray-500 mb-2">已完成旅遊</p>
+                      <p className="text-sm text-gray-500 mb-2">{t('profile.completedTrips')}</p>
                       <p className="text-3xl font-bold text-black">{completedTrips}</p>
-                      <p className="text-xs text-gray-400 mt-2">次旅程</p>
+                      <p className="text-xs text-gray-400 mt-2">{t('profile.trips')}</p>
                     </div>
                     <div className="h-14 w-14 rounded-full bg-gray-100 flex items-center justify-center">
                       <MapPin className="h-7 w-7 text-black" />
@@ -328,9 +328,9 @@ export default function Profile() {
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="text-sm text-gray-500 mb-2">即將出發</p>
+                      <p className="text-sm text-gray-500 mb-2">{t('profile.upcomingTrips')}</p>
                       <p className="text-3xl font-bold text-black">{upcomingTrips}</p>
-                      <p className="text-xs text-gray-400 mt-2">個行程</p>
+                      <p className="text-xs text-gray-400 mt-2">{t('profile.tours')}</p>
                     </div>
                     <div className="h-14 w-14 rounded-full bg-gray-100 flex items-center justify-center">
                       <Package className="h-7 w-7 text-black" />
@@ -343,9 +343,9 @@ export default function Profile() {
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="text-sm text-gray-500 mb-2">累積消費</p>
+                      <p className="text-sm text-gray-500 mb-2">{t('profile.totalSpent')}</p>
                       <p className="text-3xl font-bold text-black">${totalSpent.toLocaleString()}</p>
-                      <p className="text-xs text-gray-400 mt-2">總金額</p>
+                      <p className="text-xs text-gray-400 mt-2">{t('profile.totalAmount')}</p>
                     </div>
                     <div className="h-14 w-14 rounded-full bg-gray-100 flex items-center justify-center">
                       <TrendingUp className="h-7 w-7 text-black" />
@@ -358,7 +358,7 @@ export default function Profile() {
             {/* Quick Actions */}
             <Card className="rounded-3xl border border-gray-200 bg-white shadow-sm">
               <CardHeader className="border-b border-gray-200">
-                <CardTitle className="text-lg text-black">快速操作</CardTitle>
+                <CardTitle className="text-lg text-black">{t('profile.quickActions')}</CardTitle>
               </CardHeader>
               <CardContent className="p-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -370,7 +370,7 @@ export default function Profile() {
                       <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center">
                         <ShoppingBag className="h-6 w-6 text-black" />
                       </div>
-                      <span className="font-medium text-black">我的預訂</span>
+                      <span className="font-medium text-black">{t('profile.myBookings')}</span>
                     </div>
                     <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-black transition-colors" />
                   </button>
@@ -383,20 +383,20 @@ export default function Profile() {
                       <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center">
                         <Heart className="h-6 w-6 text-black" />
                       </div>
-                      <span className="font-medium text-black">收藏行程</span>
+                      <span className="font-medium text-black">{t('profile.favorites')}</span>
                     </div>
                     <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-black transition-colors" />
                   </button>
 
                   <button
-                    onClick={() => setLocation("/profile")}
+                    onClick={() => setLocation("/contact")}
                     className="flex items-center justify-between p-4 rounded-2xl border border-gray-200 hover:border-black hover:bg-gray-50 transition-all group"
                   >
                     <div className="flex items-center gap-3">
                       <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center">
                         <MessageSquare className="h-6 w-6 text-black" />
                       </div>
-                      <span className="font-medium text-black">聯絡客服</span>
+                      <span className="font-medium text-black">{t('profile.contactSupport')}</span>
                     </div>
                     <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-black transition-colors" />
                   </button>
@@ -408,7 +408,7 @@ export default function Profile() {
             <Card className="rounded-3xl border border-gray-200 bg-white shadow-sm">
               <CardHeader className="border-b border-gray-200">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg text-black">最近預訂</CardTitle>
+                  <CardTitle className="text-lg text-black">{t('profile.recentBookings')}</CardTitle>
                   {bookings.length > 0 && (
                     <Button 
                       variant="outline" 
@@ -416,7 +416,7 @@ export default function Profile() {
                       className="rounded-full border border-gray-300 hover:border-black hover:bg-gray-50"
                       onClick={() => setLocation("/profile")}
                     >
-                      查看全部
+                      {t('common.viewAll')}
                     </Button>
                   )}
                 </div>
@@ -435,21 +435,21 @@ export default function Profile() {
                             <ShoppingBag className="h-6 w-6 text-black" />
                           </div>
                           <div>
-                            <p className="font-medium text-black">預訂編號: {booking.bookingNumber}</p>
+                            <p className="font-medium text-black">{t('booking.bookingNumber')}: {booking.bookingNumber}</p>
                             <p className="text-sm text-gray-500 mt-1">
-                              {booking.bookingStatus === 'pending' && '待確認'}
-                              {booking.bookingStatus === 'confirmed' && '已確認'}
-                              {booking.bookingStatus === 'cancelled' && '已取消'}
-                              {booking.bookingStatus === 'completed' && '已完成'}
+                              {booking.bookingStatus === 'pending' && t('booking.pending')}
+                              {booking.bookingStatus === 'confirmed' && t('booking.confirmed')}
+                              {booking.bookingStatus === 'cancelled' && t('booking.cancelled')}
+                              {booking.bookingStatus === 'completed' && t('booking.completed')}
                             </p>
                           </div>
                         </div>
                         <div className="text-right">
                           <p className="font-bold text-black">${parseFloat(booking.totalPrice).toLocaleString()}</p>
                           <p className="text-xs text-gray-500 mt-1">
-                            {booking.paymentStatus === 'pending' && '待付款'}
-                            {booking.paymentStatus === 'deposit_paid' && '已付訂金'}
-                            {booking.paymentStatus === 'paid' && '已付清'}
+                            {booking.paymentStatus === 'pending' && t('booking.paymentPending')}
+                            {booking.paymentStatus === 'deposit_paid' && t('booking.depositPaid')}
+                            {booking.paymentStatus === 'paid' && t('booking.paid')}
                           </p>
                         </div>
                       </div>
@@ -460,13 +460,13 @@ export default function Profile() {
                     <div className="h-20 w-20 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
                       <ShoppingBag className="h-10 w-10 text-gray-400" />
                     </div>
-                    <p className="text-gray-600 font-medium mb-2">目前沒有預訂記錄</p>
-                    <p className="text-sm text-gray-500 mb-6">開始探索精彩的旅遊行程吧！</p>
+                    <p className="text-gray-600 font-medium mb-2">{t('profile.noBookings')}</p>
+                    <p className="text-sm text-gray-500 mb-6">{t('profile.startExploring')}</p>
                     <Button 
                       className="rounded-full bg-black text-white hover:bg-gray-800 px-8"
                       onClick={() => setLocation("/")}
                     >
-                      瀏覽行程
+                      {t('profile.browseTours')}
                     </Button>
                   </div>
                 )}
@@ -486,6 +486,7 @@ export default function Profile() {
 function FavoritesSection({ setLocation }: { setLocation: (path: string) => void }) {
   const { data: favorites, isLoading } = trpc.favorites.list.useQuery();
   const utils = trpc.useUtils();
+  const { t } = useLocale();
   
   const removeMutation = trpc.favorites.remove.useMutation({
     onSuccess: () => {
@@ -498,9 +499,9 @@ function FavoritesSection({ setLocation }: { setLocation: (path: string) => void
     <Card className="rounded-3xl border border-gray-200 bg-white shadow-sm">
       <CardHeader className="border-b border-gray-200">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg text-black">收藏的行程</CardTitle>
+          <CardTitle className="text-lg text-black">{t('profile.favoriteTours')}</CardTitle>
           {favorites && favorites.length > 0 && (
-            <span className="text-sm text-gray-500">{favorites.length} 個行程</span>
+            <span className="text-sm text-gray-500">{favorites.length} {t('profile.tours')}</span>
           )}
         </div>
       </CardHeader>
@@ -514,7 +515,7 @@ function FavoritesSection({ setLocation }: { setLocation: (path: string) => void
             {favorites.map((tour: any) => (
               <div 
                 key={tour.id}
-                className="flex items-center gap-4 p-4 rounded-2xl border border-gray-200 hover:border-black hover:bg-gray-50 transition-all cursor-pointer group"
+                className="flex items-center gap-4 p-3 rounded-2xl border border-gray-200 hover:border-black hover:bg-gray-50 transition-all cursor-pointer group"
                 onClick={() => setLocation(`/tours/${tour.id}`)}
               >
                 {/* Tour Image */}
@@ -544,7 +545,7 @@ function FavoritesSection({ setLocation }: { setLocation: (path: string) => void
                     </span>
                     <span className="flex items-center gap-1">
                       <Clock className="h-3.5 w-3.5" />
-                      {tour.duration}天
+                      {tour.duration}{t('tours.days')}
                     </span>
                   </div>
                   <p className="text-primary font-bold mt-1">
@@ -559,7 +560,7 @@ function FavoritesSection({ setLocation }: { setLocation: (path: string) => void
                     removeMutation.mutate({ tourId: tour.id });
                   }}
                   className="p-2 rounded-full hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"
-                  title="取消收藏"
+                  title={t('profile.removeFavorite')}
                 >
                   <Heart className="h-5 w-5 fill-red-500 text-red-500" />
                 </button>
@@ -571,13 +572,13 @@ function FavoritesSection({ setLocation }: { setLocation: (path: string) => void
             <div className="h-20 w-20 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
               <Heart className="h-10 w-10 text-gray-400" />
             </div>
-            <p className="text-gray-600 font-medium mb-2">尚未收藏任何行程</p>
-            <p className="text-sm text-gray-500 mb-6">瀏覽行程並加入收藏，方便日後查看</p>
+            <p className="text-gray-600 font-medium mb-2">{t('profile.noFavorites')}</p>
+            <p className="text-sm text-gray-500 mb-6">{t('profile.addFavoritesHint')}</p>
             <Button 
               className="rounded-full bg-black text-white hover:bg-gray-800 px-8"
               onClick={() => setLocation("/")}
             >
-              探索行程
+              {t('profile.exploreTours')}
             </Button>
           </div>
         )}

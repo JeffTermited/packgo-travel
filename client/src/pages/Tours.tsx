@@ -12,14 +12,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, MapPin, Calendar, Users, Loader2, ArrowLeft } from "lucide-react";
+import { Search, MapPin, Calendar, Loader2, ArrowLeft } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { useLocale } from "@/contexts/LocaleContext";
 
 export default function Tours() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCountry, setSelectedCountry] = useState<string>("all");
   const [selectedStatus, setSelectedStatus] = useState<string>("active");
+  const { t } = useLocale();
 
   // 查詢所有行程
   const { data: tours, isLoading } = trpc.tours.list.useQuery({
@@ -58,12 +60,12 @@ export default function Tours() {
             <Link href="/">
               <Button variant="ghost" className="text-white hover:text-gray-200 mb-4 rounded-full">
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                返回首頁
+                {t('common.backToHome')}
               </Button>
             </Link>
-            <h1 className="text-4xl font-bold mb-4">探索精選行程</h1>
+            <h1 className="text-4xl font-bold mb-4">{t('tours.title')}</h1>
             <p className="text-xl text-gray-300">
-              發現世界各地的精彩旅程，開啟您的夢想之旅
+              {t('tours.subtitle')}
             </p>
           </div>
         </section>
@@ -76,7 +78,7 @@ export default function Tours() {
               <div className="flex-grow relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <Input
-                  placeholder="搜尋行程名稱或目的地..."
+                  placeholder={t('tours.searchPlaceholder')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10 rounded-full"
@@ -86,30 +88,30 @@ export default function Tours() {
               {/* 國家篩選 */}
               <Select value={selectedCountry} onValueChange={setSelectedCountry}>
                 <SelectTrigger className="w-full md:w-[200px] rounded-full">
-                  <SelectValue placeholder="選擇國家" />
+                  <SelectValue placeholder={t('tours.selectCountry')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">所有國家</SelectItem>
-                  <SelectItem value="日本">日本</SelectItem>
-                  <SelectItem value="韓國">韓國</SelectItem>
-                  <SelectItem value="泰國">泰國</SelectItem>
-                  <SelectItem value="新加坡">新加坡</SelectItem>
-                  <SelectItem value="馬來西亞">馬來西亞</SelectItem>
-                  <SelectItem value="越南">越南</SelectItem>
-                  <SelectItem value="歐洲">歐洲</SelectItem>
-                  <SelectItem value="美國">美國</SelectItem>
+                  <SelectItem value="all">{t('tours.allCountries')}</SelectItem>
+                  <SelectItem value="日本">{t('destinations.japan')}</SelectItem>
+                  <SelectItem value="韓國">{t('destinations.korea')}</SelectItem>
+                  <SelectItem value="泰國">{t('destinations.thailand')}</SelectItem>
+                  <SelectItem value="新加坡">{t('destinations.singapore')}</SelectItem>
+                  <SelectItem value="馬來西亞">{t('destinations.malaysia')}</SelectItem>
+                  <SelectItem value="越南">{t('destinations.vietnam')}</SelectItem>
+                  <SelectItem value="歐洲">{t('destinations.europe')}</SelectItem>
+                  <SelectItem value="美國">{t('destinations.usa')}</SelectItem>
                 </SelectContent>
               </Select>
 
               {/* 狀態篩選 */}
               <Select value={selectedStatus} onValueChange={setSelectedStatus}>
                 <SelectTrigger className="w-full md:w-[200px] rounded-full">
-                  <SelectValue placeholder="選擇狀態" />
+                  <SelectValue placeholder={t('tours.selectStatus')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">所有行程</SelectItem>
-                  <SelectItem value="active">上架中</SelectItem>
-                  <SelectItem value="inactive">已下架</SelectItem>
+                  <SelectItem value="all">{t('tours.allTours')}</SelectItem>
+                  <SelectItem value="active">{t('tours.active')}</SelectItem>
+                  <SelectItem value="inactive">{t('tours.inactive')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -125,13 +127,13 @@ export default function Tours() {
               </div>
             ) : filteredTours.length === 0 ? (
               <div className="text-center py-20">
-                <p className="text-gray-500 text-lg">沒有找到符合條件的行程</p>
+                <p className="text-gray-500 text-lg">{t('tours.noResults')}</p>
               </div>
             ) : (
               <>
                 <div className="flex justify-between items-center mb-6">
                   <p className="text-gray-600">
-                    找到 <span className="font-bold text-gray-900">{filteredTours.length}</span> 個行程
+                    {t('tours.found')} <span className="font-bold text-gray-900">{filteredTours.length}</span> {t('tours.tours')}
                   </p>
                 </div>
 
@@ -156,7 +158,7 @@ export default function Tours() {
                           {/* 狀態標籤 */}
                           {tour.status === "inactive" && (
                             <Badge className="absolute top-4 right-4 bg-red-500 text-white rounded-full">
-                              已下架
+                              {t('tours.inactive')}
                             </Badge>
                           )}
                         </div>
@@ -179,7 +181,7 @@ export default function Tours() {
                           <div className="flex items-center text-gray-600 mb-4">
                             <Calendar className="h-4 w-4 mr-1" />
                             <span className="text-sm">
-                              {tour.duration} 天 {tour.nights} 夜
+                              {tour.duration} {t('tours.days')} {tour.nights} {t('tours.nights')}
                             </span>
                           </div>
 
@@ -189,10 +191,10 @@ export default function Tours() {
                               <span className="text-2xl font-bold text-primary">
                                 NT$ {tour.price?.toLocaleString() || "0"}
                               </span>
-                              <span className="text-sm text-gray-500 ml-1">起</span>
+                              <span className="text-sm text-gray-500 ml-1">{t('tours.startingFrom')}</span>
                             </div>
                             <Button className="rounded-full bg-black text-white hover:bg-gray-800">
-                              查看詳情
+                              {t('tours.viewDetails')}
                             </Button>
                           </div>
                         </div>

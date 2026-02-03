@@ -9,12 +9,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { MessageSquare, Home, CheckCircle } from "lucide-react";
 import { Link } from "wouter";
+import { useLocale } from "@/contexts/LocaleContext";
 import type { z } from "zod";
 
 type QuickInquiryForm = z.infer<typeof quickInquirySchema>;
 
 export default function QuickInquiry() {
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const { t } = useLocale();
 
   const {
     register,
@@ -32,7 +34,7 @@ export default function QuickInquiry() {
       setTimeout(() => setIsSubmitted(false), 5000);
     },
     onError: (error) => {
-      alert(`提交失敗：${error.message}`);
+      alert(`${t('common.error')}：${error.message}`);
     },
   });
 
@@ -47,16 +49,16 @@ export default function QuickInquiry() {
           <div className="bg-white rounded-3xl shadow-lg p-12 text-center">
             <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-6" />
             <h2 className="text-3xl font-serif font-bold text-gray-900 mb-4">
-              諮詢已送出！
+              {t('quickInquiry.success.title')}
             </h2>
             <p className="text-gray-600 mb-8">
-              感謝您的諮詢，我們的專業顧問將在 24 小時內與您聯繫。
+              {t('quickInquiry.success.description')}
             </p>
             <div className="flex gap-4 justify-center">
               <Link href="/">
                 <Button className="rounded-full">
                   <Home className="h-4 w-4 mr-2" />
-                  返回首頁
+                  {t('common.backToHome')}
                 </Button>
               </Link>
               <Button
@@ -64,7 +66,7 @@ export default function QuickInquiry() {
                 onClick={() => setIsSubmitted(false)}
                 className="rounded-full"
               >
-                繼續諮詢
+                {t('common.submit')}
               </Button>
             </div>
           </div>
@@ -79,13 +81,13 @@ export default function QuickInquiry() {
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-4xl font-serif font-bold text-gray-900 mb-2">快速諮詢</h1>
-            <p className="text-gray-600">有任何旅遊問題嗎？請填寫表單，我們將盡快回覆您</p>
+            <h1 className="text-4xl font-serif font-bold text-gray-900 mb-2">{t('quickInquiry.title')}</h1>
+            <p className="text-gray-600">{t('quickInquiry.subtitle')}</p>
           </div>
           <Link href="/">
             <Button variant="outline" className="rounded-full">
               <Home className="h-4 w-4 mr-2" />
-              返回首頁
+              {t('common.backToHome')}
             </Button>
           </Link>
         </div>
@@ -95,11 +97,11 @@ export default function QuickInquiry() {
           <div className="space-y-6">
             {/* Customer Name */}
             <div>
-              <Label htmlFor="customerName">姓名 *</Label>
+              <Label htmlFor="customerName">{t('quickInquiry.form.name')} *</Label>
               <Input
                 id="customerName"
                 {...register("customerName")}
-                placeholder="請輸入您的姓名"
+                placeholder={t('quickInquiry.form.namePlaceholder')}
                 className="rounded-full mt-2"
               />
               {errors.customerName && (
@@ -109,12 +111,12 @@ export default function QuickInquiry() {
 
             {/* Customer Email */}
             <div>
-              <Label htmlFor="customerEmail">電子郵件 *</Label>
+              <Label htmlFor="customerEmail">{t('quickInquiry.form.email')} *</Label>
               <Input
                 id="customerEmail"
                 type="email"
                 {...register("customerEmail")}
-                placeholder="example@email.com"
+                placeholder={t('quickInquiry.form.emailPlaceholder')}
                 className="rounded-full mt-2"
               />
               {errors.customerEmail && (
@@ -124,11 +126,11 @@ export default function QuickInquiry() {
 
             {/* Customer Phone */}
             <div>
-              <Label htmlFor="customerPhone">聯絡電話</Label>
+              <Label htmlFor="customerPhone">{t('quickInquiry.form.phone')}</Label>
               <Input
                 id="customerPhone"
                 {...register("customerPhone")}
-                placeholder="0912-345-678"
+                placeholder={t('quickInquiry.form.phonePlaceholder')}
                 className="rounded-full mt-2"
               />
               {errors.customerPhone && (
@@ -138,11 +140,11 @@ export default function QuickInquiry() {
 
             {/* Subject */}
             <div>
-              <Label htmlFor="subject">諮詢主旨 *</Label>
+              <Label htmlFor="subject">{t('quickInquiry.form.subject')} *</Label>
               <Input
                 id="subject"
                 {...register("subject")}
-                placeholder="例如：日本東京五日遊詢問"
+                placeholder={t('quickInquiry.form.subjectPlaceholder')}
                 className="rounded-full mt-2"
               />
               {errors.subject && (
@@ -152,11 +154,11 @@ export default function QuickInquiry() {
 
             {/* Message */}
             <div>
-              <Label htmlFor="message">諮詢內容 *</Label>
+              <Label htmlFor="message">{t('quickInquiry.form.message')} *</Label>
               <Textarea
                 id="message"
                 {...register("message")}
-                placeholder="請詳細描述您的問題或需求..."
+                placeholder={t('quickInquiry.form.messagePlaceholder')}
                 rows={6}
                 className="rounded-2xl mt-2"
               />
@@ -172,21 +174,21 @@ export default function QuickInquiry() {
               className="w-full rounded-full h-12 text-lg"
             >
               <MessageSquare className="h-5 w-5 mr-2" />
-              {createInquiry.isPending ? "送出中..." : "送出諮詢"}
+              {createInquiry.isPending ? t('quickInquiry.form.submitting') : t('quickInquiry.form.submitButton')}
             </Button>
           </div>
         </form>
 
         {/* Info Box */}
         <div className="mt-8 bg-blue-50 rounded-3xl p-6">
-          <h3 className="font-semibold text-gray-900 mb-3">服務時間</h3>
+          <h3 className="font-semibold text-gray-900 mb-3">{t('contactUs.businessHours')}</h3>
           <p className="text-gray-700 text-sm">
-            週一至週五：09:00 - 18:00<br />
-            週六：09:00 - 17:00<br />
-            週日及國定假日：休息
+            {t('contactUs.weekdays')}：09:00 - 18:00<br />
+            {t('contactUs.saturday')}：09:00 - 17:00<br />
+            {t('contactUs.sunday')}：{t('contactUs.closed')}
           </p>
           <p className="text-gray-600 text-sm mt-4">
-            我們將在 24 小時內回覆您的諮詢。如有緊急需求，請直接撥打客服專線：02-1234-5678
+            {t('quickInquiry.success.description')}
           </p>
         </div>
       </div>

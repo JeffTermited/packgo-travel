@@ -3918,3 +3918,92 @@
 - [x] 測試語言切換器正常運作
 - [x] 驗證 Header、Hero、Destinations、Footer 等組件翻譯正確
 
+
+
+---
+
+## Phase 27: 擴展翻譯系統到所有頁面（2026-02-02）
+
+### 27.1 公開頁面翻譯
+- [ ] AboutUs.tsx - 關於我們頁面
+- [ ] ContactUs.tsx - 聯絡我們頁面
+- [ ] FAQ.tsx - 常見問題頁面
+- [ ] PrivacyPolicy.tsx - 隱私政策頁面
+- [ ] TermsOfService.tsx - 服務條款頁面
+- [ ] NotFound.tsx - 404 頁面
+
+### 27.2 服務頁面翻譯
+- [ ] CustomTours.tsx - 客製旅遊頁面
+- [ ] CustomTourRequest.tsx - 客製旅遊申請頁面
+- [ ] VisaServices.tsx - 簽證服務頁面
+- [ ] GroupPackages.tsx - 團體旅遊頁面
+- [ ] FlightBooking.tsx - 機票預訂頁面
+- [ ] HotelBooking.tsx - 飯店預訂頁面
+- [ ] AirportTransfer.tsx - 機場接送頁面
+- [ ] CruisePage.tsx - 郵輪頁面
+
+### 27.3 行程相關頁面翻譯
+- [ ] Tours.tsx - 行程列表頁面
+- [ ] TourDetail.tsx - 行程詳情頁面
+- [ ] TourDetailSipin.tsx - 行程詳情頁面（Sipin 版本）
+- [ ] SearchResults.tsx - 搜尋結果頁面
+- [ ] RegionPage.tsx - 地區頁面
+- [ ] CountryPage.tsx - 國家頁面
+
+### 27.4 會員相關頁面翻譯
+- [ ] Login.tsx - 登入頁面
+- [ ] Profile.tsx - 會員資料頁面
+- [ ] ForgotPassword.tsx - 忘記密碼頁面
+- [ ] ResetPassword.tsx - 重設密碼頁面
+
+### 27.5 預訂相關頁面翻譯
+- [ ] BookTour.tsx - 預訂行程頁面
+- [ ] BookingDetail.tsx - 預訂詳情頁面
+- [ ] PaymentSuccess.tsx - 付款成功頁面
+- [ ] PaymentFailure.tsx - 付款失敗頁面
+- [ ] QuickInquiry.tsx - 快速詢問頁面
+
+### 27.6 共用組件翻譯
+- [ ] AIChatBox.tsx - AI 聊天組件
+- [ ] LocaleSwitcher.tsx - 語言切換器
+- [ ] 其他共用組件
+
+
+
+---
+
+## Phase 27: 擴展翻譯系統到所有頁面（2026-02-03）
+
+### 27.1 已完成的翻譯組件
+- [x] 創建 i18n 翻譯系統架構
+- [x] 創建 zh-TW, en, es 翻譯檔案
+- [x] 擴展 LocaleContext 添加 t() 翻譯函數
+- [x] 更新 Header 組件使用翻譯
+- [x] 更新 Footer 組件使用翻譯
+- [x] 更新 EditableHero 組件使用翻譯
+- [x] 更新 Destinations 組件使用翻譯
+- [x] 更新 FeaturedTours 組件使用翻譯
+- [x] 更新 NewsletterSection 組件使用翻譯
+- [x] 更新 AboutUs 頁面使用翻譯
+- [x] 更新 ContactUs 頁面使用翻譯
+- [x] 更新 FAQ 頁面使用翻譯
+- [x] 更新 PrivacyPolicy 頁面使用翻譯
+- [x] 更新 TermsOfService 頁面使用翻譯
+- [x] 更新 NotFound 頁面使用翻譯
+- [x] 更新 Login 頁面使用翻譯
+- [x] 更新 QuickInquiry 頁面使用翻譯
+- [x] 更新 PaymentSuccess 頁面使用翻譯
+- [x] 更新 PaymentFailure 頁面使用翻譯
+- [x] 更新 Tours 頁面使用翻譯
+- [x] 更新 Profile 頁面使用翻譯
+- [x] 測試所有頁面的語言切換功能
+
+### 27.2 待完成的翻譯組件
+- [ ] 更新 TourDetail 頁面使用翻譯
+- [ ] 更新 BookTour 頁面使用翻譯
+- [ ] 更新 Admin 管理後台頁面使用翻譯
+- [ ] 更新 CustomTours 頁面使用翻譯
+- [ ] 更新 VisaServices 頁面使用翻譯
+- [ ] 更新 FlightBooking 頁面使用翻譯
+- [ ] 更新 HotelBooking 頁面使用翻譯
+- [ ] 更新 AirportTransfer 頁面使用翻譯

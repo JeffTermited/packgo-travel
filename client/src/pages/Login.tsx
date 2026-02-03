@@ -2,16 +2,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Mail, Lock, AlertCircle, ArrowLeft } from "lucide-react";
+import { Mail, Lock, ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import { useLocale } from "@/contexts/LocaleContext";
 
 export default function Login() {
   const [activeTab, setActiveTab] = useState<"signin" | "register">("signin");
   const [, setLocation] = useLocation();
-  // Using sonner for toast notifications
+  const { t } = useLocale();
 
   // Sign in form state
   const [signInEmail, setSignInEmail] = useState("");
@@ -27,13 +28,13 @@ export default function Login() {
   // Login mutation
   const loginMutation = trpc.auth.login.useMutation({
     onSuccess: () => {
-      toast.success("登入成功", {
-        description: "歡迎回來！",
+      toast.success(t('auth.login.loginSuccess'), {
+        description: t('auth.login.loginSuccessDesc'),
       });
       setLocation("/");
     },
     onError: (error) => {
-      toast.error("登入失敗", {
+      toast.error(t('auth.login.loginFailed'), {
         description: error.message,
       });
     },
@@ -42,13 +43,13 @@ export default function Login() {
   // Register mutation
   const registerMutation = trpc.auth.register.useMutation({
     onSuccess: () => {
-      toast.success("註冊成功", {
-        description: "歡迎加入 PACK&GO！",
+      toast.success(t('auth.register.registerSuccess'), {
+        description: t('auth.register.registerSuccessDesc'),
       });
       setLocation("/");
     },
     onError: (error) => {
-      toast.error("註冊失敗", {
+      toast.error(t('auth.register.registerFailed'), {
         description: error.message,
       });
     },
@@ -57,7 +58,7 @@ export default function Login() {
   const handleSignIn = (e: React.FormEvent) => {
     e.preventDefault();
     if (!signInEmail || !signInPassword) {
-      toast.error("請填寫所有欄位");
+      toast.error(t('common.fillAllFields'));
       return;
     }
     loginMutation.mutate({ email: signInEmail, password: signInPassword, rememberMe });
@@ -67,20 +68,20 @@ export default function Login() {
     e.preventDefault();
     
     if (!registerName || !registerEmail || !registerPassword || !registerConfirmPassword) {
-      toast.error("請填寫所有欄位");
+      toast.error(t('common.fillAllFields'));
       return;
     }
 
     if (registerPassword !== registerConfirmPassword) {
-      toast.error("密碼不一致", {
-        description: "請確認兩次輸入的密碼相同",
+      toast.error(t('auth.register.passwordMismatch'), {
+        description: t('auth.register.passwordMismatchDesc'),
       });
       return;
     }
 
     if (registerPassword.length < 8) {
-      toast.error("密碼太短", {
-        description: "密碼至少需要 8 個字元",
+      toast.error(t('auth.register.passwordTooShort'), {
+        description: t('auth.register.passwordTooShortDesc'),
       });
       return;
     }
@@ -108,10 +109,10 @@ export default function Login() {
         />
         <div className="absolute inset-0 z-20 flex flex-col items-start justify-center px-16 text-white">
           <h1 className="text-5xl font-serif font-bold mb-4 tracking-tight">
-            TRAVEL NOIR
+            {t('auth.heroTitle')}
           </h1>
           <p className="text-xl text-gray-300 font-light tracking-wide">
-            讓旅行更美好
+            {t('auth.heroSubtitle')}
           </p>
         </div>
       </div>
@@ -124,7 +125,7 @@ export default function Login() {
           className="absolute top-8 left-8 flex items-center gap-2 text-gray-600 hover:text-black transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
-          <span className="font-medium">返回首頁</span>
+          <span className="font-medium">{t('common.backToHome')}</span>
         </Link>
 
         <div className="w-full max-w-md">
@@ -139,7 +140,7 @@ export default function Login() {
               <div className="flex flex-col items-start">
                 <span className="text-2xl tracking-tight">PACK&GO</span>
                 <span className="text-xs font-normal text-gray-600 tracking-wide">
-                  讓旅行更美好
+                  {t('home.slogan')}
                 </span>
               </div>
             </Link>
@@ -155,37 +156,37 @@ export default function Login() {
                 value="signin"
                 className="data-[state=active]:bg-black data-[state=active]:text-white text-black font-bold tracking-wide rounded-full"
               >
-                登入
+                {t('nav.login')}
               </TabsTrigger>
               <TabsTrigger
                 value="register"
                 className="data-[state=active]:bg-black data-[state=active]:text-white text-black font-bold tracking-wide rounded-full"
               >
-                註冊
+                {t('nav.register')}
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="signin" className="space-y-6">
               <div className="text-center mb-8">
                 <h2 className="text-3xl font-bold text-black mb-2">
-                  會員登入
+                  {t('auth.login.title')}
                 </h2>
                 <p className="text-gray-600 text-sm">
-                  歡迎回來，繼續您的旅程
+                  {t('auth.login.subtitle')}
                 </p>
               </div>
 
               <form className="space-y-6" onSubmit={handleSignIn}>
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-black font-medium">
-                    電子郵件
+                    {t('auth.login.email')}
                   </Label>
                   <div className="relative">
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                     <Input
                       id="email"
                       type="email"
-                      placeholder="輸入您的電子郵件"
+                      placeholder={t('auth.login.emailPlaceholder')}
                       value={signInEmail}
                       onChange={(e) => setSignInEmail(e.target.value)}
                       className="pl-12 h-12 border-2 border-black rounded-full focus:ring-2 focus:ring-black"
@@ -196,14 +197,14 @@ export default function Login() {
 
                 <div className="space-y-2">
                   <Label htmlFor="password" className="text-black font-medium">
-                    密碼
+                    {t('auth.login.password')}
                   </Label>
                   <div className="relative">
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                     <Input
                       id="password"
                       type="password"
-                      placeholder="輸入您的密碼"
+                      placeholder={t('auth.login.passwordPlaceholder')}
                       value={signInPassword}
                       onChange={(e) => setSignInPassword(e.target.value)}
                       className="pl-12 h-12 border-2 border-black rounded-full focus:ring-2 focus:ring-black"
@@ -222,11 +223,11 @@ export default function Login() {
                       className="w-4 h-4 rounded border-2 border-black text-black focus:ring-2 focus:ring-black cursor-pointer"
                     />
                     <Label htmlFor="rememberMe" className="text-black font-medium cursor-pointer">
-                      記住我 (30天)
+                      {t('auth.login.rememberMe')}
                     </Label>
                   </div>
                   <Link href="/forgot-password" className="text-black hover:underline font-medium">
-                    忘記密碼？
+                    {t('auth.login.forgotPassword')}
                   </Link>
                 </div>
 
@@ -235,7 +236,7 @@ export default function Login() {
                   className="w-full h-12 bg-black hover:bg-gray-800 text-white font-bold tracking-wide rounded-full"
                   disabled={loginMutation.isPending}
                 >
-                  {loginMutation.isPending ? "登入中..." : "登入"}
+                  {loginMutation.isPending ? t('auth.login.loggingIn') : t('auth.login.loginButton')}
                 </Button>
 
                 <div className="relative my-6">
@@ -243,7 +244,7 @@ export default function Login() {
                     <div className="w-full border-t border-gray-300"></div>
                   </div>
                   <div className="relative flex justify-center text-sm">
-                    <span className="px-4 bg-white text-gray-500">或使用</span>
+                    <span className="px-4 bg-white text-gray-500">{t('common.orUse')}</span>
                   </div>
                 </div>
 
@@ -271,7 +272,7 @@ export default function Login() {
                       d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                     />
                   </svg>
-                  使用 Google 登入
+                  {t('auth.login.loginWithGoogle')}
                 </Button>
               </form>
             </TabsContent>
@@ -279,22 +280,22 @@ export default function Login() {
             <TabsContent value="register" className="space-y-6">
               <div className="text-center mb-8">
                 <h2 className="text-3xl font-bold text-black mb-2">
-                  建立帳號
+                  {t('auth.register.title')}
                 </h2>
                 <p className="text-gray-600 text-sm">
-                  開始您的旅程，探索世界
+                  {t('auth.register.subtitle')}
                 </p>
               </div>
 
               <form className="space-y-6" onSubmit={handleRegister}>
                 <div className="space-y-2">
                   <Label htmlFor="register-name" className="text-black font-medium">
-                    姓名
+                    {t('auth.register.name')}
                   </Label>
                   <Input
                     id="register-name"
                     type="text"
-                    placeholder="輸入您的姓名"
+                    placeholder={t('auth.register.namePlaceholder')}
                     value={registerName}
                     onChange={(e) => setRegisterName(e.target.value)}
                     className="h-12 border-2 border-black rounded-full focus:ring-2 focus:ring-black"
@@ -304,14 +305,14 @@ export default function Login() {
 
                 <div className="space-y-2">
                   <Label htmlFor="register-email" className="text-black font-medium">
-                    電子郵件
+                    {t('auth.register.email')}
                   </Label>
                   <div className="relative">
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                     <Input
                       id="register-email"
                       type="email"
-                      placeholder="輸入您的電子郵件"
+                      placeholder={t('auth.register.emailPlaceholder')}
                       value={registerEmail}
                       onChange={(e) => setRegisterEmail(e.target.value)}
                       className="pl-12 h-12 border-2 border-black rounded-full focus:ring-2 focus:ring-black"
@@ -322,14 +323,14 @@ export default function Login() {
 
                 <div className="space-y-2">
                   <Label htmlFor="register-password" className="text-black font-medium">
-                    密碼
+                    {t('auth.register.password')}
                   </Label>
                   <div className="relative">
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                     <Input
                       id="register-password"
                       type="password"
-                      placeholder="至少 8 個字元"
+                      placeholder={t('auth.register.passwordPlaceholder')}
                       value={registerPassword}
                       onChange={(e) => setRegisterPassword(e.target.value)}
                       className="pl-12 h-12 border-2 border-black rounded-full focus:ring-2 focus:ring-black"
@@ -341,14 +342,14 @@ export default function Login() {
 
                 <div className="space-y-2">
                   <Label htmlFor="register-confirm-password" className="text-black font-medium">
-                    確認密碼
+                    {t('auth.register.confirmPassword')}
                   </Label>
                   <div className="relative">
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                     <Input
                       id="register-confirm-password"
                       type="password"
-                      placeholder="再次輸入密碼"
+                      placeholder={t('auth.register.confirmPasswordPlaceholder')}
                       value={registerConfirmPassword}
                       onChange={(e) => setRegisterConfirmPassword(e.target.value)}
                       className="pl-12 h-12 border-2 border-black rounded-full focus:ring-2 focus:ring-black"
@@ -363,7 +364,7 @@ export default function Login() {
                   className="w-full h-12 bg-black hover:bg-gray-800 text-white font-bold tracking-wide rounded-full"
                   disabled={registerMutation.isPending}
                 >
-                  {registerMutation.isPending ? "註冊中..." : "註冊"}
+                  {registerMutation.isPending ? t('auth.register.registering') : t('auth.register.registerButton')}
                 </Button>
 
                 <div className="relative my-6">
@@ -371,7 +372,7 @@ export default function Login() {
                     <div className="w-full border-t border-gray-300"></div>
                   </div>
                   <div className="relative flex justify-center text-sm">
-                    <span className="px-4 bg-white text-gray-500">或使用</span>
+                    <span className="px-4 bg-white text-gray-500">{t('common.orUse')}</span>
                   </div>
                 </div>
 
@@ -399,7 +400,7 @@ export default function Login() {
                       d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                     />
                   </svg>
-                  使用 Google 註冊
+                  {t('auth.register.registerWithGoogle')}
                 </Button>
               </form>
             </TabsContent>
