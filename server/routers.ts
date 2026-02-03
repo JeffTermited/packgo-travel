@@ -529,6 +529,7 @@ export const appRouter = router({
           description: z.string().min(1).optional(),
           duration: z.number().min(1).optional(),
           price: z.number().min(0).optional(),
+          priceCurrency: z.enum(["TWD", "USD"]).optional(),
           
           // Images
           imageUrl: z.string().optional(),
@@ -600,7 +601,7 @@ export const appRouter = router({
         // Whitelist of allowed fields for inline editing
         const allowedFields = [
           'title', 'description', 'heroSubtitle', 'heroImage',
-          'destinationCountry', 'destinationCity', 'price', 'duration',
+          'destinationCountry', 'destinationCity', 'price', 'priceCurrency', 'duration',
           'keyFeatures', 'attractions', 'hotels', 'meals', 'flights',
           'itineraryDetailed', 'costExplanation', 'noticeDetailed',
           'poeticContent', 'colorTheme', 'galleryImages', 'imageUrl',

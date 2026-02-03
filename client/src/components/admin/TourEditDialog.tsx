@@ -324,16 +324,30 @@ export function TourEditDialog({
 
                   <div>
                     <Label htmlFor="price" className="text-sm font-medium">
-                      價格 (NT$) <span className="text-red-500">*</span>
+                      價格 <span className="text-red-500">*</span>
                     </Label>
-                    <Input
-                      id="price"
-                      type="number"
-                      min="0"
-                      value={editedData.price || 0}
-                      onChange={(e) => setEditedData({ ...editedData, price: parseInt(e.target.value) || 0 })}
-                      className="mt-2"
-                    />
+                    <div className="flex gap-2 mt-2">
+                      <Input
+                        id="price"
+                        type="number"
+                        min="0"
+                        value={editedData.price || 0}
+                        onChange={(e) => setEditedData({ ...editedData, price: parseInt(e.target.value) || 0 })}
+                        className="flex-1"
+                      />
+                      <Select
+                        value={editedData.priceCurrency || 'TWD'}
+                        onValueChange={(value) => setEditedData({ ...editedData, priceCurrency: value })}
+                      >
+                        <SelectTrigger className="w-[100px]">
+                          <SelectValue placeholder="貨幣" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="TWD">NT$ TWD</SelectItem>
+                          <SelectItem value="USD">$ USD</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
 
                   <div className="col-span-2">
