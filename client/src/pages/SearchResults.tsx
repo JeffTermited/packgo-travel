@@ -1,5 +1,6 @@
 import { useState, useEffect, Fragment, useMemo } from "react";
 import { useLocation } from "wouter";
+import { useLocale } from "@/contexts/LocaleContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -96,6 +97,7 @@ const generateSmartTags = (tour: any) => {
 };
 
 export default function SearchResults() {
+  const { t } = useLocale();
   const [location, setLocation] = useLocation();
   const searchParams = new URLSearchParams(window.location.search);
   
@@ -308,8 +310,8 @@ export default function SearchResults() {
         {/* 簡潔的頁面標題 */}
         <section className="bg-white border-b border-gray-200">
           <div className="container py-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">探索行程</h1>
-            <p className="text-gray-500">找到最適合您的旅遊體驗</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('search.title')}</h1>
+            <p className="text-gray-500">{t('search.subtitle')}</p>
           </div>
         </section>
 
@@ -324,7 +326,7 @@ export default function SearchResults() {
                   <DestinationAutocomplete 
                     value={keyword}
                     onChange={setKeyword}
-                    placeholder="搜尋目的地、行程名稱..."
+                    placeholder={t('search.searchPlaceholder')}
                     className="w-full [&_input]:pl-12 [&_input]:h-12 [&_input]:text-base [&_input]:rounded-full [&_input]:border-gray-300 [&_input]:focus:border-black [&_input]:focus:ring-black"
                   />
                   {keyword && (
@@ -346,7 +348,7 @@ export default function SearchResults() {
                   className={`h-12 px-4 rounded-full border-gray-300 ${showFilters ? 'bg-black text-white border-black' : ''}`}
                 >
                   <Filter className="h-4 w-4 mr-2" />
-                  篩選
+                  {t('search.filter')}
                   {activeFilterCount > 0 && (
                     <Badge className="ml-2 bg-black text-white text-xs px-1.5 py-0.5">
                       {activeFilterCount}
@@ -357,14 +359,14 @@ export default function SearchResults() {
 
                 <Select value={sortBy} onValueChange={(value) => setSortBy(value as any)}>
                   <SelectTrigger className="w-40 h-12 rounded-full border-gray-300">
-                    <SelectValue placeholder="排序方式" />
+                    <SelectValue placeholder={t('search.sortBy')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="popular">熱門推薦</SelectItem>
-                    <SelectItem value="price_asc">價格低到高</SelectItem>
-                    <SelectItem value="price_desc">價格高到低</SelectItem>
-                    <SelectItem value="days_asc">天數短到長</SelectItem>
-                    <SelectItem value="days_desc">天數長到短</SelectItem>
+                    <SelectItem value="popular">{t('search.popular')}</SelectItem>
+                    <SelectItem value="price_asc">{t('search.priceAsc')}</SelectItem>
+                    <SelectItem value="price_desc">{t('search.priceDesc')}</SelectItem>
+                    <SelectItem value="days_asc">{t('search.daysAsc')}</SelectItem>
+                    <SelectItem value="days_desc">{t('search.daysDesc')}</SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -372,7 +374,7 @@ export default function SearchResults() {
                   onClick={handleSearch}
                   className="h-12 px-8 bg-black hover:bg-gray-800 text-white rounded-full font-medium"
                 >
-                  搜尋
+                  {t('common.search')}
                 </Button>
               </div>
             </div>
@@ -627,14 +629,14 @@ export default function SearchResults() {
             {isLoading ? (
               <div className="text-center py-16">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
-                <p className="text-gray-500">載入中...</p>
+                <p className="text-gray-500">{t('common.loading')}</p>
               </div>
             ) : tours && tours.length > 0 ? (
               <>
                 {/* 結果數量 */}
                 <div className="mb-6">
                   <p className="text-gray-600">
-                    找到 <span className="font-bold text-black">{pagination?.total || tours.length}</span> 個行程
+                    {t('searchResults.resultsCount', { count: pagination?.total || tours.length })}
                   </p>
                 </div>
 
@@ -666,7 +668,7 @@ export default function SearchResults() {
                           
                           {/* 天數標籤 */}
                           <div className="absolute top-4 left-4 bg-black/80 text-white px-3 py-1.5 text-sm font-medium rounded-full">
-                            {tour.duration} 天
+                            {tour.duration} {t('search.days')}
                           </div>
                           
                           {/* 收藏按鈕 */}
@@ -724,8 +726,8 @@ export default function SearchResults() {
                                 <span className="text-sm text-gray-500">起</span>
                               </div>
                             </div>
-                            <Button 
-                              variant="ghost" 
+                            <Button
+                              variant="ghost"
                               size="sm"
                               className="text-black hover:bg-gray-100"
                               onClick={(e) => {
@@ -733,7 +735,7 @@ export default function SearchResults() {
                                 setLocation(`/tours/${tour.id}`);
                               }}
                             >
-                              查看詳情
+                              {t('common.viewDetails')}
                               <ChevronRight className="h-4 w-4 ml-1" />
                             </Button>
                           </div>
@@ -795,15 +797,15 @@ export default function SearchResults() {
                 <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
                   <MapPin className="h-10 w-10 text-gray-400" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-700 mb-2">找不到符合條件的行程</h3>
-                <p className="text-gray-500 mb-6">請嘗試其他搜尋關鍵字或調整篩選條件</p>
+                <h3 className="text-xl font-bold text-gray-700 mb-2">{t('search.noResults')}</h3>
+                <p className="text-gray-500 mb-6">{t('search.noResultsDesc')}</p>
                 <div className="flex gap-3 justify-center">
                   <Button 
                     onClick={handleClearSearch}
                     variant="outline"
                     className="rounded-full"
                   >
-                    清除搜尋條件
+                    {t('search.clearFilters')}
                   </Button>
                   {activeFilterCount > 0 && (
                     <Button 
@@ -811,7 +813,7 @@ export default function SearchResults() {
                       variant="outline"
                       className="rounded-full"
                     >
-                      清除篩選條件
+                      {t('search.clearFilters')}
                     </Button>
                   )}
                 </div>

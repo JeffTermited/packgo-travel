@@ -4468,3 +4468,63 @@
 - [ ] 檢查 Tours 列表頁翻譯是否正常
 - [ ] 檢查 TourDetail 頁面翻譯是否正常
 
+
+
+### 21.3 修復目的地頁面翻譯問題（RegionPage.tsx）
+- [ ] 檢查 RegionPage.tsx 的翻譯實作
+- [ ] 修復 destinations.asia.name 等翻譯鍵值未正確顯示的問題
+- [ ] 修復 regionPage.popularDestinations 翻譯鍵值
+- [ ] 修復 regionPage.noToursInRegion 翻譯鍵值
+- [ ] 測試所有目的地頁面的翻譯
+
+### 21.4 修復搜尋頁面翻譯問題（SearchPage.tsx）
+- [ ] 檢查 SearchPage.tsx 的翻譯實作
+- [ ] 修復「探索行程」標題翻譯
+- [ ] 修復「找到最適合您的旅遊體驗」副標題翻譯
+- [ ] 修復搜尋框 placeholder 翻譯
+- [ ] 修復「篩選」和「熱門推薦」按鈕翻譯
+- [ ] 修復「找到 X 個行程」翻譯
+- [ ] 測試搜尋頁面的多語言翻譯
+
+
+
+---
+
+## Phase 33: 多語言翻譯系統修復（2026-02-03）
+
+### 33.1 修復目的地頁面翻譯（RegionPage.tsx）
+- [x] 更新 regionConfig 使用正確的翻譯鍵值（regionPage.asia.name 等）
+- [x] 在翻譯檔案中添加 regionPage 嵌套翻譯（zh-TW, en, es）
+- [x] 添加各地區的名稱和描述翻譯
+- [x] 測試繁體中文、英文、西班牙文翻譯
+
+### 33.2 修復搜尋頁面翻譯（SearchResults.tsx）
+- [x] 添加 useLocale hook 導入
+- [x] 修改頁面標題使用 t('search.title')
+- [x] 修改副標題使用 t('search.subtitle')
+- [x] 修改搜尋欄位 placeholder 使用 t('search.searchPlaceholder')
+- [x] 修改篩選按鈕使用 t('search.filter')
+- [x] 修改排序選項使用翻譯函數
+- [x] 修改搜尋按鈕使用 t('common.search')
+- [x] 修改結果計數使用 t('searchResults.resultsCount')
+- [x] 修改天數標籤使用 t('search.days')
+- [x] 修改查看詳情按鈕使用 t('common.viewDetails')
+- [x] 修改無結果提示使用翻譯函數
+
+### 33.3 測試結果
+- [x] 目的地頁面（/destinations/asia）：繁體中文、英文、西班牙文翻譯正常
+- [x] 搜尋頁面（/search）：繁體中文、英文、西班牙文翻譯正常
+- [x] 所有 UI 元素正確顯示對應語言的翻譯
+
+### 33.4 已修復的翻譯鍵值
+| 頁面 | 翻譯鍵值 | 繁體中文 | English | Español |
+|------|----------|----------|---------|---------|
+| RegionPage | regionPage.asia.name | 亞洲地區 | Asia | Asia |
+| RegionPage | regionPage.asia.description | 發現亞洲的多元奇觀 | Discover the diverse wonders of Asia | Descubre las diversas maravillas de Asia |
+| RegionPage | regionPage.popularDestinations | 熱門目的地 | Popular Destinations | Destinos Populares |
+| SearchResults | search.title | 探索行程 | Explore Tours | Explorar Tours |
+| SearchResults | search.subtitle | 找到最適合您的旅遊體驗 | Find the perfect travel experience for you | Encuentra la experiencia de viaje perfecta para ti |
+| SearchResults | search.filter | 篩選 | Filter | Filtrar |
+| SearchResults | search.popular | 熱門推薦 | Popular | Popular |
+| SearchResults | common.search | 搜尋 | Search | Buscar |
+

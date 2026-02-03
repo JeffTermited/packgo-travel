@@ -1022,8 +1022,39 @@ export const zhTW = {
   // 區域頁面
   regionPage: {
     title: '探索{region}',
+    subtitle: '發現令人驚嘆的目的地',
     countries: '包含國家',
     tours: '相關行程',
+    popularDestinations: '熱門目的地',
+    noToursInRegion: '此區域目前沒有行程',
+    europe: {
+      name: '歐洲地區',
+      description: '探索歐洲豐富的歷史與文化',
+    },
+    asia: {
+      name: '亞洲地區',
+      description: '發現亞洲的多元奇觀',
+    },
+    southAmerica: {
+      name: '美洲地區',
+      description: '體驗充滿活力的美洲',
+    },
+    middleEast: {
+      name: '中東地區',
+      description: '揭開中東的神秘面紗',
+    },
+    africa: {
+      name: '非洲地區',
+      description: '探索非洲的野性之美',
+    },
+    cruise: {
+      name: '郵輪之旅',
+      description: '乘坐豪華郵輪遨遊大海',
+    },
+    oceania: {
+      name: '大洋洲',
+      description: '發現大洋洲的天堂島嶼',
+    },
   },
 
   // 預訂行程

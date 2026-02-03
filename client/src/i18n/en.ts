@@ -1021,8 +1021,39 @@ export const en = {
   // Region Page
   regionPage: {
     title: 'Explore {region}',
+    subtitle: 'Discover amazing destinations',
     countries: 'Countries Included',
     tours: 'Related Tours',
+    popularDestinations: 'Popular Destinations',
+    noToursInRegion: 'No tours available in this region',
+    europe: {
+      name: 'Europe',
+      description: 'Explore the rich history and culture of Europe',
+    },
+    asia: {
+      name: 'Asia',
+      description: 'Discover the diverse wonders of Asia',
+    },
+    southAmerica: {
+      name: 'Americas',
+      description: 'Experience the vibrant Americas',
+    },
+    middleEast: {
+      name: 'Middle East',
+      description: 'Uncover the mysteries of the Middle East',
+    },
+    africa: {
+      name: 'Africa',
+      description: 'Explore the wild beauty of Africa',
+    },
+    cruise: {
+      name: 'Cruises',
+      description: 'Sail the seas in luxury',
+    },
+    oceania: {
+      name: 'Oceania',
+      description: 'Discover the paradise islands of Oceania',
+    },
   },
 
   // Book Tour

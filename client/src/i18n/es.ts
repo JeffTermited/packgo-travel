@@ -1020,8 +1020,39 @@ export const es = {
   // Region Page
   regionPage: {
     title: 'Explorar {region}',
+    subtitle: 'Descubre destinos increíbles',
     countries: 'Países Incluidos',
     tours: 'Tours Relacionados',
+    popularDestinations: 'Destinos Populares',
+    noToursInRegion: 'No hay tours disponibles en esta región',
+    europe: {
+      name: 'Europa',
+      description: 'Explora la rica historia y cultura de Europa',
+    },
+    asia: {
+      name: 'Asia',
+      description: 'Descubre las diversas maravillas de Asia',
+    },
+    southAmerica: {
+      name: 'Américas',
+      description: 'Experimenta las vibrantes Américas',
+    },
+    middleEast: {
+      name: 'Medio Oriente',
+      description: 'Descubre los misterios del Medio Oriente',
+    },
+    africa: {
+      name: 'África',
+      description: 'Explora la belleza salvaje de África',
+    },
+    cruise: {
+      name: 'Cruceros',
+      description: 'Navega por los mares con lujo',
+    },
+    oceania: {
+      name: 'Oceanía',
+      description: 'Descubre las islas paraíso de Oceanía',
+    },
   },
 
   // Reservar Tour

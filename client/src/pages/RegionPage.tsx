@@ -16,51 +16,51 @@ const regionConfig: Record<string, {
   continents: string[]; // 對應的洲別
 }> = {
   "europe": {
-    nameKey: "destinations.europe.name",
+    nameKey: "regionPage.europe.name",
     label: "Europe",
-    descriptionKey: "destinations.europe.description",
+    descriptionKey: "regionPage.europe.description",
     image: "/images/dest-europe.webp",
     continents: ["歐洲"]
   },
   "asia": {
-    nameKey: "destinations.asia.name",
+    nameKey: "regionPage.asia.name",
     label: "Asia",
-    descriptionKey: "destinations.asia.description",
+    descriptionKey: "regionPage.asia.description",
     image: "/images/dest-asia.webp",
     continents: ["亞洲"]
   },
   "south-america": {
-    nameKey: "destinations.southAmerica.name",
+    nameKey: "regionPage.southAmerica.name",
     label: "Americas",
-    descriptionKey: "destinations.southAmerica.description",
+    descriptionKey: "regionPage.southAmerica.description",
     image: "/images/dest-southamerica.webp",
     continents: ["美洲"]
   },
   "middle-east": {
-    nameKey: "destinations.middleEast.name",
+    nameKey: "regionPage.middleEast.name",
     label: "Middle East",
-    descriptionKey: "destinations.middleEast.description",
+    descriptionKey: "regionPage.middleEast.description",
     image: "/images/dest-israel.webp",
     continents: ["中東"]
   },
   "africa": {
-    nameKey: "destinations.africa.name",
+    nameKey: "regionPage.africa.name",
     label: "Africa",
-    descriptionKey: "destinations.africa.description",
+    descriptionKey: "regionPage.africa.description",
     image: "/images/dest-africa.webp",
     continents: ["非洲"]
   },
   "cruise": {
-    nameKey: "destinations.cruise.name",
+    nameKey: "regionPage.cruise.name",
     label: "Cruises",
-    descriptionKey: "destinations.cruise.description",
+    descriptionKey: "regionPage.cruise.description",
     image: "/images/dest-cruise.webp",
     continents: [] // 郵輪是特殊類別，不按洲別分
   },
   "oceania": {
-    nameKey: "destinations.oceania.name",
+    nameKey: "regionPage.oceania.name",
     label: "Oceania",
-    descriptionKey: "destinations.oceania.description",
+    descriptionKey: "regionPage.oceania.description",
     image: "/images/dest-europe.webp",
     continents: ["大洋洲"]
   }
