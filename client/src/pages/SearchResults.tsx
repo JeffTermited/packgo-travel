@@ -718,12 +718,12 @@ export default function SearchResults() {
                           {/* 價格 */}
                           <div className="flex items-end justify-between pt-3 border-t border-gray-100">
                             <div>
-                              <span className="text-xs text-gray-400">每人</span>
+                              <span className="text-xs text-gray-400">{t('search.perPerson')}</span>
                               <div className="flex items-baseline gap-1">
                                 <span className="text-2xl font-bold text-black">
                                   NT$ {tour.price?.toLocaleString()}
                                 </span>
-                                <span className="text-sm text-gray-500">起</span>
+                                <span className="text-sm text-gray-500">{t('search.from')}</span>
                               </div>
                             </div>
                             <Button

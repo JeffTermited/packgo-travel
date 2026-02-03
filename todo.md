@@ -4528,3 +4528,18 @@
 | SearchResults | search.popular | 熱門推薦 | Popular | Popular |
 | SearchResults | common.search | 搜尋 | Search | Buscar |
 
+
+
+---
+
+## Phase 34: 修復價格顯示多語言翻譯（2026-02-03）
+
+### 34.1 問題分析
+- [ ] 搜尋頁面行程卡片價格顯示「每人」和「起」未翻譯
+- [ ] 需要在 SearchResults.tsx 中修復價格相關文字的翻譯
+
+### 34.2 修復實作
+- [x] 在 SearchResults.tsx 中修改「每人」使用 t('search.perPerson')
+- [x] 在 SearchResults.tsx 中修改「起」使用 t('search.from')
+- [x] 測試繁體中文、英文、西班牙文翻譯
+
