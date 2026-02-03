@@ -386,9 +386,16 @@ export class ItineraryPolishAgent {
     
     // 合併所有批次結果
     const allPolished: PolishedItinerary[] = [];
-    for (const result of batchResults) {
+    for (let i = 0; i < batchResults.length; i++) {
+      const result = batchResults[i];
+      console.log(`[ItineraryPolishAgent] Batch ${i + 1} result: ${result.length} days`);
+      if (result.length === 0) {
+        console.warn(`[ItineraryPolishAgent] WARNING: Batch ${i + 1} returned 0 days!`);
+      }
       allPolished.push(...result);
     }
+    
+    console.log(`[ItineraryPolishAgent] Total merged: ${allPolished.length} days from ${batchResults.length} batches`);
     
     return allPolished;
   }
@@ -483,9 +490,26 @@ ${JSON.stringify(batch, null, 2)}
       }
 
       const polishedItineraries = response.data.itineraries || [];
+      
+      // 新增詳細日誌
+      console.log(`[ItineraryPolishAgent] Batch ${batchNumber} Claude response:`);
+      console.log(`  - response.success: ${response.success}`);
+      console.log(`  - response.data exists: ${!!response.data}`);
+      console.log(`  - response.data.itineraries exists: ${!!response.data?.itineraries}`);
+      console.log(`  - itineraries count: ${polishedItineraries.length}`);
+      if (polishedItineraries.length > 0) {
+        console.log(`  - First day: Day ${polishedItineraries[0]?.day}, Title: ${polishedItineraries[0]?.title?.substring(0, 30)}...`);
+      }
 
       if (!Array.isArray(polishedItineraries)) {
         throw new Error("Invalid response format");
+      }
+      
+      // 檢查是否返回的天數與輸入不符
+      if (polishedItineraries.length !== batch.length) {
+        console.warn(`[ItineraryPolishAgent] WARNING: Batch ${batchNumber} input ${batch.length} days but got ${polishedItineraries.length} days!`);
+        console.warn(`  - Input days: ${batch.map(d => d.day).join(', ')}`);
+        console.warn(`  - Output days: ${polishedItineraries.map(d => d.day).join(', ')}`);
       }
 
       const elapsed = Date.now() - startTime;

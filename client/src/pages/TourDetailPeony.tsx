@@ -1062,12 +1062,11 @@ const DayCard = ({
             </div>
           )}
           
-          {/* Expand Button */}
-          {day.activities && day.activities.length > 3 && (
+          {/* Expand Button - 每一日都顯示 */}
+          {day.activities && day.activities.length > 0 && (
             <button
               onClick={onToggle}
-              className="flex items-center gap-2 text-base font-medium transition-colors"
-              style={{ color: themeColor.secondary }}
+              className="flex items-center gap-2 text-base font-bold transition-colors text-gray-900 hover:text-black"
             >
               {isExpanded ? (
                 <>收起 <ChevronUp className="h-4 w-4" /></>

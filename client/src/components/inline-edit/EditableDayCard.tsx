@@ -318,12 +318,11 @@ export function EditableDayCard({
             </div>
           ) : null}
           
-          {/* Expand Button */}
-          {day.activities && day.activities.length > 3 && (
+          {/* Expand Button - 每一日都顯示 */}
+          {day.activities && day.activities.length > 0 && (
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="flex items-center gap-2 text-sm font-medium transition-colors"
-              style={{ color: themeColor.secondary }}
+              className="flex items-center gap-2 text-sm font-bold transition-colors text-gray-900 hover:text-black"
             >
               {isExpanded ? (
                 <>收起 <ChevronUp className="h-4 w-4" /></>

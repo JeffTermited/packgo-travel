@@ -154,11 +154,14 @@ export const DailyItinerarySection: React.FC<DailyItinerarySectionProps> = ({
                   </div>
 
                   {/* Expand/Collapse Icon */}
-                  <div className="flex-shrink-0">
+                  <div className="flex-shrink-0 flex items-center gap-2">
+                    <span className="text-sm font-bold text-gray-900">
+                      {isExpanded ? '收起' : '查看更多'}
+                    </span>
                     {isExpanded ? (
-                      <ChevronUp className="h-6 w-6 text-gray-400" />
+                      <ChevronUp className="h-6 w-6 text-gray-900" />
                     ) : (
-                      <ChevronDown className="h-6 w-6 text-gray-400" />
+                      <ChevronDown className="h-6 w-6 text-gray-900" />
                     )}
                   </div>
                 </button>

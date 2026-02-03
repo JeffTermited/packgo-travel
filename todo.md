@@ -4266,3 +4266,45 @@
 - [x] 驗證西班牙文翻譯正確顯示（例如：「測試行程 - 東京賞櫻」→「Itinerario de prueba - Observación de cerezos en flor en Tokio」）
 - [x] 確認語言切換功能正常運作
 
+
+
+---
+
+## Phase 29: 修復 AI 行程生成只產生 Day 6 的問題（2026-02-02）
+
+### 問題描述
+- 用戶重新生成「經典台灣環島6日」行程後，只生成了 Day 6
+- 日誌顯示 ItineraryExtractAgent 成功提取 6 天，但 ItineraryPolishAgent 只成功處理 1 天
+- 資料庫中 dailyItinerary 欄位為 NULL
+
+### 29.1 問題診斷
+- [ ] 檢查 ItineraryPolishAgent 批次處理邏輯
+- [ ] 檢查為何 Batch 1 (5 days) 和 Batch 2 (1 day) 只返回 1 天
+- [ ] 檢查資料庫儲存邏輯
+
+### 29.2 修復
+- [ ] 修復 ItineraryPolishAgent 批次合併邏輯
+- [ ] 確保所有天數都能正確儲存
+
+### 29.3 驗證
+- [ ] 重新測試行程生成
+- [ ] 確認所有 6 天都能正確生成
+
+
+
+---
+
+## Phase 30: 修復 AI 行程生成與「查看更多」按鈕問題（2026-02-03）
+
+### 行程生成問題修復
+- [x] 新增詳細日誌追蹤 ItineraryPolishAgent 批次合併邏輯
+- [x] 驗證 15 天行程成功生成（Batch 1: 5 days, Batch 2: 5 days, Batch 3: 5 days）
+- [x] 確認 Total merged: 15 days from 3 batches
+
+### 「查看更多」按鈕修復
+- [x] 修改 EditableDayCard.tsx - 條件從 `activities.length > 3` 改為 `activities.length > 0`
+- [x] 修改 EditableDayCard.tsx - 顏色改為 `text-gray-900 hover:text-black`
+- [x] 修改 DailyItinerarySection.tsx - 新增「查看更多/收起」文字，顏色改為 `text-gray-900`
+- [x] 修改 TourDetailPeony.tsx DayCard - 條件從 `activities.length > 3` 改為 `activities.length > 0`
+- [x] 修改 TourDetailPeony.tsx DayCard - 顏色改為 `text-gray-900 hover:text-black`
+- [x] 驗證修改後每日都顯示「查看更多」按鈕且顏色為黑色
