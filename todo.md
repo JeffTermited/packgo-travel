@@ -4215,3 +4215,54 @@
 - [x] 驗證篩選器翻譯（所有國家 → All Countries、上架中 → Active）
 - [x] 驗證行程卡片翻譯（天 → Days、夜 → Nights、起 → from、查看詳情 → View Details）
 - [x] 測試語言切換功能正常運作
+
+
+---
+
+## Phase 32: 批量翻譯所有行程（2026-02-02）
+
+### 32.1 檢查 Translation Agent 功能
+- [ ] 檢查 Translation Agent 核心類別
+- [ ] 檢查翻譯資料表結構
+- [ ] 確認 Claude API 整合正常
+
+### 32.2 實作批量翻譯功能
+- [ ] 實作批量翻譯 API 端點
+- [ ] 實作翻譯進度追蹤
+- [ ] 實作翻譯結果儲存
+
+### 32.3 執行批量翻譯
+- [ ] 翻譯所有行程標題到英文
+- [ ] 翻譯所有行程標題到西班牙文
+- [ ] 翻譯所有行程描述到英文
+- [ ] 翻譯所有行程描述到西班牙文
+
+### 32.4 驗證翻譯結果
+- [ ] 檢查翻譯品質
+- [ ] 測試前端顯示翻譯內容
+
+
+---
+
+## Phase 28: Translation Agent 批量翻譯功能（2026-02-02）
+
+### 28.1 翻譯功能實作
+- [x] 實作批量翻譯 API 端點 (`tours.translateAllTours`)
+- [x] 使用 Translation Agent 翻譯所有行程標題和描述
+- [x] 支援英文 (en) 和西班牙文 (es) 翻譯
+- [x] 翻譯結果儲存到 translations 資料表
+
+### 28.2 前端整合
+- [x] 修改 Tours.tsx 頁面整合翻譯 API
+- [x] 根據當前語言設定自動載入翻譯內容
+- [x] 行程標題根據語言動態顯示翻譯版本
+
+### 28.3 資料庫修復
+- [x] 添加缺失的 isVerified, verifiedBy, verifiedAt 欄位到 translations 表
+- [x] 確保 drizzle schema 與資料庫結構同步
+
+### 28.4 驗證結果
+- [x] 驗證英文翻譯正確顯示（例如：「巴爾幹半島7國經典全覽」→「15-Day Balkan Peninsula 7-Country Classic Tour」）
+- [x] 驗證西班牙文翻譯正確顯示（例如：「測試行程 - 東京賞櫻」→「Itinerario de prueba - Observación de cerezos en flor en Tokio」）
+- [x] 確認語言切換功能正常運作
+

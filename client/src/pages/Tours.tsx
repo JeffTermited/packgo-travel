@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -17,11 +17,100 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useLocale } from "@/contexts/LocaleContext";
 
+// 行程卡片組件，支援動態翻譯
+function TourCard({ tour, language, t, formatPrice }: { 
+  tour: any; 
+  language: string; 
+  t: (key: string) => string;
+  formatPrice: (price: number) => string;
+}) {
+  // 只有非中文語言才需要載入翻譯
+  const shouldLoadTranslation = language !== 'zh-TW';
+  
+  const { data: translations } = trpc.translation.getTourTranslations.useQuery(
+    { tourId: tour.id, targetLanguage: language as 'en' | 'es' | 'ja' | 'ko' },
+    { 
+      enabled: shouldLoadTranslation,
+      staleTime: 1000 * 60 * 5, // 5 分鐘快取
+    }
+  );
+
+  // 根據語言決定顯示的標題
+  const displayTitle = useMemo(() => {
+    if (language === 'zh-TW') return tour.title;
+    return translations?.title || tour.title;
+  }, [language, translations, tour.title]);
+
+  return (
+    <Link href={`/tours/${tour.id}`}>
+      <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group rounded-3xl border-0">
+        {/* 行程圖片 */}
+        <div className="relative aspect-[4/3] overflow-hidden">
+          {tour.imageUrl || tour.heroImage ? (
+            <img
+              src={tour.imageUrl || tour.heroImage}
+              alt={displayTitle}
+              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+              <MapPin className="h-16 w-16 text-gray-400" />
+            </div>
+          )}
+          
+          {/* 狀態標籤 */}
+          {tour.status === "inactive" && (
+            <Badge className="absolute top-4 right-4 bg-red-500 text-white rounded-full">
+              {t('tours.inactive')}
+            </Badge>
+          )}
+        </div>
+
+        {/* 行程資訊 */}
+        <div className="p-6">
+          <h3 className="text-xl font-bold mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+            {displayTitle}
+          </h3>
+
+          {/* 目的地 */}
+          <div className="flex items-center text-gray-600 mb-3">
+            <MapPin className="h-4 w-4 mr-1" />
+            <span className="text-sm">
+              {tour.destinationCountry} {tour.destinationCity}
+            </span>
+          </div>
+
+          {/* 天數 */}
+          <div className="flex items-center text-gray-600 mb-4">
+            <Calendar className="h-4 w-4 mr-1" />
+            <span className="text-sm">
+              {tour.duration} {t('tours.days')} {tour.nights} {t('tours.nights')}
+            </span>
+          </div>
+
+          {/* 價格 */}
+          <div className="flex items-center justify-between pt-4 border-t">
+            <div>
+              <span className="text-2xl font-bold text-primary">
+                {formatPrice(tour.price || 0)}
+              </span>
+              <span className="text-sm text-gray-500 ml-1">{t('tours.startingFrom')}</span>
+            </div>
+            <Button className="rounded-full bg-black text-white hover:bg-gray-800">
+              {t('tours.viewDetails')}
+            </Button>
+          </div>
+        </div>
+      </Card>
+    </Link>
+  );
+}
+
 export default function Tours() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCountry, setSelectedCountry] = useState<string>("all");
   const [selectedStatus, setSelectedStatus] = useState<string>("active");
-  const { t } = useLocale();
+  const { t, language, formatPrice } = useLocale();
 
   // 查詢所有行程
   const { data: tours, isLoading } = trpc.tours.list.useQuery({
@@ -139,67 +228,13 @@ export default function Tours() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredTours.map((tour: any) => (
-                    <Link key={tour.id} href={`/tours/${tour.id}`}>
-                      <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group rounded-3xl border-0">
-                        {/* 行程圖片 */}
-                        <div className="relative aspect-[4/3] overflow-hidden">
-                          {tour.imageUrl || tour.heroImage ? (
-                            <img
-                              src={tour.imageUrl || tour.heroImage}
-                              alt={tour.title}
-                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
-                              <MapPin className="h-16 w-16 text-gray-400" />
-                            </div>
-                          )}
-                          
-                          {/* 狀態標籤 */}
-                          {tour.status === "inactive" && (
-                            <Badge className="absolute top-4 right-4 bg-red-500 text-white rounded-full">
-                              {t('tours.inactive')}
-                            </Badge>
-                          )}
-                        </div>
-
-                        {/* 行程資訊 */}
-                        <div className="p-6">
-                          <h3 className="text-xl font-bold mb-2 line-clamp-2 group-hover:text-primary transition-colors">
-                            {tour.title}
-                          </h3>
-
-                          {/* 目的地 */}
-                          <div className="flex items-center text-gray-600 mb-3">
-                            <MapPin className="h-4 w-4 mr-1" />
-                            <span className="text-sm">
-                              {tour.destinationCountry} {tour.destinationCity}
-                            </span>
-                          </div>
-
-                          {/* 天數 */}
-                          <div className="flex items-center text-gray-600 mb-4">
-                            <Calendar className="h-4 w-4 mr-1" />
-                            <span className="text-sm">
-                              {tour.duration} {t('tours.days')} {tour.nights} {t('tours.nights')}
-                            </span>
-                          </div>
-
-                          {/* 價格 */}
-                          <div className="flex items-center justify-between pt-4 border-t">
-                            <div>
-                              <span className="text-2xl font-bold text-primary">
-                                NT$ {tour.price?.toLocaleString() || "0"}
-                              </span>
-                              <span className="text-sm text-gray-500 ml-1">{t('tours.startingFrom')}</span>
-                            </div>
-                            <Button className="rounded-full bg-black text-white hover:bg-gray-800">
-                              {t('tours.viewDetails')}
-                            </Button>
-                          </div>
-                        </div>
-                      </Card>
-                    </Link>
+                    <TourCard 
+                      key={tour.id} 
+                      tour={tour} 
+                      language={language} 
+                      t={t}
+                      formatPrice={formatPrice}
+                    />
                   ))}
                 </div>
               </>

@@ -14,7 +14,7 @@ import { quickExtractTourInfo } from "./webScraper";
 import { sendBookingConfirmationEmail } from "./email";
 import * as auth from "./auth";
 import { createToken } from "./jwt";
-import { translateText, translateBatch } from "./translation";
+import { translateText, translateBatch, translateTour, translateMultipleTours, getTourTranslations, getAllTourTranslations, getTranslationJobs, getSupportedLanguages, Language } from "./translation";
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -2965,6 +2965,90 @@ export const appRouter = router({
           input.sourceLanguage
         );
         return { translated };
+      }),
+
+    // Translate a single tour to multiple languages
+    translateTour: adminProcedure
+      .input(z.object({
+        tourId: z.number(),
+        targetLanguages: z.array(z.enum(['zh-TW', 'en', 'es', 'ja', 'ko'])),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const result = await translateTour(
+          input.tourId,
+          input.targetLanguages as Language[],
+          'zh-TW',
+          ctx.user.id
+        );
+        return result;
+      }),
+
+    // Translate all tours to multiple languages
+    translateAllTours: adminProcedure
+      .input(z.object({
+        targetLanguages: z.array(z.enum(['zh-TW', 'en', 'es', 'ja', 'ko'])),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        // Get all tour IDs
+        const allTours = await db.getAllTours();
+        const tourIds = allTours.map(t => t.id);
+        
+        if (tourIds.length === 0) {
+          return { success: true, message: 'No tours to translate', results: [] };
+        }
+
+        const result = await translateMultipleTours(
+          tourIds,
+          input.targetLanguages as Language[],
+          ctx.user.id
+        );
+        
+        return {
+          success: result.success,
+          jobId: result.jobId,
+          totalTours: tourIds.length,
+          results: result.results,
+        };
+      }),
+
+    // Get translations for a specific tour
+    getTourTranslations: publicProcedure
+      .input(z.object({
+        tourId: z.number(),
+        targetLanguage: z.enum(['zh-TW', 'en', 'es', 'ja', 'ko']),
+      }))
+      .query(async ({ input }) => {
+        const translations = await getTourTranslations(
+          input.tourId,
+          input.targetLanguage as Language
+        );
+        return translations;
+      }),
+
+    // Get all translations for a tour (all languages)
+    getAllTourTranslations: publicProcedure
+      .input(z.object({
+        tourId: z.number(),
+      }))
+      .query(async ({ input }) => {
+        const translations = await getAllTourTranslations(input.tourId);
+        return translations;
+      }),
+
+    // Get translation job history
+    getJobs: adminProcedure
+      .input(z.object({
+        limit: z.number().optional().default(20),
+      }))
+      .query(async ({ input }) => {
+        const jobs = await getTranslationJobs(input.limit);
+        return jobs;
+      }),
+
+    // Get supported languages
+    getSupportedLanguages: publicProcedure
+      .query(() => {
+        return getSupportedLanguages();
       }),
   }),
 });
