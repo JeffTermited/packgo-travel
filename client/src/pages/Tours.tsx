@@ -17,12 +17,12 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useLocale } from "@/contexts/LocaleContext";
 
-// 行程卡片組件，支援動態翻譯
+// 行程卡片組件，支援動態翻譯和貨幣轉換
 function TourCard({ tour, language, t, formatPrice }: { 
   tour: any; 
   language: string; 
   t: (key: string) => string;
-  formatPrice: (price: number) => string;
+  formatPrice: (price: number, originalCurrency?: 'TWD' | 'USD') => string;
 }) {
   // 只有非中文語言才需要載入翻譯
   const shouldLoadTranslation = language !== 'zh-TW';
@@ -92,7 +92,7 @@ function TourCard({ tour, language, t, formatPrice }: {
           <div className="flex items-center justify-between pt-4 border-t">
             <div>
               <span className="text-2xl font-bold text-primary">
-                {formatPrice(tour.price || 0)}
+                {formatPrice(tour.price || 0, (tour.priceCurrency || 'TWD') as 'TWD' | 'USD')}
               </span>
               <span className="text-sm text-gray-500 ml-1">{t('tours.startingFrom')}</span>
             </div>

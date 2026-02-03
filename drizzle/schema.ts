@@ -71,7 +71,8 @@ export const tours = mysqlTable("tours", {
   // Duration & Pricing
   duration: int("duration").notNull(), // in days
   nights: int("nights"), // number of nights
-  price: int("price").notNull(), // in TWD
+  price: int("price").notNull(), // 原始價格
+  priceCurrency: varchar("priceCurrency", { length: 3 }).default("TWD").notNull(), // 原始價格貨幣 (TWD/USD)
   priceUnit: varchar("priceUnit", { length: 20 }).default("人/起"), // 價格單位
   
   // Flight Information - Outbound

@@ -4308,3 +4308,53 @@
 - [x] 修改 TourDetailPeony.tsx DayCard - 條件從 `activities.length > 3` 改為 `activities.length > 0`
 - [x] 修改 TourDetailPeony.tsx DayCard - 顏色改為 `text-gray-900 hover:text-black`
 - [x] 驗證修改後每日都顯示「查看更多」按鈕且顏色為黑色
+
+
+---
+
+## Phase 31: 建立匯率 Agent（2026-02-03）
+
+### 匯率 API 研究
+- [ ] 研究可用的免費匯率 API（ExchangeRate-API, Open Exchange Rates, Fixer.io 等）
+- [ ] 選擇最適合的 API 方案
+
+### 後端匯率 Agent 實作
+- [ ] 建立 exchangeRateAgent.ts 匯率代理服務
+- [ ] 實作匯率快取機制（避免頻繁 API 呼叫）
+- [ ] 建立 tRPC 端點供前端呼叫
+
+### 前端整合
+- [ ] 修改 CurrencyContext 使用即時匯率
+- [ ] 在價格顯示處加入「匯率僅供參考」免責聲明
+- [ ] 測試美金/台幣切換功能
+
+### 測試與驗證
+- [ ] 驗證匯率轉換準確性
+- [ ] 測試快取機制
+- [ ] 儲存 checkpoint
+
+
+---
+
+## Phase 31: 建立匯率 Agent（已完成）
+
+### 31.1 後端服務
+- [x] 建立 `server/agents/exchangeRateAgent.ts`
+- [x] 整合 ExchangeRate-API（免費 API）
+- [x] 實作內存快取機制（1 小時過期）
+- [x] 新增 `exchangeRate.getRates` tRPC 端點
+
+### 31.2 資料庫擴展
+- [x] 在 tours 表新增 `priceCurrency` 欄位（支援 TWD/USD）
+- [x] 更新紐西蘭行程的貨幣為 USD
+
+### 31.3 前端整合
+- [x] 更新 `LocaleContext.tsx` 使用即時匯率 API
+- [x] 更新 `PriceDisplay.tsx` 支援原始貨幣參數
+- [x] 更新 `Tours.tsx` 傳遞行程的原始貨幣
+- [x] 顯示匯率免責聲明
+
+### 31.4 測試驗證
+- [x] 測試台幣顯示：紐西蘭行程 $3,130 USD → NT$98,933
+- [x] 測試美金顯示：紐西蘭行程顯示原始價格 $3,130
+- [x] 驗證匯率轉換準確性

@@ -1,0 +1,1 @@
+ALTER TABLE `tours` ADD `priceCurrency` varchar(3) DEFAULT 'TWD' NOT NULL;

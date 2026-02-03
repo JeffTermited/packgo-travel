@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
 import { translate } from '@/i18n';
+import { trpc } from '@/lib/trpc';
 
 // 支援的語言
 export type Language = 'zh-TW' | 'en' | 'es';
@@ -15,9 +16,15 @@ export const languageNames: Record<Language, string> = {
 };
 
 // 幣值顯示名稱和符號
-export const currencyInfo: Record<Currency, { name: string; symbol: string; rate: number }> = {
-  'TWD': { name: '新台幣', symbol: 'NT$', rate: 1 },
-  'USD': { name: '美金', symbol: '$', rate: 0.031 }, // 約略匯率，實際以報價為準
+export const currencyInfo: Record<Currency, { name: string; symbol: string }> = {
+  'TWD': { name: '新台幣', symbol: 'NT$' },
+  'USD': { name: '美金', symbol: '$' },
+};
+
+// 備用匯率（當 API 不可用時使用）
+const FALLBACK_RATES: Record<string, number> = {
+  TWD: 32.5,
+  USD: 1,
 };
 
 interface LocaleContextType {
@@ -32,9 +39,14 @@ interface LocaleContextType {
   currencySymbol: string;
   currencyName: string;
   
-  // 價格轉換函數
-  convertPrice: (priceInTWD: number) => number;
-  formatPrice: (priceInTWD: number) => string;
+  // 價格轉換函數（支援指定原始貨幣）
+  convertPrice: (price: number, originalCurrency?: Currency) => number;
+  formatPrice: (price: number, originalCurrency?: Currency) => string;
+  
+  // 匯率相關
+  exchangeRate: number | null;
+  isLoadingRate: boolean;
+  rateDisclaimer: string;
   
   // 翻譯函數
   t: (key: string, params?: Record<string, string | number>) => string;
@@ -64,6 +76,15 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
     return 'TWD';
   });
 
+  // 獲取即時匯率
+  const { data: ratesData, isLoading: isLoadingRate } = trpc.exchangeRate.getRates.useQuery(
+    undefined,
+    {
+      staleTime: 60 * 60 * 1000, // 1 小時
+      refetchOnWindowFocus: false,
+    }
+  );
+
   // 設定語言並儲存到 localStorage
   const setLanguage = useCallback((lang: Language) => {
     setLanguageState(lang);
@@ -80,18 +101,49 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // 價格轉換（從台幣轉換到目標幣值）
-  const convertPrice = useCallback((priceInTWD: number): number => {
-    const rate = currencyInfo[currency].rate;
-    return Math.round(priceInTWD * rate);
-  }, [currency]);
+  // 獲取匯率（優先使用 API 資料，否則使用備用匯率）
+  const getRate = useCallback((fromCurrency: Currency, toCurrency: Currency): number => {
+    if (fromCurrency === toCurrency) return 1;
+    
+    const rates = ratesData?.rates || FALLBACK_RATES;
+    const fromRate = rates[fromCurrency] || FALLBACK_RATES[fromCurrency] || 1;
+    const toRate = rates[toCurrency] || FALLBACK_RATES[toCurrency] || 1;
+    
+    return toRate / fromRate;
+  }, [ratesData]);
+
+  // 價格轉換（支援指定原始貨幣）
+  const convertPrice = useCallback((price: number, originalCurrency: Currency = 'TWD'): number => {
+    if (originalCurrency === currency) return price;
+    
+    const rate = getRate(originalCurrency, currency);
+    
+    // 根據目標貨幣決定是否取整
+    if (currency === 'TWD') {
+      return Math.round(price * rate);
+    } else {
+      // USD 等貨幣保留小數點後兩位
+      return Math.round(price * rate * 100) / 100;
+    }
+  }, [currency, getRate]);
 
   // 格式化價格顯示
-  const formatPrice = useCallback((priceInTWD: number): string => {
-    const converted = convertPrice(priceInTWD);
+  const formatPrice = useCallback((price: number, originalCurrency: Currency = 'TWD'): string => {
+    const converted = convertPrice(price, originalCurrency);
     const symbol = currencyInfo[currency].symbol;
-    return `${symbol}${converted.toLocaleString()}`;
+    
+    if (currency === 'TWD') {
+      return `${symbol}${converted.toLocaleString()}`;
+    } else {
+      return `${symbol}${converted.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+    }
   }, [currency, convertPrice]);
+
+  // 計算當前顯示的匯率（TWD to USD 或 USD to TWD）
+  const exchangeRate = useMemo(() => {
+    if (!ratesData?.rates) return null;
+    return getRate('TWD', 'USD');
+  }, [ratesData, getRate]);
 
   // 翻譯函數
   const t = useCallback((key: string, params?: Record<string, string | number>): string => {
@@ -108,8 +160,11 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
     currencyName: currencyInfo[currency].name,
     convertPrice,
     formatPrice,
+    exchangeRate,
+    isLoadingRate,
+    rateDisclaimer: ratesData?.disclaimer || '匯率僅供參考，實際價格以屆時人員提供的報價為準',
     t,
-  }), [language, setLanguage, currency, setCurrency, convertPrice, formatPrice, t]);
+  }), [language, setLanguage, currency, setCurrency, convertPrice, formatPrice, exchangeRate, isLoadingRate, ratesData, t]);
 
   return (
     <LocaleContext.Provider value={value}>
