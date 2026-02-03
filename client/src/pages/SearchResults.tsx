@@ -97,7 +97,7 @@ const generateSmartTags = (tour: any) => {
 };
 
 export default function SearchResults() {
-  const { t } = useLocale();
+  const { t, formatPrice, currency, rateDisclaimer } = useLocale();
   const [location, setLocation] = useLocation();
   const searchParams = new URLSearchParams(window.location.search);
   
@@ -721,10 +721,15 @@ export default function SearchResults() {
                               <span className="text-xs text-gray-400">{t('search.perPerson')}</span>
                               <div className="flex items-baseline gap-1">
                                 <span className="text-2xl font-bold text-black">
-                                  NT$ {tour.price?.toLocaleString()}
+                                  {formatPrice(tour.price || 0, (tour.priceCurrency as 'TWD' | 'USD') || 'TWD')}
                                 </span>
                                 <span className="text-sm text-gray-500">{t('search.from')}</span>
                               </div>
+                              {currency !== ((tour.priceCurrency as 'TWD' | 'USD') || 'TWD') && (
+                                <span className="text-[10px] text-gray-400 mt-0.5 block">
+                                  {t('search.convertedPriceNote')}
+                                </span>
+                              )}
                             </div>
                             <Button
                               variant="ghost"

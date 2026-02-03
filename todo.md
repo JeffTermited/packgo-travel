@@ -4543,3 +4543,43 @@
 - [x] 在 SearchResults.tsx 中修改「起」使用 t('search.from')
 - [x] 測試繁體中文、英文、西班牙文翻譯
 
+
+
+---
+
+## Phase 35: 實現貨幣符號動態顯示功能（2026-02-03）
+
+### 35.1 需求分析
+- [x] 檢查現有貨幣系統（LocaleContext）的實作方式
+- [x] 確認貨幣匯率轉換邏輯
+
+### 35.2 實作
+- [x] 修改 SearchResults.tsx 使用動態貨幣符號
+- [x] 根據選擇的貨幣（TWD/USD）顯示對應符號（NT$/USD$）
+- [x] 實現價格轉換（使用 formatPrice 函數）
+
+### 35.3 測試
+- [x] 測試 TWD 貨幣顯示
+- [x] 測試 USD 貨幣顯示
+- [x] 確認價格轉換正確
+
+
+
+---
+
+## Phase 36: 修改 USD 貨幣符號（2026-02-03）
+
+### 36.1 需求
+- [x] 將 USD 貨幣符號從 $ 改為 USD$
+
+### 36.2 實作
+- [x] 修改 LocaleContext.tsx 中的 currencyInfo.USD.symbol
+- [x] 測試 USD 貨幣顯示為 USD$
+
+### 36.3 支援行程原始貨幣
+- [x] 資料庫 schema 已有 priceCurrency 欄位（預設 TWD）
+- [x] 修改 SearchResults.tsx 讀取行程的原始貨幣並傳遞給 formatPrice
+- [x] 修改 FeaturedTours.tsx 讀取行程的原始貨幣並傳遞給 formatPrice
+- [x] 測試 TWD 和 USD 原始貨幣的轉換
+- [x] 驗證「轉換價格僅供參考」提示顯示正確
+

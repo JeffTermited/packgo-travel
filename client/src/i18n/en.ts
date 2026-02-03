@@ -1281,6 +1281,7 @@ export const en = {
     days: 'days',
     perPerson: 'per person',
     from: 'from',
+    convertedPriceNote: 'Converted price for reference only',
     deepTravel: 'Deep Travel',
     classicTour: 'Classic Tour',
     lightTravel: 'Light Travel',

@@ -1282,6 +1282,7 @@ export const zhTW = {
     days: '天',
     perPerson: '每人',
     from: '起',
+    convertedPriceNote: '轉換價格僅供參考',
     deepTravel: '深度旅遊',
     classicTour: '經典行程',
     lightTravel: '輕旅行',

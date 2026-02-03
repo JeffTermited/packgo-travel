@@ -101,7 +101,7 @@ export default function FeaturedTours() {
                   <CardFooter className="flex items-center justify-between border-t-2 border-black pt-6 bg-gray-50">
                     <div>
                       <span className="text-xs text-gray-500 block">{t('common.perPerson')}</span>
-                      <span className="text-2xl font-bold text-black">{formatPrice(tour.price)}</span>
+                      <span className="text-2xl font-bold text-black">{formatPrice(tour.price, (tour.priceCurrency as 'TWD' | 'USD') || 'TWD')}</span>
                       <span className="text-xs text-gray-400 ml-1">{t('common.startingFrom')}</span>
                     </div>
                     <Link href={`/tours/${tour.id}`}>

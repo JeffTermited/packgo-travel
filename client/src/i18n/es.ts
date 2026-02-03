@@ -1280,6 +1280,7 @@ export const es = {
     days: 'días',
     perPerson: 'por persona',
     from: 'desde',
+    convertedPriceNote: 'Precio convertido solo como referencia',
     deepTravel: 'Viaje Profundo',
     classicTour: 'Tour Clásico',
     lightTravel: 'Viaje Ligero',

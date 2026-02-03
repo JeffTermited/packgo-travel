@@ -18,7 +18,7 @@ export const languageNames: Record<Language, string> = {
 // 幣值顯示名稱和符號
 export const currencyInfo: Record<Currency, { name: string; symbol: string }> = {
   'TWD': { name: '新台幣', symbol: 'NT$' },
-  'USD': { name: '美金', symbol: '$' },
+  'USD': { name: '美金', symbol: 'USD$' },
 };
 
 // 備用匯率（當 API 不可用時使用）
