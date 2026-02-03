@@ -7,7 +7,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
-import { Globe, ChevronDown } from 'lucide-react';
+import { Globe, ChevronDown, DollarSign } from 'lucide-react';
 
 // 語言切換組件 - 黑白簡潔風格
 export function LanguageSwitcher() {
@@ -25,19 +25,19 @@ export function LanguageSwitcher() {
         <Button 
           variant="ghost" 
           size="sm" 
-          className="h-8 px-2 text-sm font-normal text-black hover:bg-transparent hover:text-black/70 border-none"
+          className="h-8 px-2 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-black gap-1"
         >
-          <Globe className="h-4 w-4 mr-1.5" />
-          <span className="hidden sm:inline">{languageName}</span>
-          <ChevronDown className="h-3 w-3 ml-1" />
+          <Globe className="h-4 w-4" />
+          <span>{languageName}</span>
+          <ChevronDown className="h-3 w-3 opacity-50" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-36 bg-white border border-gray-200 rounded-lg shadow-lg">
+      <DropdownMenuContent align="end" className="w-36 bg-white border border-gray-200 shadow-lg">
         {languages.map((lang) => (
           <DropdownMenuItem
             key={lang.code}
             onClick={() => setLanguage(lang.code)}
-            className={`cursor-pointer rounded-lg ${
+            className={`cursor-pointer ${
               language === lang.code 
                 ? 'bg-black text-white' 
                 : 'hover:bg-gray-100'
@@ -53,11 +53,11 @@ export function LanguageSwitcher() {
 
 // 幣值切換組件 - 黑白簡潔風格
 export function CurrencySwitcher() {
-  const { currency, setCurrency, currencySymbol } = useLocale();
+  const { currency, setCurrency } = useLocale();
 
   const currencies: { code: Currency; name: string; symbol: string }[] = [
-    { code: 'TWD', name: 'NTS', symbol: 'NT$' },
-    { code: 'USD', name: 'USD', symbol: '$' },
+    { code: 'TWD', name: '新台幣', symbol: 'NT$' },
+    { code: 'USD', name: '美金', symbol: '$' },
   ];
 
   return (
@@ -66,26 +66,26 @@ export function CurrencySwitcher() {
         <Button 
           variant="ghost" 
           size="sm" 
-          className="h-8 px-2 text-sm font-normal text-black hover:bg-transparent hover:text-black/70 border-none"
+          className="h-8 px-2 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-black gap-1"
         >
-          <span className="font-medium">$</span>
-          <span className="hidden sm:inline ml-1">{currencySymbol}</span>
-          <ChevronDown className="h-3 w-3 ml-1" />
+          <DollarSign className="h-4 w-4" />
+          <span>{currency}</span>
+          <ChevronDown className="h-3 w-3 opacity-50" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-32 bg-white border border-gray-200 rounded-lg shadow-lg">
+      <DropdownMenuContent align="end" className="w-36 bg-white border border-gray-200 shadow-lg">
         {currencies.map((curr) => (
           <DropdownMenuItem
             key={curr.code}
             onClick={() => setCurrency(curr.code)}
-            className={`cursor-pointer rounded-lg ${
+            className={`cursor-pointer ${
               currency === curr.code 
                 ? 'bg-black text-white' 
                 : 'hover:bg-gray-100'
             }`}
           >
-            <span className="font-mono mr-2">{curr.symbol}</span>
-            {curr.code}
+            <span className="font-mono mr-2 w-8">{curr.symbol}</span>
+            {curr.name}
           </DropdownMenuItem>
         ))}
         <DropdownMenuSeparator className="bg-gray-200" />

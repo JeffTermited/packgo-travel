@@ -127,6 +127,7 @@ export const zhTW = {
       departureDate: '出發時間',
       selectDate: '選擇日期',
       hotKeywords: '熱門搜尋',
+      hotKeywordsList: ['北海道', '東京', '大阪', '歐洲', '土耳其', '郵輪', '滑雪'],
       searchButton: '搜尋',
       featureComingSoon: '功能即將推出，敬請期待！',
     },

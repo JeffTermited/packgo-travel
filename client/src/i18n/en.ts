@@ -127,6 +127,7 @@ export const en = {
       departureDate: 'Departure Date',
       selectDate: 'Select date',
       hotKeywords: 'Hot Searches',
+      hotKeywordsList: ['Hokkaido', 'Tokyo', 'Osaka', 'Europe', 'Turkey', 'Cruise', 'Skiing'],
       searchButton: 'Search',
       featureComingSoon: 'Coming soon, stay tuned!',
     },

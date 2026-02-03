@@ -8,6 +8,8 @@ import { DateRange } from "react-day-picker";
 import { DestinationAutocomplete } from "@/components/DestinationAutocomplete";
 import { DepartureAutocomplete } from "@/components/DepartureAutocomplete";
 import { toast } from "sonner";
+import { useLocale } from "@/contexts/LocaleContext";
+
 
 export default function Hero() {
   const [activeTab, setActiveTab] = useState("group");
@@ -15,9 +17,15 @@ export default function Hero() {
   const [destination, setDestination] = useState("");
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [, setLocation] = useLocation();
+  const { t, language } = useLocale();
 
-  // Hot keywords for destinations
-  const hotKeywords = ["北海道", "東京", "大阪", "歐洲", "土耳其", "郵輪", "滑雪"];
+  // Hot keywords for destinations - hardcoded for each language
+  const hotKeywordsMap: Record<string, string[]> = {
+    'zh-TW': ['北海道', '東京', '大阪', '歐洲', '土耳其', '郵輪', '滑雪'],
+    'en': ['Hokkaido', 'Tokyo', 'Osaka', 'Europe', 'Turkey', 'Cruise', 'Skiing'],
+    'es': ['Hokkaido', 'Tokio', 'Osaka', 'Europa', 'Turquía', 'Crucero', 'Esquí'],
+  };
+  const hotKeywords = hotKeywordsMap[language] || hotKeywordsMap['en'];
 
   const handleSearch = () => {
     const params = new URLSearchParams();
@@ -35,8 +43,8 @@ export default function Hero() {
     setLocation(`/search?destination=${encodeURIComponent(keyword)}`);
   };
 
-  const handleLockedTabClick = (tabName: string) => {
-    toast.info(`${tabName}功能即將推出，敬請期待！`);
+  const handleLockedTabClick = () => {
+    toast.info(t('common.comingSoon'));
   };
 
 
@@ -57,10 +65,10 @@ export default function Hero() {
         {/* Hero Text */}
         <div className="text-center mb-8 animate-in fade-in zoom-in duration-1000">
           <h2 className="text-white text-xl md:text-2xl font-serif mb-2 tracking-widest text-shadow">
-            * 跟著花期去旅行 *
+            {t('hero.subtitle')}
           </h2>
           <h1 className="text-white text-4xl md:text-6xl font-bold font-serif tracking-tight text-shadow-lg">
-            精選旅程 折扣<span className="text-white">最後一週</span>
+            {t('hero.title')}
           </h1>
         </div>
 
@@ -69,15 +77,15 @@ export default function Hero() {
           {/* Tabs */}
           <div className="flex w-full border-b border-gray-200 bg-gray-50 rounded-t-3xl">
             {[
-              { id: "group", label: "團體旅遊", icon: <Users className="h-4 w-4" />, locked: false },
-              { id: "flight", label: "機票", icon: <Plane className="h-4 w-4" />, locked: true },
-              { id: "hotel", label: "訂房", icon: <Hotel className="h-4 w-4" />, locked: true },
+              { id: "group", labelKey: "hero.search.tabs.groupTours", icon: <Users className="h-4 w-4" />, locked: false },
+              { id: "flight", labelKey: "hero.search.tabs.flights", icon: <Plane className="h-4 w-4" />, locked: true },
+              { id: "hotel", labelKey: "hero.search.tabs.hotels", icon: <Hotel className="h-4 w-4" />, locked: true },
             ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => {
                   if (tab.locked) {
-                    handleLockedTabClick(tab.label);
+                    handleLockedTabClick();
                   } else {
                     setActiveTab(tab.id);
                   }
@@ -91,7 +99,7 @@ export default function Hero() {
                 }`}
               >
                 {tab.icon}
-                {tab.label}
+                {t(tab.labelKey)}
                 {tab.locked && <Lock className="h-3 w-3 ml-1" />}
               </button>
             ))}
@@ -104,34 +112,34 @@ export default function Hero() {
                 <div className="flex flex-col md:flex-row gap-4 items-end">
                   {/* Departure Location - Changed to Autocomplete */}
                   <div className="w-full" style={{ flex: '1 1 0', minWidth: 0 }}>
-                    <label className="block text-xs font-medium text-gray-700 mb-1.5">出發地</label>
+                    <label className="block text-xs font-medium text-gray-700 mb-1.5">{t('hero.search.departure')}</label>
                     <DepartureAutocomplete 
                       value={departure}
                       onChange={setDeparture}
-                      placeholder="輸入出發地"
+                      placeholder={t('hero.search.departurePlaceholder')}
                       className="w-full [&_input]:rounded-full [&_input]:bg-gray-50 [&_input]:border-gray-200 [&_input]:focus:ring-primary [&_input]:focus:border-primary [&_input]:h-12 [&_input]:w-full"
                     />
                   </div>
 
                   {/* Keyword Input */}
                   <div className="w-full" style={{ flex: '1 1 0', minWidth: 0 }}>
-                    <label className="block text-xs font-medium text-gray-700 mb-1.5">關鍵字</label>
+                    <label className="block text-xs font-medium text-gray-700 mb-1.5">{t('hero.search.keyword')}</label>
                     <DestinationAutocomplete 
                       value={destination}
                       onChange={setDestination}
                       onSelect={handleSearch}
-                      placeholder="輸入目的地"
+                      placeholder={t('hero.search.destinationPlaceholder')}
                       className="w-full [&_input]:rounded-full [&_input]:bg-gray-50 [&_input]:border-gray-200 [&_input]:focus:ring-primary [&_input]:focus:border-primary [&_input]:h-12 [&_input]:w-full"
                     />
                   </div>
 
                   {/* Date Range Picker */}
                   <div className="w-full" style={{ flex: '1 1 0', minWidth: 0 }}>
-                    <label className="block text-xs font-medium text-gray-700 mb-1.5">出發時間</label>
+                    <label className="block text-xs font-medium text-gray-700 mb-1.5">{t('hero.search.departureDate')}</label>
                     <DateRangePicker 
                       value={dateRange}
                       onChange={setDateRange}
-                      placeholder="選擇日期"
+                      placeholder={t('hero.search.selectDate')}
                       className="h-12 rounded-full w-full"
                     />
                   </div>
@@ -142,7 +150,7 @@ export default function Hero() {
                       onClick={handleSearch}
                       className="w-full h-12 bg-black hover:bg-gray-900 text-white rounded-full font-bold shadow-md transition-all hover:shadow-lg"
                     >
-                      搜尋
+                      {t('hero.search.searchButton')}
                     </Button>
                   </div>
                 </div>
@@ -151,9 +159,9 @@ export default function Hero() {
                 {/* Hot Keywords - Only show for group tours */}
                 {activeTab === "group" && (
                   <div className="flex items-center gap-2 text-sm text-gray-500 mt-2 pt-2 border-t border-gray-100">
-                    <span className="font-medium text-primary">熱門搜尋：</span>
+                    <span className="font-medium text-primary">{t('hero.search.hotKeywords')}：</span>
                     <div className="flex flex-wrap gap-2">
-                      {hotKeywords.map((keyword) => (
+                      {hotKeywords.map((keyword: string) => (
                         <button 
                           key={keyword} 
                           onClick={() => handleKeywordClick(keyword)}
@@ -172,3 +180,4 @@ export default function Hero() {
     </section>
   );
 }
+

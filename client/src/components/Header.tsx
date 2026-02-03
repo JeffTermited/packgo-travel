@@ -1,6 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Menu, Phone, Search, X, User, Globe, ChevronDown, Shield } from "lucide-react";
+import { Menu, Phone, X, User, Shield } from "lucide-react";
 import { useState } from "react";
 import { Link } from "wouter";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
@@ -23,8 +23,6 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white shadow-sm">
-
-
       {/* Main Header */}
       <div className="container flex h-20 items-center justify-between">
         {/* Logo */}
@@ -32,7 +30,8 @@ export default function Header() {
           <img 
             src="/images/logo-bag-black-v3.png" 
             alt="PACK&GO Logo" 
-           className="h-10 w-10 object-contain"          />
+            className="h-10 w-10 object-contain"
+          />
           <div className="flex flex-col justify-center pl-1">
             <span className="text-[24px] font-bold tracking-wide text-black leading-none font-sans">
               PACK&GO
@@ -44,13 +43,13 @@ export default function Header() {
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden lg:flex items-center gap-6 xl:gap-8">
+        <nav className="hidden lg:flex items-center gap-5 xl:gap-7">
           {navItems.map((item) =>
             item.isLink ? (
               <Link
                 key={item.labelKey}
                 href={item.href}
-                className="text-[15px] font-medium text-gray-700 hover:text-primary transition-colors relative group py-2"
+                className="text-[14px] font-medium text-gray-700 hover:text-primary transition-colors relative group py-2 whitespace-nowrap"
               >
                 {t(item.labelKey)}
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
@@ -59,7 +58,7 @@ export default function Header() {
               <a
                 key={item.labelKey}
                 href={item.href}
-                className="text-[15px] font-medium text-gray-700 hover:text-primary transition-colors relative group py-2"
+                className="text-[14px] font-medium text-gray-700 hover:text-primary transition-colors relative group py-2 whitespace-nowrap"
               >
                 {t(item.labelKey)}
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
@@ -68,29 +67,47 @@ export default function Header() {
           )}
         </nav>
 
-        {/* Locale Switcher & Contact Info */}
+        {/* Right Side - Locale Switcher & User */}
         <div className="hidden md:flex items-center gap-4">
           {/* Language & Currency Switcher */}
           <LocaleSwitcher />
           
+          {/* Divider */}
+          <div className="h-8 w-px bg-gray-200"></div>
+          
+          {/* Admin Panel Link */}
           {isAuthenticated && user?.role === "admin" && (
             <>
-              <Link href="/admin" className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:text-black hover:bg-gray-50 rounded-full transition-all">
+              <Link 
+                href="/admin" 
+                className="flex items-center gap-1.5 text-sm font-medium text-gray-700 hover:text-black transition-colors whitespace-nowrap"
+              >
                 <Shield className="h-4 w-4" />
                 <span>{t('nav.adminPanel')}</span>
               </Link>
+              <div className="h-8 w-px bg-gray-200"></div>
             </>
           )}
-          <div className="flex flex-col items-end gap-1">
-            <span className="text-[11px] text-gray-500 tracking-wider">{t('nav.memberArea')}</span>
+          
+          {/* Member Area */}
+          <div className="flex flex-col items-end">
+            <span className="text-[10px] text-gray-400 tracking-wider leading-none mb-0.5">
+              {t('nav.memberArea')}
+            </span>
             {isAuthenticated && user ? (
-              <Link href="/profile" className="flex items-center gap-2 text-base font-bold text-black hover:text-gray-700 transition-colors">
-                <User className="h-4 w-4" />
+              <Link 
+                href="/profile" 
+                className="flex items-center gap-1.5 text-sm font-semibold text-black hover:text-gray-600 transition-colors whitespace-nowrap"
+              >
+                <User className="h-3.5 w-3.5" />
                 <span>{user.name || user.email}</span>
               </Link>
             ) : (
-              <Link href="/login" className="flex items-center gap-2 text-base font-bold text-black hover:text-gray-700 transition-colors">
-                <User className="h-4 w-4" />
+              <Link 
+                href="/login" 
+                className="flex items-center gap-1.5 text-sm font-semibold text-black hover:text-gray-600 transition-colors whitespace-nowrap"
+              >
+                <User className="h-3.5 w-3.5" />
                 <span>{t('nav.loginRegister')}</span>
               </Link>
             )}
@@ -130,6 +147,7 @@ export default function Header() {
               </a>
             )
           )}
+          
           {/* Mobile Locale Switcher */}
           <div className="flex items-center justify-center py-2 border-t border-gray-100 mt-2">
             <LocaleSwitcher />

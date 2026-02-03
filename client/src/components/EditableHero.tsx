@@ -28,6 +28,26 @@ const defaultContent: HeroContent = {
   hotKeywords: ["北海道", "東京", "大阪", "歐洲", "土耳其", "郵輪", "滑雪"],
 };
 
+// 多語言熱門關鍵字映射
+const hotKeywordsTranslations: Record<string, Record<string, string>> = {
+  '北海道': { 'zh-TW': '北海道', 'en': 'Hokkaido', 'es': 'Hokkaido' },
+  '東京': { 'zh-TW': '東京', 'en': 'Tokyo', 'es': 'Tokio' },
+  '大阪': { 'zh-TW': '大阪', 'en': 'Osaka', 'es': 'Osaka' },
+  '歐洲': { 'zh-TW': '歐洲', 'en': 'Europe', 'es': 'Europa' },
+  '土耳其': { 'zh-TW': '土耳其', 'en': 'Turkey', 'es': 'Turquía' },
+  '郵輪': { 'zh-TW': '郵輪', 'en': 'Cruise', 'es': 'Crucero' },
+  '滑雪': { 'zh-TW': '滑雪', 'en': 'Skiing', 'es': 'Esquí' },
+};
+
+// 翻譯熱門關鍵字的輔助函數
+const translateKeyword = (keyword: string, language: string): string => {
+  const translations = hotKeywordsTranslations[keyword];
+  if (translations && translations[language]) {
+    return translations[language];
+  }
+  return keyword;
+};
+
 export default function EditableHero() {
   const [activeTab, setActiveTab] = useState("group");
   const [departure, setDeparture] = useState("");
@@ -341,7 +361,7 @@ export default function EditableHero() {
                             onClick={() => handleKeywordClick(keyword)}
                             className="hover:text-primary hover:underline transition-colors"
                           >
-                            {keyword}
+                            {translateKeyword(keyword, language)}
                           </button>
                         ))}
                       </div>

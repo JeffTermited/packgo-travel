@@ -4417,3 +4417,54 @@
 - [x] 檢查 Tours.tsx 中的價格顯示邏輯
 - [x] 確保 formatPrice 函數正確使用當前貨幣
 - [x] 測試修復後的貨幣切換功能
+
+
+---
+
+## Phase 34: 重新整理 Header 右側排列
+
+### 34.1 問題描述
+- [ ] Header 右側的語言選擇器、貨幣選擇器和會員專區/登入按鈕排列擁擠
+- [ ] 需要調整間距讓排列更整潔
+
+### 34.2 修復步驟
+- [ ] 檢查 Header 組件的現有排列
+- [ ] 調整右側元素的間距和對齊
+- [ ] 測試修改後的顯示效果
+
+
+---
+
+## Phase 34: 重新整理 Header 右側排列 (已完成)
+
+### 34.1 問題描述
+- [x] Header 右側的語言選擇器、貨幣選擇器和會員專區/登入按鈕排列擁擠
+- [x] 貨幣選擇器顯示符號而非代碼
+
+### 34.2 修復步驟
+- [x] 調整 Header.tsx 右側元素的間距（gap-6）
+- [x] 在 LocaleSwitcher.tsx 中語言和貨幣選擇器之間加入分隔線（|）
+- [x] 修改貨幣選擇器顯示貨幣代碼（USD、TWD）而非符號
+- [x] 測試修改後的顯示效果
+
+
+---
+
+## Phase 21: 多語言翻譯系統修復（2026-02-03）
+
+### 21.1 修復 Hero 組件熱門關鍵字翻譯問題
+- [x] 診斷問題：EditableHero.tsx 使用資料庫內容而非動態翻譯
+- [x] 修改 LocaleContext.tsx 使用 useEffect 同步 localStorage 語言設定
+- [x] 在 EditableHero.tsx 添加多語言熱門關鍵字映射
+- [x] 實作 translateKeyword() 輔助函數
+- [x] 測試繁體中文翻譯（北海道、東京、大阪、歐洲、土耳其、郵輪、滑雪）
+- [x] 測試英文翻譯（Hokkaido, Tokyo, Osaka, Europe, Turkey, Cruise, Skiing）
+- [x] 測試西班牙文翻譯（Hokkaido, Tokio, Osaka, Europa, Turquía, Crucero, Esquí）
+
+### 21.2 驗證其他組件翻譯
+- [ ] 檢查 Destinations 組件翻譯是否正常
+- [ ] 檢查 FeaturedTours 組件翻譯是否正常
+- [ ] 檢查 Footer 組件翻譯是否正常
+- [ ] 檢查 Tours 列表頁翻譯是否正常
+- [ ] 檢查 TourDetail 頁面翻譯是否正常
+

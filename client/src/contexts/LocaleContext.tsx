@@ -56,25 +56,29 @@ const LocaleContext = createContext<LocaleContextType | undefined>(undefined);
 
 export function LocaleProvider({ children }: { children: React.ReactNode }) {
   // 從 localStorage 讀取初始值，預設繁體中文和台幣
-  const [language, setLanguageState] = useState<Language>(() => {
+  const [language, setLanguageState] = useState<Language>('zh-TW');
+  
+  // 在客戶端初始化時從 localStorage 讀取語言設定
+  useEffect(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('packgo-language');
       if (saved && ['zh-TW', 'en', 'es'].includes(saved)) {
-        return saved as Language;
+        setLanguageState(saved as Language);
       }
     }
-    return 'zh-TW';
-  });
+  }, []);
 
-  const [currency, setCurrencyState] = useState<Currency>(() => {
+  const [currency, setCurrencyState] = useState<Currency>('TWD');
+  
+  // 在客戶端初始化時從 localStorage 讀取貨幣設定
+  useEffect(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('packgo-currency');
       if (saved && ['TWD', 'USD'].includes(saved)) {
-        return saved as Currency;
+        setCurrencyState(saved as Currency);
       }
     }
-    return 'TWD';
-  });
+  }, []);
 
   // 獲取即時匯率
   const { data: ratesData, isLoading: isLoadingRate } = trpc.exchangeRate.getRates.useQuery(
