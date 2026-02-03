@@ -5,9 +5,11 @@ import { trpc } from "@/lib/trpc";
 import { Clock, MapPin, Star, Loader2 } from "lucide-react";
 import { Link } from "wouter";
 import { FavoriteButton } from "@/components/FavoriteButton";
+import { useLocale } from "@/contexts/LocaleContext";
 
 export default function FeaturedTours() {
   const { data: tours, isLoading, error } = trpc.tours.list.useQuery();
+  const { t, formatPrice } = useLocale();
 
   // Filter to show only featured and active tours, limit to 4
   const featuredTours = tours?.filter(tour => tour.featured === 1 && tour.status === 'active').slice(0, 4) || [];
@@ -17,10 +19,10 @@ export default function FeaturedTours() {
       <div className="container">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-serif font-bold text-black mb-4 relative inline-block">
-            熱門行程
+            {t('featuredTours.title')}
             <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-12 h-1 bg-black"></span>
           </h2>
-          <p className="text-gray-600 mt-4">Our most popular packages curated for you</p>
+          <p className="text-gray-600 mt-4">{t('featuredTours.subtitle')}</p>
         </div>
 
         {isLoading && (
@@ -31,13 +33,13 @@ export default function FeaturedTours() {
 
         {error && (
           <div className="text-center py-20">
-            <p className="text-gray-600">無法載入行程資料，請稍後再試。</p>
+            <p className="text-gray-600">{t('common.error')}</p>
           </div>
         )}
 
         {!isLoading && !error && featuredTours.length === 0 && (
           <div className="text-center py-20">
-            <p className="text-gray-600">目前沒有精選行程。</p>
+            <p className="text-gray-600">{t('common.noResults')}</p>
           </div>
         )}
 
@@ -54,7 +56,7 @@ export default function FeaturedTours() {
                     />
                     <div className="absolute top-4 left-4">
                       <Badge className="bg-black text-white hover:bg-black px-4 py-1 text-xs font-bold tracking-wider shadow-lg rounded-full">
-                        精選行程
+                        {t('featuredTours.title')}
                       </Badge>
                     </div>
                     <div className="absolute top-4 right-4">
@@ -64,7 +66,7 @@ export default function FeaturedTours() {
                       <div className="flex items-center justify-between text-white">
                         <div className="flex items-center gap-2">
                           <Clock className="h-4 w-4 text-white" />
-                          <span className="text-sm font-medium">{tour.duration}天</span>
+                          <span className="text-sm font-medium">{tour.duration}{t('common.days')}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <MapPin className="h-4 w-4 text-white" />
@@ -78,9 +80,9 @@ export default function FeaturedTours() {
                     <div className="flex justify-between items-start">
                       <div>
                         <Badge variant="outline" className="mb-2 text-black border-black rounded-full">
-                          {tour.category === 'group' && '團體旅遊'}
-                          {tour.category === 'custom' && '客製旅遊'}
-                          {tour.category === 'theme' && '主題旅遊'}
+                          {tour.category === 'group' && t('nav.groupTours')}
+                          {tour.category === 'custom' && t('nav.customTours')}
+                          {tour.category === 'theme' && t('common.features')}
                         </Badge>
                         <h3 className="text-2xl font-bold text-black group-hover:text-gray-700 transition-colors">
                           {tour.title}
@@ -98,13 +100,13 @@ export default function FeaturedTours() {
 
                   <CardFooter className="flex items-center justify-between border-t-2 border-black pt-6 bg-gray-50">
                     <div>
-                      <span className="text-xs text-gray-500 block">每人起</span>
-                      <span className="text-2xl font-bold text-black">NT$ {tour.price.toLocaleString()}</span>
-                      <span className="text-xs text-gray-400 ml-1">起</span>
+                      <span className="text-xs text-gray-500 block">{t('common.perPerson')}</span>
+                      <span className="text-2xl font-bold text-black">{formatPrice(tour.price)}</span>
+                      <span className="text-xs text-gray-400 ml-1">{t('common.startingFrom')}</span>
                     </div>
                     <Link href={`/tours/${tour.id}`}>
                       <Button className="bg-black hover:bg-gray-800 text-white px-8 shadow-md transition-transform active:scale-95 rounded-full">
-                        查看詳情
+                        {t('common.viewMore')}
                       </Button>
                     </Link>
                   </CardFooter>
@@ -119,7 +121,7 @@ export default function FeaturedTours() {
                   variant="outline" 
                   className="border-2 border-black rounded-3xl text-black hover:bg-black hover:text-white px-12 py-6 text-lg font-bold transition-all rounded-full"
                 >
-                  查看更多行程
+                  {t('featuredTours.viewAll')}
                 </Button>
               </Link>
             </div>

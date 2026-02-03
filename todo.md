@@ -3886,3 +3886,35 @@
 - [x] 修正底部固定 CTA 按鈕的顏色
 - [x] 修正預設主題色的 secondary 顏色（從 #374151 改為 #1F2937）
 - [x] 驗證修正效果
+
+
+---
+
+## Phase 26: 多語言翻譯系統實作（2026-02-02）
+
+### 26.1 建立翻譯基礎架構
+- [x] 創建 i18n 目錄結構
+- [x] 創建 zh-TW.ts 繁體中文翻譯檔案
+- [x] 創建 en.ts 英文翻譯檔案
+- [x] 創建 es.ts 西班牙文翻譯檔案
+- [x] 創建 i18n/index.ts 統一導出
+
+### 26.2 擴展 LocaleContext
+- [x] 修改 LocaleContext.tsx 添加 t() 翻譯函數
+- [x] 實作 getNestedValue 支援巢狀 key 存取
+- [x] 整合翻譯系統到 Context Provider
+
+### 26.3 更新首頁組件使用翻譯
+- [x] 更新 EditableHero.tsx 使用 t() 函數
+- [x] 更新 Header.tsx 使用 t() 函數
+- [x] 更新 Footer.tsx 使用 t() 函數
+- [x] 更新 Destinations.tsx 使用 t() 函數
+- [x] 更新 FeaturedTours.tsx 使用 t() 函數
+- [x] 更新 NewsletterSection.tsx 使用 t() 函數
+
+### 26.4 測試語言切換功能
+- [x] 測試繁體中文顯示正常
+- [x] 測試英文顯示正常
+- [x] 測試語言切換器正常運作
+- [x] 驗證 Header、Hero、Destinations、Footer 等組件翻譯正確
+

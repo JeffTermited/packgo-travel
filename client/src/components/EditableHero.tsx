@@ -12,6 +12,7 @@ import { trpc } from "@/lib/trpc";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useLocale } from "@/contexts/LocaleContext";
 
 interface HeroContent {
   title: string;
@@ -33,6 +34,7 @@ export default function EditableHero() {
   const [destination, setDestination] = useState("");
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [, setLocation] = useLocation();
+  const { t, language } = useLocale();
   
   const { isEditMode, canEdit } = useHomeEdit();
   const [isEditing, setIsEditing] = useState(false);
@@ -49,12 +51,12 @@ export default function EditableHero() {
 
   const updateContentMutation = trpc.homepage.updateContent.useMutation({
     onSuccess: () => {
-      toast.success('Hero 內容已更新');
+      toast.success(t('hero.edit.updateSuccess'));
       setIsEditing(false);
       refetch();
     },
     onError: (error) => {
-      toast.error('更新失敗: ' + error.message);
+      toast.error(t('hero.edit.updateError') + ': ' + error.message);
     },
   });
 
@@ -84,7 +86,7 @@ export default function EditableHero() {
   };
 
   const handleLockedTabClick = (tabName: string) => {
-    toast.info(`${tabName}功能即將推出，敬請期待！`);
+    toast.info(t('hero.search.featureComingSoon'));
   };
 
   const handleSaveContent = () => {
@@ -99,12 +101,12 @@ export default function EditableHero() {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      toast.error('請選擇圖片檔案');
+      toast.error(t('hero.edit.selectImageFile'));
       return;
     }
 
     if (file.size > 10 * 1024 * 1024) {
-      toast.error('圖片大小不能超過 10MB');
+      toast.error(t('hero.edit.imageSizeLimit'));
       return;
     }
 
@@ -121,15 +123,15 @@ export default function EditableHero() {
       });
 
       if (!response.ok) {
-        throw new Error('上傳失敗');
+        throw new Error(t('hero.edit.uploadFailed'));
       }
 
       const data = await response.json();
       setEditContent(prev => ({ ...prev, backgroundImage: data.url }));
       setShowImageDialog(false);
-      toast.success('圖片上傳成功');
+      toast.success(t('hero.edit.uploadSuccess'));
     } catch (error) {
-      toast.error('圖片上傳失敗');
+      toast.error(t('hero.edit.uploadFailed'));
     } finally {
       setIsUploading(false);
     }
@@ -139,6 +141,13 @@ export default function EditableHero() {
     const keywords = value.split(',').map(k => k.trim()).filter(k => k);
     setEditContent(prev => ({ ...prev, hotKeywords: keywords }));
   };
+
+  // 搜尋標籤配置
+  const searchTabs = [
+    { id: "group", labelKey: "hero.search.tabs.groupTours", icon: <Users className="h-4 w-4" />, locked: false },
+    { id: "flight", labelKey: "hero.search.tabs.flights", icon: <Plane className="h-4 w-4" />, locked: true },
+    { id: "hotel", labelKey: "hero.search.tabs.hotels", icon: <Hotel className="h-4 w-4" />, locked: true },
+  ];
 
   return (
     <section className="relative w-full h-[600px] md:h-[700px] flex items-center justify-center overflow-hidden">
@@ -158,7 +167,7 @@ export default function EditableHero() {
             className="absolute top-4 right-4 z-20 bg-black/70 hover:bg-black text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
           >
             <ImageIcon className="h-4 w-4" />
-            更換背景圖片
+            {t('hero.edit.changeBackground')}
           </button>
         )}
       </div>
@@ -185,10 +194,10 @@ export default function EditableHero() {
           ) : (
             <>
               <h2 className="text-white text-xl md:text-2xl font-serif mb-2 tracking-widest text-shadow">
-                {content.subtitle}
+                {t('hero.subtitle')}
               </h2>
               <h1 className="text-white text-4xl md:text-6xl font-bold font-serif tracking-tight text-shadow-lg">
-                {content.title}
+                {t('hero.title')}
               </h1>
             </>
           )}
@@ -216,7 +225,7 @@ export default function EditableHero() {
               className="bg-green-600 hover:bg-green-700 text-white"
             >
               <Check className="h-4 w-4 mr-2" />
-              儲存
+              {t('common.save')}
             </Button>
             <Button
               onClick={() => {
@@ -227,7 +236,7 @@ export default function EditableHero() {
               className="bg-white/20 hover:bg-white/30 text-white border-white/50"
             >
               <X className="h-4 w-4 mr-2" />
-              取消
+              {t('common.cancel')}
             </Button>
           </div>
         )}
@@ -236,16 +245,12 @@ export default function EditableHero() {
         <div className="w-full max-w-5xl bg-white rounded-3xl shadow-2xl animate-in slide-in-from-bottom-10 duration-700 delay-300">
           {/* Tabs */}
           <div className="flex w-full border-b border-gray-200 bg-gray-50">
-            {[
-              { id: "group", label: "團體旅遊", icon: <Users className="h-4 w-4" />, locked: false },
-              { id: "flight", label: "機票", icon: <Plane className="h-4 w-4" />, locked: true },
-              { id: "hotel", label: "訂房", icon: <Hotel className="h-4 w-4" />, locked: true },
-            ].map((tab) => (
+            {searchTabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => {
                   if (tab.locked) {
-                    handleLockedTabClick(tab.label);
+                    handleLockedTabClick(t(tab.labelKey));
                   } else {
                     setActiveTab(tab.id);
                   }
@@ -259,7 +264,7 @@ export default function EditableHero() {
                 }`}
               >
                 {tab.icon}
-                {tab.label}
+                {t(tab.labelKey)}
                 {tab.locked && <Lock className="h-3 w-3 ml-1" />}
               </button>
             ))}
@@ -272,34 +277,34 @@ export default function EditableHero() {
                 <div className="flex flex-col md:flex-row gap-4 items-end">
                   {/* Departure Location - Changed to Autocomplete */}
                   <div className="w-full" style={{ flex: '1 1 0', minWidth: 0 }}>
-                    <label className="block text-xs font-medium text-gray-700 mb-1.5">出發地</label>
+                    <label className="block text-xs font-medium text-gray-700 mb-1.5">{t('hero.search.departure')}</label>
                     <DepartureAutocomplete 
                       value={departure}
                       onChange={setDeparture}
-                      placeholder="輸入出發地"
+                      placeholder={t('hero.search.departurePlaceholder')}
                       className="w-full [&_input]:rounded-full [&_input]:bg-gray-50 [&_input]:border-gray-200 [&_input]:focus:ring-primary [&_input]:focus:border-primary [&_input]:h-12 [&_input]:w-full"
                     />
                   </div>
 
                   {/* Keyword Input */}
                   <div className="w-full" style={{ flex: '1 1 0', minWidth: 0 }}>
-                    <label className="block text-xs font-medium text-gray-700 mb-1.5">關鍵字</label>
+                    <label className="block text-xs font-medium text-gray-700 mb-1.5">{t('hero.search.keyword')}</label>
                     <DestinationAutocomplete 
                       value={destination}
                       onChange={setDestination}
                       onSelect={handleSearch}
-                      placeholder="輸入目的地"
+                      placeholder={t('hero.search.destinationPlaceholder')}
                       className="w-full [&_input]:rounded-full [&_input]:bg-gray-50 [&_input]:border-gray-200 [&_input]:focus:ring-primary [&_input]:focus:border-primary [&_input]:h-12 [&_input]:w-full"
                     />
                   </div>
 
                   {/* Date Range Picker */}
                   <div className="w-full" style={{ flex: '1 1 0', minWidth: 0 }}>
-                    <label className="block text-xs font-medium text-gray-700 mb-1.5">出發時間</label>
+                    <label className="block text-xs font-medium text-gray-700 mb-1.5">{t('hero.search.departureDate')}</label>
                     <DateRangePicker 
                       value={dateRange}
                       onChange={setDateRange}
-                      placeholder="選擇日期"
+                      placeholder={t('hero.search.selectDate')}
                       className="h-12 rounded-full w-full"
                     />
                   </div>
@@ -310,7 +315,7 @@ export default function EditableHero() {
                       onClick={handleSearch}
                       className="w-full h-12 bg-black hover:bg-gray-900 text-white rounded-full font-bold shadow-md transition-all hover:shadow-lg"
                     >
-                      搜尋
+                      {t('hero.search.searchButton')}
                     </Button>
                   </div>
                 </div>
@@ -319,13 +324,13 @@ export default function EditableHero() {
                 {/* Hot Keywords - Only show for group tours */}
                 {activeTab === "group" && (
                   <div className="flex items-center gap-2 text-sm text-gray-500 mt-2 pt-2 border-t border-gray-100">
-                    <span className="font-medium text-primary">熱門搜尋：</span>
+                    <span className="font-medium text-primary">{t('hero.search.hotKeywords')}：</span>
                     {isEditing ? (
                       <input
                         type="text"
                         value={editContent.hotKeywords.join(', ')}
                         onChange={(e) => handleKeywordsChange(e.target.value)}
-                        placeholder="用逗號分隔關鍵字"
+                        placeholder={t('hero.edit.keywordsPlaceholder')}
                         className="flex-1 bg-gray-100 px-3 py-1 rounded text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                       />
                     ) : (
@@ -352,7 +357,7 @@ export default function EditableHero() {
       <Dialog open={showImageDialog} onOpenChange={setShowImageDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>更換背景圖片</DialogTitle>
+            <DialogTitle>{t('hero.edit.changeBackground')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div 
@@ -362,13 +367,13 @@ export default function EditableHero() {
               {isUploading ? (
                 <div className="flex flex-col items-center gap-2">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                  <p className="text-sm text-gray-500">上傳中...</p>
+                  <p className="text-sm text-gray-500">{t('hero.edit.uploading')}</p>
                 </div>
               ) : (
                 <>
                   <Upload className="h-10 w-10 mx-auto text-gray-400 mb-2" />
-                  <p className="text-sm text-gray-600">點擊或拖放圖片到此處</p>
-                  <p className="text-xs text-gray-400 mt-1">支援 JPG、PNG、WebP，最大 10MB</p>
+                  <p className="text-sm text-gray-600">{t('hero.edit.dropImage')}</p>
+                  <p className="text-xs text-gray-400 mt-1">{t('hero.edit.imageFormats')}</p>
                 </>
               )}
             </div>
@@ -380,7 +385,7 @@ export default function EditableHero() {
               className="hidden"
             />
             <div>
-              <Label>或輸入圖片網址</Label>
+              <Label>{t('hero.edit.orEnterUrl')}</Label>
               <Input
                 type="url"
                 placeholder="https://example.com/image.jpg"

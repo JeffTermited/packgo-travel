@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
+import { translate } from '@/i18n';
 
 // 支援的語言
 export type Language = 'zh-TW' | 'en' | 'es';
@@ -34,6 +35,9 @@ interface LocaleContextType {
   // 價格轉換函數
   convertPrice: (priceInTWD: number) => number;
   formatPrice: (priceInTWD: number) => string;
+  
+  // 翻譯函數
+  t: (key: string, params?: Record<string, string | number>) => string;
 }
 
 const LocaleContext = createContext<LocaleContextType | undefined>(undefined);
@@ -89,7 +93,12 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
     return `${symbol}${converted.toLocaleString()}`;
   }, [currency, convertPrice]);
 
-  const value: LocaleContextType = {
+  // 翻譯函數
+  const t = useCallback((key: string, params?: Record<string, string | number>): string => {
+    return translate(key, language, params);
+  }, [language]);
+
+  const value = useMemo<LocaleContextType>(() => ({
     language,
     setLanguage,
     languageName: languageNames[language],
@@ -99,7 +108,8 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
     currencyName: currencyInfo[currency].name,
     convertPrice,
     formatPrice,
-  };
+    t,
+  }), [language, setLanguage, currency, setCurrency, convertPrice, formatPrice, t]);
 
   return (
     <LocaleContext.Provider value={value}>

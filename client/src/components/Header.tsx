@@ -4,19 +4,21 @@ import { Menu, Phone, Search, X, User, Globe, ChevronDown, Shield } from "lucide
 import { useState } from "react";
 import { Link } from "wouter";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
+import { useLocale } from "@/contexts/LocaleContext";
 
 export default function Header() {
   const { user, isAuthenticated } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { t } = useLocale();
 
   const navItems = [
-    { label: "客製旅遊", href: "/custom-tours", isLink: true },
-    { label: "代辦簽證", href: "/visa-services", isLink: true },
-    { label: "包團旅遊", href: "/search", isLink: true },
-    { label: "機票預購", href: "/flight-booking", isLink: true },
-    { label: "機場接送", href: "/airport-transfer", isLink: true },
-    { label: "飯店預訂", href: "/hotel-booking", isLink: true },
-    { label: "聯絡我們", href: "/contact-us", isLink: true },
+    { labelKey: "nav.customTours", href: "/custom-tours", isLink: true },
+    { labelKey: "nav.visaServices", href: "/visa-services", isLink: true },
+    { labelKey: "nav.groupTours", href: "/search", isLink: true },
+    { labelKey: "nav.flightBooking", href: "/flight-booking", isLink: true },
+    { labelKey: "nav.airportTransfer", href: "/airport-transfer", isLink: true },
+    { labelKey: "nav.hotelBooking", href: "/hotel-booking", isLink: true },
+    { labelKey: "nav.contactUs", href: "/contact-us", isLink: true },
   ];
 
   return (
@@ -36,7 +38,7 @@ export default function Header() {
               PACK&GO
             </span>
             <span className="text-[13px] font-medium text-gray-600 tracking-widest mt-1">
-              讓旅行更美好
+              {t('home.slogan')}
             </span>
           </div>
         </Link>
@@ -46,20 +48,20 @@ export default function Header() {
           {navItems.map((item) =>
             item.isLink ? (
               <Link
-                key={item.label}
+                key={item.labelKey}
                 href={item.href}
                 className="text-[15px] font-medium text-gray-700 hover:text-primary transition-colors relative group py-2"
               >
-                {item.label}
+                {t(item.labelKey)}
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
               </Link>
             ) : (
               <a
-                key={item.label}
+                key={item.labelKey}
                 href={item.href}
                 className="text-[15px] font-medium text-gray-700 hover:text-primary transition-colors relative group py-2"
               >
-                {item.label}
+                {t(item.labelKey)}
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
               </a>
             )
@@ -75,12 +77,12 @@ export default function Header() {
             <>
               <Link href="/admin" className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:text-black hover:bg-gray-50 rounded-full transition-all">
                 <Shield className="h-4 w-4" />
-                <span>管理後台</span>
+                <span>{t('nav.adminPanel')}</span>
               </Link>
             </>
           )}
           <div className="flex flex-col items-end gap-1">
-            <span className="text-[11px] text-gray-500 tracking-wider">會員專區</span>
+            <span className="text-[11px] text-gray-500 tracking-wider">{t('nav.memberArea')}</span>
             {isAuthenticated && user ? (
               <Link href="/profile" className="flex items-center gap-2 text-base font-bold text-black hover:text-gray-700 transition-colors">
                 <User className="h-4 w-4" />
@@ -89,7 +91,7 @@ export default function Header() {
             ) : (
               <Link href="/login" className="flex items-center gap-2 text-base font-bold text-black hover:text-gray-700 transition-colors">
                 <User className="h-4 w-4" />
-                <span>登入 / 註冊</span>
+                <span>{t('nav.loginRegister')}</span>
               </Link>
             )}
           </div>
@@ -110,21 +112,21 @@ export default function Header() {
           {navItems.map((item) =>
             item.isLink ? (
               <Link
-                key={item.label}
+                key={item.labelKey}
                 href={item.href}
                 className="text-base font-medium text-gray-800 py-2 border-b border-gray-50"
                 onClick={() => setIsMenuOpen(false)}
               >
-                {item.label}
+                {t(item.labelKey)}
               </Link>
             ) : (
               <a
-                key={item.label}
+                key={item.labelKey}
                 href={item.href}
                 className="text-base font-medium text-gray-800 py-2 border-b border-gray-50"
                 onClick={() => setIsMenuOpen(false)}
               >
-                {item.label}
+                {t(item.labelKey)}
               </a>
             )
           )}
@@ -143,7 +145,7 @@ export default function Header() {
               ) : (
                 <Link href="/login" className="flex items-center gap-1 text-gray-600">
                   <User className="h-4 w-4" />
-                  會員登入
+                  {t('nav.memberLogin')}
                 </Link>
               )}
             </div>

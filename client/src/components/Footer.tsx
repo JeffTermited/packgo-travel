@@ -1,7 +1,10 @@
 import { Facebook, Instagram, Mail, MapPin, Phone } from "lucide-react";
 import { Link } from "wouter";
+import { useLocale } from "@/contexts/LocaleContext";
 
 export default function Footer() {
+  const { t } = useLocale();
+  
   return (
     <footer className="bg-black text-white pt-16 pb-8">
       <div className="container">
@@ -19,12 +22,12 @@ export default function Footer() {
                   PACK&GO
                 </span>
                 <span className="text-[15px] font-medium text-gray-400 tracking-widest mt-1">
-                  讓旅行更美好
+                  {t('footer.slogan')}
                 </span>
               </div>
             </div>
             <p className="text-gray-400 text-sm leading-relaxed">
-              PACK&GO 旅行社致力於為您打造獨一無二的旅遊體驗。從客製化行程到豪華郵輪，我們將帶您探索世界的每一個角落。
+              {t('footer.description')}
             </p>
             <div className="flex gap-4">
               <a href="#" className="bg-gray-800 p-2 rounded-full hover:bg-primary transition-colors">
@@ -38,32 +41,32 @@ export default function Footer() {
 
           {/* Column 2: Quick Links */}
           <div>
-            <h3 className="text-lg font-serif font-bold mb-6 text-white">快速連結</h3>
+            <h3 className="text-lg font-serif font-bold mb-6 text-white">{t('footer.quickLinks')}</h3>
             <ul className="space-y-4 text-sm text-gray-400">
-              <li><Link href="/about-us" className="hover:text-primary transition-colors">關於我們</Link></li>
-              <li><Link href="/terms-of-service" className="hover:text-primary transition-colors">服務條款</Link></li>
-              <li><Link href="/privacy-policy" className="hover:text-primary transition-colors">隱私權政策</Link></li>
-              <li><Link href="/faq" className="hover:text-primary transition-colors">常見問題</Link></li>
-              <li><Link href="/contact-us" className="hover:text-primary transition-colors">聯絡我們</Link></li>
+              <li><Link href="/about-us" className="hover:text-primary transition-colors">{t('nav.aboutUs')}</Link></li>
+              <li><Link href="/terms-of-service" className="hover:text-primary transition-colors">{t('nav.termsOfService')}</Link></li>
+              <li><Link href="/privacy-policy" className="hover:text-primary transition-colors">{t('nav.privacyPolicy')}</Link></li>
+              <li><Link href="/faq" className="hover:text-primary transition-colors">{t('nav.faq')}</Link></li>
+              <li><Link href="/contact-us" className="hover:text-primary transition-colors">{t('nav.contactUs')}</Link></li>
             </ul>
           </div>
 
           {/* Column 3: Services */}
           <div>
-            <h3 className="text-lg font-serif font-bold mb-6 text-white">我們的服務</h3>
+            <h3 className="text-lg font-serif font-bold mb-6 text-white">{t('footer.services')}</h3>
             <ul className="space-y-4 text-sm text-gray-400">
-              <li><Link href="/custom-tours" className="hover:text-primary transition-colors">客製旅遊 / Customized Tours</Link></li>
-              <li><Link href="/visa-services" className="hover:text-primary transition-colors">代辦簽證 / Visa Agency</Link></li>
-              <li><Link href="/group-packages" className="hover:text-primary transition-colors">包團旅遊 / Package Tours</Link></li>
-              <li><Link href="/flight-booking" className="hover:text-primary transition-colors">機票預購 / Ticket Booking</Link></li>
-              <li><Link href="/airport-transfer" className="hover:text-primary transition-colors">機場接送 / Airport Transfer</Link></li>
-              <li><Link href="/hotel-booking" className="hover:text-primary transition-colors">飯店預訂 / Hotel Booking</Link></li>
+              <li><Link href="/custom-tours" className="hover:text-primary transition-colors">{t('services.customTours')}</Link></li>
+              <li><Link href="/visa-services" className="hover:text-primary transition-colors">{t('services.visaServices')}</Link></li>
+              <li><Link href="/group-packages" className="hover:text-primary transition-colors">{t('services.groupPackages')}</Link></li>
+              <li><Link href="/flight-booking" className="hover:text-primary transition-colors">{t('services.flightBooking')}</Link></li>
+              <li><Link href="/airport-transfer" className="hover:text-primary transition-colors">{t('services.airportTransfer')}</Link></li>
+              <li><Link href="/hotel-booking" className="hover:text-primary transition-colors">{t('services.hotelBooking')}</Link></li>
             </ul>
           </div>
 
           {/* Column 4: Contact Info */}
           <div>
-            <h3 className="text-lg font-serif font-bold mb-6 text-white">聯絡資訊</h3>
+            <h3 className="text-lg font-serif font-bold mb-6 text-white">{t('footer.contactInfo')}</h3>
             <ul className="space-y-4 text-sm text-gray-400">
               <li className="flex items-start gap-3">
                 <MapPin className="h-5 w-5 text-white shrink-0 mt-0.5" />
@@ -96,7 +99,7 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-xs text-gray-500">
-            &copy; {new Date().getFullYear()} PACK&GO Travel Agency. All Rights Reserved.
+            {t('footer.copyright', { year: new Date().getFullYear() })}
           </p>
 
         </div>

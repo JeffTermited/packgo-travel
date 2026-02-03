@@ -3,9 +3,12 @@ import { Mail } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useLocale } from "@/contexts/LocaleContext";
 
 export default function NewsletterSection() {
   const [email, setEmail] = useState("");
+  const { t } = useLocale();
+  
   const subscribe = trpc.newsletter.subscribe.useMutation({
     onSuccess: (data: any) => {
       toast.success(data.message);
@@ -19,7 +22,7 @@ export default function NewsletterSection() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) {
-      toast.error("請輸入電子郵件地址");
+      toast.error(t('common.required'));
       return;
     }
     subscribe.mutate({ email });
@@ -30,8 +33,8 @@ export default function NewsletterSection() {
       <div className="container">
         <div className="flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="text-white md:w-1/2">
-            <h3 className="text-2xl font-serif font-bold mb-2">訂閱時事通訊</h3>
-            <p className="text-gray-300">訂閱我們的電子報，獲取最新的旅遊資訊及優惠活動</p>
+            <h3 className="text-2xl font-serif font-bold mb-2">{t('newsletter.title')}</h3>
+            <p className="text-gray-300">{t('newsletter.subtitle')}</p>
           </div>
           <form onSubmit={handleSubmit} className="w-full md:w-1/2 flex gap-0">
             <div className="relative flex-grow">
@@ -40,7 +43,7 @@ export default function NewsletterSection() {
                 type="email" 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="輸入您的電子郵件地址" 
+                placeholder={t('newsletter.placeholder')} 
                 className="w-full h-12 pl-12 pr-4 bg-white/10 border border-white/20 text-white placeholder:text-gray-500 focus:outline-none focus:border-white focus:ring-1 focus:ring-white transition-all"
                 disabled={subscribe.isPending}
               />
@@ -50,7 +53,7 @@ export default function NewsletterSection() {
               disabled={subscribe.isPending}
               className="h-12 px-8 bg-white hover:bg-gray-200 text-black rounded-full font-bold tracking-wide"
             >
-              {subscribe.isPending ? "訂閱中..." : "訂閱"}
+              {subscribe.isPending ? t('common.loading') : t('newsletter.button')}
             </Button>
           </form>
         </div>
