@@ -102,6 +102,10 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // 獲取匯率（優先使用 API 資料，否則使用備用匯率）
+  // API 返回的匯率是以 USD 為基準：USD=1, TWD=32.5
+  // 轉換公式：金額 / fromRate * toRate
+  // 例如：3130 TWD -> USD = 3130 / 32.5 * 1 = 96.3
+  // 例如：100 USD -> TWD = 100 / 1 * 32.5 = 3250
   const getRate = useCallback((fromCurrency: Currency, toCurrency: Currency): number => {
     if (fromCurrency === toCurrency) return 1;
     
@@ -109,6 +113,9 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
     const fromRate = rates[fromCurrency] || FALLBACK_RATES[fromCurrency] || 1;
     const toRate = rates[toCurrency] || FALLBACK_RATES[toCurrency] || 1;
     
+    // 返回轉換率：toRate / fromRate
+    // 例如 TWD->USD: 1/32.5 = 0.0307
+    // 例如 USD->TWD: 32.5/1 = 32.5
     return toRate / fromRate;
   }, [ratesData]);
 
