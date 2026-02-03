@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trpc } from "@/lib/trpc";
+import { useLocale } from "@/contexts/LocaleContext";
 import { 
   Calendar, 
   Clock, 
@@ -33,6 +34,7 @@ import "../print.css";
 
 export default function TourDetail() {
   const { user } = useAuth();
+  const { t } = useLocale();
   const isAdmin = user?.role === "admin";
   const [, params] = useRoute("/tours/:id");
   const [, setLocation] = useLocation();
@@ -71,10 +73,10 @@ export default function TourDetail() {
         <Header />
         <div className="flex-grow flex items-center justify-center bg-white">
           <div className="text-center">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">找不到此行程</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('tourDetail.tourNotFound')}</h2>
             <Button onClick={() => setLocation("/")} className="bg-primary hover:bg-red-700 text-white">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              返回首頁
+              {t('tourDetail.backToHome')}
             </Button>
           </div>
         </div>
@@ -115,7 +117,7 @@ export default function TourDetail() {
               className="bg-white/90 hover:bg-white border-0 text-gray-900"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
-              返回
+              {t('tourDetail.back')}
             </Button>
           </div>
           
@@ -148,12 +150,12 @@ export default function TourDetail() {
               </div>
               <div className="flex items-center gap-2">
                 <Clock className="h-5 w-5" />
-                <span>{tour.duration}天{tour.nights ? `${tour.nights}夜` : ''}</span>
+                <span>{tour.duration}{t('common.days')}{tour.nights ? `${tour.nights}${t('common.nights')}` : ''}</span>
               </div>
               {tour.productCode && (
                 <div className="flex items-center gap-2">
                   <Tag className="h-5 w-5" />
-                  <span>產品代碼：{tour.productCode}</span>
+                  <span>{t('tourDetail.productCode')}：{tour.productCode}</span>
                 </div>
               )}
             </div>
@@ -168,12 +170,12 @@ export default function TourDetail() {
               <CardContent className="p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <Shield className="h-5 w-5 text-blue-600" />
-                  <h3 className="text-lg font-bold text-blue-900">管理員資訊</h3>
+                  <h3 className="text-lg font-bold text-blue-900">{t('tourDetail.adminInfo')}</h3>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {tour.sourceUrl && (
                     <div>
-                      <div className="text-sm font-medium text-blue-700 mb-2">來源 URL</div>
+                      <div className="text-sm font-medium text-blue-700 mb-2">{t('tourDetail.sourceUrl')}</div>
                       <a
                         href={tour.sourceUrl}
                         target="_blank"
@@ -187,7 +189,7 @@ export default function TourDetail() {
                   )}
                   {tour.originalityScore && (
                     <div>
-                      <div className="text-sm font-medium text-blue-700 mb-2">原創性評分</div>
+                      <div className="text-sm font-medium text-blue-700 mb-2">{t('tourDetail.originalityScore')}</div>
                       <span
                         className={`inline-flex px-4 py-2 text-sm font-semibold rounded-full ${
                           Number(tour.originalityScore) >= 90
@@ -218,12 +220,12 @@ export default function TourDetail() {
                   <CardContent className="p-6">
                     <h2 className="text-lg font-bold text-primary mb-4 flex items-center gap-2">
                       <Plane className="h-5 w-5" />
-                      航班資訊
+                      {t('tourDetail.flights')}
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {/* Outbound Flight */}
                       <div className="bg-gray-50 rounded-lg p-4">
-                        <div className="text-sm text-gray-500 mb-2">去程</div>
+                        <div className="text-sm text-gray-500 mb-2">{t('tourDetail.outbound')}</div>
                         <div className="font-medium text-gray-900 mb-2">
                           {tour.outboundAirline || tour.airline}
                         </div>
@@ -252,14 +254,14 @@ export default function TourDetail() {
                         </div>
                         {tour.outboundFlightDuration && (
                           <div className="text-center text-xs text-gray-500 mt-2">
-                            飛行時間：{tour.outboundFlightDuration}
+                            {t('tourDetail.flightDuration')}：{tour.outboundFlightDuration}
                           </div>
                         )}
                       </div>
                       
                       {/* Inbound Flight */}
                       <div className="bg-gray-50 rounded-lg p-4">
-                        <div className="text-sm text-gray-500 mb-2">回程</div>
+                        <div className="text-sm text-gray-500 mb-2">{t('tourDetail.inbound')}</div>
                         <div className="font-medium text-gray-900 mb-2">
                           {tour.inboundAirline || tour.airline}
                         </div>
@@ -288,7 +290,7 @@ export default function TourDetail() {
                         </div>
                         {tour.inboundFlightDuration && (
                           <div className="text-center text-xs text-gray-500 mt-2">
-                            飛行時間：{tour.inboundFlightDuration}
+                            {t('tourDetail.flightDuration')}：{tour.inboundFlightDuration}
                           </div>
                         )}
                       </div>
@@ -304,14 +306,14 @@ export default function TourDetail() {
                     value="overview" 
                     className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none px-6 py-3"
                   >
-                    行程特色
+                    {t('tourDetail.tabs.overview')}
                   </TabsTrigger>
                   {dailyItinerary.length > 0 && (
                     <TabsTrigger 
                       value="itinerary"
                       className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none px-6 py-3"
                     >
-                      每日行程
+                      {t('tourDetail.tabs.itinerary')}
                     </TabsTrigger>
                   )}
                   {tour.hotelName && (
@@ -319,7 +321,7 @@ export default function TourDetail() {
                       value="hotel"
                       className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none px-6 py-3"
                     >
-                      住宿資訊
+                      {t('tourDetail.tabs.hotel')}
                     </TabsTrigger>
                   )}
                   {(includes.length > 0 || excludes.length > 0) && (
@@ -327,7 +329,7 @@ export default function TourDetail() {
                       value="pricing"
                       className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none px-6 py-3"
                     >
-                      費用說明
+                      {t('tourDetail.tabs.pricing')}
                     </TabsTrigger>
                   )}
                   {tour.specialReminders && (
@@ -335,7 +337,7 @@ export default function TourDetail() {
                       value="notes"
                       className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none px-6 py-3"
                     >
-                      注意事項
+                      {t('tourDetail.tabs.notes')}
                     </TabsTrigger>
                   )}
                 </TabsList>
@@ -345,7 +347,7 @@ export default function TourDetail() {
                   {/* Description */}
                   <Card className="border-0 shadow-lg">
                     <CardContent className="p-6">
-                      <h3 className="text-lg font-bold text-gray-900 mb-4">行程介紹</h3>
+                      <h3 className="text-lg font-bold text-gray-900 mb-4">{t('tourDetail.description')}</h3>
                       <div className="prose prose-gray max-w-none">
                         <p className="text-gray-700 leading-relaxed whitespace-pre-line">
                           {tour.description}
@@ -358,7 +360,7 @@ export default function TourDetail() {
                   {tour.destinationDescription && (
                     <Card className="border-0 shadow-lg">
                       <CardContent className="p-6">
-                        <h3 className="text-lg font-bold text-gray-900 mb-4">目的地介紹</h3>
+                        <h3 className="text-lg font-bold text-gray-900 mb-4">{t('tourDetail.destinationIntro')}</h3>
                         <div className="prose prose-gray max-w-none">
                           <p className="text-gray-700 leading-relaxed whitespace-pre-line">
                             {tour.destinationDescription}
@@ -372,7 +374,7 @@ export default function TourDetail() {
                   {highlights.length > 0 && (
                     <Card className="border-0 shadow-lg">
                       <CardContent className="p-6">
-                        <h3 className="text-lg font-bold text-gray-900 mb-4">行程亮點</h3>
+                        <h3 className="text-lg font-bold text-gray-900 mb-4">{t('tourDetail.highlights')}</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           {highlights.map((highlight: string, index: number) => (
                             <div key={index} className="flex items-start gap-3">
@@ -389,7 +391,7 @@ export default function TourDetail() {
                   {attractions.length > 0 && (
                     <Card className="border-0 shadow-lg">
                       <CardContent className="p-6">
-                        <h3 className="text-lg font-bold text-gray-900 mb-4">推薦景點</h3>
+                        <h3 className="text-lg font-bold text-gray-900 mb-4">{t('tourDetail.attractions')}</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           {attractions.map((attraction: any, index: number) => (
                             <div key={index} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
@@ -414,7 +416,7 @@ export default function TourDetail() {
                 <TabsContent value="itinerary" className="mt-6">
                   <Card className="border-0 shadow-lg">
                     <CardContent className="p-6">
-                      <h3 className="text-lg font-bold text-gray-900 mb-6">每日行程</h3>
+                      <h3 className="text-lg font-bold text-gray-900 mb-6">{t('tourDetail.itinerary')}</h3>
                       <div className="space-y-8">
                         {dailyItinerary.map((day: any, index: number) => (
                           <div key={index} className="relative">
@@ -491,18 +493,18 @@ export default function TourDetail() {
                               {/* Meals */}
                               {typeof day === 'object' && day.meals && (
                                 <div className="bg-gray-50 rounded-lg p-4">
-                                  <h5 className="font-bold text-gray-900 mb-3">餐食安排</h5>
+                                  <h5 className="font-bold text-gray-900 mb-3">{t('tourDetail.mealArrangement')}</h5>
                                   <div className="space-y-2 text-sm text-gray-700">
                                     {typeof day.meals === 'object' ? (
                                       <>
                                         {day.meals.breakfast && (
-                                          <p><span className="font-medium">早餐：</span>{day.meals.breakfast}</p>
+                                          <p><span className="font-medium">{t('tourDetail.breakfast')}：</span>{day.meals.breakfast}</p>
                                         )}
                                         {day.meals.lunch && (
-                                          <p><span className="font-medium">午餐：</span>{day.meals.lunch}</p>
+                                          <p><span className="font-medium">{t('tourDetail.lunch')}：</span>{day.meals.lunch}</p>
                                         )}
                                         {day.meals.dinner && (
-                                          <p><span className="font-medium">晚餐：</span>{day.meals.dinner}</p>
+                                          <p><span className="font-medium">{t('tourDetail.dinner')}：</span>{day.meals.dinner}</p>
                                         )}
                                       </>
                                     ) : (
@@ -515,7 +517,7 @@ export default function TourDetail() {
                               {/* Accommodation */}
                               {typeof day === 'object' && day.accommodation && (
                                 <div className="bg-gray-50 rounded-lg p-4">
-                                  <h5 className="font-bold text-gray-900 mb-3">住宿安排</h5>
+                                  <h5 className="font-bold text-gray-900 mb-3">{t('tourDetail.accommodationArrangement')}</h5>
                                   <p className="text-sm text-gray-700">{day.accommodation}</p>
                                 </div>
                               )}
@@ -551,7 +553,7 @@ export default function TourDetail() {
                           <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                             <MapPin className="h-5 w-5 text-gray-400" />
                             <div>
-                              <div className="text-sm text-gray-500">位置</div>
+                              <div className="text-sm text-gray-500">{t('tourDetail.location')}</div>
                               <div className="font-medium text-gray-900">{tour.hotelLocation}</div>
                             </div>
                           </div>
@@ -560,8 +562,8 @@ export default function TourDetail() {
                           <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                             <Calendar className="h-5 w-5 text-gray-400" />
                             <div>
-                              <div className="text-sm text-gray-500">入住晚數</div>
-                              <div className="font-medium text-gray-900">{tour.hotelNights} 晚</div>
+                              <div className="text-sm text-gray-500">{t('tourDetail.nightsStay')}</div>
+                              <div className="font-medium text-gray-900">{tour.hotelNights} {t('tourDetail.nights')}</div>
                             </div>
                           </div>
                         )}
@@ -569,7 +571,7 @@ export default function TourDetail() {
                           <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                             <Clock className="h-5 w-5 text-gray-400" />
                             <div>
-                              <div className="text-sm text-gray-500">入住 / 退房</div>
+                              <div className="text-sm text-gray-500">{t('tourDetail.checkInOut')}</div>
                               <div className="font-medium text-gray-900">
                                 {tour.hotelCheckIn || '15:00'} / {tour.hotelCheckOut || '11:00'}
                               </div>
@@ -580,7 +582,7 @@ export default function TourDetail() {
                           <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                             <Building2 className="h-5 w-5 text-gray-400" />
                             <div>
-                              <div className="text-sm text-gray-500">房型</div>
+                              <div className="text-sm text-gray-500">{t('tourDetail.roomType')}</div>
                               <div className="font-medium text-gray-900">
                                 {tour.hotelRoomType} {tour.hotelRoomSize && `(${tour.hotelRoomSize})`}
                               </div>
@@ -591,14 +593,14 @@ export default function TourDetail() {
 
                       {tour.hotelDescription && (
                         <div className="mb-6">
-                          <h4 className="font-bold text-gray-900 mb-2">酒店介紹</h4>
+                          <h4 className="font-bold text-gray-900 mb-2">{t('tourDetail.hotelIntro')}</h4>
                           <p className="text-gray-700 whitespace-pre-line">{tour.hotelDescription}</p>
                         </div>
                       )}
 
                       {hotelFacilities.length > 0 && (
                         <div className="mb-6">
-                          <h4 className="font-bold text-gray-900 mb-3">設施服務</h4>
+                          <h4 className="font-bold text-gray-900 mb-3">{t('tourDetail.facilities')}</h4>
                           <div className="flex flex-wrap gap-2">
                             {hotelFacilities.map((facility: string, index: number) => (
                               <Badge key={index} variant="outline" className="px-3 py-1">
@@ -611,7 +613,7 @@ export default function TourDetail() {
 
                       {hotelSpecialOffers.length > 0 && (
                         <div className="bg-primary/5 rounded-lg p-4">
-                          <h4 className="font-bold text-primary mb-2">特別贈送</h4>
+                          <h4 className="font-bold text-primary mb-2">{t('tourDetail.specialOffers')}</h4>
                           <ul className="space-y-1">
                             {hotelSpecialOffers.map((offer: string, index: number) => (
                               <li key={index} className="flex items-center gap-2 text-gray-700">
@@ -633,7 +635,7 @@ export default function TourDetail() {
                       <CardContent className="p-6">
                         <h3 className="text-lg font-bold text-green-600 mb-4 flex items-center gap-2">
                           <CheckCircle2 className="h-5 w-5" />
-                          費用包含
+                          {t('tourDetail.includedItems')}
                         </h3>
                         <ul className="space-y-2">
                           {includes.map((item: string, index: number) => (
@@ -652,7 +654,7 @@ export default function TourDetail() {
                       <CardContent className="p-6">
                         <h3 className="text-lg font-bold text-red-600 mb-4 flex items-center gap-2">
                           <Info className="h-5 w-5" />
-                          費用不含
+                          {t('tourDetail.excludedItems')}
                         </h3>
                         <ul className="space-y-2">
                           {excludes.map((item: string, index: number) => (
@@ -669,27 +671,27 @@ export default function TourDetail() {
                   {optionalTours.length > 0 && (
                     <Card className="border-0 shadow-lg">
                       <CardContent className="p-6">
-                        <h3 className="text-lg font-bold text-gray-900 mb-4">自費行程推薦</h3>
+                        <h3 className="text-lg font-bold text-gray-900 mb-4">{t('tourDetail.optionalTours')}</h3>
                         <div className="overflow-x-auto">
                           <table className="w-full">
                             <thead>
                               <tr className="border-b">
-                                <th className="text-left py-3 px-4 font-medium text-gray-500">項目</th>
-                                <th className="text-left py-3 px-4 font-medium text-gray-500">內容</th>
-                                <th className="text-right py-3 px-4 font-medium text-gray-500">費用</th>
+                                <th className="text-left py-3 px-4 font-medium text-gray-500">{t('tourDetail.optionalItem')}</th>
+                                <th className="text-left py-3 px-4 font-medium text-gray-500">{t('tourDetail.optionalContent')}</th>
+                                <th className="text-right py-3 px-4 font-medium text-gray-500">{t('tourDetail.optionalPrice')}</th>
                               </tr>
                             </thead>
                             <tbody>
-                              {optionalTours.map((tour: any, index: number) => (
+                              {optionalTours.map((optTour: any, index: number) => (
                                 <tr key={index} className="border-b last:border-b-0">
                                   <td className="py-3 px-4 font-medium text-gray-900">
-                                    {typeof tour === 'string' ? tour : tour.name}
+                                    {typeof optTour === 'string' ? optTour : optTour.name}
                                   </td>
                                   <td className="py-3 px-4 text-gray-700">
-                                    {typeof tour === 'object' ? tour.description : '-'}
+                                    {typeof optTour === 'object' ? optTour.description : '-'}
                                   </td>
                                   <td className="py-3 px-4 text-right font-medium text-primary">
-                                    {typeof tour === 'object' && tour.price ? `NT$ ${tour.price.toLocaleString()}` : '-'}
+                                    {typeof optTour === 'object' && optTour.price ? `NT$ ${optTour.price.toLocaleString()}` : '-'}
                                   </td>
                                 </tr>
                               ))}
@@ -708,7 +710,7 @@ export default function TourDetail() {
                       <CardContent className="p-6">
                         <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
                           <Info className="h-5 w-5 text-amber-500" />
-                          行程特殊提醒
+                          {t('tourDetail.specialReminders')}
                         </h3>
                         <div className="prose prose-gray max-w-none">
                           <p className="text-gray-700 whitespace-pre-line">{tour.specialReminders}</p>
@@ -722,7 +724,7 @@ export default function TourDetail() {
                       <CardContent className="p-6">
                         <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
                           <FileText className="h-5 w-5 text-blue-500" />
-                          行程備註
+                          {t('tourDetail.tourNotes')}
                         </h3>
                         <div className="prose prose-gray max-w-none">
                           <p className="text-gray-700 whitespace-pre-line">{tour.notes}</p>
@@ -736,7 +738,7 @@ export default function TourDetail() {
                       <CardContent className="p-6">
                         <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
                           <Shield className="h-5 w-5 text-green-500" />
-                          安全守則
+                          {t('tourDetail.safetyGuidelines')}
                         </h3>
                         <div className="prose prose-gray max-w-none">
                           <p className="text-gray-700 whitespace-pre-line">{tour.safetyGuidelines}</p>
@@ -750,7 +752,7 @@ export default function TourDetail() {
                       <CardContent className="p-6">
                         <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
                           <Plane className="h-5 w-5 text-primary" />
-                          團體航班規定事項
+                          {t('tourDetail.flightRules')}
                         </h3>
                         <div className="prose prose-gray max-w-none">
                           <p className="text-gray-700 whitespace-pre-line">{tour.flightRules}</p>
@@ -770,11 +772,11 @@ export default function TourDetail() {
                   <CardContent className="p-6">
                     {/* Price */}
                     <div className="text-center mb-6 pb-6 border-b border-gray-200">
-                      <p className="text-sm text-gray-500 mb-1">每人</p>
+                      <p className="text-sm text-gray-500 mb-1">{t('tourDetail.perPerson')}</p>
                       <p className="text-4xl font-bold text-primary">
                         NT$ {tour.price.toLocaleString()}
                       </p>
-                      <p className="text-sm text-gray-500">{tour.priceUnit || '起'}</p>
+                      <p className="text-sm text-gray-500">{tour.priceUnit || t('tourDetail.startingFrom')}</p>
                     </div>
 
                     {/* Quick Info */}
@@ -782,33 +784,33 @@ export default function TourDetail() {
                       <div className="flex items-center justify-between py-2">
                         <span className="text-gray-500 flex items-center gap-2">
                           <Calendar className="h-4 w-4" />
-                          出發日期
+                          {t('tourDetail.departureDate')}
                         </span>
                         <span className="font-medium text-gray-900">
                           {tour.startDate ? new Date(tour.startDate).toLocaleDateString('zh-TW', { 
                             month: 'numeric', 
                             day: 'numeric',
                             weekday: 'short'
-                          }) : '待確認'}
+                          }) : t('tourDetail.toBeConfirmed')}
                         </span>
                       </div>
                       <div className="flex items-center justify-between py-2">
                         <span className="text-gray-500 flex items-center gap-2">
                           <Clock className="h-4 w-4" />
-                          行程天數
+                          {t('tourDetail.duration')}
                         </span>
                         <span className="font-medium text-gray-900">
-                          {tour.duration}天{tour.nights ? `${tour.nights}夜` : ''}
+                          {tour.duration}{t('common.days')}{tour.nights ? `${tour.nights}${t('common.nights')}` : ''}
                         </span>
                       </div>
                       {tour.availableSeats !== null && tour.availableSeats !== undefined && (
                         <div className="flex items-center justify-between py-2">
                           <span className="text-gray-500 flex items-center gap-2">
                             <Users className="h-4 w-4" />
-                            可售席次
+                            {t('tourDetail.availableSeats')}
                           </span>
                           <span className={`font-medium ${tour.availableSeats <= 5 ? 'text-red-500' : 'text-gray-900'}`}>
-                            {tour.availableSeats} 席
+                            {tour.availableSeats} {t('tourDetail.seats')}
                           </span>
                         </div>
                       )}
@@ -822,8 +824,8 @@ export default function TourDetail() {
                           disabled={tour.availableSeats !== null && tour.availableSeats !== undefined && tour.availableSeats <= 0}
                         >
                           {(tour.availableSeats !== null && tour.availableSeats !== undefined && tour.availableSeats <= 0) 
-                            ? '已額滿' 
-                            : '立即報名'}
+                            ? t('tourDetail.soldOut') 
+                            : t('tourDetail.bookNow')}
                           <ChevronRight className="h-5 w-5 ml-2" />
                         </Button>
                       </Link>
@@ -843,7 +845,7 @@ export default function TourDetail() {
                 {/* Contact Card */}
                 <Card className="border-0 shadow-lg">
                   <CardContent className="p-6">
-                    <h3 className="font-bold text-gray-900 mb-4">需要協助？</h3>
+                    <h3 className="font-bold text-gray-900 mb-4">{t('tourDetail.needHelp')}</h3>
                     <div className="space-y-3">
                       <a 
                         href="tel:1-510-634-2307" 
@@ -874,7 +876,7 @@ export default function TourDetail() {
                         className="flex items-center gap-2 text-sm text-gray-500 hover:text-primary transition-colors"
                       >
                         <ExternalLink className="h-4 w-4" />
-                        <span>查看原始行程</span>
+                        <span>{t('tourDetail.viewOriginal')}</span>
                       </a>
                     </CardContent>
                   </Card>

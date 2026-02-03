@@ -4007,3 +4007,33 @@
 - [ ] 更新 FlightBooking 頁面使用翻譯
 - [ ] 更新 HotelBooking 頁面使用翻譯
 - [ ] 更新 AirportTransfer 頁面使用翻譯
+
+
+### 27.3 TourDetail 頁面翻譯（2026-02-03）
+- [ ] 讀取 TourDetail 頁面完整內容
+- [ ] 識別所有需要翻譯的標籤、按鈕和提示文字
+- [ ] 更新 zh-TW.ts 添加 TourDetail 相關翻譯 key
+- [ ] 更新 en.ts 添加 TourDetail 相關翻譯 key
+- [ ] 更新 es.ts 添加 TourDetail 相關翻譯 key
+- [ ] 更新 TourDetail.tsx 使用翻譯系統
+- [ ] 測試 TourDetail 頁面的語言切換功能
+- [ ] 儲存 checkpoint
+
+
+---
+
+## Phase 28: TourDetail 頁面翻譯擴展（2026-02-02）
+
+### 28.1 翻譯檔案更新
+- [x] 更新 zh-TW.ts 添加 TourDetail 相關翻譯 key
+- [x] 更新 en.ts 添加 TourDetail 相關翻譯 key
+- [x] 更新 es.ts 添加 TourDetail 相關翻譯 key
+
+### 28.2 TourDetail 頁面更新
+- [x] 更新 TourDetail.tsx 使用翻譯系統
+- [x] 所有標籤、按鈕和提示文字已納入翻譯
+
+### 28.3 測試
+- [x] 測試首頁語言切換功能
+- [x] 驗證繁體中文翻譯正確顯示
+- [x] 驗證英文翻譯正確顯示
