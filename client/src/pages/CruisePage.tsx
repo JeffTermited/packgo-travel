@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useLocale } from "@/contexts/LocaleContext";
 import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 import Header from "@/components/Header";
@@ -58,6 +59,7 @@ const cruiseImages: Record<string, string> = {
 };
 
 export default function CruisePage() {
+  const { t } = useLocale();
   const [searchQuery, setSearchQuery] = useState("");
   const [favorites, setFavorites] = useState<Set<number>>(new Set());
   
@@ -123,10 +125,10 @@ export default function CruisePage() {
               <Waves className="h-8 w-8 opacity-60" />
             </div>
             <h1 className="text-4xl md:text-5xl font-serif font-bold mb-4">
-              郵輪之旅
+              {t('cruise.title')}
             </h1>
             <p className="text-xl text-white/90 max-w-2xl">
-              探索世界最美麗的海域，享受豪華郵輪上的頂級服務與精彩活動
+              {t('cruise.subtitle')}
             </p>
           </div>
         </section>
@@ -136,10 +138,10 @@ export default function CruisePage() {
           <div className="container py-3">
             <nav className="flex items-center gap-2 text-sm">
               <Link href="/" className="text-gray-500 hover:text-primary transition-colors">
-                首頁
+                {t('cruise.home')}
               </Link>
               <ChevronRight className="h-4 w-4 text-gray-400" />
-              <span className="text-gray-900 font-medium">郵輪之旅</span>
+              <span className="text-gray-900 font-medium">{t('cruise.title')}</span>
             </nav>
           </div>
         </div>
@@ -151,14 +153,14 @@ export default function CruisePage() {
               <div className="relative flex-1 max-w-md">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <Input
-                  placeholder="搜尋郵輪行程..."
+                  placeholder={t('cruise.searchPlaceholder')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10"
                 />
               </div>
               <div className="flex items-center gap-4 text-sm text-gray-600">
-                <span>共 {cruiseTours.length} 個郵輪行程</span>
+                <span>{t('cruise.totalCruises', { count: cruiseTours.length })}</span>
               </div>
             </div>
           </div>
@@ -220,7 +222,7 @@ export default function CruisePage() {
                           {/* 目的地 */}
                           <div className="flex items-center gap-1 text-gray-500 text-sm mb-2">
                             <MapPin className="h-4 w-4" />
-                            <span>{tour.destination || "多個目的地"}</span>
+                            <span>{tour.destination || t('cruise.multipleDestinations')}</span>
                           </div>
                           
                           {/* 標題 */}
@@ -253,13 +255,13 @@ export default function CruisePage() {
                           <div className="mt-auto pt-3 border-t flex items-center justify-between">
                             <div className="flex items-center gap-1 text-gray-600 text-sm">
                               <Calendar className="h-4 w-4" />
-                              <span>{tour.days || "-"} 天</span>
+                              <span>{tour.days || "-"} {t('cruise.days')}</span>
                             </div>
                             <div className="text-right">
-                              <div className="text-xs text-gray-500">每人</div>
+                              <div className="text-xs text-gray-500">{t('cruise.perPerson')}</div>
                               <div className="text-lg font-bold text-primary">
                                 NT$ {tour.price?.toLocaleString() || "-"}
-                                <span className="text-sm font-normal text-gray-500">起</span>
+                                <span className="text-sm font-normal text-gray-500">{t('cruise.from')}</span>
                               </div>
                             </div>
                           </div>
@@ -273,15 +275,15 @@ export default function CruisePage() {
               <div className="text-center py-20">
                 <Ship className="h-16 w-16 text-gray-300 mx-auto mb-4" />
                 <h3 className="text-xl font-medium text-gray-600 mb-2">
-                  目前沒有郵輪行程
+                  {t('cruise.noCruises')}
                 </h3>
                 <p className="text-gray-500 mb-6">
-                  我們正在準備精彩的郵輪行程，敬請期待！
+                  {t('cruise.noCruisesDesc')}
                 </p>
                 <Link href="/search">
                   <Button variant="outline">
                     <ArrowLeft className="h-4 w-4 mr-2" />
-                    瀏覽所有行程
+                    {t('cruise.browseAll')}
                   </Button>
                 </Link>
               </div>
@@ -293,34 +295,34 @@ export default function CruisePage() {
         <section className="py-12 bg-white">
           <div className="container">
             <h2 className="text-2xl font-serif font-bold text-center mb-8">
-              為什麼選擇郵輪旅遊？
+              {t('cruise.whyChoose')}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="text-center">
                 <div className="w-16 h-16 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Ship className="h-8 w-8 text-cyan-600" />
                 </div>
-                <h3 className="font-bold mb-2">一次旅行，多個目的地</h3>
+                <h3 className="font-bold mb-2">{t('cruise.feature1Title')}</h3>
                 <p className="text-gray-600 text-sm">
-                  無需頻繁打包行李，輕鬆遊覽多個港口城市
+                  {t('cruise.feature1Desc')}
                 </p>
               </div>
               <div className="text-center">
                 <div className="w-16 h-16 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Star className="h-8 w-8 text-cyan-600" />
                 </div>
-                <h3 className="font-bold mb-2">頂級設施與服務</h3>
+                <h3 className="font-bold mb-2">{t('cruise.feature2Title')}</h3>
                 <p className="text-gray-600 text-sm">
-                  享受五星級餐飲、娛樂設施和貼心服務
+                  {t('cruise.feature2Desc')}
                 </p>
               </div>
               <div className="text-center">
                 <div className="w-16 h-16 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Waves className="h-8 w-8 text-cyan-600" />
                 </div>
-                <h3 className="font-bold mb-2">獨特的海上體驗</h3>
+                <h3 className="font-bold mb-2">{t('cruise.feature3Title')}</h3>
                 <p className="text-gray-600 text-sm">
-                  欣賞壯麗海景，享受悠閒的海上時光
+                  {t('cruise.feature3Desc')}
                 </p>
               </div>
             </div>

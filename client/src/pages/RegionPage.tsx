@@ -5,61 +5,62 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { trpc } from "@/lib/trpc";
 import { continentMapping, continentOrder } from "@shared/continentMapping";
+import { useLocale } from "@/contexts/LocaleContext";
 
 // 地區配置（與首頁 Destinations 對應）
 const regionConfig: Record<string, {
-  name: string;
+  nameKey: string;
   label: string;
-  description: string;
+  descriptionKey: string;
   image: string;
   continents: string[]; // 對應的洲別
 }> = {
   "europe": {
-    name: "歐洲地區",
+    nameKey: "destinations.europe.name",
     label: "Europe",
-    description: "探索歐洲的歷史古蹟、藝術文化與自然風光",
+    descriptionKey: "destinations.europe.description",
     image: "/images/dest-europe.webp",
     continents: ["歐洲"]
   },
   "asia": {
-    name: "亞洲地區",
+    nameKey: "destinations.asia.name",
     label: "Asia",
-    description: "體驗亞洲的多元文化、美食與自然奇觀",
+    descriptionKey: "destinations.asia.description",
     image: "/images/dest-asia.webp",
     continents: ["亞洲"]
   },
   "south-america": {
-    name: "美洲地區",
+    nameKey: "destinations.southAmerica.name",
     label: "Americas",
-    description: "探索南美洲的熱情、自然奇觀與古文明遺跡",
+    descriptionKey: "destinations.southAmerica.description",
     image: "/images/dest-southamerica.webp",
     continents: ["美洲"]
   },
   "middle-east": {
-    name: "中東地區",
+    nameKey: "destinations.middleEast.name",
     label: "Middle East",
-    description: "走訪中東的聖地、古城與沙漠奇景",
+    descriptionKey: "destinations.middleEast.description",
     image: "/images/dest-israel.webp",
     continents: ["中東"]
   },
   "africa": {
-    name: "非洲地區",
+    nameKey: "destinations.africa.name",
     label: "Africa",
-    description: "探索非洲的野生動物、古文明與自然奇觀",
+    descriptionKey: "destinations.africa.description",
     image: "/images/dest-africa.webp",
     continents: ["非洲"]
   },
   "cruise": {
-    name: "郵輪之旅",
+    nameKey: "destinations.cruise.name",
     label: "Cruises",
-    description: "享受海上的奢華旅程，探索世界各地的港口城市",
+    descriptionKey: "destinations.cruise.description",
     image: "/images/dest-cruise.webp",
     continents: [] // 郵輪是特殊類別，不按洲別分
   },
   "oceania": {
-    name: "大洋洲地區",
+    nameKey: "destinations.oceania.name",
     label: "Oceania",
-    description: "探索澳洲、紐西蘭與太平洋島嶼的自然美景",
+    descriptionKey: "destinations.oceania.description",
     image: "/images/dest-europe.webp",
     continents: ["大洋洲"]
   }
@@ -82,7 +83,7 @@ const countryImages: Record<string, string> = {
   "柬埔寨": "https://images.unsplash.com/photo-1569242840510-9fe6f0112cee?w=800",
   "緬甸": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800",
   "尼泊爾": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=800",
-  "斯里蘭卡": "https://images.unsplash.com/photo-1586523969990-d8e3c tried-a5f9-4b8a-b3e4-8c8c8c8c8c8c?w=800",
+  "斯里蘭卡": "https://images.unsplash.com/photo-1586523969990-d8e3c?w=800",
   // 歐洲 - 使用本地高品質圖片
   "英國": "/images/countries/uk.jpg",
   "法國": "/images/countries/france.jpg",
@@ -93,7 +94,7 @@ const countryImages: Record<string, string> = {
   "荷蘭": "/images/countries/netherlands.jpg",
   "希臘": "/images/countries/greece.jpg",
   "捷克": "https://images.unsplash.com/photo-1519677100203-a0e668c92439?w=800",
-  "奧地利": "https://images.unsplash.com/photo-1516550893923-42d28e5677af?w=800",
+  "奧地利": "https://images.unsplash.com/photo-1516426122078-c23e76319af?w=800",
   "巴爾幹半島": "https://images.unsplash.com/photo-1555990538-1e6c0c1b1b0c?w=800",
   "葡萄牙": "https://images.unsplash.com/photo-1555881400-74d7acaacd8b?w=800",
   "比利時": "https://images.unsplash.com/photo-1491557345352-5929e343eb89?w=800",
@@ -129,11 +130,12 @@ const countryImages: Record<string, string> = {
 export default function RegionPage() {
   const { region } = useParams<{ region: string }>();
   const [, setLocation] = useLocation();
+  const { t } = useLocale();
   
   const config = regionConfig[region || ""] || {
-    name: "未知地區",
+    nameKey: "regionPage.title",
     label: "Unknown",
-    description: "",
+    descriptionKey: "regionPage.subtitle",
     image: "/images/dest-europe.webp",
     continents: []
   };
@@ -177,7 +179,7 @@ export default function RegionPage() {
           <section className="relative h-[400px] overflow-hidden">
             <img 
               src={config.image} 
-              alt={config.name}
+              alt={t(config.nameKey)}
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
@@ -189,12 +191,12 @@ export default function RegionPage() {
                   onClick={handleBackClick}
                 >
                   <ArrowLeft className="mr-2 h-4 w-4" />
-                  返回首頁
+                  {t('common.backToHome')}
                 </Button>
                 <h1 className="text-4xl md:text-5xl font-serif font-bold text-white mb-2">
-                  {config.name}
+                  {t(config.nameKey)}
                 </h1>
-                <p className="text-gray-200 text-lg">{config.description}</p>
+                <p className="text-gray-200 text-lg">{t(config.descriptionKey)}</p>
               </div>
             </div>
           </section>
@@ -203,7 +205,7 @@ export default function RegionPage() {
           <section className="py-16">
             <div className="container">
               <p className="text-gray-500 text-center">
-                郵輪行程功能開發中，敬請期待...
+                {t('cruise.comingSoon') || '郵輪行程功能開發中，敬請期待...'}
               </p>
             </div>
           </section>
@@ -221,7 +223,7 @@ export default function RegionPage() {
         <section className="relative h-[400px] overflow-hidden">
           <img 
             src={config.image} 
-            alt={config.name}
+            alt={t(config.nameKey)}
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
@@ -233,12 +235,12 @@ export default function RegionPage() {
                 onClick={handleBackClick}
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                返回首頁
+                {t('common.backToHome')}
               </Button>
               <h1 className="text-4xl md:text-5xl font-serif font-bold text-white mb-2">
-                {config.name}
+                {t(config.nameKey)}
               </h1>
-              <p className="text-gray-200 text-lg">{config.description}</p>
+              <p className="text-gray-200 text-lg">{t(config.descriptionKey)}</p>
             </div>
           </div>
         </section>
@@ -247,7 +249,7 @@ export default function RegionPage() {
         <section className="py-16">
           <div className="container">
             <h2 className="text-2xl font-serif font-bold text-gray-900 mb-8">
-              選擇目的地
+              {t('regionPage.popularDestinations')}
             </h2>
 
             {isLoading ? (
@@ -262,13 +264,13 @@ export default function RegionPage() {
             ) : countries.length === 0 ? (
               <div className="text-center py-12">
                 <MapPin className="mx-auto h-12 w-12 text-gray-300 mb-4" />
-                <p className="text-gray-500">目前此地區尚無行程</p>
+                <p className="text-gray-500">{t('regionPage.noToursInRegion')}</p>
                 <Button 
                   variant="outline" 
                   className="mt-4"
                   onClick={handleBackClick}
                 >
-                  返回首頁
+                  {t('common.backToHome')}
                 </Button>
               </div>
             ) : (
@@ -288,7 +290,7 @@ export default function RegionPage() {
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
                       <div className="absolute bottom-0 left-0 w-full p-4">
                         <h3 className="text-xl font-bold text-white">{country.country}</h3>
-                        <p className="text-gray-200 text-sm">{country.count} 個行程</p>
+                        <p className="text-gray-200 text-sm">{country.count} {t('countryPage.tours')}</p>
                       </div>
                       <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
                         <div className="bg-white/90 rounded-full p-2">

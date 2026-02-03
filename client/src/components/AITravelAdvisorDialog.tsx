@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Send, Loader2, User, ThumbsUp, ThumbsDown, Sparkles, X, Minimize2 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { Streamdown } from "streamdown";
+import { useLocale } from "@/contexts/LocaleContext";
 
 // 企鵝表情圖像 URLs (透明背景版本)
 const PENGUIN_EXPRESSIONS = {
@@ -32,11 +33,12 @@ interface AITravelAdvisorDialogProps {
 }
 
 export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAdvisorDialogProps) {
+  const { t } = useLocale();
   const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "您好！我是 PACK&GO 的 AI 旅遊顧問。我可以協助您規劃行程、推薦目的地、解答旅遊相關問題。請問有什麼我可以幫您的嗎？",
+      content: t('aiAdvisor.greeting'),
     },
   ]);
   const [input, setInput] = useState("");
@@ -75,7 +77,7 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
         ...prev,
         {
           role: "assistant",
-          content: "抱歉，我遇到了一些問題。請稍後再試。",
+          content: t('aiAdvisor.errorMessage'),
         },
       ]);
       setTimeout(() => updatePenguinExpression("default"), 3000);
@@ -160,8 +162,8 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
       <DialogContent className="max-w-md w-[95vw] sm:w-full h-[85vh] sm:h-[650px] flex flex-col p-0 border-2 border-black gap-0 overflow-hidden bg-white shadow-2xl">
         {/* Hidden DialogTitle and Description for accessibility */}
         <VisuallyHidden>
-          <DialogTitle>AI 旅遊顧問對話框</DialogTitle>
-          <DialogDescription>與 PACK&GO AI 旅遊顧問對話，獲取行程推薦和旅遊資訊</DialogDescription>
+          <DialogTitle>{t('aiAdvisor.dialogTitle')}</DialogTitle>
+          <DialogDescription>{t('aiAdvisor.dialogDescription')}</DialogDescription>
         </VisuallyHidden>
         
         {/* Header with Animated Penguin Character */}
@@ -175,7 +177,7 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
             >
               <img
                 src={currentPenguinImage}
-                alt="AI 旅遊顧問"
+                alt={t('aiAdvisor.title')}
                 className={`w-12 h-12 object-contain transition-all duration-300 ${
                   chatMutation.isPending ? "animate-bounce" : ""
                 }`}
@@ -184,17 +186,17 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
               <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-white"></div>
             </div>
             <div>
-              <h3 className="font-bold text-lg tracking-wide">AI 旅遊顧問</h3>
+              <h3 className="font-bold text-lg tracking-wide">{t('aiAdvisor.title')}</h3>
               <p className="text-sm text-gray-300 flex items-center gap-1.5">
                 {chatMutation.isPending ? (
                   <>
                     <span className="inline-block w-1.5 h-1.5 bg-yellow-400 rounded-full animate-pulse"></span>
-                    思考中...
+                    {t('aiAdvisor.thinking')}
                   </>
                 ) : (
                   <>
                     <span className="inline-block w-1.5 h-1.5 bg-green-400 rounded-full"></span>
-                    在線 · 隨時為您服務
+                    {t('aiAdvisor.online')} · {t('aiAdvisor.atYourService')}
                   </>
                 )}
               </p>
@@ -206,7 +208,7 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
               size="sm"
               className="h-9 w-9 p-0 text-white hover:bg-white/20 rounded-full"
               onClick={() => onOpenChange(false)}
-              aria-label="最小化對話框"
+              aria-label={t('aiAdvisor.minimize')}
             >
               <Minimize2 className="h-4 w-4" />
             </Button>
@@ -215,7 +217,7 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
               size="sm"
               className="h-9 w-9 p-0 text-white hover:bg-white/20 rounded-full"
               onClick={() => onOpenChange(false)}
-              aria-label="關閉對話框"
+              aria-label={t('aiAdvisor.close')}
             >
               <X className="h-5 w-5" />
             </Button>
@@ -274,7 +276,7 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
                   
                   {message.usageLogIds && message.usageLogIds.length > 0 && (
                     <div className="flex items-center gap-1.5 ml-auto">
-                      <span className="text-xs text-gray-400">有幫助嗎？</span>
+                      <span className="text-xs text-gray-400">{t('aiAdvisor.helpfulQuestion')}</span>
                       <Button
                         variant="ghost"
                         size="sm"
@@ -285,7 +287,7 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
                         }`}
                         onClick={() => handleFeedback(index, "positive")}
                         disabled={!!message.feedbackGiven || feedbackMutation.isPending}
-                        aria-label="這個回答有幫助"
+                        aria-label={t('aiAdvisor.helpful')}
                       >
                         <ThumbsUp className="h-3.5 w-3.5" />
                       </Button>
@@ -299,7 +301,7 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
                         }`}
                         onClick={() => handleFeedback(index, "negative")}
                         disabled={!!message.feedbackGiven || feedbackMutation.isPending}
-                        aria-label="這個回答沒有幫助"
+                        aria-label={t('aiAdvisor.notHelpful')}
                       >
                         <ThumbsDown className="h-3.5 w-3.5" />
                       </Button>
@@ -327,7 +329,7 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
                     <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }}></span>
                     <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }}></span>
                   </div>
-                  <span className="text-sm text-gray-500">正在思考...</span>
+                  <span className="text-sm text-gray-500">{t('aiAdvisor.thinkingMessage')}</span>
                 </div>
               </div>
             </div>
@@ -342,16 +344,16 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="輸入您的問題..."
+              placeholder={t('aiAdvisor.inputPlaceholder')}
               className="flex-1 h-11 border border-gray-300 rounded-full px-5 focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-0 focus-visible:border-black bg-gray-50"
               disabled={chatMutation.isPending}
-              aria-label="輸入您的旅遊問題"
+              aria-label={t('aiAdvisor.inputPlaceholder')}
             />
             <Button
               onClick={handleSend}
               disabled={!input.trim() || chatMutation.isPending}
               className="h-11 w-11 bg-black hover:bg-gray-800 rounded-full p-0 flex items-center justify-center shadow-lg transition-transform hover:scale-105"
-              aria-label="傳送訊息"
+              aria-label={t('aiAdvisor.sendMessage')}
             >
               {chatMutation.isPending ? (
                 <Loader2 className="h-5 w-5 animate-spin" />
@@ -361,7 +363,7 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
             </Button>
           </div>
           <p className="text-xs text-gray-400 mt-3 text-center">
-            AI 回答僅供參考，實際行程請以客服確認為準
+            {t('aiAdvisor.disclaimer')}
           </p>
         </div>
       </DialogContent>

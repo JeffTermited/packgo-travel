@@ -9,25 +9,26 @@ import {
   MapPin, Calendar, Heart, Star, Plane, Bus, Ship, Train, 
   Sparkles, Mountain, Utensils, Camera, Users, ArrowRight, ArrowLeft
 } from "lucide-react";
+import { useLocale } from "@/contexts/LocaleContext";
 
 // 智能標籤生成函數
-const generateSmartTags = (tour: any): { label: string; icon: any; color: string }[] => {
+const generateSmartTags = (tour: any, t: (key: string) => string): { label: string; icon: any; color: string }[] => {
   const tags: { label: string; icon: any; color: string }[] = [];
   
   // 根據天數判斷行程類型
   if (tour.duration >= 10) {
-    tags.push({ label: "深度旅遊", icon: Mountain, color: "bg-emerald-100 text-emerald-700" });
+    tags.push({ label: t('tours.filters.deepTravel') || "深度旅遊", icon: Mountain, color: "bg-emerald-100 text-emerald-700" });
   } else if (tour.duration >= 7) {
-    tags.push({ label: "經典行程", icon: Star, color: "bg-amber-100 text-amber-700" });
+    tags.push({ label: t('tours.filters.classic') || "經典行程", icon: Star, color: "bg-amber-100 text-amber-700" });
   } else if (tour.duration <= 4) {
-    tags.push({ label: "輕旅行", icon: Sparkles, color: "bg-sky-100 text-sky-700" });
+    tags.push({ label: t('tours.filters.shortTrip') || "輕旅行", icon: Sparkles, color: "bg-sky-100 text-sky-700" });
   }
   
   // 根據價格判斷行程等級
   if (tour.price && tour.price >= 80000) {
-    tags.push({ label: "精緻行程", icon: Star, color: "bg-purple-100 text-purple-700" });
+    tags.push({ label: t('tours.filters.premium') || "精緻行程", icon: Star, color: "bg-purple-100 text-purple-700" });
   } else if (tour.price && tour.price < 30000) {
-    tags.push({ label: "超值優惠", icon: Sparkles, color: "bg-rose-100 text-rose-700" });
+    tags.push({ label: t('tours.filters.budget') || "超值優惠", icon: Sparkles, color: "bg-rose-100 text-rose-700" });
   }
   
   // 根據交通方式判斷
@@ -37,33 +38,33 @@ const generateSmartTags = (tour: any): { label: string; icon: any; color: string
   const combinedText = `${title} ${description}`;
   
   if (category === "cruise" || combinedText.includes("郵輪") || combinedText.includes("遊輪")) {
-    tags.push({ label: "郵輪", icon: Ship, color: "bg-blue-100 text-blue-700" });
+    tags.push({ label: t('cruise.title') || "郵輪", icon: Ship, color: "bg-blue-100 text-blue-700" });
   }
   
   if (tour.outboundAirline || combinedText.includes("航空") || combinedText.includes("飛機")) {
-    tags.push({ label: "航空", icon: Plane, color: "bg-indigo-100 text-indigo-700" });
+    tags.push({ label: t('flightBooking.title') || "航空", icon: Plane, color: "bg-indigo-100 text-indigo-700" });
   }
   
   if (combinedText.includes("高鐵") || combinedText.includes("火車") || combinedText.includes("列車")) {
-    tags.push({ label: "鐵道", icon: Train, color: "bg-orange-100 text-orange-700" });
+    tags.push({ label: t('tours.filters.rail') || "鐵道", icon: Train, color: "bg-orange-100 text-orange-700" });
   }
   
   if (combinedText.includes("巴士") || combinedText.includes("遊覽車")) {
-    tags.push({ label: "巴士", icon: Bus, color: "bg-gray-100 text-gray-700" });
+    tags.push({ label: t('tours.filters.bus') || "巴士", icon: Bus, color: "bg-gray-100 text-gray-700" });
   }
   
   // 根據特色活動判斷
   if (combinedText.includes("美食") || combinedText.includes("料理") || combinedText.includes("餐廳")) {
-    tags.push({ label: "美食之旅", icon: Utensils, color: "bg-red-100 text-red-700" });
+    tags.push({ label: t('tours.filters.foodTour') || "美食之旅", icon: Utensils, color: "bg-red-100 text-red-700" });
   }
   
   if (combinedText.includes("攝影") || combinedText.includes("拍照") || combinedText.includes("打卡")) {
-    tags.push({ label: "攝影之旅", icon: Camera, color: "bg-pink-100 text-pink-700" });
+    tags.push({ label: t('tours.filters.photoTour') || "攝影之旅", icon: Camera, color: "bg-pink-100 text-pink-700" });
   }
   
   // 根據行程類型判斷
   if (category === "group" || combinedText.includes("團體")) {
-    tags.push({ label: "團體旅遊", icon: Users, color: "bg-teal-100 text-teal-700" });
+    tags.push({ label: t('groupPackages.title') || "團體旅遊", icon: Users, color: "bg-teal-100 text-teal-700" });
   }
   
   // 解析資料庫中的 tags 欄位
@@ -86,18 +87,18 @@ const generateSmartTags = (tour: any): { label: string; icon: any; color: string
 };
 
 // 地區配置
-const regionConfig: Record<string, {
+const getRegionConfig = (t: (key: string) => string): Record<string, {
   name: string;
   label: string;
-}> = {
-  "europe": { name: "歐洲地區", label: "Europe" },
-  "asia": { name: "亞洲地區", label: "Asia" },
-  "south-america": { name: "美洲地區", label: "Americas" },
-  "middle-east": { name: "中東地區", label: "Middle East" },
-  "africa": { name: "非洲地區", label: "Africa" },
-  "cruise": { name: "郵輪之旅", label: "Cruises" },
-  "oceania": { name: "大洋洲地區", label: "Oceania" }
-};
+}> => ({
+  "europe": { name: t('destinations.regions.europe') || "歐洲地區", label: "Europe" },
+  "asia": { name: t('destinations.regions.asia') || "亞洲地區", label: "Asia" },
+  "south-america": { name: t('destinations.regions.americas') || "美洲地區", label: "Americas" },
+  "middle-east": { name: t('destinations.regions.middleEast') || "中東地區", label: "Middle East" },
+  "africa": { name: t('destinations.regions.africa') || "非洲地區", label: "Africa" },
+  "cruise": { name: t('cruise.title') || "郵輪之旅", label: "Cruises" },
+  "oceania": { name: t('destinations.regions.oceania') || "大洋洲地區", label: "Oceania" }
+});
 
 // 國家圖片映射
 const countryImages: Record<string, string> = {
@@ -131,9 +132,11 @@ export default function CountryPage() {
   const { region, country } = useParams<{ region: string; country: string }>();
   const [, setLocation] = useLocation();
   const [favorites, setFavorites] = useState<Set<number>>(new Set());
+  const { t } = useLocale();
   
   const decodedCountry = decodeURIComponent(country || "");
-  const regionInfo = regionConfig[region || ""] || { name: "未知地區", label: "Unknown" };
+  const regionConfig = getRegionConfig(t);
+  const regionInfo = regionConfig[region || ""] || { name: t('common.unknown') || "未知地區", label: "Unknown" };
 
   // 搜尋該國家的所有行程
   const { data: searchResults, isLoading } = trpc.tours.search.useQuery({
@@ -187,13 +190,13 @@ export default function CountryPage() {
                 onClick={handleBackClick}
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                返回{regionInfo.name}
+                {t('common.backTo')} {regionInfo.name}
               </Button>
               <h1 className="text-4xl md:text-5xl font-serif font-bold text-white mb-2">
                 {decodedCountry}
               </h1>
               <p className="text-gray-200 text-lg">
-                {tours.length} 個精選行程
+                {tours.length} {t('countryPage.tours')}
               </p>
             </div>
           </div>
@@ -216,22 +219,22 @@ export default function CountryPage() {
               <div className="text-center py-16">
                 <MapPin className="mx-auto h-16 w-16 text-gray-300 mb-4" />
                 <h3 className="text-xl font-medium text-gray-700 mb-2">
-                  目前尚無{decodedCountry}的行程
+                  {t('countryPage.noTours')}
                 </h3>
                 <p className="text-gray-500 mb-6">
-                  我們正在努力規劃更多精彩行程，敬請期待
+                  {t('countryPage.checkBackLater')}
                 </p>
                 <Button 
                   variant="outline" 
                   onClick={handleBackClick}
                 >
-                  返回{regionInfo.name}
+                  {t('common.backTo')} {regionInfo.name}
                 </Button>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {tours.map((tour) => {
-                  const smartTags = generateSmartTags(tour);
+                  const smartTags = generateSmartTags(tour, t);
                   const displayTags = smartTags.slice(0, 3);
                   const hasMoreTags = smartTags.length > 3;
 
@@ -258,7 +261,7 @@ export default function CountryPage() {
                         </button>
                         {tour.duration && (
                           <div className="absolute bottom-3 left-3 px-3 py-1 bg-black/70 text-white text-sm rounded-full">
-                            {tour.duration} 天
+                            {tour.duration} {t('common.days')}
                           </div>
                         )}
                       </div>
@@ -275,7 +278,7 @@ export default function CountryPage() {
                         </h3>
 
                         {/* 標籤 */}
-                        <div className="flex flex-wrap gap-1.5 mb-4 h-[28px] overflow-hidden">
+                        <div className="flex flex-wrap gap-1 mb-4">
                           {displayTags.map((tag: { label: string; icon: any; color: string }, idx: number) => {
                             const IconComponent = tag.icon;
                             return (
@@ -298,16 +301,16 @@ export default function CountryPage() {
                         {/* 價格 */}
                         <div className="flex items-end justify-between">
                           <div>
-                            <span className="text-gray-500 text-sm">每人</span>
+                            <span className="text-gray-500 text-sm">{t('tours.perPerson')}</span>
                             <div className="flex items-baseline gap-1">
                               <span className="text-2xl font-bold text-primary">
-                                NT$ {tour.price?.toLocaleString() || "洽詢"}
+                                NT$ {tour.price?.toLocaleString() || t('common.contactUs')}
                               </span>
-                              <span className="text-gray-500 text-sm">起</span>
+                              <span className="text-gray-500 text-sm">{t('tours.priceFrom')}</span>
                             </div>
                           </div>
                           <div className="flex items-center text-gray-600 text-sm group-hover:text-primary transition-colors">
-                            查看詳情
+                            {t('common.viewDetails')}
                             <ArrowRight className="ml-1 h-4 w-4" />
                           </div>
                         </div>

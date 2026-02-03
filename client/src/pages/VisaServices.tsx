@@ -1,34 +1,44 @@
 import GenericPage from "@/components/GenericPage";
+import { useLocale } from "@/contexts/LocaleContext";
 
 export default function VisaServices() {
+  const { t } = useLocale();
+  
   return (
     <GenericPage
-      title="代辦簽證"
-      subtitle="專業簽證代辦服務，讓您的出國手續更輕鬆"
-      ctaText="立即諮詢"
+      title={t('visaServices.title')}
+      subtitle={t('visaServices.subtitle')}
+      ctaText={t('common.contactUs')}
       ctaLink="/inquiry"
     >
       <div className="space-y-6 text-gray-700">
         <p className="text-lg">
-          PACK&GO 提供專業的簽證代辦服務，協助您處理各國簽證申請，讓您省時省力，安心出國。
+          {t('visaServices.description')}
         </p>
         
-        <h2 className="text-2xl font-bold text-black mt-8">服務項目</h2>
+        <h2 className="text-2xl font-bold text-black mt-8">{t('visaServices.countries')}</h2>
         <ul className="list-disc pl-6 space-y-2">
-          <li>美國簽證（B1/B2 觀光商務簽證、學生簽證）</li>
-          <li>歐洲申根簽證</li>
-          <li>日本簽證</li>
-          <li>韓國簽證</li>
-          <li>其他國家簽證諮詢與代辦</li>
+          <li>USA Visa (B1/B2 Tourist/Business Visa, Student Visa)</li>
+          <li>European Schengen Visa</li>
+          <li>Japan Visa</li>
+          <li>Korea Visa</li>
+          <li>Other Countries</li>
         </ul>
         
-        <h2 className="text-2xl font-bold text-black mt-8">為什麼選擇我們？</h2>
+        <h2 className="text-2xl font-bold text-black mt-8">{t('visaServices.requirements')}</h2>
         <ul className="list-disc pl-6 space-y-2">
-          <li>專業團隊，經驗豐富</li>
-          <li>快速處理，節省時間</li>
-          <li>文件審核，降低拒簽風險</li>
-          <li>全程協助，安心無憂</li>
+          <li>{t('visaServices.processingTime')}</li>
+          <li>{t('visaServices.fees')}</li>
         </ul>
+        
+        <div className="mt-8 flex gap-4">
+          <a href="/inquiry" className="inline-block px-6 py-3 bg-black text-white font-medium hover:bg-gray-800 transition-colors">
+            {t('visaServices.applyNow')}
+          </a>
+          <a href="/contact-us" className="inline-block px-6 py-3 border border-black text-black font-medium hover:bg-gray-100 transition-colors">
+            {t('visaServices.checkStatus')}
+          </a>
+        </div>
       </div>
     </GenericPage>
   );

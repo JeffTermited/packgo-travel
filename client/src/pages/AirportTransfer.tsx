@@ -1,33 +1,41 @@
 import GenericPage from "@/components/GenericPage";
+import { useLocale } from "@/contexts/LocaleContext";
 
 export default function AirportTransfer() {
+  const { t } = useLocale();
+  
   return (
     <GenericPage
-      title="機場接送"
-      subtitle="專業機場接送服務，讓您的旅程更輕鬆"
-      ctaText="立即預訂"
+      title={t('airportTransfer.title')}
+      subtitle={t('airportTransfer.subtitle')}
+      ctaText={t('common.bookNow')}
       ctaLink="/inquiry"
     >
       <div className="space-y-6 text-gray-700">
         <p className="text-lg">
-          提供安全、舒適、準時的機場接送服務，讓您的旅程從家門口就開始享受。
+          {t('airportTransfer.description')}
         </p>
         
-        <h2 className="text-2xl font-bold text-black mt-8">服務範圍</h2>
+        <h2 className="text-2xl font-bold text-black mt-8">{t('airportTransfer.form.serviceType')}</h2>
         <ul className="list-disc pl-6 space-y-2">
-          <li>機場至市區飯店接送</li>
-          <li>市區至機場接送</li>
-          <li>跨城市接送服務</li>
-          <li>包車旅遊</li>
+          <li>{t('airportTransfer.form.pickup')}</li>
+          <li>{t('airportTransfer.form.dropoff')}</li>
+          <li>{t('airportTransfer.form.roundTrip')}</li>
         </ul>
         
-        <h2 className="text-2xl font-bold text-black mt-8">服務特色</h2>
+        <h2 className="text-2xl font-bold text-black mt-8">{t('airportTransfer.form.vehicleType')}</h2>
         <ul className="list-disc pl-6 space-y-2">
-          <li>專業司機，熟悉路線</li>
-          <li>準時接送，不誤點</li>
-          <li>車輛舒適，安全可靠</li>
-          <li>24小時服務</li>
-          <li>彈性預訂，方便快捷</li>
+          <li>{t('airportTransfer.form.sedan')}</li>
+          <li>{t('airportTransfer.form.suv')}</li>
+          <li>{t('airportTransfer.form.van')}</li>
+          <li>{t('airportTransfer.form.limousine')}</li>
+        </ul>
+        
+        <h2 className="text-2xl font-bold text-black mt-8">{t('airportTransfer.form.additionalServices')}</h2>
+        <ul className="list-disc pl-6 space-y-2">
+          <li>{t('airportTransfer.form.childSeat')}</li>
+          <li>{t('airportTransfer.form.meetAndGreet')}</li>
+          <li>{t('airportTransfer.form.waitingTime')}</li>
         </ul>
       </div>
     </GenericPage>

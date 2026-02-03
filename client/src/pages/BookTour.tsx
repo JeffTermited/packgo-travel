@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useLocation, useRoute } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -11,14 +11,15 @@ import { Loader2, Calendar, Users, CreditCard, CheckCircle } from "lucide-react"
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
+import { useLocale } from "@/contexts/LocaleContext";
 
 type BookingStep = "date" | "travelers" | "details" | "confirm";
 
 export default function BookTour() {
+  const { t, language } = useLocale();
   const params = useParams();
   const [, navigate] = useLocation();
   const { user, loading: authLoading } = useAuth();
-  // Using sonner toast
   
   const tourId = params.id ? parseInt(params.id) : 0;
   const [currentStep, setCurrentStep] = useState<BookingStep>("date");
@@ -80,35 +81,44 @@ export default function BookTour() {
   const totalPrice = calculateTotalPrice();
   const depositAmount = Math.round(totalPrice * 0.2);
   
+  // Get locale string for date formatting
+  const getLocaleString = () => {
+    switch (language) {
+      case 'en': return 'en-US';
+      case 'es': return 'es-ES';
+      default: return 'zh-TW';
+    }
+  };
+  
   // Handle booking submission
   const handleSubmit = async () => {
     if (!user) {
-      toast.error("請先登入", {
-        description: "您需要登入才能預訂行程",
+      toast.error(t('bookTour.loginRequired'), {
+        description: t('bookTour.loginRequiredDesc'),
       });
       window.location.href = getLoginUrl();
       return;
     }
     
     if (!selectedDepartureId) {
-      toast.error("請選擇出發日期");
+      toast.error(t('bookTour.selectDateFirst'));
       return;
     }
     
     if (numberOfAdults === 0 && numberOfChildrenWithBed === 0 && numberOfChildrenNoBed === 0) {
-      toast.error("請至少選擇一位旅客");
+      toast.error(t('bookTour.selectTravelerFirst'));
       return;
     }
     
     if (!customerName || !customerEmail || !customerPhone) {
-      toast.error("請填寫完整的聯絡資訊");
+      toast.error(t('bookTour.fillAllInfo'));
       return;
     }
     
     // Validate participants
     const totalPeople = numberOfAdults + numberOfChildrenWithBed + numberOfChildrenNoBed + numberOfInfants;
     if (participants.length !== totalPeople) {
-      toast.error("請填寫所有旅客資訊");
+      toast.error(t('bookTour.fillAllTravelers'));
       return;
     }
     
@@ -123,8 +133,8 @@ export default function BookTour() {
         specialRequests: message,
       });
       
-      toast.success("預訂成功！", {
-        description: `您的預訂編號是 #${booking.id}，正在前往付款頁面...`,
+      toast.success(t('bookTour.bookingSuccess'), {
+        description: t('bookTour.bookingSuccessDesc').replace('{id}', booking.id.toString()),
       });
       
       // Navigate to booking detail page after a short delay
@@ -132,8 +142,8 @@ export default function BookTour() {
         navigate(`/booking/${booking.id}`);
       }, 1500);
     } catch (error: any) {
-      toast.error("預訂失敗", {
-        description: error.message || "請稍後再試",
+      toast.error(t('bookTour.bookingFailed'), {
+        description: error.message || t('bookTour.tryAgain'),
       });
     }
   };
@@ -205,8 +215,8 @@ export default function BookTour() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">找不到行程</h1>
-          <Button onClick={() => navigate("/")}>返回首頁</Button>
+          <h1 className="text-2xl font-bold mb-4">{t('bookTour.tourNotFound')}</h1>
+          <Button onClick={() => navigate("/")}>{t('common.backToHome')}</Button>
         </div>
       </div>
     );
@@ -219,10 +229,10 @@ export default function BookTour() {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             {[
-              { key: "date", label: "選擇日期", icon: Calendar },
-              { key: "travelers", label: "旅客人數", icon: Users },
-              { key: "details", label: "填寫資訊", icon: CreditCard },
-              { key: "confirm", label: "確認預訂", icon: CheckCircle },
+              { key: "date", label: t('bookTour.steps.date'), icon: Calendar },
+              { key: "travelers", label: t('bookTour.steps.travelers'), icon: Users },
+              { key: "details", label: t('bookTour.steps.details'), icon: CreditCard },
+              { key: "confirm", label: t('bookTour.steps.confirm'), icon: CheckCircle },
             ].map((step, index) => {
               const Icon = step.icon;
               const isActive = currentStep === step.key;
@@ -267,7 +277,7 @@ export default function BookTour() {
           <CardHeader>
             <CardTitle>{tour.title}</CardTitle>
             <CardDescription>
-              {tour.destination} · {tour.duration} 天
+              {tour.destination} · {tour.duration} {t('common.days')}
             </CardDescription>
           </CardHeader>
         </Card>
@@ -276,8 +286,8 @@ export default function BookTour() {
         {currentStep === "date" && (
           <Card>
             <CardHeader>
-              <CardTitle>選擇出發日期</CardTitle>
-              <CardDescription>請選擇您希望的出發日期</CardDescription>
+              <CardTitle>{t('bookTour.selectDate')}</CardTitle>
+              <CardDescription>{t('bookTour.selectDateDesc')}</CardDescription>
             </CardHeader>
             <CardContent>
               {departuresLoading ? (
@@ -305,29 +315,29 @@ export default function BookTour() {
                         <div className="flex justify-between items-start">
                           <div>
                             <div className="font-bold text-lg">
-                              {new Date(departure.departureDate).toLocaleDateString("zh-TW", {
+                              {new Date(departure.departureDate).toLocaleDateString(getLocaleString(), {
                                 year: "numeric",
                                 month: "long",
                                 day: "numeric",
                               })}
                             </div>
                             <div className="text-sm text-gray-600 mt-1">
-                              返回日期：{new Date(departure.returnDate).toLocaleDateString("zh-TW")}
+                              {t('bookTour.returnDate')}：{new Date(departure.returnDate).toLocaleDateString(getLocaleString())}
                             </div>
                             <div className="text-sm text-gray-600 mt-1">
-                              剩餘名額：{availableSlots} / {departure.totalSlots}
+                              {t('bookTour.remainingSlots')}：{availableSlots} / {departure.totalSlots}
                             </div>
                           </div>
                           <div className="text-right">
                             <div className="text-2xl font-bold">
                               {departure.currency} ${departure.adultPrice.toLocaleString()}
                             </div>
-                            <div className="text-sm text-gray-600">起/人</div>
+                            <div className="text-sm text-gray-600">{t('bookTour.perPerson')}</div>
                           </div>
                         </div>
                         {!isAvailable && (
                           <div className="mt-2 text-sm text-red-600 font-medium">
-                            {departure.status === "cancelled" ? "已取消" : "已額滿"}
+                            {departure.status === "cancelled" ? t('bookTour.cancelled') : t('bookTour.soldOut')}
                           </div>
                         )}
                       </div>
@@ -336,7 +346,7 @@ export default function BookTour() {
                 </div>
               ) : (
                 <div className="text-center py-8 text-gray-600">
-                  目前沒有可預訂的出發日期
+                  {t('bookTour.noAvailableDates')}
                 </div>
               )}
               
@@ -345,7 +355,7 @@ export default function BookTour() {
                   onClick={() => setCurrentStep("travelers")}
                   disabled={!selectedDepartureId}
                 >
-                  下一步
+                  {t('bookTour.nextStep')}
                 </Button>
               </div>
             </CardContent>
@@ -356,13 +366,13 @@ export default function BookTour() {
         {currentStep === "travelers" && selectedDeparture && (
           <Card>
             <CardHeader>
-              <CardTitle>選擇旅客人數</CardTitle>
-              <CardDescription>請選擇參加人數與房型配置</CardDescription>
+              <CardTitle>{t('bookTour.selectTravelers')}</CardTitle>
+              <CardDescription>{t('bookTour.selectTravelersDesc')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="adults">成人</Label>
+                  <Label htmlFor="adults">{t('bookTour.adults')}</Label>
                   <Input
                     id="adults"
                     type="number"
@@ -372,13 +382,13 @@ export default function BookTour() {
                     className="mt-1"
                   />
                   <div className="text-sm text-gray-600 mt-1">
-                    ${selectedDeparture.adultPrice.toLocaleString()} / 人
+                    ${selectedDeparture.adultPrice.toLocaleString()} / {t('common.person')}
                   </div>
                 </div>
                 
                 {selectedDeparture.childPriceWithBed && (
                   <div>
-                    <Label htmlFor="childrenWithBed">兒童（佔床）</Label>
+                    <Label htmlFor="childrenWithBed">{t('bookTour.childrenWithBed')}</Label>
                     <Input
                       id="childrenWithBed"
                       type="number"
@@ -388,14 +398,14 @@ export default function BookTour() {
                       className="mt-1"
                     />
                     <div className="text-sm text-gray-600 mt-1">
-                      ${selectedDeparture.childPriceWithBed.toLocaleString()} / 人
+                      ${selectedDeparture.childPriceWithBed.toLocaleString()} / {t('common.person')}
                     </div>
                   </div>
                 )}
                 
                 {selectedDeparture.childPriceNoBed && (
                   <div>
-                    <Label htmlFor="childrenNoBed">兒童（不佔床）</Label>
+                    <Label htmlFor="childrenNoBed">{t('bookTour.childrenNoBed')}</Label>
                     <Input
                       id="childrenNoBed"
                       type="number"
@@ -405,14 +415,14 @@ export default function BookTour() {
                       className="mt-1"
                     />
                     <div className="text-sm text-gray-600 mt-1">
-                      ${selectedDeparture.childPriceNoBed.toLocaleString()} / 人
+                      ${selectedDeparture.childPriceNoBed.toLocaleString()} / {t('common.person')}
                     </div>
                   </div>
                 )}
                 
                 {selectedDeparture.infantPrice && (
                   <div>
-                    <Label htmlFor="infants">嬰兒</Label>
+                    <Label htmlFor="infants">{t('bookTour.infants')}</Label>
                     <Input
                       id="infants"
                       type="number"
@@ -422,14 +432,14 @@ export default function BookTour() {
                       className="mt-1"
                     />
                     <div className="text-sm text-gray-600 mt-1">
-                      ${selectedDeparture.infantPrice.toLocaleString()} / 人
+                      ${selectedDeparture.infantPrice.toLocaleString()} / {t('common.person')}
                     </div>
                   </div>
                 )}
                 
                 {selectedDeparture.singleRoomSupplement && (
                   <div>
-                    <Label htmlFor="singleRooms">單人房數量</Label>
+                    <Label htmlFor="singleRooms">{t('bookTour.singleRooms')}</Label>
                     <Input
                       id="singleRooms"
                       type="number"
@@ -439,7 +449,7 @@ export default function BookTour() {
                       className="mt-1"
                     />
                     <div className="text-sm text-gray-600 mt-1">
-                      ${selectedDeparture.singleRoomSupplement.toLocaleString()} / 間
+                      ${selectedDeparture.singleRoomSupplement.toLocaleString()} / {t('bookTour.perRoom')}
                     </div>
                   </div>
                 )}
@@ -449,15 +459,15 @@ export default function BookTour() {
               <div className="border-t pt-4">
                 <div className="space-y-2">
                   <div className="flex justify-between text-lg">
-                    <span>總金額</span>
+                    <span>{t('bookTour.totalAmount')}</span>
                     <span className="font-bold">${totalPrice.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-sm text-gray-600">
-                    <span>訂金（20%）</span>
+                    <span>{t('bookTour.deposit')}</span>
                     <span>${depositAmount.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-sm text-gray-600">
-                    <span>尾款</span>
+                    <span>{t('bookTour.balance')}</span>
                     <span>${(totalPrice - depositAmount).toLocaleString()}</span>
                   </div>
                 </div>
@@ -465,13 +475,13 @@ export default function BookTour() {
               
               <div className="flex justify-between mt-6">
                 <Button variant="outline" onClick={() => setCurrentStep("date")}>
-                  上一步
+                  {t('bookTour.previousStep')}
                 </Button>
                 <Button
                   onClick={() => setCurrentStep("details")}
                   disabled={numberOfAdults === 0 && numberOfChildrenWithBed === 0 && numberOfChildrenNoBed === 0}
                 >
-                  下一步
+                  {t('bookTour.nextStep')}
                 </Button>
               </div>
             </CardContent>
@@ -482,16 +492,16 @@ export default function BookTour() {
         {currentStep === "details" && (
           <Card>
             <CardHeader>
-              <CardTitle>填寫聯絡資訊與旅客資料</CardTitle>
-              <CardDescription>請填寫完整的聯絡資訊與所有旅客資料</CardDescription>
+              <CardTitle>{t('bookTour.fillDetails')}</CardTitle>
+              <CardDescription>{t('bookTour.fillDetailsDesc')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Customer Contact */}
               <div>
-                <h3 className="font-bold text-lg mb-4">聯絡資訊</h3>
+                <h3 className="font-bold text-lg mb-4">{t('bookTour.contactInfo')}</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="customerName">姓名 *</Label>
+                    <Label htmlFor="customerName">{t('bookTour.name')} *</Label>
                     <Input
                       id="customerName"
                       value={customerName}
@@ -501,7 +511,7 @@ export default function BookTour() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="customerEmail">電子郵件 *</Label>
+                    <Label htmlFor="customerEmail">{t('bookTour.email')} *</Label>
                     <Input
                       id="customerEmail"
                       type="email"
@@ -512,7 +522,7 @@ export default function BookTour() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="customerPhone">電話 *</Label>
+                    <Label htmlFor="customerPhone">{t('bookTour.phone')} *</Label>
                     <Input
                       id="customerPhone"
                       type="tel"
@@ -524,30 +534,30 @@ export default function BookTour() {
                   </div>
                 </div>
                 <div className="mt-4">
-                  <Label htmlFor="message">備註</Label>
+                  <Label htmlFor="message">{t('bookTour.notes')}</Label>
                   <Textarea
                     id="message"
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     className="mt-1"
                     rows={3}
-                    placeholder="如有特殊需求請在此說明"
+                    placeholder={t('bookTour.notesPlaceholder')}
                   />
                 </div>
               </div>
               
               {/* Participants */}
               <div>
-                <h3 className="font-bold text-lg mb-4">旅客資料</h3>
+                <h3 className="font-bold text-lg mb-4">{t('bookTour.travelerInfo')}</h3>
                 <div className="space-y-6">
                   {participants.map((participant, index) => (
                     <div key={index} className="border rounded-lg p-4">
                       <h4 className="font-medium mb-3">
-                        旅客 {index + 1} ({participant.participantType === "adult" ? "成人" : participant.participantType === "child" ? "兒童" : "嬰兒"})
+                        {t('bookTour.traveler')} {index + 1} ({participant.participantType === "adult" ? t('bookTour.adult') : participant.participantType === "child" ? t('bookTour.child') : t('bookTour.infant')})
                       </h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <Label>名字（英文）*</Label>
+                          <Label>{t('bookTour.firstName')} *</Label>
                           <Input
                             value={participant.firstName}
                             onChange={(e) => {
@@ -560,7 +570,7 @@ export default function BookTour() {
                           />
                         </div>
                         <div>
-                          <Label>姓氏（英文）*</Label>
+                          <Label>{t('bookTour.lastName')} *</Label>
                           <Input
                             value={participant.lastName}
                             onChange={(e) => {
@@ -573,7 +583,7 @@ export default function BookTour() {
                           />
                         </div>
                         <div>
-                          <Label>性別</Label>
+                          <Label>{t('bookTour.gender')}</Label>
                           <Select
                             value={participant.gender}
                             onValueChange={(value) => {
@@ -583,17 +593,17 @@ export default function BookTour() {
                             }}
                           >
                             <SelectTrigger className="mt-1">
-                              <SelectValue placeholder="選擇性別" />
+                              <SelectValue placeholder={t('bookTour.selectGender')} />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="male">男性</SelectItem>
-                              <SelectItem value="female">女性</SelectItem>
-                              <SelectItem value="other">其他</SelectItem>
+                              <SelectItem value="male">{t('bookTour.male')}</SelectItem>
+                              <SelectItem value="female">{t('bookTour.female')}</SelectItem>
+                              <SelectItem value="other">{t('bookTour.other')}</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
                         <div>
-                          <Label>出生日期</Label>
+                          <Label>{t('bookTour.dateOfBirth')}</Label>
                           <Input
                             type="date"
                             value={participant.dateOfBirth}
@@ -606,7 +616,7 @@ export default function BookTour() {
                           />
                         </div>
                         <div>
-                          <Label>護照號碼</Label>
+                          <Label>{t('bookTour.passportNumber')}</Label>
                           <Input
                             value={participant.passportNumber}
                             onChange={(e) => {
@@ -618,7 +628,7 @@ export default function BookTour() {
                           />
                         </div>
                         <div>
-                          <Label>護照到期日</Label>
+                          <Label>{t('bookTour.passportExpiry')}</Label>
                           <Input
                             type="date"
                             value={participant.passportExpiry}
@@ -631,7 +641,7 @@ export default function BookTour() {
                           />
                         </div>
                         <div>
-                          <Label>國籍</Label>
+                          <Label>{t('bookTour.nationality')}</Label>
                           <Input
                             value={participant.nationality}
                             onChange={(e) => {
@@ -643,7 +653,7 @@ export default function BookTour() {
                           />
                         </div>
                         <div>
-                          <Label>飲食需求</Label>
+                          <Label>{t('bookTour.dietaryRequirements')}</Label>
                           <Input
                             value={participant.dietaryRequirements}
                             onChange={(e) => {
@@ -652,11 +662,11 @@ export default function BookTour() {
                               setParticipants(newParticipants);
                             }}
                             className="mt-1"
-                            placeholder="例：素食、海鮮過敏"
+                            placeholder={t('bookTour.dietaryPlaceholder')}
                           />
                         </div>
                         <div className="md:col-span-2">
-                          <Label>特殊需求</Label>
+                          <Label>{t('bookTour.specialNeeds')}</Label>
                           <Input
                             value={participant.specialNeeds}
                             onChange={(e) => {
@@ -665,7 +675,7 @@ export default function BookTour() {
                               setParticipants(newParticipants);
                             }}
                             className="mt-1"
-                            placeholder="例：輪椅、嬰兒床"
+                            placeholder={t('bookTour.specialNeedsPlaceholder')}
                           />
                         </div>
                       </div>
@@ -676,10 +686,10 @@ export default function BookTour() {
               
               <div className="flex justify-between mt-6">
                 <Button variant="outline" onClick={() => setCurrentStep("travelers")}>
-                  上一步
+                  {t('bookTour.previousStep')}
                 </Button>
                 <Button onClick={() => setCurrentStep("confirm")}>
-                  下一步
+                  {t('bookTour.nextStep')}
                 </Button>
               </div>
             </CardContent>
@@ -690,73 +700,73 @@ export default function BookTour() {
         {currentStep === "confirm" && selectedDeparture && (
           <Card>
             <CardHeader>
-              <CardTitle>確認預訂</CardTitle>
-              <CardDescription>請確認您的預訂資訊</CardDescription>
+              <CardTitle>{t('bookTour.confirmBooking')}</CardTitle>
+              <CardDescription>{t('bookTour.confirmBookingDesc')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
-                <h3 className="font-bold mb-2">行程資訊</h3>
+                <h3 className="font-bold mb-2">{t('bookTour.tourInfo')}</h3>
                 <div className="text-sm space-y-1">
-                  <div>行程：{tour.title}</div>
+                  <div>{t('bookTour.tour')}：{tour.title}</div>
                   <div>
-                    出發日期：{new Date(selectedDeparture.departureDate).toLocaleDateString("zh-TW")}
+                    {t('bookTour.departureDate')}：{new Date(selectedDeparture.departureDate).toLocaleDateString(getLocaleString())}
                   </div>
                   <div>
-                    返回日期：{new Date(selectedDeparture.returnDate).toLocaleDateString("zh-TW")}
+                    {t('bookTour.returnDate')}：{new Date(selectedDeparture.returnDate).toLocaleDateString(getLocaleString())}
                   </div>
                 </div>
               </div>
               
               <div>
-                <h3 className="font-bold mb-2">旅客人數</h3>
+                <h3 className="font-bold mb-2">{t('bookTour.travelerCount')}</h3>
                 <div className="text-sm space-y-1">
-                  {numberOfAdults > 0 && <div>成人：{numberOfAdults} 位</div>}
-                  {numberOfChildrenWithBed > 0 && <div>兒童（佔床）：{numberOfChildrenWithBed} 位</div>}
-                  {numberOfChildrenNoBed > 0 && <div>兒童（不佔床）：{numberOfChildrenNoBed} 位</div>}
-                  {numberOfInfants > 0 && <div>嬰兒：{numberOfInfants} 位</div>}
-                  {numberOfSingleRooms > 0 && <div>單人房：{numberOfSingleRooms} 間</div>}
+                  {numberOfAdults > 0 && <div>{t('bookTour.adults')}：{numberOfAdults} {t('bookTour.people')}</div>}
+                  {numberOfChildrenWithBed > 0 && <div>{t('bookTour.childrenWithBed')}：{numberOfChildrenWithBed} {t('bookTour.people')}</div>}
+                  {numberOfChildrenNoBed > 0 && <div>{t('bookTour.childrenNoBed')}：{numberOfChildrenNoBed} {t('bookTour.people')}</div>}
+                  {numberOfInfants > 0 && <div>{t('bookTour.infants')}：{numberOfInfants} {t('bookTour.people')}</div>}
+                  {numberOfSingleRooms > 0 && <div>{t('bookTour.singleRooms')}：{numberOfSingleRooms} {t('bookTour.rooms')}</div>}
                 </div>
               </div>
               
               <div>
-                <h3 className="font-bold mb-2">聯絡資訊</h3>
+                <h3 className="font-bold mb-2">{t('bookTour.contactInfo')}</h3>
                 <div className="text-sm space-y-1">
-                  <div>姓名：{customerName}</div>
-                  <div>電子郵件：{customerEmail}</div>
-                  <div>電話：{customerPhone}</div>
+                  <div>{t('bookTour.name')}：{customerName}</div>
+                  <div>{t('bookTour.email')}：{customerEmail}</div>
+                  <div>{t('bookTour.phone')}：{customerPhone}</div>
                 </div>
               </div>
               
               <div className="border-t pt-4">
                 <div className="space-y-2">
                   <div className="flex justify-between text-lg">
-                    <span className="font-bold">總金額</span>
+                    <span className="font-bold">{t('bookTour.totalAmount')}</span>
                     <span className="font-bold">${totalPrice.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-sm text-gray-600">
-                    <span>訂金（20%）</span>
+                    <span>{t('bookTour.deposit')}</span>
                     <span>${depositAmount.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-sm text-gray-600">
-                    <span>尾款</span>
+                    <span>{t('bookTour.balance')}</span>
                     <span>${(totalPrice - depositAmount).toLocaleString()}</span>
                   </div>
                 </div>
               </div>
               
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm">
-                <p className="font-medium mb-2">付款說明：</p>
+                <p className="font-medium mb-2">{t('bookTour.paymentInfo')}：</p>
                 <ul className="list-disc list-inside space-y-1 text-gray-700">
-                  <li>點擊「確認預訂」後，系統將建立您的預訂記錄</li>
-                  <li>您可以選擇支付訂金（20%）或全額付款</li>
-                  <li>訂金需在 3 天內完成支付</li>
-                  <li>尾款需在出發前 30 天完成支付</li>
+                  <li>{t('bookTour.paymentNote1')}</li>
+                  <li>{t('bookTour.paymentNote2')}</li>
+                  <li>{t('bookTour.paymentNote3')}</li>
+                  <li>{t('bookTour.paymentNote4')}</li>
                 </ul>
               </div>
               
               <div className="flex justify-between mt-6">
                 <Button variant="outline" onClick={() => setCurrentStep("details")}>
-                  上一步
+                  {t('bookTour.previousStep')}
                 </Button>
                 <Button
                   onClick={handleSubmit}
@@ -765,7 +775,7 @@ export default function BookTour() {
                   {createBookingMutation.isPending && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
-                  確認預訂
+                  {t('bookTour.confirmBtn')}
                 </Button>
               </div>
             </CardContent>

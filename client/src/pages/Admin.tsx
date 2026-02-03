@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Home, LogOut, LayoutDashboard, Plane, ShoppingCart, MessageSquare, Star, Brain } from "lucide-react";
 import { useEffect } from "react";
 import { useLocation } from "wouter";
+import { useLocale } from "@/contexts/LocaleContext";
 
 // Import tab components
 import DashboardTab from "@/components/admin/DashboardTab";
@@ -16,6 +17,7 @@ import SkillsTab from "@/components/admin/SkillsTab";
 export default function Admin() {
   const { user, loading, isAuthenticated, logout } = useAuth();
   const [, setLocation] = useLocation();
+  const { t } = useLocale();
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -33,7 +35,7 @@ export default function Admin() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
-          <p className="text-gray-600">載入中...</p>
+          <p className="text-gray-600">{t('admin.loading')}</p>
         </div>
       </div>
     );
@@ -50,8 +52,8 @@ export default function Admin() {
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">管理後台</h1>
-              <p className="text-sm text-gray-600 mt-1">歡迎回來，{user?.name || "管理員"}</p>
+              <h1 className="text-2xl font-bold text-gray-900">{t('admin.title')}</h1>
+              <p className="text-sm text-gray-600 mt-1">{t('admin.welcome')}，{user?.name || t('admin.administrator')}</p>
             </div>
             <div className="flex items-center gap-3">
               <Button
@@ -60,7 +62,7 @@ export default function Admin() {
                 className="rounded-full"
               >
                 <Home className="h-4 w-4 mr-2" />
-                返回首頁
+                {t('admin.backToHome')}
               </Button>
               <Button
                 variant="outline"
@@ -68,7 +70,7 @@ export default function Admin() {
                 className="rounded-full"
               >
                 <LogOut className="h-4 w-4 mr-2" />
-                登出
+                {t('admin.logout')}
               </Button>
             </div>
           </div>
@@ -81,27 +83,27 @@ export default function Admin() {
           <TabsList className="mb-8 rounded-full bg-white border border-gray-200 p-1">
             <TabsTrigger value="dashboard" className="rounded-full">
               <LayoutDashboard className="h-4 w-4 mr-2" />
-              儀表板
+              {t('admin.dashboard')}
             </TabsTrigger>
             <TabsTrigger value="tours" className="rounded-full">
               <Plane className="h-4 w-4 mr-2" />
-              行程管理
+              {t('admin.tours')}
             </TabsTrigger>
             <TabsTrigger value="bookings" className="rounded-full">
               <ShoppingCart className="h-4 w-4 mr-2" />
-              預訂管理
+              {t('admin.bookings')}
             </TabsTrigger>
             <TabsTrigger value="inquiries" className="rounded-full">
               <MessageSquare className="h-4 w-4 mr-2" />
-              諮詢管理
+              {t('admin.inquiries')}
             </TabsTrigger>
             <TabsTrigger value="reviews" className="rounded-full">
               <Star className="h-4 w-4 mr-2" />
-              評價管理
+              {t('admin.reviews')}
             </TabsTrigger>
             <TabsTrigger value="skills" className="rounded-full">
               <Brain className="h-4 w-4 mr-2" />
-              技能管理
+              {t('admin.skills')}
             </TabsTrigger>
           </TabsList>
 
