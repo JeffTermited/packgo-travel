@@ -4583,3 +4583,47 @@
 - [x] 測試 TWD 和 USD 原始貨幣的轉換
 - [x] 驗證「轉換價格僅供參考」提示顯示正確
 
+
+
+---
+
+## Phase 30: AI 系統優化執行（2026-02-27）
+
+### P0: 安全修復
+- [x] tours.create 改為 adminProcedure
+- [x] tours.update 改為 adminProcedure
+- [x] tours.delete 改為 adminProcedure
+- [x] imageLibrary.delete 改為 adminProcedure
+- [x] submitAsyncGeneration 改為 adminProcedure
+- [x] autoGenerateComplete 改為 adminProcedure
+- [x] autoGenerate 改為 adminProcedure
+- [x] saveFromPreview 改為 adminProcedure
+
+### P1: DetailsSkill 4→1 LLM 呼叫合併
+- [x] 新增 COMBINED_DETAILS_SCHEMA 合併 Schema
+- [x] 新增 executeAllCombined() 方法
+- [x] 修改 masterAgent.ts 呼叫新方法
+- [x] 內建自動降級機制（失敗回退到 4 次呼叫）
+
+### P2: 啟用 Anthropic Prompt Caching
+- [x] 修改 claudeAgent.ts sendStructuredMessage 支援 cache_control
+- [x] 修改 claudeAgent.ts sendMessage 支援 cache_control
+- [x] 修改 claudeAgent.ts sendConversation 支援 cache_control
+- [x] 新增快取效果追蹤日誌
+- [x] 更新 updateUsageStats 支援 cache token 追蹤和成本計算
+
+### P3: DetailsSkill LLM 結果快取
+- [x] 在 generation-cache.ts 新增 Details 快取方法
+- [x] 在 masterAgent.ts 整合 Details 快取檢查（呼叫前檢查 + 呼叫後寫入）
+
+### P4: 品牌修復
+- [x] 搜尋並替換所有 "TRAVEL NOIR" 為 "PACK&GO" (已確認無殘留)
+
+### 驗證
+- [x] 測試安全修復（非管理員無法修改行程）
+- [x] 測試 DetailsSkill 合併呼叫
+- [x] 測試 Prompt Caching 支援
+- [x] 測試 Details 快取方法
+- [x] 修復舊測試的錯誤訊息斷言（配合 adminProcedure 變更）
+- [x] TypeScript 零錯誤確認
+- [x] 伺服器正常運行確認

@@ -550,15 +550,22 @@ export class MasterAgent {
         itineraryData = JSON.stringify([]);
       }
       
+      // P3: Check Details cache before LLM call
+      const detailsCacheKey = rawData.location?.destinationCity || rawData.location?.destinationCountry || "unknown";
+      const cachedDetails = await generationCache.getDetailsResult(detailsCacheKey);
+      
       // Execute DetailsSkill (replaces CostAgent, NoticeAgent, HotelAgent, MealAgent)
       // and TransportationAgent in parallel
       const [detailsSkillResult, transportationResult] = await Promise.allSettled([
-        // DetailsSkill - handles costs, notices, hotels, meals in parallel internally
-        this.retryManager.executeWithRetry(
-          () => this.detailsSkill.executeAll(rawData),
-          this.retryConfig,
-          'DetailsSkill'
-        ),
+        // DetailsSkill - P1 optimized: single LLM call for all 4 sub-skills
+        // P3: Skip LLM if cache hit
+        cachedDetails
+          ? Promise.resolve(cachedDetails)
+          : this.retryManager.executeWithRetry(
+              () => this.detailsSkill.executeAllCombined(rawData),
+              this.retryConfig,
+              'DetailsSkill'
+            ),
         // Transportation Agent - 根據行程類型選擇交通方式
         this.retryManager.executeWithRetry(
           () => this.transportationAgent.execute(rawData, tourType),
@@ -566,6 +573,10 @@ export class MasterAgent {
           'TransportationAgent'
         )
       ]);
+      
+      if (cachedDetails) {
+        console.log(`[MasterAgent] 🎯 DetailsSkill cache hit for: ${detailsCacheKey} - skipped LLM call`);
+      }
       
       // Dynamic Hero Image: Search from Unsplash based on destination
       let heroImage = { url: "", alt: "" };
@@ -620,6 +631,16 @@ export class MasterAgent {
           console.log(`[MasterAgent] hotelData type: ${typeof hotelData}, isArray: ${Array.isArray(hotelData)}, length: ${Array.isArray(hotelData) ? hotelData.length : 'N/A'}`);
           console.log(`[MasterAgent] mealData type: ${typeof mealData}, isArray: ${Array.isArray(mealData)}, length: ${Array.isArray(mealData) ? mealData.length : 'N/A'}`);
           console.log(`[MasterAgent] Token usage - Input: ${result.usage?.inputTokens}, Output: ${result.usage?.outputTokens}`);
+          
+          // P3: Cache the DetailsSkill result for future use
+          if (!cachedDetails) {
+            try {
+              await generationCache.cacheDetailsResult(detailsCacheKey, result);
+              console.log(`[MasterAgent] 💾 DetailsSkill result cached for: ${detailsCacheKey}`);
+            } catch (cacheErr) {
+              console.warn(`[MasterAgent] Failed to cache DetailsSkill result:`, cacheErr);
+            }
+          }
         } else {
           console.warn(`[MasterAgent] ⚠ DetailsSkill returned error, using fallbacks`);
           costData = this.fallbackManager.handleFailure('CostAgent', new Error('DetailsSkill failed'));

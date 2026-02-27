@@ -48,6 +48,8 @@ export interface ClaudeResult {
   usage?: {
     inputTokens: number;
     outputTokens: number;
+    cacheCreationInputTokens?: number;
+    cacheReadInputTokens?: number;
   };
   error?: string;
 }
@@ -86,6 +88,8 @@ interface TokenUsageStats {
   totalOutputTokens: number;
   totalCalls: number;
   estimatedCostUSD: number;
+  totalCacheCreationTokens: number;
+  totalCacheReadTokens: number;
 }
 
 // Strict Data Fidelity Rules (to prevent hallucinations)
@@ -128,6 +132,8 @@ export class ClaudeAgent {
       totalOutputTokens: 0,
       totalCalls: 0,
       estimatedCostUSD: 0,
+      totalCacheCreationTokens: 0,
+      totalCacheReadTokens: 0,
     };
     
     console.log(`[ClaudeAgent] Initialized with model: ${this.model}`);
@@ -149,42 +155,64 @@ export class ClaudeAgent {
       totalOutputTokens: 0,
       totalCalls: 0,
       estimatedCostUSD: 0,
+      totalCacheCreationTokens: 0,
+      totalCacheReadTokens: 0,
     };
   }
 
   /**
-   * Update usage stats after a call
+   * Update usage stats after a call (P2: supports Prompt Caching stats)
    */
-  private updateUsageStats(inputTokens: number, outputTokens: number): void {
+  private updateUsageStats(
+    inputTokens: number, 
+    outputTokens: number,
+    cacheCreationTokens?: number,
+    cacheReadTokens?: number
+  ): void {
     this.usageStats.totalInputTokens += inputTokens;
     this.usageStats.totalOutputTokens += outputTokens;
     this.usageStats.totalCalls += 1;
+    this.usageStats.totalCacheCreationTokens += cacheCreationTokens || 0;
+    this.usageStats.totalCacheReadTokens += cacheReadTokens || 0;
 
-    // Calculate cost based on model (Claude 4.5 pricing)
+    // Calculate cost based on model (Claude 4.5 pricing with cache discounts)
     let inputCostPer1M: number;
     let outputCostPer1M: number;
 
     if (this.model.includes('haiku')) {
-      // Haiku 4.5 pricing
       inputCostPer1M = 1.0;
       outputCostPer1M = 5.0;
     } else if (this.model.includes('sonnet')) {
-      // Sonnet 4.5 pricing
       inputCostPer1M = 3.0;
       outputCostPer1M = 15.0;
     } else if (this.model.includes('opus')) {
-      // Opus 4.5 pricing
       inputCostPer1M = 15.0;
       outputCostPer1M = 75.0;
     } else {
-      // Default to Haiku pricing
       inputCostPer1M = 1.0;
       outputCostPer1M = 5.0;
     }
 
-    const inputCost = (inputTokens / 1_000_000) * inputCostPer1M;
+    // Prompt Caching pricing:
+    // - cache_creation: 1.25x base input price
+    // - cache_read: 0.1x base input price (90% discount)
+    // - regular input: 1x base input price
+    const regularInputTokens = inputTokens - (cacheCreationTokens || 0) - (cacheReadTokens || 0);
+    const regularCost = (Math.max(0, regularInputTokens) / 1_000_000) * inputCostPer1M;
+    const cacheWriteCost = ((cacheCreationTokens || 0) / 1_000_000) * inputCostPer1M * 1.25;
+    const cacheReadCost = ((cacheReadTokens || 0) / 1_000_000) * inputCostPer1M * 0.1;
     const outputCost = (outputTokens / 1_000_000) * outputCostPer1M;
-    this.usageStats.estimatedCostUSD += inputCost + outputCost;
+    
+    this.usageStats.estimatedCostUSD += regularCost + cacheWriteCost + cacheReadCost + outputCost;
+
+    // Log cache effectiveness
+    if (cacheReadTokens && cacheReadTokens > 0) {
+      const savings = ((cacheReadTokens || 0) / 1_000_000) * inputCostPer1M * 0.9;
+      console.log(`[ClaudeAgent] 💰 Cache hit! ${cacheReadTokens} tokens read from cache, saved ~$${savings.toFixed(6)}`);
+    }
+    if (cacheCreationTokens && cacheCreationTokens > 0) {
+      console.log(`[ClaudeAgent] 📝 Cache created: ${cacheCreationTokens} tokens cached for future use`);
+    }
   }
 
   /**
@@ -196,7 +224,7 @@ export class ClaudeAgent {
   }
 
   /**
-   * Send a single message to Claude
+   * Send a single message to Claude (P2: with Prompt Caching support)
    */
   async sendMessage(
     prompt: string,
@@ -204,17 +232,33 @@ export class ClaudeAgent {
       systemPrompt?: string;
       maxTokens?: number;
       temperature?: number;
+      enableCaching?: boolean; // P2: enable prompt caching for system prompt
     }
   ): Promise<ClaudeResult> {
     console.log('[ClaudeAgent] Sending message to Claude...');
     const startTime = Date.now();
 
     try {
+      // P2: Build system prompt with cache_control if caching is enabled
+      // Caching is enabled by default for system prompts >= 1024 tokens (Haiku minimum)
+      const systemPromptText = options?.systemPrompt || '';
+      const shouldCache = options?.enableCaching !== false && systemPromptText.length >= 500;
+      
+      const systemParam = shouldCache && systemPromptText
+        ? [
+            {
+              type: 'text' as const,
+              text: systemPromptText,
+              cache_control: { type: 'ephemeral' as const },
+            },
+          ]
+        : systemPromptText || undefined;
+
       const response = await this.client.messages.create({
         model: this.model,
         max_tokens: options?.maxTokens || 4096,
         temperature: options?.temperature || 1.0,
-        system: options?.systemPrompt,
+        system: systemParam as any,
         messages: [
           {
             role: 'user',
@@ -226,8 +270,13 @@ export class ClaudeAgent {
       const duration = Date.now() - startTime;
       console.log(`[ClaudeAgent] Response received in ${duration}ms`);
 
-      // Update usage stats
-      this.updateUsageStats(response.usage.input_tokens, response.usage.output_tokens);
+      // P2: Extract cache stats from usage
+      const usage = response.usage as any;
+      const cacheCreation = usage.cache_creation_input_tokens || 0;
+      const cacheRead = usage.cache_read_input_tokens || 0;
+
+      // Update usage stats with cache info
+      this.updateUsageStats(response.usage.input_tokens, response.usage.output_tokens, cacheCreation, cacheRead);
 
       // Extract text content from response
       const content = response.content
@@ -241,6 +290,8 @@ export class ClaudeAgent {
         usage: {
           inputTokens: response.usage.input_tokens,
           outputTokens: response.usage.output_tokens,
+          cacheCreationInputTokens: cacheCreation,
+          cacheReadInputTokens: cacheRead,
         },
       };
     } catch (error: any) {
@@ -255,7 +306,7 @@ export class ClaudeAgent {
   }
 
   /**
-   * Send a conversation (multiple messages) to Claude
+   * Send a conversation (multiple messages) to Claude (P2: with Prompt Caching)
    */
   async sendConversation(
     messages: ClaudeMessage[],
@@ -263,17 +314,32 @@ export class ClaudeAgent {
       systemPrompt?: string;
       maxTokens?: number;
       temperature?: number;
+      enableCaching?: boolean;
     }
   ): Promise<ClaudeResult> {
     console.log(`[ClaudeAgent] Sending conversation (${messages.length} messages) to Claude...`);
     const startTime = Date.now();
 
     try {
+      // P2: Build system prompt with cache_control
+      const systemPromptText = options?.systemPrompt || '';
+      const shouldCache = options?.enableCaching !== false && systemPromptText.length >= 500;
+      
+      const systemParam = shouldCache && systemPromptText
+        ? [
+            {
+              type: 'text' as const,
+              text: systemPromptText,
+              cache_control: { type: 'ephemeral' as const },
+            },
+          ]
+        : systemPromptText || undefined;
+
       const response = await this.client.messages.create({
         model: this.model,
         max_tokens: options?.maxTokens || 4096,
         temperature: options?.temperature || 1.0,
-        system: options?.systemPrompt,
+        system: systemParam as any,
         messages: messages.map((msg) => ({
           role: msg.role,
           content: msg.content,
@@ -283,10 +349,12 @@ export class ClaudeAgent {
       const duration = Date.now() - startTime;
       console.log(`[ClaudeAgent] Response received in ${duration}ms`);
 
-      // Update usage stats
-      this.updateUsageStats(response.usage.input_tokens, response.usage.output_tokens);
+      const usage = response.usage as any;
+      const cacheCreation = usage.cache_creation_input_tokens || 0;
+      const cacheRead = usage.cache_read_input_tokens || 0;
 
-      // Extract text content from response
+      this.updateUsageStats(response.usage.input_tokens, response.usage.output_tokens, cacheCreation, cacheRead);
+
       const content = response.content
         .filter((block) => block.type === 'text')
         .map((block: any) => block.text)
@@ -298,6 +366,8 @@ export class ClaudeAgent {
         usage: {
           inputTokens: response.usage.input_tokens,
           outputTokens: response.usage.output_tokens,
+          cacheCreationInputTokens: cacheCreation,
+          cacheReadInputTokens: cacheRead,
         },
       };
     } catch (error: any) {
@@ -333,6 +403,7 @@ export class ClaudeAgent {
       schemaName?: string;
       schemaDescription?: string;
       strictDataFidelity?: boolean;
+      enableCaching?: boolean; // P2: enable prompt caching
     }
   ): Promise<ClaudeStructuredResult<T>> {
     const schemaName = options?.schemaName || 'structured_output';
@@ -342,18 +413,30 @@ export class ClaudeAgent {
     const startTime = Date.now();
 
     // Build system prompt with strict data fidelity rules if enabled
-    let systemPrompt = options?.systemPrompt || '你是一個專業的資料提取專家，擅長從文本中提取結構化資訊。';
+    let systemPromptText = options?.systemPrompt || '你是一個專業的資料提取專家，擅長從文本中提取結構化資訊。';
     if (options?.strictDataFidelity !== false) {
-      systemPrompt = `${systemPrompt}\n\n${STRICT_DATA_FIDELITY_RULES}`;
+      systemPromptText = `${systemPromptText}\n\n${STRICT_DATA_FIDELITY_RULES}`;
     }
+
+    // P2: Apply Prompt Caching to system prompt
+    const shouldCache = options?.enableCaching !== false && systemPromptText.length >= 500;
+    const systemParam = shouldCache
+      ? [
+          {
+            type: 'text' as const,
+            text: systemPromptText,
+            cache_control: { type: 'ephemeral' as const },
+          },
+        ]
+      : systemPromptText;
 
     try {
       // Use Claude's tool use feature to enforce JSON schema
       const response = await this.client.messages.create({
         model: this.model,
         max_tokens: options?.maxTokens || 4096,
-        temperature: options?.temperature ?? 0.3, // Lower temperature for consistent extraction
-        system: systemPrompt,
+        temperature: options?.temperature ?? 0.3,
+        system: systemParam as any,
         tools: [
           {
             name: schemaName,
@@ -373,8 +456,13 @@ export class ClaudeAgent {
       const duration = Date.now() - startTime;
       console.log(`[ClaudeAgent] Structured response received in ${duration}ms`);
 
-      // Update usage stats
-      this.updateUsageStats(response.usage.input_tokens, response.usage.output_tokens);
+      // P2: Extract cache stats
+      const usageRaw = response.usage as any;
+      const cacheCreation = usageRaw.cache_creation_input_tokens || 0;
+      const cacheRead = usageRaw.cache_read_input_tokens || 0;
+
+      // Update usage stats with cache info
+      this.updateUsageStats(response.usage.input_tokens, response.usage.output_tokens, cacheCreation, cacheRead);
 
       // Extract tool use result
       const toolUseBlock = response.content.find((block) => block.type === 'tool_use');
@@ -387,11 +475,12 @@ export class ClaudeAgent {
           usage: {
             inputTokens: response.usage.input_tokens,
             outputTokens: response.usage.output_tokens,
+            cacheCreationInputTokens: cacheCreation,
+            cacheReadInputTokens: cacheRead,
           },
         };
       }
 
-      // The input field contains the structured data
       const data = toolUseBlock.input as T;
 
       console.log(`[ClaudeAgent] Successfully extracted structured data`);
@@ -403,6 +492,8 @@ export class ClaudeAgent {
         usage: {
           inputTokens: response.usage.input_tokens,
           outputTokens: response.usage.output_tokens,
+          cacheCreationInputTokens: cacheCreation,
+          cacheReadInputTokens: cacheRead,
         },
       };
     } catch (error: any) {

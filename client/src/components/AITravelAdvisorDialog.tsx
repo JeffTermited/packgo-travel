@@ -8,13 +8,13 @@ import { trpc } from "@/lib/trpc";
 import { Streamdown } from "streamdown";
 import { useLocale } from "@/contexts/LocaleContext";
 
-// 企鵝表情圖像 URLs (透明背景版本)
+// 企鵝表情圖像 URLs (CDN)
 const PENGUIN_EXPRESSIONS = {
-  default: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663159191204/bJsbScmQpKmVdhut.png",
-  thinking: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663159191204/SjvtTEmhuOMPCozg.png",
-  happy: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663159191204/qvHPuVaTsuielbwl.png",
-  confused: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663159191204/vyzjOiHzLOerStch.png",
-  waving: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663159191204/WkOQbHIhVnUckSkg.png",
+  default: "https://d2xsxph8kpxj0f.cloudfront.net/310519663159191204/D3XjbQ67JpFf2y4FWefWHw/penguin-reference_5e2553b9.png",
+  thinking: "https://d2xsxph8kpxj0f.cloudfront.net/310519663159191204/D3XjbQ67JpFf2y4FWefWHw/penguin-thinking_f5ff1339.png",
+  happy: "https://d2xsxph8kpxj0f.cloudfront.net/310519663159191204/D3XjbQ67JpFf2y4FWefWHw/penguin-happy_4389eb47.png",
+  confused: "https://d2xsxph8kpxj0f.cloudfront.net/310519663159191204/D3XjbQ67JpFf2y4FWefWHw/penguin-confused_400fe74a.png",
+  waving: "https://d2xsxph8kpxj0f.cloudfront.net/310519663159191204/D3XjbQ67JpFf2y4FWefWHw/penguin-waving_c210a046.png",
 };
 
 type PenguinExpression = keyof typeof PENGUIN_EXPRESSIONS;

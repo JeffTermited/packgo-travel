@@ -165,6 +165,103 @@ const NOTICE_SCHEMA: JSONSchema = {
   required: ["preparation", "culturalNotes", "healthSafety", "emergency"],
 };
 
+// ============ Combined Schema (P1 Optimization) ============
+
+/**
+ * 合併 Schema：將 4 個子技能的輸出合併為單一 JSON Schema
+ * 優化效益：4 次 LLM 呼叫 → 1 次，節省 ~63% input tokens
+ */
+const COMBINED_DETAILS_SCHEMA: JSONSchema = {
+  type: "object",
+  properties: {
+    meals: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          name: { type: "string", description: "餐點名稱" },
+          type: { type: "string", description: "餐點類型（breakfast/lunch/dinner）" },
+          description: { type: "string", description: "餐點描述（80-120字）" },
+          cuisine: { type: "string", description: "料理類型" },
+          restaurant: { type: "string", description: "餐廳名稱" },
+        },
+        required: ["name", "type", "description", "cuisine"],
+      },
+      description: "餐飲資訊列表",
+    },
+    hotels: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          name: { type: "string", description: "飯店名稱" },
+          stars: { type: "string", description: "星級（例如：五星級）" },
+          description: { type: "string", description: "飯店描述（120-180字）" },
+          facilities: {
+            type: "array",
+            items: { type: "string" },
+            description: "飯店設施列表",
+          },
+          location: { type: "string", description: "地理位置描述" },
+        },
+        required: ["name", "stars", "description", "facilities", "location"],
+      },
+      description: "住宿資訊列表",
+    },
+    costs: {
+      type: "object",
+      properties: {
+        included: {
+          type: "array",
+          items: { type: "string" },
+          description: "團費包含項目（5-7項）",
+        },
+        excluded: {
+          type: "array",
+          items: { type: "string" },
+          description: "團費不包含項目（5-6項）",
+        },
+        additionalCosts: {
+          type: "array",
+          items: { type: "string" },
+          description: "額外費用提醒（3-4項）",
+        },
+        notes: { type: "string", description: "費用說明備註" },
+      },
+      required: ["included", "excluded", "additionalCosts", "notes"],
+      description: "費用說明",
+    },
+    notices: {
+      type: "object",
+      properties: {
+        preparation: {
+          type: "array",
+          items: { type: "string" },
+          description: "行前準備提醒（3-4條）",
+        },
+        culturalNotes: {
+          type: "array",
+          items: { type: "string" },
+          description: "當地文化禁忌（3-4條）",
+        },
+        healthSafety: {
+          type: "array",
+          items: { type: "string" },
+          description: "健康安全注意（3-4條）",
+        },
+        emergency: {
+          type: "array",
+          items: { type: "string" },
+          description: "緊急應對措施（3-4條）",
+        },
+      },
+      required: ["preparation", "culturalNotes", "healthSafety", "emergency"],
+      description: "旅遊注意事項",
+    },
+  },
+  required: ["meals", "hotels", "costs", "notices"],
+};
+
 // ============ DetailsSkill Class ============
 
 /**
@@ -175,6 +272,8 @@ const NOTICE_SCHEMA: JSONSchema = {
  * - hotels: 住宿資訊提取
  * - costs: 費用說明生成
  * - notices: 注意事項生成
+ * 
+ * P1 優化：新增 executeAllCombined() 方法，將 4 次 LLM 呼叫合併為 1 次
  */
 export class DetailsSkill {
   private skillContent: string = "";
@@ -212,12 +311,125 @@ export class DetailsSkill {
   }
 
   /**
-   * 執行所有子技能
+   * P1 優化：單一 LLM 呼叫生成所有細節
+   * 將 4 次 LLM 呼叫合併為 1 次，節省 ~63% input tokens
+   * 內建自動降級機制：失敗時回退到原始 4 次並行呼叫
+   */
+  async executeAllCombined(rawData: any): Promise<DetailsSkillResult> {
+    await this.initialize();
+    console.log("[DetailsSkill] Executing COMBINED single-call mode...");
+    const startTime = Date.now();
+
+    // 準備精簡的輸入資料
+    let mealData = rawData?.meals || rawData?.dining || [];
+    const dailyItinerary = rawData?.dailyItinerary || rawData?.itinerary || [];
+    
+    // 從每日行程提取餐食資訊
+    if ((!mealData || mealData.length === 0) && dailyItinerary.length > 0) {
+      const extractedMeals: any[] = [];
+      for (const day of dailyItinerary) {
+        if (day.meals && typeof day.meals === 'string' && day.meals.trim()) {
+          extractedMeals.push({ day: day.day || 0, description: day.meals.trim() });
+        }
+      }
+      if (extractedMeals.length > 0) mealData = extractedMeals;
+    }
+
+    let accommodationData = rawData?.accommodation || rawData?.hotels || [];
+    if ((!accommodationData || accommodationData.length === 0) && dailyItinerary.length > 0) {
+      const hotelNames = new Set<string>();
+      for (const day of dailyItinerary) {
+        if (day.accommodation && typeof day.accommodation === 'string' && day.accommodation.trim()) {
+          hotelNames.add(day.accommodation.trim());
+        }
+      }
+      if (hotelNames.size > 0) {
+        accommodationData = Array.from(hotelNames).map(name => ({ name, stars: '', description: '', location: '' }));
+      }
+    }
+
+    const destination = rawData?.location?.destinationCountry || "";
+    const city = rawData?.location?.destinationCity || "";
+    const days = rawData?.duration?.days || 0;
+    const pricing = rawData?.pricing || rawData?.pricingDetails || {};
+
+    const prompt = `請根據以下旅遊行程資料，一次性生成四個部分的結構化資訊。
+
+## 行程基本資訊
+- 目的地：${city}, ${destination}
+- 天數：${days} 天
+- 價格：${pricing.price || "未提供"}
+
+## 餐飲資料
+${JSON.stringify(mealData.length > 0 ? mealData.slice(0, 10) : dailyItinerary.slice(0, 5), null, 2).substring(0, 2000)}
+
+## 住宿資料
+${JSON.stringify(accommodationData, null, 2).substring(0, 2000)}
+
+## 費用資料
+${JSON.stringify(pricing, null, 2).substring(0, 1000)}
+
+## 行程概要
+${JSON.stringify(dailyItinerary.slice(0, 8).map((d: any) => ({ day: d.day, title: d.title, accommodation: d.accommodation, meals: d.meals })), null, 2).substring(0, 1500)}
+
+請生成：
+1. meals: 餐飲介紹（根據每日行程提取，包含 name/type/description/cuisine/restaurant）
+2. hotels: 住宿介紹（根據住宿資料提取，包含 name/stars/description/facilities/location）
+3. costs: 費用說明（包含 included/excluded/additionalCosts/notes）
+4. notices: 注意事項（包含 preparation/culturalNotes/healthSafety/emergency，每類 3-4 條）`;
+
+    try {
+      const claudeAgent = getHaikuAgent();
+      const response = await claudeAgent.sendStructuredMessage<{
+        meals: MealData[];
+        hotels: HotelData[];
+        costs: CostData;
+        notices: NoticeData;
+      }>(prompt, COMBINED_DETAILS_SCHEMA, {
+        systemPrompt: `${this.skillContent}\n\n${STRICT_DATA_FIDELITY_RULES}`,
+        maxTokens: 4096,
+        temperature: 0.5,
+        schemaName: "combined_details_output",
+        schemaDescription: "旅遊行程細節一次性結構化輸出（餐飲、住宿、費用、注意事項）",
+      });
+
+      const elapsed = Date.now() - startTime;
+
+      if (!response.success || !response.data) {
+        console.warn(`[DetailsSkill] Combined call failed (${elapsed}ms), falling back to parallel mode`);
+        return this.executeAll(rawData);
+      }
+
+      console.log(`[DetailsSkill] ✅ Combined call completed in ${elapsed}ms`);
+      console.log(`[DetailsSkill] Token usage - Input: ${response.usage?.inputTokens}, Output: ${response.usage?.outputTokens}`);
+      console.log(`[DetailsSkill] Results - meals: ${response.data.meals?.length || 0}, hotels: ${response.data.hotels?.length || 0}`);
+
+      return {
+        success: true,
+        data: {
+          meals: response.data.meals || this.getDefaultMeals(rawData),
+          hotels: response.data.hotels || this.getDefaultHotels(rawData),
+          costs: response.data.costs || this.getDefaultCosts(days, destination, city),
+          notices: response.data.notices || this.getDefaultNotices(destination || "目的地"),
+        },
+        usage: response.usage,
+      };
+    } catch (error) {
+      const elapsed = Date.now() - startTime;
+      console.error(`[DetailsSkill] Combined call error after ${elapsed}ms:`, error);
+      // 自動降級為原始並行模式
+      console.log("[DetailsSkill] ⚠ Falling back to parallel mode...");
+      return this.executeAll(rawData);
+    }
+  }
+
+  /**
+   * 執行所有子技能（原始並行模式，作為 executeAllCombined 的降級備援）
    */
   async executeAll(rawData: any): Promise<DetailsSkillResult> {
     await this.initialize();
 
-    console.log("[DetailsSkill] Executing all sub-skills in parallel...");
+    console.log("[DetailsSkill] Executing all sub-skills in parallel (fallback mode)...");
 
     const [mealsResult, hotelsResult, costsResult, noticesResult] = await Promise.all([
       this.extractMeals(rawData),
@@ -240,7 +452,7 @@ export class DetailsSkill {
         (noticesResult.usage?.outputTokens || 0),
     };
 
-    console.log(`[DetailsSkill] All sub-skills completed. Total tokens: ${totalUsage.inputTokens + totalUsage.outputTokens}`);
+    console.log(`[DetailsSkill] All sub-skills completed (fallback). Total tokens: ${totalUsage.inputTokens + totalUsage.outputTokens}`);
 
     return {
       success: true,

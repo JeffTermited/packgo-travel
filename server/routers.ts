@@ -430,7 +430,7 @@ export const appRouter = router({
       }),
 
     // Create new tour (admin only)
-    create: protectedProcedure
+    create: adminProcedure
       .input(
         z.object({
           title: z.string().min(1),
@@ -519,7 +519,7 @@ export const appRouter = router({
       }),
 
     // Update tour (admin only) - Supports inline editing
-    update: protectedProcedure
+    update: adminProcedure
       .input(
         z.object({
           id: z.number(),
@@ -622,7 +622,7 @@ export const appRouter = router({
       }),
 
     // Delete tour (admin only)
-    delete: protectedProcedure
+    delete: adminProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ ctx, input }) => {
         // Check if user is admin
@@ -701,7 +701,7 @@ export const appRouter = router({
       }),
 
     // Submit async tour generation job (admin only)
-    submitAsyncGeneration: protectedProcedure
+    submitAsyncGeneration: adminProcedure
       .input(z.object({ 
         url: z.string().url(),
         forceRegenerate: z.boolean().optional().default(false),
@@ -765,7 +765,7 @@ export const appRouter = router({
 
     // Auto-generate tour from URL (admin only) - Complete version with all AI agents
     // Supports preview mode: when previewOnly=true, returns data without saving
-    autoGenerateComplete: protectedProcedure
+    autoGenerateComplete: adminProcedure
       .input(z.object({ 
         url: z.string().url(),
         autoSave: z.boolean().default(false), // 預設不自動儲存，讓管理員預覽後確認
@@ -985,7 +985,7 @@ export const appRouter = router({
       }),
 
     // Auto-generate tour from URL (admin only) - Fast version with auto-save
-    autoGenerate: protectedProcedure
+    autoGenerate: adminProcedure
       .input(z.object({ 
         url: z.string().url(),
         autoSave: z.boolean().default(true), // 預設自動儲存
@@ -1150,8 +1150,8 @@ export const appRouter = router({
       }),
 
     // Save tour from preview (admin only)
-    // Used after previewing generated tour data
-    saveFromPreview: protectedProcedure
+    // Used after previewing generated tour data (admin only)
+    saveFromPreview: adminProcedure
       .input(z.object({
         tourData: z.any(), // The tour data from preview
       }))
@@ -1816,8 +1816,8 @@ export const appRouter = router({
         return image;
       }),
 
-    // Delete image from library
-    delete: protectedProcedure
+    // Delete image from library (admin only)
+    delete: adminProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ ctx, input }) => {
         const success = await db.deleteImageFromLibrary(input.id, ctx.user.id);

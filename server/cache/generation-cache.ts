@@ -5,6 +5,7 @@
  * - 完整結果快取：3 天（259200 秒）
  * - 配色方案快取：7 天（604800 秒）
  * - 爬取結果快取：1 天（86400 秒）
+ * - DetailsSkill 結果快取：3 天（259200 秒）- P3 優化
  * 
  * 預期效益：
  * - 快取命中時響應時間 < 1 秒
@@ -156,6 +157,38 @@ export class GenerationCache {
   }
 
   // ═══════════════════════════════════════════════════════
+  // 5. 快取 DetailsSkill 結果（3天）- P3 優化
+  // ═══════════════════════════════════════════════════════
+  async cacheDetailsResult(destination: string, detailsData: any): Promise<void> {
+    const key = this.generateKey("details", destination.toLowerCase());
+    try {
+      await redis.setex(
+        key,
+        259200, // 3天
+        JSON.stringify(detailsData)
+      );
+      console.log(`✅ [Cache] 快取 Details 結果: ${destination}`);
+    } catch (error) {
+      console.error(`❌ [Cache] 快取 Details 結果失敗:`, error);
+    }
+  }
+
+  async getDetailsResult(destination: string): Promise<any | null> {
+    const key = this.generateKey("details", destination.toLowerCase());
+    try {
+      const cached = await redis.get(key);
+      if (cached) {
+        console.log(`🎯 [Cache] Details 結果快取命中: ${destination}`);
+        return JSON.parse(cached);
+      }
+      return null;
+    } catch (error) {
+      console.error(`❌ [Cache] 讀取 Details 結果失敗:`, error);
+      return null;
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════
   // 輔助方法
   // ═══════════════════════════════════════════════════════
   private generateKey(type: string, value: string): string {
@@ -226,7 +259,7 @@ export class GenerationCache {
   }
 
   // 檢查快取是否存在
-  async exists(type: "full" | "scrape" | "palette" | "hero", key: string): Promise<boolean> {
+  async exists(type: "full" | "scrape" | "palette" | "hero" | "details", key: string): Promise<boolean> {
     const cacheKey = this.generateKey(type, type === "full" || type === "scrape" ? key : key.toLowerCase());
     try {
       const exists = await redis.exists(cacheKey);
@@ -237,7 +270,7 @@ export class GenerationCache {
   }
 
   // 獲取快取剩餘 TTL（秒）
-  async getTTL(type: "full" | "scrape" | "palette" | "hero", key: string): Promise<number> {
+  async getTTL(type: "full" | "scrape" | "palette" | "hero" | "details", key: string): Promise<number> {
     const cacheKey = this.generateKey(type, type === "full" || type === "scrape" ? key : key.toLowerCase());
     try {
       return await redis.ttl(cacheKey);
