@@ -4627,3 +4627,32 @@
 - [x] 修復舊測試的錯誤訊息斷言（配合 adminProcedure 變更）
 - [x] TypeScript 零錯誤確認
 - [x] 伺服器正常運行確認
+
+---
+
+## Phase 33: 第零階段 - LLM 快取遷移至 Redis（2026-02-27）
+
+### 完成項目
+- [x] 安裝並啟動 Redis 服務
+- [x] 修改 server/_core/llmCache.ts 引入 Redis 客戶端
+- [x] 將 getCachedResponse 從 Map 改為優先使用 Redis.get
+- [x] 將 setCachedResponse 從 Map 改為優先使用 Redis.setex（TTL 24 小時）
+- [x] 確保 InvokeResult 正確序列化/反序列化
+- [x] 實作自動降級機制（Redis 不可用時降級到記憶體快取）
+- [x] 更新 getCacheStats 回報 Redis 和記憶體快取狀態
+- [x] 更新 clearCache 同時清理 Redis 和記憶體快取
+- [x] 撰寫完整的 vitest 測試（5 個測試全部通過）
+- [x] 重啟開發伺服器並確認 Redis 連接成功
+
+### 測試結果
+- ✅ 5/5 測試通過（12.79 秒）
+- ✅ Redis 快取讀寫功能正常
+- ✅ 自動降級機制正常
+- ✅ 快取統計功能正常
+- ✅ 清理功能正常
+- ✅ TypeScript 零錯誤
+
+### 效益
+- 跨實例共享快取（多個伺服器實例可共享同一份快取）
+- 降低 LLM API 成本（避免重複呼叫）
+- 提升行程生成速度（快取命中時無需等待 LLM 回應）
