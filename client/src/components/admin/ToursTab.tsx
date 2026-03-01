@@ -63,7 +63,7 @@ export default function ToursTab() {
   const [forceRegenerate, setForceRegenerate] = useState(false);
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [pdfUploading, setPdfUploading] = useState(false);
-  const [inputMode, setInputMode] = useState<"url" | "pdf">("url");
+  const [inputMode, setInputMode] = useState<"url" | "pdf">("pdf");  // PDF is the recommended and default mode
   const [generatedTourData, setGeneratedTourData] = useState<any>(null);
   const [extractionStep, setExtractionStep] = useState<number>(0); // 0: 未開始, 1: 抓取網頁, 2: 解析內容, 3: AI 分析, 4: 預覽準備完成
   const [currentTaskId, setCurrentTaskId] = useState<string | null>(null); // 用於進度追蹤
@@ -929,24 +929,12 @@ export default function ToursTab() {
               AI 自動生成行程
             </DialogTitle>
             <DialogDescription>
-              輸入旅遊行程網址或上傳 PDF 檔案，AI 將自動提取並生成行程資訊
+              上傳旅行社 PDF 行程表，AI 將自動提取並生成行程資訊
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             {/* 輸入模式切換 */}
             <div className="flex gap-2 p-1 bg-gray-100 rounded-full">
-              <button
-                type="button"
-                onClick={() => setInputMode("url")}
-                disabled={isGenerating || pdfUploading}
-                className={`flex-1 py-2 px-4 rounded-full text-sm font-medium transition-all ${
-                  inputMode === "url"
-                    ? "bg-white text-purple-600 shadow-sm"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
-              >
-                網址輸入
-              </button>
               <button
                 type="button"
                 onClick={() => setInputMode("pdf")}
@@ -959,6 +947,19 @@ export default function ToursTab() {
               >
                 <FileUp className="h-4 w-4 inline mr-1" />
                 上傳 PDF
+                <span className="ml-1 text-xs bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full">推薦</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setInputMode("url")}
+                disabled={isGenerating || pdfUploading}
+                className={`flex-1 py-2 px-4 rounded-full text-sm font-medium transition-all ${
+                  inputMode === "url"
+                    ? "bg-white text-gray-600 shadow-sm"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                網址輸入
               </button>
             </div>
             
@@ -974,8 +975,8 @@ export default function ToursTab() {
                   disabled={submitAsyncGenerationMutation.isPending || isGenerating}
                   className="rounded-full"
                 />
-                <p className="text-xs text-gray-500">
-                  支援雄獅旅遊、可樂旅遊等主流旅行社網站
+                <p className="text-xs text-amber-600 flex items-center gap-1">
+                  <span>⚠️</span> 網址解析穩定性較低，建議改用 PDF 上傳
                 </p>
               </div>
             )}

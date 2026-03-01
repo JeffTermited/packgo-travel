@@ -479,15 +479,16 @@ export const appRouter = router({
       .query(async ({ input }) => {
         const { page, pageSize, ...filters } = input;
         const offset = (page - 1) * pageSize;
-        
-        // Get total count for pagination
-        const allTours = await db.searchTours(filters);
-        const total = allTours.length;
+
+        // DB-level pagination: searchTours now handles limit/offset and returns total count
+        const { tours, total } = await db.searchTours({
+          ...filters,
+          limit: pageSize,
+          offset,
+        });
+
         const totalPages = Math.ceil(total / pageSize);
-        
-        // Get paginated results
-        const tours = allTours.slice(offset, offset + pageSize);
-        
+
         return {
           tours,
           pagination: {

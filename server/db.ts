@@ -983,7 +983,9 @@ export async function searchTours(filters: {
   specialActivities?: string[];
   tags?: string[];
   sortBy?: string;
-}): Promise<Tour[]> {
+  limit?: number;
+  offset?: number;
+}): Promise<{ tours: Tour[]; total: number }> {
   const db = await getDb();
   if (!db) {
     throw new Error("Database not available");
@@ -1030,56 +1032,91 @@ export async function searchTours(filters: {
     conditions.push(inArray(tours.hotelGrade, filters.hotelGrades));
   }
 
-  // Note: specialActivities is stored as JSON string, so we need to filter in memory
-  // For now, we'll fetch all matching tours and filter in memory
+  const whereClause = and(...conditions);
 
-  // Build query with conditions
-  let query = db.select().from(tours).where(and(...conditions)).$dynamic();
+  // Note: specialActivities and tags are JSON fields — must filter in-memory.
+  // If these filters are active, we cannot use DB-level pagination directly;
+  // we fall back to fetching all matching rows and paginating in memory.
+  const needsInMemoryFilter =
+    (filters.specialActivities && filters.specialActivities.length > 0) ||
+    (filters.tags && filters.tags.length > 0);
 
-  // Apply sorting
-  let results: Tour[];
-  if (filters.sortBy === "price_asc") {
-    results = await query.orderBy(tours.price);
-  } else if (filters.sortBy === "price_desc") {
-    results = await query.orderBy(desc(tours.price));
-  } else if (filters.sortBy === "days_asc") {
-    results = await query.orderBy(tours.duration);
-  } else if (filters.sortBy === "days_desc") {
-    results = await query.orderBy(desc(tours.duration));
-  } else {
-    // Default: sort by featured and then by createdAt
-    results = await query.orderBy(desc(tours.featured), desc(tours.createdAt));
+  if (needsInMemoryFilter) {
+    // Fetch all rows matching DB-level conditions, then filter in memory
+    let query = db.select().from(tours).where(whereClause).$dynamic();
+
+    let results: Tour[];
+    if (filters.sortBy === "price_asc") {
+      results = await query.orderBy(tours.price);
+    } else if (filters.sortBy === "price_desc") {
+      results = await query.orderBy(desc(tours.price));
+    } else if (filters.sortBy === "days_asc") {
+      results = await query.orderBy(tours.duration);
+    } else if (filters.sortBy === "days_desc") {
+      results = await query.orderBy(desc(tours.duration));
+    } else {
+      results = await query.orderBy(desc(tours.featured), desc(tours.createdAt));
+    }
+
+    // In-memory filter for specialActivities
+    if (filters.specialActivities && filters.specialActivities.length > 0) {
+      results = results.filter(tour => {
+        if (!tour.specialActivities) return false;
+        try {
+          const activities = JSON.parse(tour.specialActivities);
+          if (!Array.isArray(activities)) return false;
+          return filters.specialActivities!.some(activity => activities.includes(activity));
+        } catch {
+          return false;
+        }
+      });
+    }
+
+    // In-memory filter for tags
+    if (filters.tags && filters.tags.length > 0) {
+      results = results.filter(tour => {
+        if (!tour.tags) return false;
+        try {
+          const tourTags = typeof tour.tags === 'string' ? JSON.parse(tour.tags) : tour.tags;
+          if (!Array.isArray(tourTags)) return false;
+          return filters.tags!.some(tag => tourTags.includes(tag));
+        } catch {
+          return false;
+        }
+      });
+    }
+
+    const total = results.length;
+    const limit = filters.limit ?? 12;
+    const offset = filters.offset ?? 0;
+    return { tours: results.slice(offset, offset + limit), total };
   }
 
-  // Filter by special activities if specified (in-memory filtering for JSON field)
-  if (filters.specialActivities && filters.specialActivities.length > 0) {
-    results = results.filter(tour => {
-      if (!tour.specialActivities) return false;
-      try {
-        const activities = JSON.parse(tour.specialActivities);
-        if (!Array.isArray(activities)) return false;
-        return filters.specialActivities!.some(activity => activities.includes(activity));
-      } catch {
-        return false;
+  // --- Fast path: pure DB-level pagination (no JSON field filters) ---
+  // Run count query and data query in parallel
+  const [countResult, dataResult] = await Promise.all([
+    db.select({ count: sql<number>`count(*)` }).from(tours).where(whereClause),
+    (() => {
+      let q = db.select().from(tours).where(whereClause).$dynamic();
+      if (filters.sortBy === "price_asc") {
+        q = q.orderBy(tours.price);
+      } else if (filters.sortBy === "price_desc") {
+        q = q.orderBy(desc(tours.price));
+      } else if (filters.sortBy === "days_asc") {
+        q = q.orderBy(tours.duration);
+      } else if (filters.sortBy === "days_desc") {
+        q = q.orderBy(desc(tours.duration));
+      } else {
+        q = q.orderBy(desc(tours.featured), desc(tours.createdAt));
       }
-    });
-  }
+      const limit = filters.limit ?? 12;
+      const offset = filters.offset ?? 0;
+      return q.limit(limit).offset(offset);
+    })()
+  ]);
 
-  // Filter by tags if specified (in-memory filtering for JSON field)
-  if (filters.tags && filters.tags.length > 0) {
-    results = results.filter(tour => {
-      if (!tour.tags) return false;
-      try {
-        const tourTags = typeof tour.tags === 'string' ? JSON.parse(tour.tags) : tour.tags;
-        if (!Array.isArray(tourTags)) return false;
-        return filters.tags!.some(tag => tourTags.includes(tag));
-      } catch {
-        return false;
-      }
-    });
-  }
-
-  return results;
+  const total = Number(countResult[0]?.count ?? 0);
+  return { tours: dataResult, total };
 }
 
 
