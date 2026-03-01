@@ -1,15 +1,17 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Mail, ArrowLeft } from "lucide-react";
+import { Mail, ArrowLeft, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import { useRecaptcha } from "@/hooks/useRecaptcha";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const { executeRecaptcha } = useRecaptcha();
 
   const requestResetMutation = trpc.auth.requestPasswordReset.useMutation({
     onSuccess: () => {
@@ -25,13 +27,20 @@ export default function ForgotPassword() {
     },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) {
       toast.error("請輸入電子郵件");
       return;
     }
-    requestResetMutation.mutate({ email });
+
+    // Execute reCAPTCHA v3 before submitting
+    const recaptchaToken = await executeRecaptcha("forgot_password");
+
+    requestResetMutation.mutate({
+      email,
+      recaptchaToken: recaptchaToken ?? undefined,
+    });
   };
 
   return (
@@ -115,6 +124,29 @@ export default function ForgotPassword() {
                 >
                   {requestResetMutation.isPending ? "發送中..." : "發送重設連結"}
                 </Button>
+
+                {/* reCAPTCHA disclosure */}
+                <p className="text-center text-xs text-gray-400 flex items-center justify-center gap-1">
+                  <ShieldCheck className="w-3 h-3" />
+                  受 Google reCAPTCHA 保護 ·{" "}
+                  <a
+                    href="https://policies.google.com/privacy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline hover:text-gray-600"
+                  >
+                    隱私權政策
+                  </a>
+                  {" "}及{" "}
+                  <a
+                    href="https://policies.google.com/terms"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline hover:text-gray-600"
+                  >
+                    服務條款
+                  </a>
+                </p>
               </form>
             </>
           ) : (

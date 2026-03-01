@@ -113,9 +113,43 @@ export const appRouter = router({
     requestPasswordReset: publicProcedure
       .input(z.object({
         email: z.string().email(),
+        recaptchaToken: z.string().optional(),
       }))
       .mutation(async ({ input, ctx }) => {
         // ── Abuse Prevention Layer ──────────────────────────────────────
+        // 0. reCAPTCHA v3 verification (skip in test environment)
+        const recaptchaSecretKey = process.env.RECAPTCHA_SECRET_KEY;
+        const isTestEnv = process.env.VITEST || process.env.NODE_ENV === 'test';
+        if (recaptchaSecretKey && !isTestEnv) {
+          if (!input.recaptchaToken) {
+            console.warn('[Auth] Missing reCAPTCHA token for forgot-password');
+            throw new TRPCError({
+              code: 'BAD_REQUEST',
+              message: '驗證失敗，請重新整理頁面後再試',
+            });
+          }
+          try {
+            const verifyRes = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+              body: new URLSearchParams({
+                secret: recaptchaSecretKey,
+                response: input.recaptchaToken,
+              }).toString(),
+            });
+            const verifyData = await verifyRes.json() as { success: boolean; score: number; action: string; 'error-codes'?: string[] };
+            console.log(`[Auth] reCAPTCHA result: success=${verifyData.success}, score=${verifyData.score}, action=${verifyData.action}`);
+            if (!verifyData.success || verifyData.score < 0.5) {
+              console.warn(`[Auth] reCAPTCHA rejected: score=${verifyData.score}, errors=${verifyData['error-codes']?.join(',')}`);
+              // Return generic success to avoid leaking info
+              return { success: true, message: '如果該電子郵件已註冊，您將收到重設密碼的連結' };
+            }
+          } catch (err) {
+            // If reCAPTCHA service is down, log but allow the request through
+            console.error('[Auth] reCAPTCHA verification error (allowing through):', err);
+          }
+        }
+
         // 1. Block disposable / fake email domains (e.g. example.com)
         if (isBlockedEmailDomain(input.email)) {
           // Return generic success to avoid leaking info, but do NOT send email
