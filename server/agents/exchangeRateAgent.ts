@@ -6,9 +6,11 @@
  * 
  * 功能：
  * 1. 獲取即時匯率（支援 TWD, USD, EUR, JPY 等主要貨幣）
- * 2. 快取機制（每小時更新一次，避免頻繁 API 呼叫）
+ * 2. 三層快取機制：Redis（1小時 TTL）→ 記憶體 → 備用靜態匯率
  * 3. 貨幣轉換計算
  */
+
+import { redis as redisClient } from '../redis';
 
 // 支援的貨幣類型
 export type SupportedCurrency = 'TWD' | 'USD' | 'EUR' | 'JPY' | 'CNY' | 'HKD' | 'KRW' | 'SGD' | 'GBP' | 'AUD';
@@ -21,12 +23,14 @@ interface ExchangeRateData {
 }
 
 // 快取設定
-const CACHE_TTL = 3600 * 1000; // 1 小時 (毫秒)
+const CACHE_TTL_SECONDS = 3600; // 1 小時 (秒，用於 Redis)
+const CACHE_TTL_MS = CACHE_TTL_SECONDS * 1000; // 1 小時 (毫秒，用於記憶體)
+const REDIS_CACHE_KEY = 'exchange_rates:usd_base';
 
 // 免費匯率 API (ExchangeRate-API 免費方案)
 const EXCHANGE_RATE_API_URL = 'https://open.er-api.com/v6/latest/USD';
 
-// 內存快取
+// 記憶體快取（Redis 不可用時的降級方案）
 let memoryCache: ExchangeRateData | null = null;
 
 /**
@@ -93,21 +97,43 @@ function getFallbackRates(): ExchangeRateData {
 }
 
 /**
- * 獲取匯率（優先從快取讀取）
+ * 獲取匯率（三層快取：Redis → 記憶體 → API → 備用靜態匯率）
  */
 export async function getExchangeRates(): Promise<ExchangeRateData> {
-  // 檢查內存快取是否有效
-  if (memoryCache && (Date.now() - memoryCache.lastUpdated) < CACHE_TTL) {
-    console.log('[ExchangeRateAgent] Using memory cache');
+  // 層一：檢查 Redis 快取
+  try {
+    const cached = await redisClient.get(REDIS_CACHE_KEY);
+    if (cached) {
+      const parsed: ExchangeRateData = JSON.parse(cached);
+      console.log('[ExchangeRateAgent] ✅ Redis cache HIT');
+      // 同步更新記憶體快取
+      memoryCache = parsed;
+      return parsed;
+    }
+  } catch (err) {
+    console.warn('[ExchangeRateAgent] Redis read failed, falling back to memory cache:', err);
+  }
+
+  // 層二：檢查記憶體快取
+  if (memoryCache && (Date.now() - memoryCache.lastUpdated) < CACHE_TTL_MS) {
+    console.log('[ExchangeRateAgent] 💾 Memory cache HIT');
     return memoryCache;
   }
-  
-  // 從 API 獲取最新匯率
+
+  // 層三：從 API 獲取最新匯率
   const rates = await fetchExchangeRates();
-  
-  // 更新內存快取
+
+  // 寫入記憶體快取
   memoryCache = rates;
-  
+
+  // 寫入 Redis 快取（失敗不阻斷流程）
+  try {
+    await redisClient.setex(REDIS_CACHE_KEY, CACHE_TTL_SECONDS, JSON.stringify(rates));
+    console.log('[ExchangeRateAgent] 💾 Cached to Redis (TTL: 1h)');
+  } catch (err) {
+    console.warn('[ExchangeRateAgent] Redis write failed (non-critical):', err);
+  }
+
   return rates;
 }
 

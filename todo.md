@@ -4656,3 +4656,44 @@
 - 跨實例共享快取（多個伺服器實例可共享同一份快取）
 - 降低 LLM API 成本（避免重複呼叫）
 - 提升行程生成速度（快取命中時無需等待 LLM 回應）
+
+
+---
+
+## Phase 34: 第一階段 - 核心功能完善（2026-02-28）
+
+### 任務二：備份頁面清理
+- [x] 確認 TourDetailPeony.tsx 是正式版
+- [x] 移除 App.tsx 中的 5 個測試版路由（TourDetailV2、TourDetailSipinTest、TourDetailSipin x2、TourDetailMinimal）
+- [x] 移除對應的 import 宣告
+- [x] 刪除備份頁面檔案（TourDetail.backup.tsx、TourDetailV2.tsx、TourDetailSipinTest.tsx、TourDetailSipin.tsx、TourDetailMinimal.tsx、TourDetailNew.tsx、TourDetail.tsx）
+- [x] 確認 TypeScript 零錯誤
+
+### 任務一：搜尋功能後端篩選完善
+- [x] 前端 Tours.tsx 改用 trpc.tours.search 並傳遞篩選參數
+- [x] 移除前端記憶體過濾邏輯（改為後端篩選）
+- [x] 後端 getAllTours 補充 search、country、minDays、maxDays、maxPrice 篩選欄位
+- [x] 加入分頁元件（Pagination）
+- [x] 加入 useDebounce hook 防止領字觸發 API
+- [x] 加入排序功能（熱門、價格、天數）
+- [x] 修復 TypeScript 型別錯誤（featured int、status enum）
+
+### 任務四：匯率快取強化
+- [ ] 修改 exchangeRateAgent.ts 加入 Redis 快取層
+- [ ] 確保三層降級機制（Redis → 記憶體 → 備用匯率）
+- [ ] 撰寫測試
+
+### 任務三：多語言覆蓋率補全
+- [ ] TourDetailPeony.tsx 接入 useLocale
+- [ ] BookingDetail.tsx 接入 useLocale
+- [ ] CustomTourRequest.tsx 接入 useLocale
+- [ ] GroupPackages.tsx 接入 useLocale
+- [ ] TourPrintView.tsx 接入 useLocale
+- [ ] ForgotPassword.tsx / ResetPassword.tsx 接入 useLocale
+- [ ] 驗證切換語言後所有頁面正確顯示
+
+### 任務五：SEO 基礎建設
+- [ ] 建立 robots.txt
+- [ ] 建立動態 sitemap.xml 路由
+- [ ] 加入動態 meta 標籤（react-helmet-async）
+- [ ] 行程詳情頁加入 og:image、og:title、og:description

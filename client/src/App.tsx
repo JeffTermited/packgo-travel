@@ -12,11 +12,6 @@ import ResetPassword from "./pages/ResetPassword";
 import Admin from "./pages/Admin";
 import DiagnosticsPage from "./pages/admin/DiagnosticsPage";
 import Profile from "./pages/Profile";
-import TourDetail from "./pages/TourDetail";
-import TourDetailSipin from "./pages/TourDetailSipin";
-import TourDetailSipinTest from "./pages/TourDetailSipinTest";
-import TourDetailV2 from "./pages/TourDetailV2";
-import TourDetailMinimal from "./pages/TourDetailMinimal";
 import TourDetailPeony from "./pages/TourDetailPeony";
 import TourPrintView from "./pages/TourPrintView";
 import BookTour from "./pages/BookTour";
@@ -60,11 +55,6 @@ function Router() {
       <Route path={"/profile"} component={Profile} />
       <Route path={"/tours/:id/print"} component={TourPrintView} />
       <Route path={"/tours/:id"} component={TourDetailPeony} />
-      <Route path={"/tours-v2/:id"} component={TourDetailV2} />
-      <Route path={"/tours-sipin-test/:id"} component={TourDetailSipinTest} />
-      <Route path={"/sipin/:id"} component={TourDetailSipin} />
-      <Route path={"/tours-sipin/:id"} component={TourDetailSipin} />
-      <Route path={"/tours-minimal/:id"} component={TourDetailMinimal} />
       <Route path={"/book/:id"} component={BookTour} />
       <Route path={"/bookings/:id"} component={BookingDetail} />
       <Route path={"/payment/success"} component={PaymentSuccess} />

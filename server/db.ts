@@ -315,6 +315,13 @@ export async function getAllTours(filters?: {
   category?: string;
   status?: string;
   featured?: boolean;
+  search?: string;
+  country?: string;
+  minDays?: number;
+  maxDays?: number;
+  maxPrice?: number;
+  page?: number;
+  pageSize?: number;
 }) {
   const db = await getDb();
   if (!db) {
@@ -322,9 +329,61 @@ export async function getAllTours(filters?: {
     return [];
   }
 
-  // For now, return all tours without filtering
-  // TODO: Implement proper filtering with drizzle-orm
-  const result = await db.select().from(tours);
+  const conditions = [];
+
+  // Status filter
+  if (filters?.status && filters.status !== 'all') {
+    conditions.push(eq(tours.status, filters.status as 'active' | 'inactive' | 'soldout'));
+  }
+
+  // Featured filter (schema stores as int 0/1)
+  if (filters?.featured !== undefined) {
+    conditions.push(eq(tours.featured, filters.featured ? 1 : 0));
+  }
+
+  // Full-text search (title, destination country, destination city)
+  if (filters?.search && filters.search.trim()) {
+    const searchTerm = `%${filters.search.trim()}%`;
+    conditions.push(
+      or(
+        like(tours.title, searchTerm),
+        like(tours.destinationCountry, searchTerm),
+        like(tours.destinationCity, searchTerm),
+      )
+    );
+  }
+
+  // Country filter
+  if (filters?.country && filters.country !== 'all') {
+    conditions.push(eq(tours.destinationCountry, filters.country));
+  }
+
+  // Duration range filter
+  if (filters?.minDays !== undefined) {
+    conditions.push(gte(tours.duration, filters.minDays));
+  }
+  if (filters?.maxDays !== undefined) {
+    conditions.push(lte(tours.duration, filters.maxDays));
+  }
+
+  // Max price filter
+  if (filters?.maxPrice !== undefined) {
+    conditions.push(lte(tours.price, filters.maxPrice));
+  }
+
+  const query = db.select().from(tours);
+  if (conditions.length > 0) {
+    query.where(and(...conditions));
+  }
+  query.orderBy(desc(tours.createdAt));
+
+  // Pagination
+  const page = filters?.page ?? 1;
+  const pageSize = filters?.pageSize ?? 100;
+  const offset = (page - 1) * pageSize;
+  query.limit(pageSize).offset(offset);
+
+  const result = await query;
   return result;
 }
 

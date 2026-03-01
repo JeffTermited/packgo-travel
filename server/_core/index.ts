@@ -71,6 +71,46 @@ async function startServer() {
   
   // Progress tracking SSE API
   app.use("/api", progressRouter);
+
+  // Dynamic sitemap.xml
+  app.get('/sitemap.xml', async (_req, res) => {
+    try {
+      const { getAllTours } = await import('../db');
+      const tours = await getAllTours();
+      const baseUrl = 'https://packgo-d3xjbq67.manus.space';
+      const now = new Date().toISOString().split('T')[0];
+
+      const staticPages = [
+        { url: '/', priority: '1.0', changefreq: 'daily' },
+        { url: '/tours', priority: '0.9', changefreq: 'daily' },
+        { url: '/about', priority: '0.7', changefreq: 'monthly' },
+        { url: '/contact', priority: '0.7', changefreq: 'monthly' },
+        { url: '/custom-tours', priority: '0.8', changefreq: 'weekly' },
+        { url: '/group-packages', priority: '0.8', changefreq: 'weekly' },
+        { url: '/cruise', priority: '0.7', changefreq: 'weekly' },
+        { url: '/visa-services', priority: '0.6', changefreq: 'monthly' },
+        { url: '/faq', priority: '0.6', changefreq: 'monthly' },
+      ];
+
+      const tourUrls = tours
+        .filter((t: any) => t.status === 'published')
+        .map((t: any) => `  <url>\n    <loc>${baseUrl}/tour/${t.id}</loc>\n    <lastmod>${now}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.8</priority>\n  </url>`)
+        .join('\n');
+
+      const staticUrls = staticPages
+        .map(p => `  <url>\n    <loc>${baseUrl}${p.url}</loc>\n    <lastmod>${now}</lastmod>\n    <changefreq>${p.changefreq}</changefreq>\n    <priority>${p.priority}</priority>\n  </url>`)
+        .join('\n');
+
+      const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${staticUrls}\n${tourUrls}\n</urlset>`;
+
+      res.header('Content-Type', 'application/xml');
+      res.send(xml);
+    } catch (err) {
+      console.error('[Sitemap] Error generating sitemap:', err);
+      res.status(500).send('Error generating sitemap');
+    }
+  });
+
   // tRPC API
   app.use(
     "/api/trpc",
