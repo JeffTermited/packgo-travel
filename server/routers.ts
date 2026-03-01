@@ -16,6 +16,7 @@ import * as auth from "./auth";
 import { createToken } from "./jwt";
 import { translateText, translateBatch, translateTour, translateMultipleTours, getTourTranslations, getAllTourTranslations, getTranslationJobs, getSupportedLanguages, Language } from "./translation";
 import { getExchangeRates, convertCurrency, getExchangeRate, formatCurrency, getCurrencySymbol, convertPrices, type SupportedCurrency } from "./agents/exchangeRateAgent";
+import { checkForgotPasswordRateLimitByIP, checkForgotPasswordRateLimitByEmail, checkForgotPasswordGlobalRateLimit, isBlockedEmailDomain } from "./rateLimit";
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -113,11 +114,47 @@ export const appRouter = router({
       .input(z.object({
         email: z.string().email(),
       }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input, ctx }) => {
+        // ── Abuse Prevention Layer ──────────────────────────────────────
+        // 1. Block disposable / fake email domains (e.g. example.com)
+        if (isBlockedEmailDomain(input.email)) {
+          // Return generic success to avoid leaking info, but do NOT send email
+          console.warn(`[Auth] Blocked forgot-password request to fake domain: ${input.email}`);
+          return { success: true, message: '如果該電子郵件已註冊，您將收到重設密碼的連結' };
+        }
+
+        // 2. Global circuit breaker (100 req/min across all IPs)
+        const globalLimit = await checkForgotPasswordGlobalRateLimit();
+        if (!globalLimit.allowed) {
+          console.warn(`[Auth] Global forgot-password rate limit exceeded`);
+          throw new TRPCError({
+            code: 'TOO_MANY_REQUESTS',
+            message: '系統繁忙，請稍後再試',
+          });
+        }
+
+        // 3. Per-IP rate limit (5 req / 15 min)
+        const ip = (ctx.req.headers['x-forwarded-for'] as string || ctx.req.socket?.remoteAddress || 'unknown').split(',')[0].trim();
+        const ipLimit = await checkForgotPasswordRateLimitByIP(ip);
+        if (!ipLimit.allowed) {
+          console.warn(`[Auth] IP rate limit exceeded for forgot-password: ${ip}`);
+          throw new TRPCError({
+            code: 'TOO_MANY_REQUESTS',
+            message: '請求過於頻繁，請 15 分鐘後再試',
+          });
+        }
+
+        // 4. Per-email rate limit (3 req / hour)
+        const emailLimit = await checkForgotPasswordRateLimitByEmail(input.email);
+        if (!emailLimit.allowed) {
+          console.warn(`[Auth] Email rate limit exceeded for forgot-password: ${input.email}`);
+          // Return generic success to avoid email enumeration
+          return { success: true, message: '如果該電子郵件已註冊，您將收到重設密碼的連結' };
+        }
+        // ── End Abuse Prevention ────────────────────────────────────────
+
         try {
           const result = await auth.requestPasswordReset(input.email);
-          // TODO: Send reset email with token
-          // For now, return token in response (in production, send via email)
           return result;
         } catch (error: any) {
           throw new TRPCError({

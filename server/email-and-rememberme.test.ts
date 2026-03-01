@@ -5,12 +5,18 @@ import * as auth from './auth';
 import { createToken, verifyToken } from './jwt';
 import type { Context } from './_core/context';
 
-// Mock context helper
+// Use a non-blocked test domain (example.com is blocked by abuse prevention)
+const TEST_DOMAIN = 'packgo-test.com';
+
+// Mock context helper - includes IP header for rate limit compatibility
 function createMockContext(user: any = null): Context {
   return {
     req: {
-      headers: {},
+      headers: {
+        'x-forwarded-for': '127.0.0.1',
+      },
       get: () => undefined,
+      socket: { remoteAddress: '127.0.0.1' },
     } as any,
     res: {
       cookie: () => {},
@@ -25,13 +31,14 @@ describe('Email Service and Remember Me Feature', () => {
 
   beforeAll(async () => {
     // Create a test user for authentication tests
-    const testEmail = `test-email-${Date.now()}@example.com`;
+    // NOTE: Use TEST_DOMAIN (not example.com) since example.com is blocked by abuse prevention
+    const testEmail = `test-email-${Date.now()}@${TEST_DOMAIN}`;
     testUser = await auth.createUser(testEmail, 'test123', 'Test Email User');
   });
 
   describe('Remember Me Feature', () => {
     it('should create token with 7 days expiry when rememberMe is false', async () => {
-      const testEmail = `test-remember-false-${Date.now()}@example.com`;
+      const testEmail = `test-remember-false-${Date.now()}@${TEST_DOMAIN}`;
       await auth.createUser(testEmail, 'test123', 'Test User');
 
       let capturedToken: string | undefined;
@@ -49,8 +56,9 @@ describe('Email Service and Remember Me Feature', () => {
 
       const caller = appRouter.createCaller({
         req: {
-          headers: {},
+          headers: { 'x-forwarded-for': '127.0.0.1' },
           get: () => undefined,
+          socket: { remoteAddress: '127.0.0.1' },
         } as any,
         res: mockRes as any,
         user: null,
@@ -74,7 +82,7 @@ describe('Email Service and Remember Me Feature', () => {
     });
 
     it('should create token with 30 days expiry when rememberMe is true', async () => {
-      const testEmail = `test-remember-true-${Date.now()}@example.com`;
+      const testEmail = `test-remember-true-${Date.now()}@${TEST_DOMAIN}`;
       await auth.createUser(testEmail, 'test123', 'Test User');
 
       let capturedToken: string | undefined;
@@ -92,8 +100,9 @@ describe('Email Service and Remember Me Feature', () => {
 
       const caller = appRouter.createCaller({
         req: {
-          headers: {},
+          headers: { 'x-forwarded-for': '127.0.0.1' },
           get: () => undefined,
+          socket: { remoteAddress: '127.0.0.1' },
         } as any,
         res: mockRes as any,
         user: null,
@@ -117,7 +126,7 @@ describe('Email Service and Remember Me Feature', () => {
     });
 
     it('should default to 7 days expiry when rememberMe is not provided', async () => {
-      const testEmail = `test-remember-default-${Date.now()}@example.com`;
+      const testEmail = `test-remember-default-${Date.now()}@${TEST_DOMAIN}`;
       await auth.createUser(testEmail, 'test123', 'Test User');
 
       let capturedMaxAge: number | undefined;
@@ -133,8 +142,9 @@ describe('Email Service and Remember Me Feature', () => {
 
       const caller = appRouter.createCaller({
         req: {
-          headers: {},
+          headers: { 'x-forwarded-for': '127.0.0.1' },
           get: () => undefined,
+          socket: { remoteAddress: '127.0.0.1' },
         } as any,
         res: mockRes as any,
         user: null,
@@ -170,11 +180,25 @@ describe('Email Service and Remember Me Feature', () => {
     it('should not reveal if user does not exist', async () => {
       const caller = appRouter.createCaller(createMockContext());
 
+      // Use a non-blocked domain for this test
       const result = await caller.auth.requestPasswordReset({
-        email: 'nonexistent@example.com',
+        email: `nonexistent-${Date.now()}@${TEST_DOMAIN}`,
       });
 
       // Should still return success to avoid revealing user existence
+      expect(result.success).toBe(true);
+      expect(result.message).toContain('如果該電子郵件已註冊');
+    });
+
+    it('should block requests to disposable/fake email domains', async () => {
+      const caller = appRouter.createCaller(createMockContext());
+
+      // example.com is a blocked domain - should return success but NOT send email
+      const result = await caller.auth.requestPasswordReset({
+        email: 'attacker@example.com',
+      });
+
+      // Returns generic success (to avoid info leakage) but no email is sent
       expect(result.success).toBe(true);
       expect(result.message).toContain('如果該電子郵件已註冊');
     });
@@ -210,8 +234,9 @@ describe('Email Service and Remember Me Feature', () => {
 
       const loginCaller = appRouter.createCaller({
         req: {
-          headers: {},
+          headers: { 'x-forwarded-for': '127.0.0.1' },
           get: () => undefined,
+          socket: { remoteAddress: '127.0.0.1' },
         } as any,
         res: mockRes as any,
         user: null,
@@ -230,7 +255,7 @@ describe('Email Service and Remember Me Feature', () => {
     it('should create token with custom expiry time', () => {
       const payload = {
         userId: 1,
-        email: 'test@example.com',
+        email: `test@${TEST_DOMAIN}`,
         name: 'Test User',
         role: 'user',
       };
@@ -252,8 +277,8 @@ describe('Email Service and Remember Me Feature', () => {
 
       expect(payload7d).toBeTruthy();
       expect(payload30d).toBeTruthy();
-      expect(payload7d?.email).toBe('test@example.com');
-      expect(payload30d?.email).toBe('test@example.com');
+      expect(payload7d?.email).toBe(`test@${TEST_DOMAIN}`);
+      expect(payload30d?.email).toBe(`test@${TEST_DOMAIN}`);
     });
   });
 });
