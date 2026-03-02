@@ -255,10 +255,10 @@ export class MasterAgent {
           if (onProgress) {
             await onProgress(
               `pdf_parsing_batch_${progress.current}`,
-              10 + Math.round((progress.percentage / 100) * 20) // 10-30% of total progress
+              10 + Math.round(((progress.percentage ?? 0) / 100) * 20) // 10-30% of total progress
             );
           }
-          console.log(`[MasterAgent] PDF parsing progress: ${progress.percentage}% - ${progress.message}`);
+          console.log(`[MasterAgent] PDF parsing progress: ${progress.percentage ?? 0}% - ${progress.message}`);
         });
         
         // Convert to WebScraperAgent compatible format

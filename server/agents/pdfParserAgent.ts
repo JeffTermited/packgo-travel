@@ -1,6 +1,9 @@
 /**
  * PDF Parser Agent
- * 使用 LLM 直接讀取 PDF 內容（不需要系統工具）
+ * 三層策略解析 PDF：
+ * 1. pdf-parse 提取文字 → LLM 分析（最快，適合數位 PDF）
+ * 2. pdftotext 提取文字 → LLM 分析（適合複雜排版）
+ * 3. 直接傳 PDF URL 給 LLM（掃描版 PDF 備援）
  */
 
 import { invokeLLM } from "../_core/llm";
@@ -8,7 +11,10 @@ import { storagePut } from "../storage";
 import { randomBytes } from "crypto";
 import * as fs from "fs/promises";
 import * as path from "path";
+import { extractTextFromPdf, truncateForLLM } from "./pdfTextExtractor";
 import * as os from "os";
+
+type ProgressCallback = (progress: { current: number; total: number; message: string; percentage?: number }) => Promise<void>;
 
 export interface PdfParseResult {
   title: string;
@@ -74,72 +80,114 @@ interface ExtractedImage {
 }
 
 /**
- * 使用 LLM 直接分析 PDF 文件
+ * 建立給 LLM 的 JSON schema prompt（共用）
+ */
+function buildAnalysisPrompt(textContent?: string): string {
+  const contextNote = textContent
+    ? `以下是從 PDF 提取的文字內容，請根據此文字內容進行分析：\n\n<pdf_text>\n${textContent}\n</pdf_text>\n\n`
+    : "";
+
+  return `${contextNote}你是一位專業的旅遊行程分析師。請仔細分析這份旅遊行程 PDF 文件，並提取所有相關資訊。`;
+}
+
+/**
+ * 使用 LLM 分析 PDF（傳入文字內容，速度更快且準確）
+ */
+async function analyzePdfWithText(extractedText: string): Promise<any> {
+  const truncatedText = truncateForLLM(extractedText, 80000);
+  const prompt = `你是一位專業的旅遊行程分析師。以下是從 PDF 提取的文字內容，請根據此文字內容提取所有相關資訊。
+
+<pdf_text>
+${truncatedText}
+</pdf_text>
+`;
+
+  const jsonSchema = buildJsonSchema();
+
+  try {
+    console.log(`[PdfParserAgent] Analyzing extracted text (${truncatedText.length} chars) with LLM...`);
+    const response = await invokeLLM({
+      messages: [
+        {
+          role: "user",
+          content: prompt + jsonSchema,
+        },
+      ],
+      response_format: { type: "json_object" },
+    });
+    const rawContent = response.choices[0]?.message?.content || "{}";
+    const content = typeof rawContent === "string" ? rawContent : JSON.stringify(rawContent);
+    console.log("[PdfParserAgent] Text-based LLM analysis completed");
+    return JSON.parse(content);
+  } catch (error) {
+    console.error("[PdfParserAgent] Text-based LLM analysis failed:", error);
+    throw new Error("Failed to analyze PDF text with LLM");
+  }
+}
+
+/**
+ * 建立 JSON schema 指示（共用）
+ */
+function buildJsonSchema(): string {
+  return `
+請以 JSON 格式回傳以下資訊（只回傳 JSON，不要有其他文字）：
+{
+  "title": "行程標題",
+  "subtitle": "行程副標題",
+  "productCode": "產品代碼",
+  "departureDate": "出發日期",
+  "duration": 天數（數字）,
+  "price": 價格（數字，如 NT$18,000 → 18000）,
+  "priceNote": "價格備註",
+  "destinations": ["目的地1", "目的地2"],
+  "country": "國家",
+  "highlights": ["行程亮點1", "行程亮點2"],
+  "dailyItinerary": [{
+    "day": 1,
+    "title": "第一天標題",
+    "description": "當天行程總覽",
+    "activities": [{
+      "time": "08:00",
+      "title": "活動/景點名稱",
+      "description": "詳細描述",
+      "location": "地點",
+      "transportation": "交通方式"
+    }],
+    "meals": { "breakfast": "早餐", "lunch": "午餐", "dinner": "晚餐" },
+    "hotel": "住宿飯店名稱"
+  }],
+  "costIncluded": ["費用包含項目"],
+  "costExcluded": ["費用不包含項目"],
+  "notices": ["注意事項"],
+  "hotelInfo": [{ "name": "飯店名稱", "description": "飯店描述" }]
+}
+重要規則：
+1. 只回傳 JSON，不要有其他文字
+2. 價格轉換為純數字（NT$18,000 → 18000）
+3. 每日行程是最重要的部分，請完整提取每天的活動、餐食、住宿
+4. 若某欄位無資料，使用空字串或空陣列`;
+}
+
+/**
+ * 使用 LLM 直接分析 PDF 文件（掃描版備援）
  */
 async function analyzePdfWithLLM(pdfUrl: string): Promise<any> {
-  const prompt = `你是一位專業的旅遊行程分析師。請仔細分析這份旅遊行程 PDF 文件，並提取所有相關資訊。
-
+  const jsonSchema = buildJsonSchema();
+  const analysisPrompt = `你是一位專業的旅遊行程分析師。請仔細分析這份旅遊行程 PDF 文件，並提取所有相關資訊。
 ## 特別注意（雄獅旅遊 PDF 格式）：
 - 價格通常在頁面右上角或標題下方，格式如：NT$ 18,000、$24,000 等
 - 每日行程通常以「DAY 1」、「第一天」、「第1天」開頭
 - 行程中的景點、餐廳、飯店通常有粗體標題
 - 注意提取筐頭後的文字內容，這些是行程亮點
-
-請以 JSON 格式回傳以下資訊：
-
-{
-  "title": "行程標題（如：縱谷旬味山嵐號、經典奧捷10日）",
-  "subtitle": "行程副標題",
-  "productCode": "產品代碼",
-  "departureDate": "出發日期",
-  "duration": 天數（數字，如 2天1夜 → 2）,
-  "price": 價格（數字，如 NT$18,000 → 18000，注意看清楚每個數字）,
-  "priceNote": "價格備註（如：每人費用、不含機票等）",
-  "destinations": ["目的地1", "目的地2"],
-  "country": "國家（如：台灣、日本、奧地利、捷克）",
-  "highlights": ["行程亮點1", "行程亮點2", "行程亮點3"],
-  "dailyItinerary": [{
-    "day": 1,
-    "title": "第一天標題（如：台北→維也納）",
-    "description": "當天行程總覽描述",
-    "activities": [{
-      "time": "08:00",
-      "title": "活動/景點名稱",
-      "description": "詳細描述（越詳細越好，包含景點特色、歷史背景等）",
-      "location": "地點",
-      "transportation": "交通方式"
-    }],
-    "meals": { "breakfast": "早餐內容", "lunch": "午餐內容", "dinner": "晚餐內容" },
-    "hotel": "住宿飯店名稱"
-  }],
-  "costIncluded": ["費用包含項目1", "費用包含項目2"],
-  "costExcluded": ["費用不包含項目1"],
-  "notices": ["注意事項1", "注意事項2"],
-  "hotelInfo": [{
-    "name": "飯店名稱",
-    "description": "飯店描述、星級、特色"
-  }]
-}
-
-## 重要提取規則：
-1. 只回傳 JSON，不要有其他文字
-2. **價格提取**：仔細尋找 NT$、$、元 等價格標記，轉換為純數字（例如 NT$18,000 → 18000）
-3. **天數提取**：尋找「X天Y夜」、「X日」等格式，轉換為數字
-4. **每日行程**：這是最重要的部分！請仔細閱讀每一天的內容，包括：
-   - 每個景點/活動的名稱和詳細描述
-   - 餐食安排（早、中、晚餐）
-   - 住宿飯店
-5. **目的地**：提取所有會經過的城市或地區
-6. **行程亮點**：提取 PDF 中強調的特色景點或體驗`;
+${jsonSchema}`;
 
   try {
-    console.log("[PdfParserAgent] Sending PDF to LLM for analysis...");
+    console.log(`[PdfParserAgent] Analyzing PDF URL directly with LLM (scan fallback)...`);
     const response = await invokeLLM({
       messages: [
         {
           role: "user",
           content: [
-            { type: "text", text: prompt },
             {
               type: "file_url",
               file_url: {
@@ -147,39 +195,24 @@ async function analyzePdfWithLLM(pdfUrl: string): Promise<any> {
                 mime_type: "application/pdf",
               },
             },
+            {
+              type: "text",
+              text: analysisPrompt,
+            },
           ],
         },
       ],
       response_format: { type: "json_object" },
     });
-
     const rawContent = response.choices[0]?.message?.content || "{}";
     const content = typeof rawContent === "string" ? rawContent : JSON.stringify(rawContent);
-    console.log("[PdfParserAgent] LLM analysis completed");
+    console.log("[PdfParserAgent] Direct PDF LLM analysis completed");
     return JSON.parse(content);
   } catch (error) {
-    console.error("[PdfParserAgent] LLM analysis failed:", error);
+    console.error("[PdfParserAgent] Direct PDF LLM analysis failed:", error);
     throw new Error("Failed to analyze PDF with LLM");
   }
 }
-
-/**
- * 進度回調介面
- */
-export interface ProgressCallback {
-  (progress: {
-    current: number;
-    total: number;
-    percentage: number;
-    message: string;
-  }): void | Promise<void>;
-}
-
-/**
- * 主要解析函數 - 解析 PDF 並返回結構化資料
- * @param pdfUrl PDF 檔案的 URL
- * @param onProgress 進度回調函數（可選）
- */
 export async function parsePdf(
   pdfUrl: string,
   onProgress?: ProgressCallback
