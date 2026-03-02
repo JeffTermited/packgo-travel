@@ -1297,9 +1297,22 @@ export const en = {
     groupTour: 'Group Tour',
     sustainableTravel: 'Sustainable Travel',
     hotSpring: 'Hot Spring',
+    advancedFilter: 'Advanced Filters',
+    clearAllFilters: 'Clear All Filters',
+    tourType: 'Tour Type',
+    durationLabel: 'Duration',
+    priceLabel: 'Price',
+    transportMode: 'Transport',
+    featureActivity: 'Features',
+    durationRangeLabel: 'Duration: {min} - {max} days',
+    priceRangeLabel: 'Price: NT$ {min} - {max}',
+    prevPage: 'Previous',
+    nextPage: 'Next',
+    toursCount: '{count} tours',
+    filterLabel: 'Filters: ',
+    searchLabel: 'Search: {keyword}',
   },
-
-  // Forgot Password Page
+  // Forgot Password Pagee
   forgotPassword: {
     title: 'Forgot Password',
     subtitle: 'Enter your email and we will send you a password reset link',

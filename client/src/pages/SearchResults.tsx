@@ -383,7 +383,7 @@ export default function SearchResults() {
             {showFilters && filterOptions && (
               <div className="mt-4 p-6 bg-gray-50 rounded-2xl border border-gray-200 animate-in slide-in-from-top-2 duration-200">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="font-bold text-gray-900">進階篩選</h3>
+                  <h3 className="font-bold text-gray-900">{t('search.advancedFilter')}</h3>
                   {activeFilterCount > 0 && (
                     <Button
                       variant="ghost"
@@ -392,7 +392,7 @@ export default function SearchResults() {
                       className="text-gray-500 hover:text-gray-700"
                     >
                       <X className="h-4 w-4 mr-1" />
-                      清除所有篩選
+                      {t('search.clearAllFilters')}
                     </Button>
                   )}
                 </div>
@@ -401,7 +401,7 @@ export default function SearchResults() {
                   {/* 目的地篩選 - 按洲別分組 */}
                   {Object.keys(groupedDestinations).length > 0 && (
                     <div className="md:col-span-2">
-                      <h4 className="text-sm font-medium text-gray-700 mb-3">目的地</h4>
+                      <h4 className="text-sm font-medium text-gray-700 mb-3">{t('search.destination')}</h4>
                       <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
                         {Object.entries(groupedDestinations).map(([continent, destinations]) => (
                           <div key={continent} className="border border-gray-200 rounded-lg overflow-hidden">
@@ -413,7 +413,7 @@ export default function SearchResults() {
                               <span className="font-medium text-gray-800">{continent}</span>
                               <div className="flex items-center gap-2">
                                 <span className="text-xs text-gray-500">
-                                  {destinations.reduce((sum, d) => sum + d.count, 0)} 個行程
+                                  {t('search.toursCount', { count: destinations.reduce((sum, d) => sum + d.count, 0) })}
                                 </span>
                                 {expandedContinents.has(continent) ? (
                                   <ChevronUp className="h-4 w-4 text-gray-500" />
@@ -446,12 +446,12 @@ export default function SearchResults() {
                   {/* 智能標籤篩選 - 按分類顯示 */}
                   {filterOptions.smartTags && (
                     <div className="md:col-span-2 space-y-4">
-                      <h4 className="text-sm font-medium text-gray-700">行程類型</h4>
+                      <h4 className="text-sm font-medium text-gray-700">{t('search.tourType')}</h4>
                       
                       {/* 天數分類 */}
                       {filterOptions.smartTags.duration.length > 0 && (
                         <div>
-                          <span className="text-xs text-gray-500 mb-2 block">天數</span>
+                          <span className="text-xs text-gray-500 mb-2 block">{t('search.durationLabel')}</span>
                           <div className="flex flex-wrap gap-2">
                             {filterOptions.smartTags.duration.map(({ label, count }) => (
                               <Badge
@@ -475,7 +475,7 @@ export default function SearchResults() {
                       {/* 價格分類 */}
                       {filterOptions.smartTags.price.length > 0 && (
                         <div>
-                          <span className="text-xs text-gray-500 mb-2 block">價格</span>
+                          <span className="text-xs text-gray-500 mb-2 block">{t('search.priceLabel')}</span>
                           <div className="flex flex-wrap gap-2">
                             {filterOptions.smartTags.price.map(({ label, count }) => (
                               <Badge
@@ -499,7 +499,7 @@ export default function SearchResults() {
                       {/* 交通方式 */}
                       {filterOptions.smartTags.transport.length > 0 && (
                         <div>
-                          <span className="text-xs text-gray-500 mb-2 block">交通方式</span>
+                          <span className="text-xs text-gray-500 mb-2 block">{t('search.transportMode')}</span>
                           <div className="flex flex-wrap gap-2">
                             {filterOptions.smartTags.transport.map(({ label, count }) => (
                               <Badge
@@ -523,7 +523,7 @@ export default function SearchResults() {
                       {/* 特色活動 */}
                       {filterOptions.smartTags.feature.length > 0 && (
                         <div>
-                          <span className="text-xs text-gray-500 mb-2 block">特色活動</span>
+                          <span className="text-xs text-gray-500 mb-2 block">{t('search.featureActivity')}</span>
                           <div className="flex flex-wrap gap-2">
                             {filterOptions.smartTags.feature.map(({ label, count }) => (
                               <Badge
@@ -549,7 +549,7 @@ export default function SearchResults() {
                   {/* 天數範圍 */}
                   <div>
                     <h4 className="text-sm font-medium text-gray-700 mb-3">
-                      天數範圍：{durationRange[0]} - {durationRange[1]} 天
+                      {t('search.durationRangeLabel', { min: durationRange[0], max: durationRange[1] })}
                     </h4>
                     <Slider
                       value={durationRange}
@@ -567,7 +567,7 @@ export default function SearchResults() {
                   {/* 價格範圍 */}
                   <div>
                     <h4 className="text-sm font-medium text-gray-700 mb-3">
-                      價格範圍：NT$ {priceRange[0].toLocaleString()} - {priceRange[1].toLocaleString()}
+                      {t('search.priceRangeLabel', { min: priceRange[0].toLocaleString(), max: priceRange[1].toLocaleString() })}
                     </h4>
                     <Slider
                       value={priceRange}
@@ -588,14 +588,14 @@ export default function SearchResults() {
             {/* 已套用的篩選標籤 */}
             {(keyword || selectedTags.length > 0 || selectedDestinations.length > 0) && (
               <div className="mt-4 flex items-center gap-2 flex-wrap">
-                <span className="text-sm text-gray-500">篩選條件：</span>
+                <span className="text-sm text-gray-500">{t('search.filterLabel')}</span>
                 {keyword && (
                   <Badge 
                     variant="secondary" 
                     className="bg-black text-white hover:bg-gray-800 cursor-pointer"
                     onClick={handleClearSearch}
                   >
-                    搜尋：{keyword} <X className="h-3 w-3 ml-1" />
+                    {t('search.searchLabel', { keyword })} <X className="h-3 w-3 ml-1" />
                   </Badge>
                 )}
                 {selectedDestinations.map(dest => (
@@ -759,7 +759,7 @@ export default function SearchResults() {
                       onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                       disabled={currentPage === 1}
                     >
-                      上一頁
+                      {t('search.prevPage')}
                     </Button>
                     
                     <div className="flex items-center gap-2">
@@ -792,7 +792,7 @@ export default function SearchResults() {
                       onClick={() => setCurrentPage(p => Math.min(pagination.totalPages, p + 1))}
                       disabled={currentPage === pagination.totalPages}
                     >
-                      下一頁
+                      {t('search.nextPage')}
                     </Button>
                   </div>
                 )}
