@@ -9,13 +9,11 @@
  * 5. 標出問題卡在哪一個環節
  */
 
-import { WebScraperAgent } from './webScraperAgent';
 import { ItineraryExtractAgent, ExtractedItinerary } from './itineraryExtractAgent';
 import { ItineraryPolishAgent } from './itineraryPolishAgent';
 import { ContentAnalyzerAgent } from './contentAnalyzerAgent';
 import { ColorThemeAgent } from './colorThemeAgent';
 import { LionTravelPrintParser } from './parsers/lionTravelPrintParser';
-import { FirecrawlAgent } from './firecrawlAgent';
 
 // 診斷結果類型
 export interface DiagnosticStep {
@@ -43,29 +41,17 @@ export interface DiagnosticReport {
  * Agent 診斷工具
  */
 export class AgentDiagnostics {
-  private webScraperAgent: WebScraperAgent;
   private itineraryExtractAgent: ItineraryExtractAgent;
   private itineraryPolishAgent: ItineraryPolishAgent;
   private contentAnalyzerAgent: ContentAnalyzerAgent;
   private colorThemeAgent: ColorThemeAgent;
-  private firecrawlAgent: FirecrawlAgent | null = null;
 
   constructor() {
-    this.webScraperAgent = new WebScraperAgent();
     this.itineraryExtractAgent = new ItineraryExtractAgent();
     this.itineraryPolishAgent = new ItineraryPolishAgent();
     this.contentAnalyzerAgent = new ContentAnalyzerAgent();
     this.colorThemeAgent = new ColorThemeAgent();
     
-    // 初始化 Firecrawl
-    const firecrawlApiKey = process.env.FIRECRAWL_API_KEY;
-    if (firecrawlApiKey) {
-      try {
-        this.firecrawlAgent = new FirecrawlAgent();
-      } catch (error) {
-        console.warn('[AgentDiagnostics] Failed to initialize FirecrawlAgent:', error);
-      }
-    }
   }
 
   /**
@@ -91,75 +77,20 @@ export class AgentDiagnostics {
       problemSummary.push('URL 格式無效');
     }
 
-    // Step 2: Firecrawl 爬取測試
-    const firecrawlStep = await this.testFirecrawl(url);
-    steps.push(firecrawlStep);
-    if (firecrawlStep.status === 'error') {
-      problemSummary.push('Firecrawl 爬取失敗');
-      recommendations.push('檢查 FIRECRAWL_API_KEY 是否有效');
-    }
+    // Step 2 (已移除): Firecrawl 和 WebScraperAgent 已移除，只支援 PDF 輸入
+    // URL 爬蟲功能已完全棄用
 
-    // Step 3 (已移除): LionTravelParser 已移除，直接使用 Puppeteer Vision 模式
-    // 雄獅旅遊現在直接使用 WebScraperAgent 的 Puppeteer Vision 模式處理
+    // Step 3: ItineraryExtractAgent 測試（需提供 rawData）
+    // 診斷工具現在只支援 PDF 流程診斷
+    const extractStep: DiagnosticStep = {
+      name: 'URL 爬蟲診斷（已停用）',
+      status: 'skipped',
+      duration: 0,
+      details: 'URL 爬蟲功能已移除，請使用 PDF 上傳功能',
+    };
+    steps.push(extractStep);
 
-    // Step 4: WebScraperAgent 完整測試
-    const webScraperStep = await this.testWebScraperAgent(url);
-    steps.push(webScraperStep);
-    if (webScraperStep.status === 'error') {
-      problemSummary.push('WebScraperAgent 爬取失敗');
-    }
-
-    // Step 5: 檢查 dailyItinerary 資料
-    const dailyItineraryCheck = this.checkDailyItinerary(webScraperStep.output?.data);
-    steps.push(dailyItineraryCheck);
-    if (dailyItineraryCheck.status === 'error') {
-      problemSummary.push('dailyItinerary 為空或無效');
-      recommendations.push('檢查 LLM Fallback 是否正確觸發');
-    }
-
-    // Step 6: 檢查 activities 資料
-    const activitiesCheck = this.checkActivities(webScraperStep.output?.data?.dailyItinerary);
-    steps.push(activitiesCheck);
-    if (activitiesCheck.status === 'error') {
-      problemSummary.push('activities 為空');
-      recommendations.push('增強 WebScraperAgent 的 JSON Schema 以提取更詳細的 activities');
-    }
-
-    // Step 7: ItineraryExtractAgent 測試
-    if (webScraperStep.output?.data) {
-      const extractStep = await this.testItineraryExtractAgent(webScraperStep.output.data);
-      steps.push(extractStep);
-      if (extractStep.status === 'error') {
-        problemSummary.push('ItineraryExtractAgent 提取失敗');
-      }
-
-      // Step 8: ItineraryPolishAgent 測試
-      if (extractStep.output?.data?.extractedItineraries) {
-        const polishStep = await this.testItineraryPolishAgent(
-          extractStep.output.data.extractedItineraries,
-          webScraperStep.output.data
-        );
-        steps.push(polishStep);
-        if (polishStep.status === 'error') {
-          problemSummary.push('ItineraryPolishAgent 美化失敗');
-        }
-      }
-    }
-
-    // Step 9: ContentAnalyzerAgent 測試
-    if (webScraperStep.output?.data) {
-      const contentStep = await this.testContentAnalyzerAgent(webScraperStep.output.data);
-      steps.push(contentStep);
-      if (contentStep.status === 'error') {
-        problemSummary.push('ContentAnalyzerAgent 分析失敗');
-      }
-    }
-
-    // Step 10: ColorThemeAgent 測試
-    if (webScraperStep.output?.data?.location) {
-      const colorStep = await this.testColorThemeAgent(webScraperStep.output.data.location);
-      steps.push(colorStep);
-    }
+    // URL 爬蟲已移除，診斷工具現在只支援 PDF 流程
 
     // 計算總時間和整體狀態
     const totalDuration = Date.now() - startTime;
@@ -226,123 +157,6 @@ export class AgentDiagnostics {
     }
   }
 
-  /**
-   * Step 2: Firecrawl 爬取測試
-   */
-  private async testFirecrawl(url: string): Promise<DiagnosticStep> {
-    const startTime = Date.now();
-    
-    if (!this.firecrawlAgent) {
-      return {
-        name: 'Firecrawl 爬取',
-        status: 'error',
-        duration: Date.now() - startTime,
-        error: 'FIRECRAWL_API_KEY 未設定',
-        details: '無法使用 Firecrawl API',
-      };
-    }
-
-    try {
-      console.log('[診斷] 測試 Firecrawl 爬取...');
-      const result = await this.firecrawlAgent.scrape(url);
-      
-      const output = {
-        success: result.success,
-        htmlLength: result.html?.length || 0,
-        markdownLength: result.markdown?.length || 0,
-        hasQuickInfo: !!result.quickInfo,
-        quickInfo: result.quickInfo,
-      };
-
-      return {
-        name: 'Firecrawl 爬取',
-        status: result.success ? 'success' : 'error',
-        duration: Date.now() - startTime,
-        input: { url },
-        output: { ...output, html: result.html, markdown: result.markdown },
-        details: result.success 
-          ? `✅ 成功爬取 ${output.htmlLength} chars HTML, ${output.markdownLength} chars Markdown`
-          : '❌ 爬取失敗',
-      };
-    } catch (error) {
-      return {
-        name: 'Firecrawl 爬取',
-        status: 'error',
-        duration: Date.now() - startTime,
-        input: { url },
-        error: `Firecrawl 錯誤: ${error}`,
-      };
-    }
-  }
-
-  // LionTravelParser 已移除 (2026-01-30)
-  // 雄獅旅遊現在直接使用 WebScraperAgent 的 Puppeteer Vision 模式處理
-
-  /**
-   * Step 4: WebScraperAgent 完整測試
-   */
-  private async testWebScraperAgent(url: string): Promise<DiagnosticStep> {
-    const startTime = Date.now();
-    const subSteps: DiagnosticStep[] = [];
-    
-    try {
-      console.log('[診斷] 測試 WebScraperAgent...');
-      const result = await this.webScraperAgent.execute(url);
-      
-      // 檢查各個欄位
-      const checks = {
-        hasBasicInfo: !!result.data?.basicInfo?.title,
-        hasLocation: !!result.data?.location?.destinationCountry || !!result.data?.location?.destinationCity,
-        hasDuration: !!result.data?.duration?.days,
-        hasPricing: !!result.data?.pricing?.price,
-        hasDailyItinerary: Array.isArray(result.data?.dailyItinerary) && result.data.dailyItinerary.length > 0,
-        hasHighlights: Array.isArray(result.data?.highlights) && result.data.highlights.length > 0,
-      };
-
-      // 記錄子步驟
-      Object.entries(checks).forEach(([key, value]) => {
-        subSteps.push({
-          name: key,
-          status: value ? 'success' : 'warning',
-          duration: 0,
-          details: value ? '✅' : '⚠️ 缺失',
-        });
-      });
-
-      const output = {
-        success: result.success,
-        method: result.method,
-        checks,
-        data: result.data,
-        extractionDetails: result.extractionDetails,
-      };
-
-      return {
-        name: 'WebScraperAgent 完整爬取',
-        status: result.success ? 'success' : 'error',
-        duration: Date.now() - startTime,
-        input: { url },
-        output,
-        details: result.success 
-          ? `✅ 爬取成功 (方法: ${result.method})`
-          : '❌ 爬取失敗',
-        subSteps,
-      };
-    } catch (error) {
-      return {
-        name: 'WebScraperAgent 完整爬取',
-        status: 'error',
-        duration: Date.now() - startTime,
-        input: { url },
-        error: `WebScraperAgent 錯誤: ${error}`,
-        subSteps,
-      };
-    }
-  }
-
-  /**
-   * Step 5: 檢查 dailyItinerary 資料
-   */
   private checkDailyItinerary(data: any): DiagnosticStep {
     const startTime = Date.now();
     

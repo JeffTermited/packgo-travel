@@ -16,7 +16,6 @@
  * Phase 5: Assemble Final Data
  */
 
-import { WebScraperAgent } from "./webScraperAgent";
 import { ContentAnalyzerAgent } from "./contentAnalyzerAgent";
 import { ImagePromptAgent } from "./imagePromptAgent";
 import { ImageGenerationAgent } from "./imageGenerationAgent";
@@ -127,7 +126,6 @@ export class MasterAgent {
   private retryConfig: RetryConfig;
 
   // Agent instances
-  private webScraperAgent: WebScraperAgent;
   private contentAnalyzerAgent: ContentAnalyzerAgent;
   private imagePromptAgent: ImagePromptAgent;
   private imageGenerationAgent: ImageGenerationAgent;
@@ -156,7 +154,6 @@ export class MasterAgent {
     }
     
     // Initialize all agents
-    this.webScraperAgent = new WebScraperAgent();
     this.contentAnalyzerAgent = new ContentAnalyzerAgent();
     this.imagePromptAgent = new ImagePromptAgent();
     this.imageGenerationAgent = new ImageGenerationAgent();
@@ -335,22 +332,8 @@ export class MasterAgent {
         // Cache the PDF parse result (1 day TTL)
         await generationCache.cacheScrapeResult(url, rawData);
       } else {
-        const scrapingResult = await this.retryManager.executeWithRetry(
-          () => this.webScraperAgent.execute(url),
-          this.retryConfig,
-          'WebScraperAgent'
-        );
-        
-        if (!scrapingResult.success || !scrapingResult.data) {
-          this.monitor.failAgent('WebScraperAgent', new Error(scrapingResult.error || "Web scraping failed"));
-          throw new Error(scrapingResult.error || "Web scraping failed");
-        }
-        
-        this.monitor.completeAgent('WebScraperAgent', scrapingResult);
-        rawData = scrapingResult.data;
-        
-        // Cache the scrape result (1 day TTL)
-        await generationCache.cacheScrapeResult(url, rawData);
+        // URL scraping removed - only PDF input is supported
+        throw new Error("URL 爬蟲功能已移除，請使用 PDF 上傳");
       }
       
       if (taskId) progressTracker.completePhase(taskId, 'web_scraper');

@@ -933,56 +933,8 @@ export default function ToursTab() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            {/* 輸入模式切換 */}
-            <div className="flex gap-2 p-1 bg-gray-100 rounded-full">
-              <button
-                type="button"
-                onClick={() => setInputMode("pdf")}
-                disabled={isGenerating || pdfUploading}
-                className={`flex-1 py-2 px-4 rounded-full text-sm font-medium transition-all ${
-                  inputMode === "pdf"
-                    ? "bg-white text-purple-600 shadow-sm"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
-              >
-                <FileUp className="h-4 w-4 inline mr-1" />
-                上傳 PDF
-                <span className="ml-1 text-xs bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full">推薦</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setInputMode("url")}
-                disabled={isGenerating || pdfUploading}
-                className={`flex-1 py-2 px-4 rounded-full text-sm font-medium transition-all ${
-                  inputMode === "url"
-                    ? "bg-white text-gray-600 shadow-sm"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                網址輸入
-              </button>
-            </div>
+            {/* PDF 上傳 */}
             
-            {/* URL 輸入模式 */}
-            {inputMode === "url" && (
-              <div className="space-y-2">
-                <Label htmlFor="url">行程網址</Label>
-                <Input
-                  id="url"
-                  placeholder="https://www.liontravel.com/..."
-                  value={autoGenerateUrl}
-                  onChange={(e) => setAutoGenerateUrl(e.target.value)}
-                  disabled={submitAsyncGenerationMutation.isPending || isGenerating}
-                  className="rounded-full"
-                />
-                <p className="text-xs text-amber-600 flex items-center gap-1">
-                  <span>⚠️</span> 網址解析穩定性較低，建議改用 PDF 上傳
-                </p>
-              </div>
-            )}
-            
-            {/* PDF 上傳模式 */}
-            {inputMode === "pdf" && (
               <div className="space-y-2">
                 <Label>選擇 PDF 檔案</Label>
                 <div 
@@ -1036,7 +988,6 @@ export default function ToursTab() {
                   </button>
                 )}
               </div>
-            )}
             
             {/* 強制重新生成選項 */}
             <div className="flex items-center space-x-2">

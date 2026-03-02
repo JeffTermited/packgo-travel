@@ -9,8 +9,6 @@ import * as skillDb from "./skillDb";
 import { learnFromPdfContent, initializeBuiltInSkills } from "./agents/learningAgent";
 import { SkillLearnerAgent } from "./agents/skillLearnerAgent";
 import { invokeLLM } from "./_core/llm";
-import { extractTourInfoWithManus } from "./manusApi";
-import { quickExtractTourInfo } from "./webScraper";
 import { sendBookingConfirmationEmail } from "./email";
 import * as auth from "./auth";
 import { createToken } from "./jwt";
@@ -772,41 +770,6 @@ export const appRouter = router({
         return await getUserTourGenerationJobs(ctx.user.id);
       }),
 
-    // Submit async tour generation job (admin only)
-    submitAsyncGeneration: adminProcedure
-      .input(z.object({ 
-        url: z.string().url(),
-        forceRegenerate: z.boolean().optional().default(false),
-        isPdf: z.boolean().optional().default(false),
-      }))
-      .mutation(async ({ ctx, input }) => {
-        // Check if user is admin
-        if (ctx.user.role !== "admin") {
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message: "Only admins can auto-generate tours",
-          });
-        }
-
-        const { addTourGenerationJob } = await import("./queue");
-        const requestId = `gen_${Date.now()}_${Math.random().toString(36).substring(7)}`;
-        
-        const job = await addTourGenerationJob({
-          url: input.url,
-          userId: ctx.user.id,
-          requestId,
-          forceRegenerate: input.forceRegenerate,
-          isPdf: input.isPdf,
-        });
-
-        console.log(`[SubmitAsyncGeneration] Job submitted: ${job.id}`);
-
-        return {
-          jobId: job.id!,
-          requestId,
-          message: "行程生成任務已提交，請稍候...",
-        };
-      }),
 
     // Get generation job status (admin only)
     getGenerationStatus: protectedProcedure
@@ -835,390 +798,33 @@ export const appRouter = router({
         return status;
       }),
 
-    // Auto-generate tour from URL (admin only) - Complete version with all AI agents
-    // Supports preview mode: when previewOnly=true, returns data without saving
-    autoGenerateComplete: adminProcedure
+
+    // Submit async PDF tour generation job (admin only) - PDF only
+    submitAsyncGeneration: adminProcedure
       .input(z.object({ 
-        url: z.string().url(),
-        autoSave: z.boolean().default(false), // 預設不自動儲存，讓管理員預覽後確認
-        previewOnly: z.boolean().default(true), // 預設為預覽模式
-        taskId: z.string().optional(), // 前端傳入的 taskId，用於進度追蹤
+        url: z.string().url(), // PDF URL from S3 upload
+        forceRegenerate: z.boolean().optional().default(false),
+        isPdf: z.boolean().default(true), // Always true - PDF only
       }))
       .mutation(async ({ ctx, input }) => {
-        // Check if user is admin
-        if (ctx.user.role !== "admin") {
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message: "Only admins can auto-generate tours",
-          });
-        }
+        const { addTourGenerationJob } = await import("./queue");
+        const requestId = `gen_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+        
+        const job = await addTourGenerationJob({
+          url: input.url,
+          userId: ctx.user.id,
+          requestId,
+          forceRegenerate: input.forceRegenerate,
+          isPdf: true, // Always PDF
+        });
 
-        const startTime = Date.now();
-        // Use provided taskId or generate a new one for progress tracking
-        const taskId = input.taskId || `gen_${Date.now()}_${Math.random().toString(36).substring(7)}`;
-        console.log("[AutoGenerateComplete] Starting complete generation from URL:", input.url);
-        console.log("[AutoGenerateComplete] Task ID:", taskId);
+        console.log(`[SubmitPdfGeneration] Job submitted: ${job.id}`);
 
-        try {
-          // Import MasterAgent
-          const { MasterAgent } = await import("./agents/masterAgent");
-          const masterAgent = new MasterAgent();
-          
-          // Execute complete tour generation with all AI agents
-          const result = await masterAgent.execute(
-            input.url,
-            ctx.user.id,
-            (step, percentage) => {
-              console.log(`[AutoGenerateComplete] Progress: ${step} (${percentage}%)`);
-            },
-            taskId // Pass taskId for progress tracking
-          );
-          
-          if (!result.success || !result.data) {
-            throw new Error(result.error || "Tour generation failed");
-          }
-          
-          const generationTime = (Date.now() - startTime) / 1000;
-          console.log(`[AutoGenerateComplete] Generation completed in ${generationTime.toFixed(1)} seconds`);
-
-          // Transform MasterAgent result to database schema
-          const masterData = result.data;
-          
-          // Parse JSON strings
-          const highlights = JSON.parse(masterData.highlights || "[]");
-          const keyFeatures = JSON.parse(masterData.keyFeatures || "[]");
-          const poeticContent = JSON.parse(masterData.poeticContent || "{}");
-          const colorTheme = JSON.parse(masterData.colorTheme || "{}");
-          
-          // Prepare tour data for database
-          const tourData = {
-            // Basic Information
-            title: masterData.title || "未命名行程",
-            productCode: masterData.productCode || "",
-            description: masterData.description || "",
-            promotionText: masterData.heroSubtitle || "",
-            tags: JSON.stringify(masterData.tags || []),
-            
-            // Location - Departure
-            departureCountry: "台灣",
-            departureCity: masterData.departureCity || "桃園",
-            departureAirportCode: "TPE",
-            departureAirportName: "桃園國際機場",
-            
-            // Location - Destination
-            destinationCountry: masterData.destinationCountry || "未指定",
-            destinationCity: masterData.destinationCity || "未指定",
-            destinationRegion: "",
-            destinationAirportCode: "",
-            destinationAirportName: "",
-            destination: `${masterData.destinationCountry || ""} ${masterData.destinationCity || ""}`.trim() || "未指定",
-            destinationDescription: "",
-            
-            // Duration
-            duration: masterData.days || 1,
-            nights: masterData.nights || 0,
-            
-            // Pricing
-            price: masterData.price || 0,
-            priceUnit: "人/起",
-            availableSeats: null,
-            
-            // Flight - Empty for now (will be filled by FlightAgent)
-            outboundAirline: "",
-            outboundFlightNo: "",
-            outboundDepartureTime: "",
-            outboundArrivalTime: "",
-            outboundFlightDuration: "",
-            inboundAirline: "",
-            inboundFlightNo: "",
-            inboundDepartureTime: "",
-            inboundArrivalTime: "",
-            inboundFlightDuration: "",
-            airline: "",
-            
-            // Accommodation - Empty for now (will be filled by HotelAgent)
-            hotelName: "",
-            hotelGrade: "",
-            hotelNights: null,
-            hotelLocation: "",
-            hotelDescription: "",
-            hotelFacilities: JSON.stringify([]),
-            hotelRoomType: "",
-            hotelRoomSize: "",
-            hotelCheckIn: "",
-            hotelCheckOut: "",
-            hotelSpecialOffers: JSON.stringify([]),
-            hotelWebsite: "",
-            
-            // Attractions
-            attractions: JSON.stringify([]),
-            
-            // Daily Itinerary
-            dailyItinerary: JSON.stringify([]),
-            
-            // Pricing Details
-            includes: JSON.stringify([]),
-            excludes: JSON.stringify([]),
-            optionalTours: JSON.stringify([]),
-            
-            // Highlights (from MasterAgent)
-            highlights: JSON.stringify(highlights),
-            
-            // Notes
-            specialReminders: "",
-            notes: "",
-            safetyGuidelines: "",
-            flightRules: "",
-            
-            // Images (Hero image from MasterAgent)
-            imageUrl: masterData.heroImage || "",
-            
-            // AI-generated rich content (Sipincollection style)
-            heroImage: masterData.heroImage || "",
-            heroImageAlt: masterData.heroImageAlt || "",
-            heroSubtitle: masterData.heroSubtitle || "",
-            colorTheme: JSON.stringify(colorTheme),
-            keyFeatures: JSON.stringify(keyFeatures),
-            poeticContent: JSON.stringify(poeticContent),
-            
-            // Detailed sections from specialized agents
-            itineraryDetailed: masterData.itineraryDetailed || "",
-            costExplanation: masterData.costExplanation || "",
-            noticeDetailed: masterData.noticeDetailed || "",
-            hotels: masterData.hotels || "",
-            meals: masterData.meals || "",
-            flights: masterData.flights || "",
-            
-            // Metadata
-            originalityScore: String(masterData.originalityScore || 0),
-            
-            // Source
-            sourceUrl: input.url,
-            isAutoGenerated: 1,
-            
-            // Status - 預設為下架,讓管理員確認後再上架
-            status: "inactive" as const,
-            
-            // Category - 預設為 group
-            category: "group" as const,
-          };
-
-          // 預覽模式：只返回資料，不儲存到資料庫
-          if (input.previewOnly) {
-            const totalTime = (Date.now() - startTime) / 1000;
-            console.log(`[AutoGenerateComplete] Preview mode - Total time: ${totalTime.toFixed(1)} seconds`);
-            
-            return {
-              success: true,
-              data: {
-                ...tourData,
-                // 額外返回原始 MasterAgent 資料以便預覽
-                poeticTitle: masterData.poeticTitle,
-                featureImages: masterData.featureImages,
-                executionReport: result.executionReport,
-              },
-              message: `行程預覽已生成！耗時 ${totalTime.toFixed(1)} 秒`,
-              tourId: null,
-              previewMode: true,
-              taskId, // 返回 taskId 以便前端追蹤進度
-            };
-          }
-
-          // 如果啟用自動儲存,將行程儲存到資料庫
-          let savedTour = null;
-          if (input.autoSave || !input.previewOnly) {
-            console.log("[AutoGenerateComplete] Saving tour to database...");
-            savedTour = await db.createTour({
-              ...tourData,
-              createdBy: ctx.user.id,
-            });
-            console.log("[AutoGenerateComplete] Tour saved with ID:", savedTour.id);
-          }
-
-          const totalTime = (Date.now() - startTime) / 1000;
-          console.log(`[AutoGenerateComplete] Total time: ${totalTime.toFixed(1)} seconds`);
-
-          return {
-            success: true,
-            data: savedTour || tourData,
-            message: `行程生成成功！耗時 ${totalTime.toFixed(1)} 秒`,
-            tourId: savedTour?.id,
-            previewMode: false,
-            taskId, // 返回 taskId 以便前端追蹤進度
-          };
-        } catch (error: any) {
-          const totalTime = (Date.now() - startTime) / 1000;
-          console.error("[AutoGenerateComplete] Error:", error);
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: error.message || "行程生成失敗",
-          });
-        }
-      }),
-
-    // Auto-generate tour from URL (admin only) - Fast version with auto-save
-    autoGenerate: adminProcedure
-      .input(z.object({ 
-        url: z.string().url(),
-        autoSave: z.boolean().default(true), // 預設自動儲存
-      }))
-      .mutation(async ({ ctx, input }) => {
-        // Check if user is admin
-        if (ctx.user.role !== "admin") {
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message: "Only admins can auto-generate tours",
-          });
-        }
-
-        const startTime = Date.now();
-        console.log("[AutoGenerate] Starting fast extraction from URL:", input.url);
-
-        try {
-          // 使用快速提取方式(fetch + LLM),約 30 秒
-          const extractedData = await quickExtractTourInfo(input.url);
-          
-          const extractionTime = (Date.now() - startTime) / 1000;
-          console.log(`[AutoGenerate] Extraction completed in ${extractionTime.toFixed(1)} seconds`);
-
-          // Transform extracted data to match database schema
-          const basicInfo = extractedData.basicInfo || {};
-          const location = extractedData.location || {};
-          const duration = extractedData.duration || {};
-          const pricing = extractedData.pricing || {};
-          const flight = extractedData.flight || {};
-          const outbound = flight.outbound || {};
-          const inbound = flight.inbound || {};
-          const accommodation = extractedData.accommodation || {};
-          const pricingDetails = extractedData.pricingDetails || {};
-          const notes = extractedData.notes || {};
-
-          // Prepare tour data for database
-          const tourData = {
-            // Basic Information
-            title: basicInfo.title || "未命名行程",
-            productCode: basicInfo.productCode || "",
-            description: basicInfo.description || "",
-            promotionText: basicInfo.promotionText || "",
-            tags: JSON.stringify(basicInfo.tags || []),
-            
-            // Location - Departure
-            departureCountry: location.departureCountry || "台灣",
-            departureCity: location.departureCity || "桃園",
-            departureAirportCode: location.departureAirportCode || "TPE",
-            departureAirportName: location.departureAirportName || "桃園國際機場",
-            
-            // Location - Destination
-            destinationCountry: location.destinationCountry || "未指定",
-            destinationCity: location.destinationCity || "未指定",
-            destinationRegion: location.destinationRegion || "",
-            destinationAirportCode: location.destinationAirportCode || "",
-            destinationAirportName: location.destinationAirportName || "",
-            destination: `${location.destinationCountry || ""} ${location.destinationCity || ""}`.trim() || "未指定",
-            destinationDescription: location.destinationDescription || "",
-            
-            // Duration
-            duration: parseInt(duration.days) || 1,
-            nights: parseInt(duration.nights) || (parseInt(duration.days) - 1) || 0,
-            
-            // Pricing
-            price: parseInt(String(pricing.price).replace(/,/g, "")) || 0,
-            priceUnit: pricing.priceUnit || "人/起",
-            availableSeats: parseInt(pricing.availableSeats) || null,
-            
-            // Flight - Outbound
-            outboundAirline: outbound.airline || "",
-            outboundFlightNo: outbound.flightNo || "",
-            outboundDepartureTime: outbound.departureTime || "",
-            outboundArrivalTime: outbound.arrivalTime || "",
-            outboundFlightDuration: outbound.duration || "",
-            
-            // Flight - Inbound
-            inboundAirline: inbound.airline || "",
-            inboundFlightNo: inbound.flightNo || "",
-            inboundDepartureTime: inbound.departureTime || "",
-            inboundArrivalTime: inbound.arrivalTime || "",
-            inboundFlightDuration: inbound.duration || "",
-            
-            // Legacy airline field
-            airline: outbound.airline || "",
-            
-            // Accommodation
-            hotelName: accommodation.hotelName || "",
-            hotelGrade: accommodation.hotelGrade || "",
-            hotelNights: parseInt(accommodation.hotelNights) || null,
-            hotelLocation: accommodation.hotelLocation || "",
-            hotelDescription: accommodation.hotelDescription || "",
-            hotelFacilities: JSON.stringify(accommodation.hotelFacilities || []),
-            hotelRoomType: accommodation.hotelRoomType || "",
-            hotelRoomSize: accommodation.hotelRoomSize || "",
-            hotelCheckIn: accommodation.hotelCheckIn || "",
-            hotelCheckOut: accommodation.hotelCheckOut || "",
-            hotelSpecialOffers: JSON.stringify(accommodation.hotelSpecialOffers || []),
-            hotelWebsite: accommodation.hotelWebsite || "",
-            
-            // Attractions
-            attractions: JSON.stringify(extractedData.attractions || []),
-            
-            // Daily Itinerary
-            dailyItinerary: JSON.stringify(extractedData.dailyItinerary || []),
-            
-            // Pricing Details
-            includes: JSON.stringify(pricingDetails.includes || []),
-            excludes: JSON.stringify(pricingDetails.excludes || []),
-            optionalTours: JSON.stringify(pricingDetails.optionalTours || []),
-            
-            // Highlights
-            highlights: JSON.stringify(extractedData.highlights || []),
-            
-            // Notes
-            specialReminders: notes.specialReminders || "",
-            notes: notes.notes || "",
-            safetyGuidelines: notes.safetyGuidelines || "",
-            flightRules: notes.flightRules || "",
-            
-            // Images
-            imageUrl: extractedData.imageUrl || "",
-            
-            // Source
-            sourceUrl: input.url,
-            isAutoGenerated: 1,
-            
-            // Status - 預設為下架,讓管理員確認後再上架
-            status: "inactive" as const,
-            
-            // Category - 預設為 group
-            category: "group" as const,
-          };
-
-          // 如果啟用自動儲存,將行程儲存到資料庫
-          let savedTour = null;
-          if (input.autoSave) {
-            console.log("[AutoGenerate] Auto-saving tour to database...");
-            savedTour = await db.createTour({
-              ...tourData,
-              createdBy: ctx.user.id, // 添加建立者 ID
-            });
-            console.log("[AutoGenerate] Tour saved with ID:", savedTour.id);
-          }
-
-          const totalTime = (Date.now() - startTime) / 1000;
-          console.log(`[AutoGenerate] Total time: ${totalTime.toFixed(1)} seconds`);
-
-          return {
-            success: true,
-            data: savedTour || tourData,
-            message: `行程提取成功!耗時 ${totalTime.toFixed(1)} 秒`,
-            tourId: savedTour?.id,
-          };
-        } catch (error: any) {
-          const totalTime = (Date.now() - startTime) / 1000;
-          console.error("[AutoGenerate] Error:", error);
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: error.message || "行程提取失敗",
-          });
-        }
+        return {
+          jobId: job.id!,
+          requestId,
+          message: "行程生成任務已提交，請稍候...",
+        };
       }),
 
     // Save tour from preview (admin only)
