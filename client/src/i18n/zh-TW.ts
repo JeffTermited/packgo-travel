@@ -764,12 +764,14 @@ export const zhTW = {
     tourNotes: '行程備註',
     safetyGuidelines: '安全守則',
     flightRules: '團體航班規定事項',
+    multipleDates: '多日期可選',
     tabs: {
       overview: '行程特色',
       itinerary: '每日行程',
       hotel: '住宿資訊',
       pricing: '費用說明',
       notes: '注意事項',
+      features: '內容特色',
     },
   },
 

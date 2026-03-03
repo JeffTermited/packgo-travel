@@ -762,12 +762,14 @@ export const es = {
     difficulty: 'Nivel de Dificultad',
     accommodation: 'Tipo de Alojamiento',
     transportation: 'Transporte',
+    multipleDates: 'Múltiples Fechas Disponibles',
     tabs: {
       overview: 'Características',
       itinerary: 'Itinerario Diario',
       hotel: 'Alojamiento',
       pricing: 'Precios',
       notes: 'Avisos Importantes',
+      features: 'Características del Tour',
     },
   },
 

@@ -763,12 +763,14 @@ export const en = {
     difficulty: 'Difficulty Level',
     accommodation: 'Accommodation Type',
     transportation: 'Transportation',
+    multipleDates: 'Multiple Dates Available',
     tabs: {
       overview: 'Tour Features',
       itinerary: 'Daily Itinerary',
       hotel: 'Accommodation',
       pricing: 'Pricing',
       notes: 'Important Notices',
+      features: 'Tour Features',
     },
   },
 

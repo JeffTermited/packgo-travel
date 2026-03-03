@@ -4789,4 +4789,6 @@
 ### 任務：修復 getTranslated 函數資料格式錯誤
 - [x] 修正 TourDetailPeony.tsx 的 getTranslated：API 回傳 Record<string,string> 物件，但程式碼用 Array.isArray() 當陣列處理
 - [ ] 驗證切換英文語系後行程詳情頁正確顯示英文翻譯（由使用者後台操作驗證）
-- [ ] 儲存 checkpoint
+- [x] 補充缺失的 tourDetail.multipleDates i18n key（三語系）
+- [x] 補充缺失的 tourDetail.tabs.features i18n key（三語系）
+- [ ] 儲存 checkpoint 並部署
