@@ -4770,3 +4770,14 @@
 - [ ] 後端 API 支援依 locale 回傳對應翻譯
 - [ ] 前端行程詳情頁依語系顯示對應內容
 - [ ] 管理後台加入翻譯編輯介面
+
+---
+
+## 第一階段剩餘任務 - 行程自動翻譯（2026-03-03）
+
+### 任務：行程儲存後非同步自動翻譯（方案 A）
+- [x] tourGenerator.ts：行程儲存後非同步觸發 translateTour(['en', 'es'])
+- [x] routers.ts createTour：手動建立後非同步觸發翻譯
+- [x] routers.ts saveFromPreview：從預覽儲存後非同步觸發翻譯
+- [x] 行程詳情頁 JSX 應用 displayTitle / displayDescription / displayHeroSubtitle
+- [x] 管理後台翻譯管理 Tab（翻譯狀態、AI 一鍵翻譯、手動編輯）

@@ -522,6 +522,53 @@ export async function getTranslationJobs(limit: number = 20): Promise<any[]> {
 /**
  * 獲取支援的語言列表
  */
+
+/**
+ * 取得所有行程的翻譯摘要（批次查詢，用於管理後台）
+ * 回傳每個行程的翻譯狀態（是否有 EN/ES 翻譯及欄位數量）
+ */
+export async function getAllTranslationsSummary(): Promise<Array<{
+  tourId: number;
+  hasEn: boolean;
+  hasEs: boolean;
+  enFieldCount: number;
+  esFieldCount: number;
+}>> {
+  const db = await getDb();
+  if (!db) return [];
+  try {
+    const results = await db.select({
+      entityId: translations.entityId,
+      targetLanguage: translations.targetLanguage,
+    }).from(translations).where(
+      eq(translations.entityType, 'tour')
+    );
+    
+    // 按行程 ID 和語言分組統計
+    const summaryMap = new Map<number, { enCount: number; esCount: number }>();
+    for (const row of results) {
+      const tourId = row.entityId;
+      if (!summaryMap.has(tourId)) {
+        summaryMap.set(tourId, { enCount: 0, esCount: 0 });
+      }
+      const entry = summaryMap.get(tourId)!;
+      if (row.targetLanguage === 'en') entry.enCount++;
+      else if (row.targetLanguage === 'es') entry.esCount++;
+    }
+    
+    return Array.from(summaryMap.entries()).map(([tourId, counts]) => ({
+      tourId,
+      hasEn: counts.enCount > 0,
+      hasEs: counts.esCount > 0,
+      enFieldCount: counts.enCount,
+      esFieldCount: counts.esCount,
+    }));
+  } catch (error) {
+    console.error('[Translation Agent] Failed to get translations summary:', error);
+    return [];
+  }
+}
+
 export function getSupportedLanguages(): Array<{ code: Language; name: string; nativeName: string }> {
   return Object.entries(languageFullNames).map(([code, name]) => ({
     code: code as Language,

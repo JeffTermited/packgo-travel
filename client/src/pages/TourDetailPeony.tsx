@@ -1531,7 +1531,7 @@ const HotelCard = ({ hotel, themeColor }: { hotel: any; themeColor: ReturnType<t
 };
 
 export default function TourDetailPeony() {
-  const { t } = useLocale();
+  const { t, language } = useLocale();
   const [matchSipin, paramsSipin] = useRoute("/tours-sipin/:id");
   const [matchTours, paramsTours] = useRoute("/tours/:id");
   const [matchMinimal, paramsMinimal] = useRoute("/tours-minimal/:id");
@@ -1544,6 +1544,20 @@ export default function TourDetailPeony() {
     { id: tourId! },
     { enabled: !!tourId }
   );
+
+  // 多語言翻譯查詢：語系非 zh-TW 時自動載入翻譯
+  const { data: tourTranslations } = trpc.translation.getTourTranslations.useQuery(
+    { tourId: tourId!, targetLanguage: language as 'zh-TW' | 'en' | 'es' | 'ja' | 'ko' },
+    { enabled: !!tourId && language !== 'zh-TW' }
+  );
+
+  // 取得翻譯後的欄位值（優雅降級到原始中文）
+  const getTranslated = (fieldName: string, fallback: string | null | undefined): string | null | undefined => {
+    if (language === 'zh-TW' || !tourTranslations) return fallback;
+    const translationsArr = Array.isArray(tourTranslations) ? tourTranslations : [];
+    const found = translationsArr.find((tr: { fieldName: string; translatedText: string }) => tr.fieldName === fieldName);
+    return found ? found.translatedText : fallback;
+  };
 
   // 編輯模式狀態
   const { user } = useAuth();
@@ -1571,7 +1585,7 @@ export default function TourDetailPeony() {
     if (tour) {
       trackViewTour({
         tourId: tour.id,
-        tourName: tour.title,
+        tourName: getTranslated('title', tour.title) ?? tour.title,
         destination: (tour as any).destinationCountry ?? (tour as any).destination ?? "",
         price: (tour as any).price ?? 0,
         currency: "TWD",
@@ -1777,16 +1791,21 @@ export default function TourDetailPeony() {
     );
   }
 
-  // 解析資料
+  // 解析資料（多語言翻譯覆蓋）
   const heroImage = tour.heroImage || tour.imageUrl || "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1200";
-  const keyFeatures = parseJSON(tour.keyFeatures, []);
+  // 翻譯覆蓋：文字欄位
+  const displayTitle = getTranslated('title', tour.title) ?? tour.title;
+  const displayDescription = getTranslated('description', tour.description) ?? tour.description;
+  const displayHeroSubtitle = getTranslated('heroSubtitle', (tour as any).heroSubtitle) ?? (tour as any).heroSubtitle;
+  // 翻譯覆蓋：JSON 欄位（翻譯後為 JSON 字串，需再解析）
+  const keyFeatures = parseJSON(getTranslated('keyFeatures', tour.keyFeatures) ?? tour.keyFeatures, []);
   const attractions = parseJSON(tour.attractions, []);
   const hotels = parseJSON(tour.hotels, []);
   const meals = parseJSON(tour.meals, []);
-  const itineraryDetailed = parseJSON(tour.itineraryDetailed, []);
-  const costExplanation = parseJSON(tour.costExplanation, null);
+  const itineraryDetailed = parseJSON(getTranslated('itineraryDetailed', tour.itineraryDetailed) ?? tour.itineraryDetailed, []);
+  const costExplanation = parseJSON(getTranslated('costExplanation', tour.costExplanation) ?? tour.costExplanation, null);
   const transportationInfo = parseJSON(tour.flights, null);
-  const noticeDetailed = parseJSON(tour.noticeDetailed, null);
+  const noticeDetailed = parseJSON(getTranslated('noticeDetailed', tour.noticeDetailed) ?? tour.noticeDetailed, null);
 
   // 導覽項目
   const navItems = [
@@ -1805,15 +1824,15 @@ export default function TourDetailPeony() {
     <div className="min-h-screen flex flex-col bg-white">
       {/* 動態 SEO meta 標籤 */}
       <SEO
-        title={tour.title}
-        description={tour.description ?? undefined}
+        title={displayTitle}
+        description={displayDescription ?? undefined}
         image={(tour as any).heroImage || (tour as any).imageUrl || undefined}
         url={`/tours/${tour.id}`}
         type="article"
         schema={buildTourSchema({
           id: tour.id,
-          title: tour.title,
-          description: tour.description,
+          title: displayTitle,
+          description: displayDescription,
           price: (tour as any).price,
           currency: (tour as any).currency ?? "TWD",
           duration: (tour as any).duration,
@@ -1846,7 +1865,7 @@ export default function TourDetailPeony() {
             <span>&gt;</span>
             <button onClick={() => navigate("/search")} className="hover:text-black transition-colors">{t('nav.searchResults')}</button>
             <span>&gt;</span>
-            <span className="text-black">{tour.title}</span>
+            <span className="text-black">{displayTitle}</span>
           </div>
         </div>
       </div>
@@ -2546,7 +2565,7 @@ export default function TourDetailPeony() {
             <DialogTitle className="text-xl font-bold">{t('tourDetail.shareThisTour')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <p className="text-gray-600 text-sm">分享「{tour.title}」給您的親友！</p>
+            <p className="text-gray-600 text-sm">分享「{displayTitle}」給您的親友！</p>
             
             {/* 複製連結 */}
             <div className="flex items-center gap-2">
@@ -2590,7 +2609,7 @@ export default function TourDetailPeony() {
               <button
                 onClick={() => {
                   const url = encodeURIComponent(window.location.href);
-                  const text = encodeURIComponent(`推薦這個行程給你：${tour.title}`);
+                  const text = encodeURIComponent(`推薦這個行程給你：${displayTitle}`);
                   window.open(`https://social-plugins.line.me/lineit/share?url=${url}&text=${text}`, '_blank', 'width=600,height=400');
                 }}
                 className="flex flex-col items-center gap-2 p-3 rounded-lg hover:bg-gray-100 transition-colors"
@@ -2607,7 +2626,7 @@ export default function TourDetailPeony() {
               <button
                 onClick={() => {
                   const url = encodeURIComponent(window.location.href);
-                  const text = encodeURIComponent(`推薦這個行程：${tour.title}`);
+                  const text = encodeURIComponent(`推薦這個行程：${displayTitle}`);
                   window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank', 'width=600,height=400');
                 }}
                 className="flex flex-col items-center gap-2 p-3 rounded-lg hover:bg-gray-100 transition-colors"
@@ -2624,7 +2643,7 @@ export default function TourDetailPeony() {
               <button
                 onClick={() => {
                   const url = encodeURIComponent(window.location.href);
-                  const text = encodeURIComponent(`推薦這個行程給你：${tour.title} `);
+                  const text = encodeURIComponent(`推薦這個行程給你：${displayTitle} `);
                   window.open(`https://wa.me/?text=${text}${url}`, '_blank', 'width=600,height=400');
                 }}
                 className="flex flex-col items-center gap-2 p-3 rounded-lg hover:bg-gray-100 transition-colors"

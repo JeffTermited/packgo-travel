@@ -12,7 +12,7 @@ import { invokeLLM } from "./_core/llm";
 import { sendBookingConfirmationEmail } from "./email";
 import * as auth from "./auth";
 import { createToken } from "./jwt";
-import { translateText, translateBatch, translateTour, translateMultipleTours, getTourTranslations, getAllTourTranslations, getTranslationJobs, getSupportedLanguages, Language } from "./translation";
+import { translateText, translateBatch, translateTour, translateMultipleTours, getTourTranslations, getAllTourTranslations, getTranslationJobs, getSupportedLanguages, getAllTranslationsSummary, Language } from "./translation";
 import { getExchangeRates, convertCurrency, getExchangeRate, formatCurrency, getCurrencySymbol, convertPrices, type SupportedCurrency } from "./agents/exchangeRateAgent";
 import { checkForgotPasswordRateLimitByIP, checkForgotPasswordRateLimitByEmail, checkForgotPasswordGlobalRateLimit, isBlockedEmailDomain } from "./rateLimit";
 
@@ -585,6 +585,10 @@ export const appRouter = router({
           createdBy: ctx.user.id,
         });
 
+        // 非同步觸發翻譯（不阻塞建立流程）
+        translateTour(tour.id, ['en', 'es'], 'zh-TW', ctx.user.id)
+          .then((r) => console.log(`[AutoTranslate] Tour ${tour.id} translated to:`, r.translatedLanguages))
+          .catch((e) => console.warn(`[AutoTranslate] Tour ${tour.id} translation error:`, e));
         return tour;
       }),
 
@@ -857,6 +861,10 @@ export const appRouter = router({
           });
 
           console.log("[SaveFromPreview] Tour saved with ID:", savedTour.id);
+          // 非同步觸發翻譯（不阻塞儲存流程）
+          translateTour(savedTour.id, ['en', 'es'], 'zh-TW', ctx.user.id)
+            .then((r) => console.log(`[AutoTranslate] Tour ${savedTour.id} translated to:`, r.translatedLanguages))
+            .catch((e) => console.warn(`[AutoTranslate] Tour ${savedTour.id} translation error:`, e));
 
           return {
             success: true,
@@ -2691,6 +2699,11 @@ export const appRouter = router({
         };
       }),
 
+    // Get translation summary for all tours (admin only)
+    getAllTranslationsSummary: adminProcedure
+      .query(async () => {
+        return await getAllTranslationsSummary();
+      }),
     // Get translations for a specific tour
     getTourTranslations: publicProcedure
       .input(z.object({

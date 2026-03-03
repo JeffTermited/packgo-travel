@@ -5,6 +5,7 @@ import {
 } from "./queue";
 import { MasterAgent } from "./agents/masterAgent";
 import { createTour } from "./db";
+import { translateTour } from "./translation";
 // Image supplementation removed for speed optimization
 // import { supplementImages } from "./services/unsplashService";
 
@@ -123,6 +124,19 @@ export async function generateTourFromUrlInternal(
       percentage: 100,
       message: "Tour generation completed!",
     });
+    
+    // 非同步觸發翻譯（不阻塞生成流程）
+    translateTour(tour.id, ['en', 'es'], 'zh-TW', userId)
+      .then((result) => {
+        if (result.success) {
+          console.log(`[TourGenerator] Auto-translated tour ${tour.id} to: ${result.translatedLanguages.join(', ')}`);
+        } else {
+          console.warn(`[TourGenerator] Auto-translation failed for tour ${tour.id}:`, result.errors);
+        }
+      })
+      .catch((err) => {
+        console.warn(`[TourGenerator] Auto-translation error for tour ${tour.id}:`, err);
+      });
     
     return {
       success: true,
