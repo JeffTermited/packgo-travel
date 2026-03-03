@@ -36,8 +36,12 @@ describe("Tour Generation System", () => {
     expect(job.data.url).toBe(testUrl);
     expect(job.data.userId).toBe(testUserId);
     
-    // Clean up: remove the job
-    await job.remove();
+    // Clean up: use force:true to remove even if locked by a worker
+    try {
+      await job.remove({ force: true });
+    } catch {
+      // If removal fails, it's not critical for the test assertion
+    }
   });
   
   it("should be able to get job status", async () => {
@@ -55,8 +59,12 @@ describe("Tour Generation System", () => {
     expect(state).toBeDefined();
     expect(["waiting", "active", "completed", "failed"]).toContain(state);
     
-    // Clean up
-    await job.remove();
+    // Clean up: use force:true to remove even if locked by a worker
+    try {
+      await job.remove({ force: true });
+    } catch {
+      // If removal fails, it's not critical for the test assertion
+    }
   });
   
   it("should have correct queue configuration", async () => {
