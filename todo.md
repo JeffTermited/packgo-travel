@@ -4781,3 +4781,12 @@
 - [x] routers.ts saveFromPreview：從預覽儲存後非同步觸發翻譯
 - [x] 行程詳情頁 JSX 應用 displayTitle / displayDescription / displayHeroSubtitle
 - [x] 管理後台翻譯管理 Tab（翻譯狀態、AI 一鍵翻譯、手動編輯）
+
+---
+
+## 修復行程翻譯顯示 Bug（2026-03-03）
+
+### 任務：修復 getTranslated 函數資料格式錯誤
+- [x] 修正 TourDetailPeony.tsx 的 getTranslated：API 回傳 Record<string,string> 物件，但程式碼用 Array.isArray() 當陣列處理
+- [ ] 驗證切換英文語系後行程詳情頁正確顯示英文翻譯（由使用者後台操作驗證）
+- [ ] 儲存 checkpoint

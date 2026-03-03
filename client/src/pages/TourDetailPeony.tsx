@@ -1552,11 +1552,12 @@ export default function TourDetailPeony() {
   );
 
   // 取得翻譯後的欄位值（優雅降級到原始中文）
+  // API 回傳格式為 Record<string, string>，例如 { title: "...", description: "..." }
   const getTranslated = (fieldName: string, fallback: string | null | undefined): string | null | undefined => {
     if (language === 'zh-TW' || !tourTranslations) return fallback;
-    const translationsArr = Array.isArray(tourTranslations) ? tourTranslations : [];
-    const found = translationsArr.find((tr: { fieldName: string; translatedText: string }) => tr.fieldName === fieldName);
-    return found ? found.translatedText : fallback;
+    const translationMap = tourTranslations as Record<string, string>;
+    const translated = translationMap[fieldName];
+    return translated ?? fallback;
   };
 
   // 編輯模式狀態
