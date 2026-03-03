@@ -7,7 +7,6 @@ import {
   Calendar, 
   Clock, 
   MapPin, 
-  Users, 
   Loader2, 
   ArrowLeft,
   CheckCircle2,
@@ -23,11 +22,13 @@ import Footer from "@/components/Footer";
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
+import { useLocale } from "@/contexts/LocaleContext";
 
 export default function BookingDetail() {
   const params = useParams();
   const [, navigate] = useLocation();
   const { user, loading: authLoading } = useAuth();
+  const { t } = useLocale();
   const bookingId = params.id ? parseInt(params.id) : 0;
 
   const { data: booking, isLoading, refetch } = trpc.bookings.getById.useQuery(
@@ -37,7 +38,7 @@ export default function BookingDetail() {
 
   const createCheckoutMutation = trpc.bookings.createCheckoutSession.useMutation({
     onSuccess: (data) => {
-      toast.success("正在前往付款頁面...");
+      toast.success(t('bookingDetail.redirectingToPayment'));
       if (data.url) {
         window.open(data.url, "_blank");
       }
@@ -47,7 +48,7 @@ export default function BookingDetail() {
       }, 3000);
     },
     onError: (error) => {
-      toast.error("建立付款連結失敗", {
+      toast.error(t('bookingDetail.createCheckoutFailed'), {
         description: error.message,
       });
     },
@@ -55,7 +56,7 @@ export default function BookingDetail() {
 
   const handlePayment = (paymentType: "deposit" | "balance" | "full") => {
     if (!user) {
-      toast.error("請先登入");
+      toast.error(t('bookingDetail.loginRequiredToast'));
       window.location.href = getLoginUrl();
       return;
     }
@@ -87,9 +88,9 @@ export default function BookingDetail() {
         <Header />
         <div className="flex-grow flex items-center justify-center bg-white">
           <div className="text-center">
-            <h2 className="text-2xl font-bold text-black mb-4">請先登入</h2>
+            <h2 className="text-2xl font-bold text-black mb-4">{t('bookingDetail.loginRequired')}</h2>
             <Button onClick={() => window.location.href = getLoginUrl()} className="bg-black hover:bg-gray-800 text-white">
-              前往登入
+              {t('bookingDetail.goToLogin')}
             </Button>
           </div>
         </div>
@@ -104,10 +105,10 @@ export default function BookingDetail() {
         <Header />
         <div className="flex-grow flex items-center justify-center bg-white">
           <div className="text-center">
-            <h2 className="text-2xl font-bold text-black mb-4">找不到此預訂</h2>
+            <h2 className="text-2xl font-bold text-black mb-4">{t('bookingDetail.bookingNotFound')}</h2>
             <Button onClick={() => navigate("/profile")} className="bg-black hover:bg-gray-800 text-white">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              返回個人中心
+              {t('bookingDetail.backToProfile2')}
             </Button>
           </div>
         </div>
@@ -118,10 +119,10 @@ export default function BookingDetail() {
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      pending: { label: "待確認", className: "bg-yellow-100 text-yellow-800 border-yellow-300" },
-      confirmed: { label: "已確認", className: "bg-blue-100 text-blue-800 border-blue-300" },
-      cancelled: { label: "已取消", className: "bg-red-100 text-red-800 border-red-300" },
-      completed: { label: "已完成", className: "bg-green-100 text-green-800 border-green-300" },
+      pending: { label: t('bookingDetail.statusPending'), className: "bg-yellow-100 text-yellow-800 border-yellow-300" },
+      confirmed: { label: t('bookingDetail.statusConfirmed'), className: "bg-blue-100 text-blue-800 border-blue-300" },
+      cancelled: { label: t('bookingDetail.statusCancelled'), className: "bg-red-100 text-red-800 border-red-300" },
+      completed: { label: t('bookingDetail.statusCompleted'), className: "bg-green-100 text-green-800 border-green-300" },
     };
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
     return <Badge className={`${config.className} border`}>{config.label}</Badge>;
@@ -137,10 +138,10 @@ export default function BookingDetail() {
 
   const getPaymentStatusBadge = (status: string) => {
     const statusConfig = {
-      unpaid: { label: "待付款", className: "bg-gray-100 text-gray-800 border-gray-300", icon: Clock },
-      deposit: { label: "已付訂金", className: "bg-blue-100 text-blue-800 border-blue-300", icon: CheckCircle2 },
-      paid: { label: "已付清", className: "bg-green-100 text-green-800 border-green-300", icon: CheckCircle2 },
-      refunded: { label: "已退款", className: "bg-red-100 text-red-800 border-red-300", icon: XCircle },
+      unpaid: { label: t('bookingDetail.paymentUnpaid'), className: "bg-gray-100 text-gray-800 border-gray-300", icon: Clock },
+      deposit: { label: t('bookingDetail.paymentDeposit'), className: "bg-blue-100 text-blue-800 border-blue-300", icon: CheckCircle2 },
+      paid: { label: t('bookingDetail.paymentPaid'), className: "bg-green-100 text-green-800 border-green-300", icon: CheckCircle2 },
+      refunded: { label: t('bookingDetail.paymentRefunded'), className: "bg-red-100 text-red-800 border-red-300", icon: XCircle },
     };
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.unpaid;
     const Icon = config.icon;
@@ -167,7 +168,7 @@ export default function BookingDetail() {
           className="mb-6 border-2 border-black rounded-3xl hover:bg-black hover:text-white"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          返回個人中心
+          {t('bookingDetail.backToProfile2')}
         </Button>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -178,9 +179,9 @@ export default function BookingDetail() {
               <CardHeader className="pb-4">
                 <div className="flex items-start justify-between">
                   <div>
-                    <CardTitle className="text-2xl mb-2">預訂編號 #{booking.id}</CardTitle>
+                    <CardTitle className="text-2xl mb-2">{t('bookingDetail.bookingIdLabel')}{booking.id}</CardTitle>
                     <p className="text-sm text-gray-600">
-                      預訂時間：{new Date(booking.createdAt).toLocaleString('zh-TW')}
+                      {t('bookingDetail.createdAt')}{new Date(booking.createdAt).toLocaleString()}
                     </p>
                   </div>
                   <div className="flex flex-col gap-2 items-end">
@@ -196,48 +197,47 @@ export default function BookingDetail() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <MapPin className="h-5 w-5" />
-                  行程資訊
+                  {t('bookingDetail.tourInfo')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <h3 className="font-bold text-lg mb-2">行程編號 #{booking.tourId}</h3>
+                  <h3 className="font-bold text-lg mb-2">{t('bookingDetail.tourIdLabel')}{booking.tourId}</h3>
                   <div className="flex flex-wrap gap-4 text-sm text-gray-600">
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4" />
-                      <span>出發團號：#{booking.departureId}</span>
+                      <span>{t('bookingDetail.departureIdLabel')}{booking.departureId}</span>
                     </div>
-
                   </div>
                 </div>
                 <Separator />
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm text-gray-600 mb-1">成人</p>
-                    <p className="font-bold">{booking.numberOfAdults} 位</p>
+                    <p className="text-sm text-gray-600 mb-1">{t('bookingDetail.adults')}</p>
+                    <p className="font-bold">{booking.numberOfAdults} {t('bookingDetail.personsUnit')}</p>
                   </div>
                   {booking.numberOfChildrenWithBed > 0 && (
                     <div>
-                      <p className="text-sm text-gray-600 mb-1">兒童（佔床）</p>
-                      <p className="font-bold">{booking.numberOfChildrenWithBed} 位</p>
+                      <p className="text-sm text-gray-600 mb-1">{t('bookingDetail.childrenWithBed')}</p>
+                      <p className="font-bold">{booking.numberOfChildrenWithBed} {t('bookingDetail.personsUnit')}</p>
                     </div>
                   )}
                   {booking.numberOfChildrenNoBed > 0 && (
                     <div>
-                      <p className="text-sm text-gray-600 mb-1">兒童（不佔床）</p>
-                      <p className="font-bold">{booking.numberOfChildrenNoBed} 位</p>
+                      <p className="text-sm text-gray-600 mb-1">{t('bookingDetail.childrenNoBed')}</p>
+                      <p className="font-bold">{booking.numberOfChildrenNoBed} {t('bookingDetail.personsUnit')}</p>
                     </div>
                   )}
                   {booking.numberOfInfants > 0 && (
                     <div>
-                      <p className="text-sm text-gray-600 mb-1">嬰兒</p>
-                      <p className="font-bold">{booking.numberOfInfants} 位</p>
+                      <p className="text-sm text-gray-600 mb-1">{t('bookingDetail.infants')}</p>
+                      <p className="font-bold">{booking.numberOfInfants} {t('bookingDetail.personsUnit')}</p>
                     </div>
                   )}
                   {booking.numberOfSingleRooms > 0 && (
                     <div>
-                      <p className="text-sm text-gray-600 mb-1">單人房</p>
-                      <p className="font-bold">{booking.numberOfSingleRooms} 間</p>
+                      <p className="text-sm text-gray-600 mb-1">{t('bookingDetail.singleRooms')}</p>
+                      <p className="font-bold">{booking.numberOfSingleRooms} {t('bookingDetail.roomsUnit')}</p>
                     </div>
                   )}
                 </div>
@@ -249,7 +249,7 @@ export default function BookingDetail() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <User className="h-5 w-5" />
-                  聯絡資訊
+                  {t('bookingDetail.contactInfo')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
@@ -269,7 +269,7 @@ export default function BookingDetail() {
                   <>
                     <Separator />
                     <div>
-                      <p className="text-sm text-gray-600 mb-2">特殊需求</p>
+                      <p className="text-sm text-gray-600 mb-2">{t('bookingDetail.specialRequests')}</p>
                       <p className="text-sm">{booking.message}</p>
                     </div>
                   </>
@@ -284,31 +284,31 @@ export default function BookingDetail() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <CreditCard className="h-5 w-5" />
-                  付款資訊
+                  {t('bookingDetail.paymentInfo')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-600">總金額</span>
-                    <span className="font-bold text-lg">NT$ {totalAmount.toLocaleString()}</span>
+                    <span className="text-gray-600">{t('bookingDetail.totalAmount')}</span>
+                    <span className="font-bold">NT$ {totalAmount.toLocaleString()}</span>
                   </div>
                   <Separator />
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-600">訂金（20%）</span>
+                    <span className="text-gray-600">{t('bookingDetail.deposit20')}</span>
                     <span className="font-medium">NT$ {depositAmount.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-600">尾款</span>
+                    <span className="text-gray-600">{t('bookingDetail.balance')}</span>
                     <span className="font-medium">NT$ {balanceAmount.toLocaleString()}</span>
                   </div>
                   <Separator />
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-600">已付金額</span>
+                    <span className="text-gray-600">{t('bookingDetail.paidAmount')}</span>
                     <span className="font-bold text-green-600">NT$ {paidAmount.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-600">未付金額</span>
+                    <span className="text-gray-600">{t('bookingDetail.unpaidAmount')}</span>
                     <span className="font-bold text-red-600">
                       NT$ {(totalAmount - paidAmount).toLocaleString()}
                     </span>
@@ -319,7 +319,7 @@ export default function BookingDetail() {
                   <>
                     <Separator />
                     <div className="space-y-3">
-                      <h3 className="font-bold text-sm">選擇付款方式</h3>
+                      <h3 className="font-bold text-sm">{t('bookingDetail.choosePaymentMethod')}</h3>
                       {canPayDeposit && (
                         <Button 
                           className="w-full bg-blue-600 hover:bg-blue-700 text-white"
@@ -331,7 +331,7 @@ export default function BookingDetail() {
                           ) : (
                             <CreditCard className="h-4 w-4 mr-2" />
                           )}
-                          支付訂金 NT$ {depositAmount.toLocaleString()}
+                          {t('bookingDetail.payDeposit')} NT$ {depositAmount.toLocaleString()}
                         </Button>
                       )}
                       {canPayBalance && (
@@ -345,7 +345,7 @@ export default function BookingDetail() {
                           ) : (
                             <CreditCard className="h-4 w-4 mr-2" />
                           )}
-                          支付尾款 NT$ {balanceAmount.toLocaleString()}
+                          {t('bookingDetail.payBalance')} NT$ {balanceAmount.toLocaleString()}
                         </Button>
                       )}
                       {canPayDeposit && (
@@ -359,7 +359,7 @@ export default function BookingDetail() {
                           ) : (
                             <CreditCard className="h-4 w-4 mr-2" />
                           )}
-                          一次付清 NT$ {totalAmount.toLocaleString()}
+                          {t('bookingDetail.payFull')} NT$ {totalAmount.toLocaleString()}
                         </Button>
                       )}
                     </div>
@@ -369,16 +369,16 @@ export default function BookingDetail() {
                 {isFullyPaid && (
                   <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4 text-center">
                     <CheckCircle2 className="h-8 w-8 text-green-600 mx-auto mb-2" />
-                    <p className="font-bold text-green-800">付款已完成</p>
-                    <p className="text-sm text-green-600 mt-1">感謝您的預訂！</p>
+                    <p className="font-bold text-green-800">{t('bookingDetail.paymentCompleted')}</p>
+                    <p className="text-sm text-green-600 mt-1">{t('bookingDetail.thankYou')}</p>
                   </div>
                 )}
 
                 <Separator />
                 <div className="text-xs text-gray-500 space-y-1">
-                  <p>• 付款後請保留收據</p>
-                  <p>• 如有問題請聯絡客服</p>
-                  <p>• 取消政策依行程規定</p>
+                  <p>• {t('bookingDetail.keepReceipt')}</p>
+                  <p>• {t('bookingDetail.contactSupport')}</p>
+                  <p>• {t('bookingDetail.cancellationPolicy')}</p>
                 </div>
               </CardContent>
             </Card>

@@ -75,6 +75,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocale } from "@/contexts/LocaleContext";
+import { trackViewTour } from "@/lib/analytics";
 import { EditableText, EditableImage, EditableDayCard, EditModeToggle, EditModeBanner } from "@/components/inline-edit";
 import { toast } from "sonner";
 
@@ -1563,6 +1564,19 @@ export default function TourDetailPeony() {
       toast.error(`更新失敗：${error.message}`);
     },
   });
+
+  // GA4: 行程詳情頁瀏覽事件
+  useEffect(() => {
+    if (tour) {
+      trackViewTour({
+        tourId: tour.id,
+        tourName: tour.title,
+        destination: (tour as any).destinationCountry ?? (tour as any).destination ?? "",
+        price: (tour as any).price ?? 0,
+        currency: "TWD",
+      });
+    }
+  }, [tour?.id]);
 
   // 進入編輯模式時複製資料
   useEffect(() => {

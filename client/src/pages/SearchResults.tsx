@@ -1,6 +1,7 @@
 import { useState, useEffect, Fragment, useMemo } from "react";
 import { useLocation } from "wouter";
 import { useLocale } from "@/contexts/LocaleContext";
+import { trackSearch } from "@/lib/analytics";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -253,6 +254,12 @@ export default function SearchResults() {
 
   const handleSearch = () => {
     setCurrentPage(1);
+    // GA4: track search event
+    trackSearch({
+      keyword,
+      destination: selectedDestinations.join(","),
+      resultCount: filteredTours.length,
+    });
   };
 
   const handleClearSearch = () => {

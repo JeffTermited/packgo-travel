@@ -4697,3 +4697,32 @@
 - [ ] 建立動態 sitemap.xml 路由
 - [ ] 加入動態 meta 標籤（react-helmet-async）
 - [ ] 行程詳情頁加入 og:image、og:title、og:description
+
+---
+
+## 第一階段 P0 任務（2026-03-02）
+
+### TODO-001：GA4 數據追蹤整合
+- [x] 在 client/index.html 加入 Google Tag Manager (GTM) 容器腳本
+- [x] 在 client/src/App.tsx 前端路由層級追蹤頁面瀏覽事件（page_view）
+- [x] 在 SearchResults.tsx 觸發 search 自訂事件（含搜尋關鍵字、篩選條件）
+- [x] 在 TourDetailPeony.tsx 觸發 view_tour 自訂事件（含行程 ID、行程名稱）
+- [x] 在 BookTour.tsx 觸發 begin_checkout 事件
+- [x] 在預訂完成時觸發 purchase 轉換事件（含訂單金額、幣別）
+
+### TODO-002：BookingDetail.tsx i18n 遷移
+- [x] 將 BookingDetail.tsx 中約 48 行硬編碼中文 UI 字串提取至 i18n 語系檔案
+- [x] 替換為 t() 函式調用（zh-TW / en / es 三語系同步更新）
+- [ ] 驗證切換英文語系時頁面正確顯示英文
+
+### TODO-003：部署上線
+- [ ] 儲存 checkpoint
+- [ ] 點擊 Publish 部署至生產環境
+
+### TODO-004：修復 CI/CD 環境測試失敗
+- [ ] 診斷 6 個環境相關測試失敗案例
+- [ ] 修復 CI 環境配置使 202/202 測試全部通過
+
+### TODO-005：評估 Vision 救援流程必要性
+- [ ] 分析 Vision 流程的實際觸發頻率與使用場景
+- [ ] 產出評估報告（結論：保留並調整 Timeout / 降級為最後備用 / 直接移除）

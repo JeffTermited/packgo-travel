@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { trpc } from "@/lib/trpc";
 import { useLocale } from "@/contexts/LocaleContext";
+import { trackPurchase } from "@/lib/analytics";
 
 export default function PaymentSuccess() {
   const [location] = useLocation();
@@ -16,6 +17,20 @@ export default function PaymentSuccess() {
     { id: Number(bookingId) },
     { enabled: !!bookingId }
   );
+
+  // GA4: purchase conversion event (fires once when booking data loads)
+  useEffect(() => {
+    if (booking) {
+      trackPurchase({
+        orderId: booking.id,
+        tourId: (booking as any).tourId ?? 0,
+        tourName: (booking as any).tourTitle ?? (booking as any).tour?.title ?? "Tour",
+        value: booking.totalPrice ?? 0,
+        currency: "TWD",
+        numTravelers: (booking.numberOfAdults ?? 0) + (booking.numberOfChildrenWithBed ?? 0) + (booking.numberOfChildrenNoBed ?? 0) + (booking.numberOfInfants ?? 0),
+      });
+    }
+  }, [booking?.id]);
 
   useEffect(() => {
     // Confetti animation on success

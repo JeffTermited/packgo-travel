@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { useLocale } from "@/contexts/LocaleContext";
+import { trackBeginCheckout } from "@/lib/analytics";
 
 type BookingStep = "date" | "travelers" | "details" | "confirm";
 
@@ -122,6 +123,17 @@ export default function BookTour() {
       return;
     }
     
+    // GA4: begin_checkout event
+    if (tour) {
+      trackBeginCheckout({
+        tourId: tour.id,
+        tourName: tour.title,
+        price: totalPrice,
+        currency: "TWD",
+        numTravelers: numberOfAdults + numberOfChildrenWithBed + numberOfChildrenNoBed + numberOfInfants,
+      });
+    }
+
     try {
       const totalParticipants = numberOfAdults + numberOfChildrenWithBed + numberOfChildrenNoBed + numberOfInfants;
       const booking = await createBookingMutation.mutateAsync({

@@ -1,7 +1,9 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
-import { Route, Switch } from "wouter";
+import { Route, Switch, useLocation } from "wouter";
+import { useEffect } from "react";
+import { trackPageView } from "@/lib/analytics";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { LocaleProvider } from "./contexts/LocaleContext";
@@ -37,9 +39,19 @@ import CruisePage from "./pages/CruisePage";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentFailure from "./pages/PaymentFailure";
 
+function RouteTracker() {
+  const [location] = useLocation();
+  useEffect(() => {
+    trackPageView(location);
+  }, [location]);
+  return null;
+}
+
 function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
+    <>
+    <RouteTracker />
     <Switch>
       <Route path={"/"} component={Home} />
       <Route path={"/search"} component={SearchResults} />
@@ -77,6 +89,7 @@ function Router() {
       {/* Final fallback route */}
       <Route component={NotFound} />
     </Switch>
+    </>
   );
 }
 
