@@ -14,11 +14,13 @@ import { Link } from "wouter";
 import { format } from "date-fns";
 import { zhTW } from "date-fns/locale";
 import type { z } from "zod";
+import { useLocale } from "@/contexts/LocaleContext";
 
 type CustomTourForm = z.infer<typeof customTourSchema>;
 
 export default function CustomTourRequest() {
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const { t } = useLocale();
 
   const {
     register,
@@ -37,7 +39,7 @@ export default function CustomTourRequest() {
       setTimeout(() => setIsSubmitted(false), 5000);
     },
     onError: (error) => {
-      alert(`提交失敗：${error.message}`);
+      alert(`${t("customTourRequest.submitError").replace("{message}", error.message)}`);
     },
   });
 
@@ -52,16 +54,16 @@ export default function CustomTourRequest() {
           <div className="bg-white rounded-3xl shadow-lg p-12 text-center">
             <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-6" />
             <h2 className="text-3xl font-serif font-bold text-gray-900 mb-4">
-              客製需求已送出！
+              {t("customTourRequest.successTitle2")}
             </h2>
             <p className="text-gray-600 mb-8">
-              感謝您的信任，我們的專業旅遊規劃師將在 48 小時內為您量身打造專屬行程。
+              {t("customTourRequest.successDesc2")}
             </p>
             <div className="flex gap-4 justify-center">
               <Link href="/">
                 <Button className="rounded-full">
                   <Home className="h-4 w-4 mr-2" />
-                  返回首頁
+                  {t("customTourRequest.backHome")}
                 </Button>
               </Link>
               <Button
@@ -69,7 +71,7 @@ export default function CustomTourRequest() {
                 onClick={() => setIsSubmitted(false)}
                 className="rounded-full"
               >
-                繼續規劃
+                {t("customTourRequest.continuePlanning")}
               </Button>
             </div>
           </div>
@@ -84,13 +86,15 @@ export default function CustomTourRequest() {
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-4xl font-serif font-bold text-gray-900 mb-2">客製旅遊規劃</h1>
-            <p className="text-gray-600">告訴我們您的夢想旅程，我們為您量身打造專屬行程</p>
+            <h1 className="text-4xl font-serif font-bold text-gray-900 mb-2">
+              {t("customTourRequest.pageTitle")}
+            </h1>
+            <p className="text-gray-600">{t("customTourRequest.pageSubtitle")}</p>
           </div>
           <Link href="/">
             <Button variant="outline" className="rounded-full">
               <Home className="h-4 w-4 mr-2" />
-              返回首頁
+              {t("customTourRequest.backHome")}
             </Button>
           </Link>
         </div>
@@ -100,14 +104,16 @@ export default function CustomTourRequest() {
           <div className="space-y-6">
             {/* Personal Info Section */}
             <div className="pb-6 border-b">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">聯絡資訊</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                {t("customTourRequest.contactSection")}
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <Label htmlFor="customerName">姓名 *</Label>
+                  <Label htmlFor="customerName">{t("customTourRequest.nameRequired")}</Label>
                   <Input
                     id="customerName"
                     {...register("customerName")}
-                    placeholder="請輸入您的姓名"
+                    placeholder={t("customTourRequest.namePlaceholder")}
                     className="rounded-full mt-2"
                   />
                   {errors.customerName && (
@@ -116,11 +122,11 @@ export default function CustomTourRequest() {
                 </div>
 
                 <div>
-                  <Label htmlFor="customerPhone">聯絡電話</Label>
+                  <Label htmlFor="customerPhone">{t("customTourRequest.phone")}</Label>
                   <Input
                     id="customerPhone"
                     {...register("customerPhone")}
-                    placeholder="0912-345-678"
+                    placeholder={t("customTourRequest.phonePlaceholder")}
                     className="rounded-full mt-2"
                   />
                   {errors.customerPhone && (
@@ -129,7 +135,7 @@ export default function CustomTourRequest() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <Label htmlFor="customerEmail">電子郵件 *</Label>
+                  <Label htmlFor="customerEmail">{t("customTourRequest.emailRequired")}</Label>
                   <Input
                     id="customerEmail"
                     type="email"
@@ -146,14 +152,16 @@ export default function CustomTourRequest() {
 
             {/* Travel Details Section */}
             <div className="pb-6 border-b">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">旅遊資訊</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                {t("customTourRequest.travelSection")}
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <Label htmlFor="destination">目的地 *</Label>
+                  <Label htmlFor="destination">{t("customTourRequest.destinationRequired")}</Label>
                   <Input
                     id="destination"
                     {...register("destination")}
-                    placeholder="例如：日本東京、法國巴黎"
+                    placeholder={t("customTourRequest.destinationPlaceholder")}
                     className="rounded-full mt-2"
                   />
                   {errors.destination && (
@@ -162,12 +170,12 @@ export default function CustomTourRequest() {
                 </div>
 
                 <div>
-                  <Label htmlFor="numberOfDays">旅遊天數 *</Label>
+                  <Label htmlFor="numberOfDays">{t("customTourRequest.numberOfDays")}</Label>
                   <Input
                     id="numberOfDays"
                     type="number"
                     {...register("numberOfDays", { valueAsNumber: true })}
-                    placeholder="例如：5"
+                    placeholder={t("customTourRequest.numberOfDaysPlaceholder")}
                     className="rounded-full mt-2"
                   />
                   {errors.numberOfDays && (
@@ -176,12 +184,12 @@ export default function CustomTourRequest() {
                 </div>
 
                 <div>
-                  <Label htmlFor="numberOfPeople">旅遊人數 *</Label>
+                  <Label htmlFor="numberOfPeople">{t("customTourRequest.numberOfPeople")}</Label>
                   <Input
                     id="numberOfPeople"
                     type="number"
                     {...register("numberOfPeople", { valueAsNumber: true })}
-                    placeholder="例如：2"
+                    placeholder={t("customTourRequest.numberOfPeoplePlaceholder")}
                     className="rounded-full mt-2"
                   />
                   {errors.numberOfPeople && (
@@ -190,12 +198,12 @@ export default function CustomTourRequest() {
                 </div>
 
                 <div>
-                  <Label htmlFor="budget">預算範圍（TWD）</Label>
+                  <Label htmlFor="budget">{t("customTourRequest.budget")}</Label>
                   <Input
                     id="budget"
                     type="number"
                     {...register("budget", { valueAsNumber: true })}
-                    placeholder="例如：50000"
+                    placeholder={t("customTourRequest.budgetPlaceholder")}
                     className="rounded-full mt-2"
                   />
                   {errors.budget && (
@@ -204,7 +212,7 @@ export default function CustomTourRequest() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <Label>預計出發日期</Label>
+                  <Label>{t("customTourRequest.preferredDepartureDate")}</Label>
                   <Controller
                     control={control}
                     name="preferredDepartureDate"
@@ -219,7 +227,9 @@ export default function CustomTourRequest() {
                             {field.value ? (
                               format(field.value, "PPP", { locale: zhTW })
                             ) : (
-                              <span className="text-gray-500">選擇日期</span>
+                              <span className="text-gray-500">
+                                {t("customTourRequest.selectDate")}
+                              </span>
                             )}
                           </Button>
                         </PopoverTrigger>
@@ -245,14 +255,16 @@ export default function CustomTourRequest() {
 
             {/* Requirements Section */}
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">需求描述</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                {t("customTourRequest.requirementSection")}
+              </h3>
               <div className="space-y-6">
                 <div>
-                  <Label htmlFor="subject">行程主題 *</Label>
+                  <Label htmlFor="subject">{t("customTourRequest.subject")}</Label>
                   <Input
                     id="subject"
                     {...register("subject")}
-                    placeholder="例如：親子旅遊、蜜月之旅、美食探索"
+                    placeholder={t("customTourRequest.subjectPlaceholder")}
                     className="rounded-full mt-2"
                   />
                   {errors.subject && (
@@ -261,11 +273,11 @@ export default function CustomTourRequest() {
                 </div>
 
                 <div>
-                  <Label htmlFor="message">詳細需求 *</Label>
+                  <Label htmlFor="message">{t("customTourRequest.message")}</Label>
                   <Textarea
                     id="message"
                     {...register("message")}
-                    placeholder="請告訴我們您的旅遊偏好、特殊需求、想去的景點、飲食限制等..."
+                    placeholder={t("customTourRequest.messagePlaceholder")}
                     rows={8}
                     className="rounded-2xl mt-2"
                   />
@@ -283,19 +295,23 @@ export default function CustomTourRequest() {
               className="w-full rounded-full h-12 text-lg"
             >
               <Plane className="h-5 w-5 mr-2" />
-              {createInquiry.isPending ? "送出中..." : "送出客製需求"}
+              {createInquiry.isPending
+                ? t("customTourRequest.submitPending")
+                : t("customTourRequest.submitButton")}
             </Button>
           </div>
         </form>
 
         {/* Info Box */}
         <div className="mt-8 bg-blue-50 rounded-3xl p-6">
-          <h3 className="font-semibold text-gray-900 mb-3">客製旅遊服務說明</h3>
+          <h3 className="font-semibold text-gray-900 mb-3">
+            {t("customTourRequest.serviceTitle")}
+          </h3>
           <ul className="space-y-2 text-gray-700 text-sm">
-            <li>• 我們的專業旅遊規劃師將在 48 小時內與您聯繫</li>
-            <li>• 根據您的需求量身打造專屬行程與報價</li>
-            <li>• 提供 3 次免費行程修改服務</li>
-            <li>• 全程專人服務，確保旅程完美</li>
+            <li>• {t("customTourRequest.serviceItem1")}</li>
+            <li>• {t("customTourRequest.serviceItem2")}</li>
+            <li>• {t("customTourRequest.serviceItem3")}</li>
+            <li>• {t("customTourRequest.serviceItem4")}</li>
           </ul>
         </div>
       </div>

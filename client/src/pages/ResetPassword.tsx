@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import { useLocale } from "@/contexts/LocaleContext";
 
 export default function ResetPassword() {
   const [, navigate] = useLocation();
@@ -13,6 +14,7 @@ export default function ResetPassword() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [token, setToken] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
+  const { t } = useLocale();
 
   useEffect(() => {
     // Extract token from URL query parameter
@@ -21,20 +23,20 @@ export default function ResetPassword() {
     if (tokenParam) {
       setToken(tokenParam);
     } else {
-      toast.error("無效的重設連結");
+      toast.error(t("resetPassword.invalidLink"));
       navigate("/forgot-password");
     }
-  }, [navigate]);
+  }, [navigate, t]);
 
   const resetPasswordMutation = trpc.auth.resetPassword.useMutation({
     onSuccess: () => {
       setIsSuccess(true);
-      toast.success("密碼重設成功", {
-        description: "請使用新密碼登入",
+      toast.success(t("resetPassword.resetSuccess"), {
+        description: t("resetPassword.resetSuccessDesc"),
       });
     },
     onError: (error) => {
-      toast.error("重設密碼失敗", {
+      toast.error(t("resetPassword.errorTitle"), {
         description: error.message,
       });
     },
@@ -44,20 +46,20 @@ export default function ResetPassword() {
     e.preventDefault();
 
     if (!password || !confirmPassword) {
-      toast.error("請填寫所有欄位");
+      toast.error(t("resetPassword.fillAllFields"));
       return;
     }
 
     if (password !== confirmPassword) {
-      toast.error("密碼不一致", {
-        description: "請確認兩次輸入的密碼相同",
+      toast.error(t("resetPassword.passwordMismatch"), {
+        description: t("resetPassword.passwordMismatchDesc"),
       });
       return;
     }
 
     if (password.length < 8) {
-      toast.error("密碼太短", {
-        description: "密碼至少需要 8 個字元",
+      toast.error(t("resetPassword.passwordTooShort"), {
+        description: t("resetPassword.passwordTooShortDesc"),
       });
       return;
     }
@@ -80,7 +82,7 @@ export default function ResetPassword() {
             TRAVEL NOIR
           </h1>
           <p className="text-xl text-gray-300 font-light tracking-wide">
-            讓旅行更美好
+            {t("resetPassword.travelSlogan")}
           </p>
         </div>
       </div>
@@ -99,7 +101,7 @@ export default function ResetPassword() {
               <div className="flex flex-col items-start">
                 <span className="text-2xl tracking-tight">PACK&GO</span>
                 <span className="text-xs font-normal text-gray-600 tracking-wide">
-                  讓旅行更美好
+                  {t("resetPassword.travelSlogan")}
                 </span>
               </div>
             </Link>
@@ -109,24 +111,24 @@ export default function ResetPassword() {
             <>
               <div className="mb-8">
                 <h2 className="text-3xl font-bold text-black mb-2">
-                  重設密碼
+                  {t("resetPassword.title")}
                 </h2>
                 <p className="text-gray-600 text-sm">
-                  請輸入您的新密碼
+                  {t("resetPassword.subtitle")}
                 </p>
               </div>
 
               <form className="space-y-6" onSubmit={handleSubmit}>
                 <div className="space-y-2">
                   <Label htmlFor="password" className="text-black font-medium">
-                    新密碼
+                    {t("resetPassword.newPassword")}
                   </Label>
                   <div className="relative">
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                     <Input
                       id="password"
                       type="password"
-                      placeholder="至少 8 個字元"
+                      placeholder={t("resetPassword.newPasswordPlaceholder")}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className="pl-12 h-12 border-2 border-black rounded-full focus:ring-2 focus:ring-black"
@@ -138,14 +140,14 @@ export default function ResetPassword() {
 
                 <div className="space-y-2">
                   <Label htmlFor="confirm-password" className="text-black font-medium">
-                    確認新密碼
+                    {t("resetPassword.confirmPassword")}
                   </Label>
                   <div className="relative">
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                     <Input
                       id="confirm-password"
                       type="password"
-                      placeholder="再次輸入新密碼"
+                      placeholder={t("resetPassword.confirmPasswordPlaceholder")}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       className="pl-12 h-12 border-2 border-black rounded-full focus:ring-2 focus:ring-black"
@@ -160,7 +162,7 @@ export default function ResetPassword() {
                   className="w-full h-12 bg-black hover:bg-gray-800 text-white font-bold tracking-wide rounded-full"
                   disabled={resetPasswordMutation.isPending}
                 >
-                  {resetPasswordMutation.isPending ? "重設中..." : "重設密碼"}
+                  {resetPasswordMutation.isPending ? t("resetPassword.resetting") : t("resetPassword.submit")}
                 </Button>
               </form>
             </>
@@ -171,17 +173,17 @@ export default function ResetPassword() {
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-black mb-2">
-                  密碼重設成功！
+                  {t("resetPassword.successTitle")}
                 </h2>
                 <p className="text-gray-600 text-sm">
-                  您現在可以使用新密碼登入
+                  {t("resetPassword.successDesc")}
                 </p>
               </div>
               <Link href="/login">
                 <Button
                   className="w-full h-12 bg-black hover:bg-gray-800 text-white font-bold tracking-wide rounded-full"
                 >
-                  前往登入
+                  {t("resetPassword.goToLogin")}
                 </Button>
               </Link>
             </div>

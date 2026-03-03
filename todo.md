@@ -4734,3 +4734,39 @@
 - [x] Vision 流程已隨 URL 爬蟲架構一同廢棄，無需進一步優化
 - [ ] 分析 Vision 流程的實際觸發頻率與使用場景
 - [ ] 產出評估報告（結論：保留並調整 Timeout / 降級為最後備用 / 直接移除）
+
+---
+
+## 第一階段剩餘任務（2026-03-03）
+
+### 任務：匯率 Redis 快取三層降級
+- [x] 確認 exchangeRateAgent.ts 現有快取機制
+- [x] Redis 快取層（TTL 1 小時）已完整實作
+- [x] 三層降級已實作：Redis → 記憶體 → API → 備用固定匯率
+- [x] dev server 日誌確認 Redis cache HIT 正常運作
+
+### 任務：後台 i18n 遷移
+- [x] ToursTab.tsx（約 199 行硬編碼）接入 useLocale
+- [x] TourEditDialog.tsx（約 158 行硬編碼）接入 useLocale
+- [x] 更新 zh-TW / en / es 語系檔案（toursTab + tourEditDialog 區塊）
+
+### 任務：其他頁面 i18n 遷移
+- [ ] TourDetailPeony.tsx 接入 useLocale（大型頁面，待後續處理）
+- [x] CustomTourRequest.tsx 接入 useLocale（重寫完成）
+- [x] GroupPackages.tsx 接入 useLocale（已完成）
+- [ ] TourPrintView.tsx 接入 useLocale（大型頁面，待後續處理）
+- [x] ForgotPassword.tsx / ResetPassword.tsx 接入 useLocale（重寫完成）
+
+### 任務：SEO 基礎建設
+- [ ] 動態 sitemap.xml 路由（含所有行程頁面）
+- [ ] 安裝 react-helmet-async，加入動態 meta 標籤
+- [ ] 行程詳情頁加入 og:image、og:title、og:description
+- [ ] 首頁加入 Schema.org JSON-LD（Organization + WebSite）
+- [ ] 行程頁加入 Schema.org JSON-LD（TouristTrip）
+
+### 任務：行程內容多語言（translations 表）
+- [ ] 設計 translations 表 schema（tourId, locale, field, value）
+- [ ] 執行 pnpm db:push
+- [ ] 後端 API 支援依 locale 回傳對應翻譯
+- [ ] 前端行程詳情頁依語系顯示對應內容
+- [ ] 管理後台加入翻譯編輯介面

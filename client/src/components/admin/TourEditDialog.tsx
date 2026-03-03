@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useState, useEffect } from "react";
+import { useLocale } from "@/contexts/LocaleContext";
 
 interface TourEditDialogProps {
   open: boolean;
@@ -36,6 +37,7 @@ export function TourEditDialog({
   onSave,
   isSaving,
 }: TourEditDialogProps) {
+  const { t } = useLocale();
   const [editedData, setEditedData] = useState<any>(null);
 
   // 當 tourData 變化時，更新 editedData
@@ -248,33 +250,33 @@ export function TourEditDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Edit className="h-5 w-5 text-purple-600" />
-            編輯行程資訊
+            {t('tourEditDialog.title')}
           </DialogTitle>
           <DialogDescription>
-            修改 AI 生成的行程資訊，確認無誤後再儲存
+            {t('tourEditDialog.description')}
           </DialogDescription>
         </DialogHeader>
 
         <Tabs defaultValue="basic" className="flex-1 overflow-hidden flex flex-col">
           <TabsList className="grid w-full grid-cols-6">
-            <TabsTrigger value="basic">基本資訊</TabsTrigger>
-            <TabsTrigger value="itinerary">每日行程</TabsTrigger>
-            <TabsTrigger value="cost">費用說明</TabsTrigger>
-            <TabsTrigger value="notice">注意事項</TabsTrigger>
-            <TabsTrigger value="transport">交通資訊</TabsTrigger>
-            <TabsTrigger value="photos">照片管理</TabsTrigger>
+            <TabsTrigger value="basic">{t('tourEditDialog.tabBasic')}</TabsTrigger>
+            <TabsTrigger value="itinerary">{t('tourEditDialog.tabItinerary')}</TabsTrigger>
+            <TabsTrigger value="cost">{t('tourEditDialog.tabCost')}</TabsTrigger>
+            <TabsTrigger value="notice">{t('tourEditDialog.tabNotice')}</TabsTrigger>
+            <TabsTrigger value="transport">{t('tourEditDialog.tabTransport')}</TabsTrigger>
+            <TabsTrigger value="photos">{t('tourEditDialog.tabPhotos')}</TabsTrigger>
           </TabsList>
 
           <div className="flex-1 overflow-y-auto py-4">
             {/* 基本資訊 Tab */}
             <TabsContent value="basic" className="mt-0 space-y-6">
               <div className="bg-purple-50 rounded-2xl p-6 space-y-4">
-                <h3 className="font-semibold text-purple-900 mb-4">基本資訊</h3>
+                <h3 className="font-semibold text-purple-900 mb-4">{t('tourEditDialog.basicInfo')}</h3>
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-2">
                     <Label htmlFor="title" className="text-sm font-medium">
-                      行程標題 <span className="text-red-500">*</span>
+                      {t('tourEditDialog.tourTitle')} <span className="text-red-500">*</span>
                     </Label>
                     <Input
                       id="title"
@@ -286,7 +288,7 @@ export function TourEditDialog({
 
                   <div>
                     <Label htmlFor="productCode" className="text-sm font-medium">
-                      產品代碼
+                      {t('tourEditDialog.productCode')}
                     </Label>
                     <Input
                       id="productCode"
@@ -641,7 +643,7 @@ export function TourEditDialog({
             <TabsContent value="cost" className="mt-0 space-y-6">
               <div className="bg-orange-50 rounded-2xl p-6 space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-orange-900">費用包含</h3>
+                  <h3 className="font-semibold text-orange-900">{t('tourEditDialog.costIncluded')}</h3>
                   <Button
                     type="button"
                     variant="outline"
@@ -676,7 +678,7 @@ export function TourEditDialog({
 
               <div className="bg-red-50 rounded-2xl p-6 space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-red-900">費用不包含</h3>
+                  <h3 className="font-semibold text-red-900">{t('tourEditDialog.costExcluded')}</h3>
                   <Button
                     type="button"
                     variant="outline"
@@ -711,7 +713,7 @@ export function TourEditDialog({
 
               <div className="bg-yellow-50 rounded-2xl p-6 space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-yellow-900">額外費用</h3>
+                  <h3 className="font-semibold text-yellow-900">{t('tourEditDialog.additionalCosts')}</h3>
                   <Button
                     type="button"
                     variant="outline"
@@ -745,7 +747,7 @@ export function TourEditDialog({
               </div>
 
               <div className="bg-gray-50 rounded-2xl p-6 space-y-4">
-                <h3 className="font-semibold text-gray-900">備註</h3>
+                <h3 className="font-semibold text-gray-900">{t('tourEditDialog.notes')}</h3>
                 <Textarea
                   value={editedData.costExplanation?.notes || ""}
                   onChange={(e) => setEditedData({
@@ -762,7 +764,7 @@ export function TourEditDialog({
             <TabsContent value="notice" className="mt-0 space-y-6">
               <div className="bg-blue-50 rounded-2xl p-6 space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-blue-900">行前準備</h3>
+                  <h3 className="font-semibold text-blue-900">{t('tourEditDialog.preparation')}</h3>
                   <Button
                     type="button"
                     variant="outline"
@@ -797,7 +799,7 @@ export function TourEditDialog({
 
               <div className="bg-purple-50 rounded-2xl p-6 space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-purple-900">文化注意</h3>
+                  <h3 className="font-semibold text-purple-900">{t('tourEditDialog.culturalNotes')}</h3>
                   <Button
                     type="button"
                     variant="outline"
@@ -832,7 +834,7 @@ export function TourEditDialog({
 
               <div className="bg-green-50 rounded-2xl p-6 space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-green-900">健康安全</h3>
+                  <h3 className="font-semibold text-green-900">{t('tourEditDialog.healthSafety')}</h3>
                   <Button
                     type="button"
                     variant="outline"
@@ -867,7 +869,7 @@ export function TourEditDialog({
 
               <div className="bg-red-50 rounded-2xl p-6 space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-red-900">緊急聯絡</h3>
+                  <h3 className="font-semibold text-red-900">{t('tourEditDialog.emergency')}</h3>
                   <Button
                     type="button"
                     variant="outline"
@@ -904,11 +906,11 @@ export function TourEditDialog({
             {/* 交通資訊 Tab */}
             <TabsContent value="transport" className="mt-0 space-y-6">
               <div className="bg-sky-50 rounded-2xl p-6 space-y-6">
-                <h3 className="font-semibold text-sky-900 mb-4">交通資訊設定</h3>
+                <h3 className="font-semibold text-sky-900 mb-4">{t('tourEditDialog.transportSettings')}</h3>
                 
                 <div className="grid grid-cols-2 gap-6">
                   <div>
-                    <Label className="text-sm font-medium">交通類型</Label>
+                    <Label className="text-sm font-medium">{t('tourEditDialog.transportType')}</Label>
                     <Select
                       value={editedData.flights?.type || 'FLIGHT'}
                       onValueChange={(value) => setEditedData({
@@ -917,37 +919,37 @@ export function TourEditDialog({
                       })}
                     >
                       <SelectTrigger className="mt-2">
-                        <SelectValue placeholder="選擇交通類型" />
+                        <SelectValue placeholder={t('tourEditDialog.selectTransportType')} />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="FLIGHT">
                           <div className="flex items-center gap-2">
                             <Plane className="h-4 w-4" />
-                            飛機
+                            {t('tourEditDialog.transportFlight')}
                           </div>
                         </SelectItem>
                         <SelectItem value="TRAIN">
                           <div className="flex items-center gap-2">
                             <Train className="h-4 w-4" />
-                            火車
+                            {t('tourEditDialog.transportTrain')}
                           </div>
                         </SelectItem>
                         <SelectItem value="CRUISE">
                           <div className="flex items-center gap-2">
                             <Ship className="h-4 w-4" />
-                            郵輪
+                            {t('tourEditDialog.transportCruise')}
                           </div>
                         </SelectItem>
                         <SelectItem value="BUS">
                           <div className="flex items-center gap-2">
                             <Bus className="h-4 w-4" />
-                            巴士
+                            {t('tourEditDialog.transportBus')}
                           </div>
                         </SelectItem>
                         <SelectItem value="CAR">
                           <div className="flex items-center gap-2">
                             <Car className="h-4 w-4" />
-                            自駕
+                            {t('tourEditDialog.transportCar')}
                           </div>
                         </SelectItem>
                       </SelectContent>
@@ -955,7 +957,7 @@ export function TourEditDialog({
                   </div>
 
                   <div>
-                    <Label className="text-sm font-medium">交通工具名稱</Label>
+                    <Label className="text-sm font-medium">{t('tourEditDialog.transportName')}</Label>
                     <Input
                       value={editedData.flights?.typeName || ''}
                       onChange={(e) => setEditedData({
@@ -971,7 +973,7 @@ export function TourEditDialog({
                 {/* 火車詳細資訊 */}
                 {editedData.flights?.type === 'TRAIN' && (
                   <div className="bg-white rounded-xl p-4 space-y-4 border border-sky-200">
-                    <h4 className="font-medium text-sky-800">列車詳細資訊</h4>
+                    <h4 className="font-medium text-sky-800">{t('tourEditDialog.trainDetails')}</h4>
                     
                     <div className="grid grid-cols-2 gap-4">
                       <div>
@@ -1047,7 +1049,7 @@ export function TourEditDialog({
                 {/* 郵輪詳細資訊 */}
                 {editedData.flights?.type === 'CRUISE' && (
                   <div className="bg-white rounded-xl p-4 space-y-4 border border-sky-200">
-                    <h4 className="font-medium text-sky-800">郵輪詳細資訊</h4>
+                    <h4 className="font-medium text-sky-800">{t('tourEditDialog.cruiseDetails')}</h4>
                     
                     <div className="grid grid-cols-2 gap-4">
                       <div>
@@ -1109,7 +1111,7 @@ export function TourEditDialog({
                 {/* 飛機詳細資訊 */}
                 {editedData.flights?.type === 'FLIGHT' && (
                   <div className="bg-white rounded-xl p-4 space-y-4 border border-sky-200">
-                    <h4 className="font-medium text-sky-800">航班詳細資訊</h4>
+                    <h4 className="font-medium text-sky-800">{t('tourEditDialog.flightDetails')}</h4>
                     
                     <div className="grid grid-cols-2 gap-4">
                       <div>
@@ -1212,7 +1214,7 @@ export function TourEditDialog({
             <TabsContent value="photos" className="mt-0 space-y-6">
               <div className="bg-violet-50 rounded-2xl p-6 space-y-6">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-violet-900">行程照片</h3>
+                  <h3 className="font-semibold text-violet-900">{t('tourEditDialog.tourPhotos')}</h3>
                   <Button
                     type="button"
                     variant="outline"
@@ -1309,20 +1311,20 @@ export function TourEditDialog({
                 {(!editedData.images || editedData.images.length === 0) && (
                   <div className="text-center py-12 text-gray-500">
                     <Image className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                    <p>尚未新增行程照片</p>
-                    <p className="text-sm mt-2">點擊上方「新增照片」按鈕開始新增</p>
+                        <p>{t('tourEditDialog.noPhotos')}</p>
+                    <p className="text-sm mt-2">{t('tourEditDialog.noPhotosHint')}</p>
                   </div>
                 )}
               </div>
 
               {/* Hero 圖片設定 */}
               <div className="bg-amber-50 rounded-2xl p-6 space-y-4">
-                <h3 className="font-semibold text-amber-900">Hero 圖片（主視覺）</h3>
+                <h3 className="font-semibold text-amber-900">{t('tourEditDialog.heroImage')}</h3>
                 
                 <div className="space-y-4">
                   <div>
                     <Label htmlFor="heroImage" className="text-sm font-medium">
-                      Hero 圖片網址
+                      {t('tourEditDialog.heroImageUrl')}
                     </Label>
                     <Input
                       id="heroImage"
@@ -1365,10 +1367,10 @@ export function TourEditDialog({
             {isSaving ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                儲存中...
+                {t('tourEditDialog.saving')}
               </>
             ) : (
-              "確認儲存"
+              t('tourEditDialog.confirmSave')
             )}
           </Button>
         </DialogFooter>

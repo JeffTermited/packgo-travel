@@ -1,4 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
+import { useLocale } from "@/contexts/LocaleContext";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -48,6 +49,7 @@ type TourFormData = {
 export default function ToursTab() {
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
+  const { t } = useLocale();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -100,10 +102,10 @@ export default function ToursTab() {
       utils.tours.list.invalidate();
       setIsCreateDialogOpen(false);
       resetForm();
-      toast.success("行程已成功建立");
+      toast.success(t('toursTab.createSuccess'));
     },
     onError: (error) => {
-      toast.error(`建立失敗：${error.message}`);
+      toast.error(t('toursTab.createError').replace('{message}', error.message));
     },
   });
 
@@ -112,10 +114,10 @@ export default function ToursTab() {
       utils.tours.list.invalidate();
       setIsEditDialogOpen(false);
       resetForm();
-      toast.success("行程已成功更新");
+      toast.success(t('toursTab.updateSuccess'));
     },
     onError: (error) => {
-      toast.error(`更新失敗：${error.message}`);
+      toast.error(t('toursTab.updateError').replace('{message}', error.message));
     },
   });
 
@@ -124,10 +126,10 @@ export default function ToursTab() {
       utils.tours.list.invalidate();
       setIsDeleteDialogOpen(false);
       setSelectedTourId(null);
-      toast.success("行程已成功刪除");
+      toast.success(t('toursTab.deleteSuccess'));
     },
     onError: (error) => {
-      toast.error(`刪除失敗：${error.message}`);
+      toast.error(t('toursTab.deleteError').replace('{message}', error.message));
     },
   });
 
@@ -136,30 +138,30 @@ export default function ToursTab() {
       utils.tours.list.invalidate();
       setIsBatchDeleteDialogOpen(false);
       setSelectedTourIds([]);
-      toast.success("已成功刪除所選行程");
+      toast.success(t('toursTab.batchDeleteSuccess'));
     },
     onError: (error) => {
-      toast.error(`批量刪除失敗：${error.message}`);
+      toast.error(t('toursTab.batchDeleteError').replace('{message}', error.message));
     },
   });
 
   const toggleStatusMutation = trpc.tours.toggleStatus.useMutation({
     onSuccess: () => {
       utils.tours.list.invalidate();
-      toast.success("狀態已更新");
+      toast.success(t('toursTab.statusUpdateSuccess'));
     },
     onError: (error) => {
-      toast.error(`狀態更新失敗：${error.message}`);
+      toast.error(t('toursTab.statusUpdateError').replace('{message}', error.message));
     },
   });
 
   const toggleFeaturedMutation = trpc.tours.toggleFeatured.useMutation({
     onSuccess: () => {
       utils.tours.list.invalidate();
-      toast.success("精選狀態已更新");
+      toast.success(t('toursTab.featuredUpdateSuccess'));
     },
     onError: (error) => {
-      toast.error(`精選狀態更新失敗：${error.message}`);
+      toast.error(t('toursTab.featuredUpdateError').replace('{message}', error.message));
     },
   });
 
@@ -167,16 +169,16 @@ export default function ToursTab() {
   const duplicateTourMutation = trpc.tours.duplicate.useMutation({
     onSuccess: (newTour) => {
       utils.tours.list.invalidate();
-      toast.success(`行程已複製成功！新行程：${newTour.title}`);
+      toast.success(`${t('toursTab.copyTour')} - ${newTour.title}`);
     },
     onError: (error) => {
-      toast.error(`複製失敗：${error.message}`);
+      toast.error(t('toursTab.createError').replace('{message}', error.message));
     },
   });
 
   // 複製行程處理函數
   const handleDuplicate = (tourId: number, tourTitle: string) => {
-    if (confirm(`確定要複製「${tourTitle}」嗎？`)) {
+    if (confirm(`${t('toursTab.copyTour')} - ${tourTitle}?`)) {
       duplicateTourMutation.mutate({ id: tourId });
     }
   };
@@ -188,7 +190,7 @@ export default function ToursTab() {
       setCurrentTaskId(result.jobId);
       setIsGenerating(true);
       setExtractionStep(1); // 開始生成
-      toast.success(result.message || "行程生成任務已提交，請稍候...");
+      toast.success(result.message || t('toursTab.generationSubmitted'));
     },
     onError: (error) => {
       setExtractionStep(0);
@@ -242,7 +244,7 @@ export default function ToursTab() {
       
       if (generationStatus.result?.success) {
         toast.success(
-          "行程已成功生成並儲存！",
+          t('toursTab.generationSuccess'),
           {
             description: generationStatus.result.tourId ? `行程 ID: ${generationStatus.result.tourId}` : undefined,
             duration: 5000,
@@ -256,8 +258,8 @@ export default function ToursTab() {
       setExtractionStep(0);
       setIsGenerating(false);
       setCurrentTaskId(null);
-      toast.error(`生成失敗：${generationStatus.failedReason || "未知錯誤"}`, {
-        description: "請檢查網址是否正確並重試",
+      toast.error(`${t('toursTab.deleteError').replace('{message}', generationStatus.failedReason || t('toursTab.unknownError'))}`, {
+        description: t('toursTab.checkUrlAndRetry'),
         duration: 5000,
       });
     }
@@ -272,7 +274,7 @@ export default function ToursTab() {
       setAutoGenerateUrl("");
       setExtractionStep(0);
       toast.success(
-        result.message || "行程已成功儲存！",
+        result.message || t('toursTab.saveTourSuccess'),
         {
           description: `行程 ID: ${result.tourId}`,
           duration: 5000,
@@ -280,14 +282,14 @@ export default function ToursTab() {
       );
     },
     onError: (error) => {
-      toast.error(`儲存失敗：${error.message}`);
+      toast.error(t('toursTab.updateError').replace('{message}', error.message));
     },
   });
 
   const handleAutoGenerate = async () => {
     if (inputMode === "url") {
       if (!autoGenerateUrl.trim()) {
-        toast.error("請輸入行程網址");
+        toast.error(t('toursTab.enterUrl'));
         return;
       }
       
@@ -299,13 +301,13 @@ export default function ToursTab() {
     } else {
       // PDF 模式
       if (!pdfFile) {
-        toast.error("請選擇 PDF 檔案");
+        toast.error(t('toursTab.selectPdf'));
         return;
       }
       
       try {
         setPdfUploading(true);
-        toast.info("正在上傳 PDF 檔案...");
+        toast.info(t('toursTab.uploadingPdf'));
         
         // 上傳 PDF 到 S3
         const formData = new FormData();
@@ -317,14 +319,14 @@ export default function ToursTab() {
         });
         
         if (!uploadResponse.ok) {
-          throw new Error("PDF 上傳失敗");
+          throw new Error(t('toursTab.pdfUploadFailed'));
         }
         
         const { url: pdfUrl } = await uploadResponse.json();
         console.log("[PDF Upload] Uploaded to:", pdfUrl);
         
         setPdfUploading(false);
-        toast.success("PDF 上傳成功，開始生成行程...");
+        toast.success(t('toursTab.pdfUploadSuccess'));
         
         // 使用 PDF URL 提交生成任務
         submitAsyncGenerationMutation.mutate({ 
@@ -377,7 +379,7 @@ export default function ToursTab() {
 
   const handleCreate = () => {
     if (!formData.title || !formData.destination) {
-      toast.error("請填寫必填欄位");
+      toast.error(t('toursTab.fillRequired'));
       return;
     }
     createTourMutation.mutate(formData);
@@ -443,7 +445,7 @@ export default function ToursTab() {
 
   const handleBatchDelete = () => {
     if (selectedTourIds.length === 0) {
-      toast.error("請先選擇要刪除的行程");
+      toast.error(t('toursTab.selectToDelete'));
       return;
     }
     setIsBatchDeleteDialogOpen(true);
@@ -508,13 +510,13 @@ export default function ToursTab() {
   const getExtractionStepText = (step: number) => {
     switch (step) {
       case 1:
-        return "正在抓取網頁內容...";
+        return t('toursTab.stepFetching');
       case 2:
-        return "正在解析行程資訊...";
+        return t('toursTab.stepParsing');
       case 3:
-        return "AI 正在分析並生成內容...";
+        return t('toursTab.stepAnalyzing');
       case 4:
-        return "預覽準備完成！";
+        return t('toursTab.stepReady');
       default:
         return "";
     }
@@ -525,8 +527,8 @@ export default function ToursTab() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">行程管理</h2>
-          <p className="text-gray-500 text-sm mt-1">管理所有旅遊行程</p>
+          <h2 className="text-2xl font-bold tracking-tight">{t('toursTab.title')}</h2>
+          <p className="text-gray-500 text-sm mt-1">{t('toursTab.subtitle')}</p>
         </div>
         <div className="flex gap-2">
           {selectedTourIds.length > 0 && (
@@ -563,7 +565,7 @@ export default function ToursTab() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
-              placeholder="搜尋行程..."
+              placeholder={t('toursTab.searchPlaceholder')}
               value={searchKeyword}
               onChange={(e) => setSearchKeyword(e.target.value)}
               className="pl-10 rounded-full"
@@ -572,36 +574,36 @@ export default function ToursTab() {
         </div>
         <Select value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>
           <SelectTrigger className="w-[140px] rounded-full">
-            <SelectValue placeholder="狀態" />
+            <SelectValue placeholder={t('toursTab.statusLabel')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">全部狀態</SelectItem>
-            <SelectItem value="active">上架中</SelectItem>
-            <SelectItem value="inactive">已下架</SelectItem>
+            <SelectItem value="all">{t('toursTab.statusAll')}</SelectItem>
+            <SelectItem value="active">{t('toursTab.statusActive')}</SelectItem>
+            <SelectItem value="inactive">{t('toursTab.statusInactive')}</SelectItem>
           </SelectContent>
         </Select>
         <Select value={featuredFilter} onValueChange={(v: any) => setFeaturedFilter(v)}>
           <SelectTrigger className="w-[140px] rounded-full">
-            <SelectValue placeholder="精選" />
+            <SelectValue placeholder={t('toursTab.featuredLabel')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">全部</SelectItem>
-            <SelectItem value="featured">精選行程</SelectItem>
-            <SelectItem value="normal">一般行程</SelectItem>
+            <SelectItem value="all">{t('toursTab.featuredAll')}</SelectItem>
+            <SelectItem value="featured">{t('toursTab.featuredOnly')}</SelectItem>
+            <SelectItem value="normal">{t('toursTab.normalOnly')}</SelectItem>
           </SelectContent>
         </Select>
         <Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
           <SelectTrigger className="w-[160px] rounded-full">
-            <SelectValue placeholder="排序" />
+            <SelectValue placeholder={t('toursTab.sortLabel')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="default">預設排序</SelectItem>
-            <SelectItem value="price-asc">價格低到高</SelectItem>
-            <SelectItem value="price-desc">價格高到低</SelectItem>
-            <SelectItem value="duration-asc">天數少到多</SelectItem>
-            <SelectItem value="duration-desc">天數多到少</SelectItem>
-            <SelectItem value="date-desc">最新建立</SelectItem>
-            <SelectItem value="date-asc">最早建立</SelectItem>
+            <SelectItem value="default">{t('toursTab.sortDefault')}</SelectItem>
+            <SelectItem value="price-asc">{t('toursTab.sortPriceAsc')}</SelectItem>
+            <SelectItem value="price-desc">{t('toursTab.sortPriceDesc')}</SelectItem>
+            <SelectItem value="duration-asc">{t('toursTab.sortDaysAsc')}</SelectItem>
+            <SelectItem value="duration-desc">{t('toursTab.sortDaysDesc')}</SelectItem>
+            <SelectItem value="date-desc">{t('toursTab.sortNewest')}</SelectItem>
+            <SelectItem value="date-asc">{t('toursTab.sortOldest')}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -611,7 +613,7 @@ export default function ToursTab() {
         {toursLoading ? (
           <div className="p-8 text-center">
             <Loader2 className="h-8 w-8 animate-spin mx-auto text-gray-400" />
-            <p className="text-gray-500 mt-2">載入中...</p>
+            <p className="text-gray-500 mt-2">{t('toursTab.loading')}</p>
           </div>
         ) : filteredTours && filteredTours.length > 0 ? (
           <div className="overflow-x-auto">
@@ -624,12 +626,12 @@ export default function ToursTab() {
                       onCheckedChange={toggleSelectAll}
                     />
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">行程</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">目的地</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">天數</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">價格</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">狀態</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">操作</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('toursTab.colTour')}</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('toursTab.colDestination')}</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('toursTab.colDays')}</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('toursTab.colPrice')}</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('toursTab.colStatus')}</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('toursTab.colActions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -651,7 +653,7 @@ export default function ToursTab() {
                           />
                         ) : (
                           <div className="h-12 w-16 bg-gray-200 rounded-lg flex items-center justify-center">
-                            <span className="text-gray-400 text-xs">無圖片</span>
+                            <span className="text-gray-400 text-xs">{t('toursTab.noImage')}</span>
                           </div>
                         )}
                         <div>
@@ -668,7 +670,7 @@ export default function ToursTab() {
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="inline-flex items-center gap-1 text-xs text-blue-500 hover:text-blue-700 hover:underline"
-                                  title="查看原始來源"
+                                  title={t('toursTab.viewSource')}
                                   onClick={(e) => e.stopPropagation()}
                                 >
                                   <ExternalLink className="h-3 w-3" />
@@ -685,7 +687,7 @@ export default function ToursTab() {
                         ? `${tour.destinationCountry} / ${tour.destinationCity}`
                         : tour.destination}
                     </td>
-                    <td className="px-4 py-4 text-sm text-gray-600">{tour.duration} 天</td>
+                    <td className="px-4 py-4 text-sm text-gray-600">{t('toursTab.daysUnit').replace('{days}', String(tour.duration))}</td>
                     <td className="px-4 py-4 text-sm font-medium text-gray-900">
                       NT$ {tour.price.toLocaleString()}
                     </td>
@@ -697,7 +699,7 @@ export default function ToursTab() {
                             : "bg-gray-100 text-gray-800"
                         }`}
                       >
-                        {tour.status === "active" ? "上架中" : "已下架"}
+                        {tour.status === "active" ? t('toursTab.statusActiveBadge') : t('toursTab.statusInactiveBadge')}
                       </span>
                     </td>
                     <td className="px-4 py-4">
@@ -708,7 +710,7 @@ export default function ToursTab() {
                           onClick={() => toggleStatusMutation.mutate({ id: tour.id })}
                           disabled={toggleStatusMutation.isPending}
                           className="h-9 w-9 p-0 rounded-full hover:bg-gray-100 transition-colors"
-                          title={tour.status === "active" ? "下架" : "上架"}
+                          title={tour.status === "active" ? t('toursTab.deactivate') : t('toursTab.activate')}
                         >
                           {tour.status === "active" ? (
                             <EyeOff className="h-4 w-4" />
@@ -725,7 +727,7 @@ export default function ToursTab() {
                               ? "text-yellow-500 hover:bg-yellow-50"
                               : "hover:bg-gray-100"
                           }`}
-                          title={tour.featured === 1 ? "取消精選" : "設為精選"}
+                          title={tour.featured === 1 ? t('toursTab.removeFeatured') : t('toursTab.setFeatured')}
                           disabled={toggleFeaturedMutation.isPending}
                         >
                           <Star className={`h-4 w-4 ${tour.featured === 1 ? "fill-current" : ""}`} />
@@ -739,7 +741,7 @@ export default function ToursTab() {
                             setIsDeparturesDialogOpen(true);
                           }}
                           className="h-9 w-9 p-0 rounded-full hover:bg-gray-100 transition-colors"
-                          title="管理出發日期"
+                          title={t('toursTab.manageDepartures')}
                         >
                           <Calendar className="h-4 w-4" />
                         </Button>
@@ -748,7 +750,7 @@ export default function ToursTab() {
                           size="sm"
                           onClick={() => handleEdit(tour.id)}
                           className="h-9 w-9 p-0 rounded-full hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                          title="編輯行程"
+                          title={t('toursTab.editTour')}
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -757,7 +759,7 @@ export default function ToursTab() {
                           size="sm"
                           onClick={() => handleDuplicate(tour.id, tour.title)}
                           className="h-9 w-9 p-0 rounded-full hover:bg-green-50 hover:text-green-600 transition-colors"
-                          title="複製行程"
+                          title={t('toursTab.copyTour')}
                           disabled={duplicateTourMutation.isPending}
                         >
                           <Copy className="h-4 w-4" />
@@ -767,7 +769,7 @@ export default function ToursTab() {
                           size="sm"
                           onClick={() => handleDelete(tour.id)}
                           className="h-9 w-9 p-0 rounded-full text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors"
-                          title="刪除行程"
+                          title={t('toursTab.deleteTour')}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -780,7 +782,7 @@ export default function ToursTab() {
           </div>
         ) : tours && tours.length > 0 ? (
           <div className="p-8 text-center">
-            <p className="text-gray-600">沒有符合篩選條件的行程</p>
+            <p className="text-gray-600">{t('toursTab.noResults')}</p>
             <Button
               variant="link"
               onClick={() => {
@@ -789,12 +791,12 @@ export default function ToursTab() {
               }}
               className="text-primary mt-2"
             >
-              清除篩選條件
+              {t('common.clearFilters') || '清除篩選條件'}
             </Button>
           </div>
         ) : (
           <div className="p-8 text-center">
-            <p className="text-gray-600">尚無行程資料</p>
+            <p className="text-gray-600">{t('toursTab.noData')}</p>
           </div>
         )}
       </div>
@@ -803,8 +805,8 @@ export default function ToursTab() {
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl">
           <DialogHeader>
-            <DialogTitle>新增行程</DialogTitle>
-            <DialogDescription>填寫以下資訊以建立新的旅遊行程</DialogDescription>
+            <DialogTitle>{t('toursTab.createDialogTitle')}</DialogTitle>
+            <DialogDescription>{t('toursTab.createDialogDesc')}</DialogDescription>
           </DialogHeader>
           <TourForm formData={formData} setFormData={setFormData} />
           <DialogFooter>
@@ -820,7 +822,7 @@ export default function ToursTab() {
               disabled={createTourMutation.isPending}
               className="bg-black text-white hover:bg-gray-800 rounded-full"
             >
-              {createTourMutation.isPending ? "建立中..." : "建立"}
+              {createTourMutation.isPending ? t('toursTab.creating') : t('toursTab.create')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -830,8 +832,8 @@ export default function ToursTab() {
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl">
           <DialogHeader>
-            <DialogTitle>編輯行程</DialogTitle>
-            <DialogDescription>修改行程資訊</DialogDescription>
+            <DialogTitle>{t('toursTab.editDialogTitle')}</DialogTitle>
+            <DialogDescription>{t('toursTab.editDialogDesc')}</DialogDescription>
           </DialogHeader>
           <TourForm formData={formData} setFormData={setFormData} />
           <DialogFooter>
@@ -847,7 +849,7 @@ export default function ToursTab() {
               disabled={updateTourMutation.isPending}
               className="bg-black text-white hover:bg-gray-800 rounded-full"
             >
-              {updateTourMutation.isPending ? "更新中..." : "更新"}
+              {updateTourMutation.isPending ? t('toursTab.updating') : t('toursTab.update')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -857,7 +859,7 @@ export default function ToursTab() {
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent className="rounded-3xl">
           <DialogHeader>
-            <DialogTitle>確認刪除</DialogTitle>
+            <DialogTitle>{t('toursTab.deleteDialogTitle')}</DialogTitle>
             <DialogDescription>
               確定要刪除這個行程嗎？此操作無法復原。
             </DialogDescription>
@@ -876,7 +878,7 @@ export default function ToursTab() {
               disabled={deleteTourMutation.isPending}
               className="rounded-full"
             >
-              {deleteTourMutation.isPending ? "刪除中..." : "確認刪除"}
+              {deleteTourMutation.isPending ? t('toursTab.deleting') : t('toursTab.confirmDelete')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -886,7 +888,7 @@ export default function ToursTab() {
       <Dialog open={isBatchDeleteDialogOpen} onOpenChange={setIsBatchDeleteDialogOpen}>
         <DialogContent className="rounded-3xl">
           <DialogHeader>
-            <DialogTitle>確認批量刪除</DialogTitle>
+            <DialogTitle>{t('toursTab.batchDeleteDialogTitle')}</DialogTitle>
             <DialogDescription>
               確定要刪除所選的 {selectedTourIds.length} 個行程嗎？此操作無法復原。
             </DialogDescription>
@@ -905,7 +907,7 @@ export default function ToursTab() {
               disabled={batchDeleteToursMutation.isPending}
               className="rounded-full"
             >
-              {batchDeleteToursMutation.isPending ? "刪除中..." : "確認刪除"}
+              {batchDeleteToursMutation.isPending ? t('toursTab.deleting') : t('toursTab.confirmDelete')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -936,7 +938,7 @@ export default function ToursTab() {
             {/* PDF 上傳 */}
             
               <div className="space-y-2">
-                <Label>選擇 PDF 檔案</Label>
+                <Label>{t('toursTab.selectPdfFile')}</Label>
                 <div 
                   className={`border-2 border-dashed rounded-2xl p-6 text-center transition-colors ${
                     pdfFile 
@@ -972,8 +974,8 @@ export default function ToursTab() {
                     ) : (
                       <>
                         <Upload className="h-8 w-8 text-gray-400" />
-                        <span className="text-sm text-gray-600">點擊或拖放上傳 PDF</span>
-                        <span className="text-xs text-gray-400">支援雄獅旅遊等旅行社行程 PDF</span>
+                        <span className="text-sm text-gray-600">{t('toursTab.dropPdfHint')}</span>
+                        <span className="text-xs text-gray-400">{t('toursTab.pdfSupportHint')}</span>
                       </>
                     )}
                   </label>
@@ -1063,7 +1065,7 @@ export default function ToursTab() {
       <Dialog open={isDeparturesDialogOpen} onOpenChange={setIsDeparturesDialogOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl">
           <DialogHeader>
-            <DialogTitle>出發日期管理</DialogTitle>
+            <DialogTitle>{t('toursTab.departuresDialogTitle')}</DialogTitle>
             <DialogDescription>
               {selectedTourForDepartures?.title}
             </DialogDescription>
@@ -1109,26 +1111,26 @@ export default function ToursTab() {
 
               {/* Basic Info */}
               <div className="bg-purple-50 rounded-2xl p-4">
-                <h3 className="font-semibold text-purple-900 mb-3">基本資訊</h3>
+                <h3 className="font-semibold text-purple-900 mb-3">{t('toursTab.previewBasicInfo')}</h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="text-gray-500">標題：</span>
+                    <span className="text-gray-500">{t('toursTab.previewTitle')}</span>
                     <span className="ml-2 font-medium">{generatedTourData.title}</span>
                   </div>
                   <div>
-                    <span className="text-gray-500">產品代碼：</span>
+                    <span className="text-gray-500">{t('toursTab.previewCode')}</span>
                     <span className="ml-2">{generatedTourData.productCode || '-'}</span>
                   </div>
                   <div>
-                    <span className="text-gray-500">促銷文字：</span>
+                    <span className="text-gray-500">{t('toursTab.previewPromo')}</span>
                     <span className="ml-2 text-red-600">{generatedTourData.promotionText || '-'}</span>
                   </div>
                   <div>
-                    <span className="text-gray-500">天數：</span>
-                    <span className="ml-2">{generatedTourData.duration} 天 {generatedTourData.nights || (generatedTourData.duration - 1)} 晚</span>
+                    <span className="text-gray-500">{t('toursTab.previewDays')}</span>
+                    <span className="ml-2">{t('toursTab.previewDaysNights').replace('{days}', String(generatedTourData.duration)).replace('{nights}', String(generatedTourData.nights || (generatedTourData.duration - 1)))}</span>
                   </div>
                   <div>
-                    <span className="text-gray-500">價格：</span>
+                    <span className="text-gray-500">{t('toursTab.previewPrice')}</span>
                     <span className="ml-2 font-bold text-lg text-green-600">NT$ {generatedTourData.price?.toLocaleString()}</span>
                   </div>
                 </div>
@@ -1136,22 +1138,22 @@ export default function ToursTab() {
 
               {/* Location Info */}
               <div className="bg-blue-50 rounded-2xl p-4">
-                <h3 className="font-semibold text-blue-900 mb-3">地點資訊</h3>
+                <h3 className="font-semibold text-blue-900 mb-3">{t('toursTab.previewLocation')}</h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="text-gray-500">出發國家/城市：</span>
+                    <span className="text-gray-500">{t('toursTab.previewDepartureCity')}</span>
                     <span className="ml-2">{generatedTourData.departureCountry} / {generatedTourData.departureCity}</span>
                   </div>
                   <div>
-                    <span className="text-gray-500">出發機場：</span>
+                    <span className="text-gray-500">{t('toursTab.previewDepartureAirport')}</span>
                     <span className="ml-2">{generatedTourData.departureAirportCode} {generatedTourData.departureAirportName}</span>
                   </div>
                   <div>
-                    <span className="text-gray-500">目的地國家/城市：</span>
+                    <span className="text-gray-500">{t('toursTab.previewDestCity')}</span>
                     <span className="ml-2 font-medium">{generatedTourData.destinationCountry} / {generatedTourData.destinationCity}</span>
                   </div>
                   <div>
-                    <span className="text-gray-500">目的地機場：</span>
+                    <span className="text-gray-500">{t('toursTab.previewDestAirport')}</span>
                     <span className="ml-2">{generatedTourData.destinationAirportCode} {generatedTourData.destinationAirportName}</span>
                   </div>
                 </div>
@@ -1160,7 +1162,7 @@ export default function ToursTab() {
               {/* Itinerary Preview */}
               {generatedTourData.itineraryDetailed && (
                 <div className="bg-amber-50 rounded-2xl p-4">
-                  <h3 className="font-semibold text-amber-900 mb-3">每日行程預覽</h3>
+                  <h3 className="font-semibold text-amber-900 mb-3">{t('toursTab.previewItinerary')}</h3>
                   <div className="space-y-2 text-sm max-h-40 overflow-y-auto">
                     {(() => {
                       try {
@@ -1172,14 +1174,14 @@ export default function ToursTab() {
                           </div>
                         ));
                       } catch {
-                        return <p className="text-gray-500">無法解析行程資料</p>;
+                        return <p className="text-gray-500">{t('toursTab.previewParseError')}</p>;
                       }
-                    })()}
-                    {(() => {
-                      try {
+                    })()
+                    }
+                    {(() => {  try {
                         const itinerary = JSON.parse(generatedTourData.itineraryDetailed);
                         if (itinerary.length > 3) {
-                          return <p className="text-amber-600 text-xs">... 還有 {itinerary.length - 3} 天行程</p>;
+                          return <p className="text-amber-600 text-xs">{t('toursTab.previewMoreDays').replace('{count}', String(itinerary.length - 3))}</p>;
                         }
                       } catch {
                         return null;
@@ -1192,7 +1194,7 @@ export default function ToursTab() {
               {/* Cost Explanation Preview */}
               {generatedTourData.costExplanation && (
                 <div className="bg-green-50 rounded-2xl p-4">
-                  <h3 className="font-semibold text-green-900 mb-3">費用說明預覽</h3>
+                  <h3 className="font-semibold text-green-900 mb-3">{t('toursTab.previewCost')}</h3>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     {(() => {
                       try {
@@ -1200,17 +1202,17 @@ export default function ToursTab() {
                         return (
                           <>
                             <div>
-                              <span className="text-gray-500">包含項目：</span>
-                              <span className="ml-2">{cost.includes?.length || 0} 項</span>
+                              <span className="text-gray-500">{t('toursTab.previewIncludes')}</span>
+                              <span className="ml-2">{t('toursTab.previewIncludesCount').replace('{count}', String(cost.includes?.length || 0))}</span>
                             </div>
                             <div>
-                              <span className="text-gray-500">不包含項目：</span>
-                              <span className="ml-2">{cost.excludes?.length || 0} 項</span>
+                              <span className="text-gray-500">{t('toursTab.previewExcludes')}</span>
+                              <span className="ml-2">{t('toursTab.previewExcludesCount').replace('{count}', String(cost.excludes?.length || 0))}</span>
                             </div>
                           </>
                         );
                       } catch {
-                        return <p className="text-gray-500">無法解析費用資料</p>;
+                        return <p className="text-gray-500">{t('toursTab.previewCostParseError')}</p>;
                       }
                     })()}
                   </div>
@@ -1219,7 +1221,7 @@ export default function ToursTab() {
 
               {/* Description */}
               <div className="bg-gray-50 rounded-2xl p-4">
-                <h3 className="font-semibold text-gray-900 mb-3">行程描述</h3>
+                <h3 className="font-semibold text-gray-900 mb-3">{t('toursTab.previewDescription')}</h3>
                 <p className="text-sm text-gray-700 whitespace-pre-wrap line-clamp-4">{generatedTourData.description}</p>
               </div>
 
@@ -1242,7 +1244,7 @@ export default function ToursTab() {
               {/* Execution Report */}
               {generatedTourData.executionReport && (
                 <details className="text-xs text-gray-400">
-                  <summary className="cursor-pointer hover:text-gray-600">查看執行報告</summary>
+                  <summary className="cursor-pointer hover:text-gray-600">{t('toursTab.viewReport')}</summary>
                   <pre className="mt-2 p-2 bg-gray-100 rounded-lg overflow-x-auto whitespace-pre-wrap">
                     {generatedTourData.executionReport}
                   </pre>
@@ -1290,10 +1292,10 @@ export default function ToursTab() {
               {saveFromPreviewMutation.isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  儲存中...
+                  {t('toursTab.saving')}
                 </>
               ) : (
-                "直接儲存"
+                t('toursTab.saveDirectly')
               )}
             </Button>
           </DialogFooter>
@@ -1342,19 +1344,20 @@ function TourForm({
   formData: TourFormData;
   setFormData: React.Dispatch<React.SetStateAction<TourFormData>>;
 }) {
+  const { t } = useLocale();
   return (
     <div className="grid gap-6 py-4">
       {/* 基本資訊區塊 */}
       <div className="space-y-4">
         <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
           <div className="h-1.5 w-1.5 rounded-full bg-black"></div>
-          <h3 className="text-sm font-semibold text-gray-900">基本資訊</h3>
+          <h3 className="text-sm font-semibold text-gray-900">{t('toursTab.formBasicInfo')}</h3>
         </div>
         
         <div className="grid gap-4">
           <div className="grid gap-2">
             <Label htmlFor="title" className="text-sm font-medium text-gray-700">
-              行程標題 <span className="text-red-500">*</span>
+              {t('toursTab.formTourTitle')} <span className="text-red-500">*</span>
             </Label>
             <Input
               id="title"
@@ -1362,7 +1365,7 @@ function TourForm({
               onChange={(e) =>
                 setFormData({ ...formData, title: e.target.value })
               }
-              placeholder="例：東京賞櫻 5 日遊"
+              placeholder={t('toursTab.formTourTitlePlaceholder')}
               className="rounded-full"
             />
           </div>
@@ -1370,7 +1373,7 @@ function TourForm({
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
               <Label htmlFor="destinationCountry" className="text-sm font-medium text-gray-700">
-                目的地國家 <span className="text-red-500">*</span>
+                {t('toursTab.formDestCountry')} <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="destinationCountry"
@@ -1378,21 +1381,21 @@ function TourForm({
                 onChange={(e) =>
                   setFormData({ ...formData, destinationCountry: e.target.value })
                 }
-                placeholder="例：日本"
+                placeholder={t('toursTab.formDestCountryPlaceholder')}
                 className="rounded-full"
               />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="destinationCity" className="text-sm font-medium text-gray-700">
-                目的地城市
-              </Label>
+              {t('toursTab.formDestCity')}
+            </Label>
               <Input
                 id="destinationCity"
                 value={formData.destinationCity}
                 onChange={(e) =>
                   setFormData({ ...formData, destinationCity: e.target.value })
                 }
-                placeholder="例：東京"
+                placeholder={t('toursTab.formDestCityPlaceholder')}
                 className="rounded-full"
               />
             </div>
@@ -1400,7 +1403,7 @@ function TourForm({
 
           <div className="grid gap-2">
             <Label htmlFor="destination" className="text-sm font-medium text-gray-700">
-              目的地 (顯示用) <span className="text-red-500">*</span>
+              {t('toursTab.formDestDisplay')} <span className="text-red-500">*</span>
             </Label>
             <Input
               id="destination"
@@ -1408,7 +1411,7 @@ function TourForm({
               onChange={(e) =>
                 setFormData({ ...formData, destination: e.target.value })
               }
-              placeholder="例：日本東京"
+                placeholder={t('toursTab.formDestDisplayPlaceholder')}
               className="rounded-full"
             />
           </div>
@@ -1419,14 +1422,14 @@ function TourForm({
       <div className="space-y-4">
         <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
           <div className="h-1.5 w-1.5 rounded-full bg-black"></div>
-          <h3 className="text-sm font-semibold text-gray-900">行程詳情</h3>
+          <h3 className="text-sm font-semibold text-gray-900">{t('toursTab.formTourDetails')}</h3>
         </div>
         
         <div className="grid gap-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
               <Label htmlFor="duration" className="text-sm font-medium text-gray-700">
-                天數
+                {t('toursTab.formDays')}
               </Label>
               <Input
                 id="duration"
@@ -1441,7 +1444,7 @@ function TourForm({
             </div>
             <div className="grid gap-2">
               <Label htmlFor="price" className="text-sm font-medium text-gray-700">
-                價格 (NT$)
+                {t('toursTab.formPrice')}
               </Label>
               <Input
                 id="price"
@@ -1458,7 +1461,7 @@ function TourForm({
 
           <div className="grid gap-2">
             <Label htmlFor="description" className="text-sm font-medium text-gray-700">
-              行程描述
+              {t('toursTab.formDescription')}
             </Label>
             <Textarea
               id="description"
@@ -1466,7 +1469,7 @@ function TourForm({
               onChange={(e) =>
                 setFormData({ ...formData, description: e.target.value })
               }
-              placeholder="請輸入行程描述..."
+              placeholder={t('toursTab.formDescriptionPlaceholder')}
               rows={3}
               className="rounded-2xl"
             />
@@ -1474,7 +1477,7 @@ function TourForm({
 
           <div className="grid gap-2">
             <Label htmlFor="imageUrl" className="text-sm font-medium text-gray-700">
-              封面圖片網址
+              {t('toursTab.formImageUrl')}
             </Label>
             <Input
               id="imageUrl"
@@ -1493,13 +1496,13 @@ function TourForm({
       <div className="space-y-4">
         <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
           <div className="h-1.5 w-1.5 rounded-full bg-black"></div>
-          <h3 className="text-sm font-semibold text-gray-900">分類與狀態</h3>
+          <h3 className="text-sm font-semibold text-gray-900">{t('toursTab.formCategoryStatus')}</h3>
         </div>
         
         <div className="grid grid-cols-2 gap-4">
           <div className="grid gap-2">
             <Label htmlFor="category" className="text-sm font-medium text-gray-700">
-              分類
+              {t('toursTab.formCategory')}
             </Label>
             <Select
               value={formData.category}
@@ -1509,17 +1512,17 @@ function TourForm({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="group">團體旅遊</SelectItem>
-                <SelectItem value="custom">客製旅遊</SelectItem>
-                <SelectItem value="package">套裝行程</SelectItem>
-                <SelectItem value="cruise">郵輪旅遊</SelectItem>
-                <SelectItem value="theme">主題旅遊</SelectItem>
+                <SelectItem value="group">{t('toursTab.categoryGroup')}</SelectItem>
+                <SelectItem value="custom">{t('toursTab.categoryCustom')}</SelectItem>
+                <SelectItem value="package">{t('toursTab.categoryPackage')}</SelectItem>
+                <SelectItem value="cruise">{t('toursTab.categoryCruise')}</SelectItem>
+                <SelectItem value="theme">{t('toursTab.categoryTheme')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="grid gap-2">
             <Label htmlFor="status" className="text-sm font-medium text-gray-700">
-              狀態
+              {t('toursTab.formStatus')}
             </Label>
             <Select
               value={formData.status}
@@ -1529,9 +1532,9 @@ function TourForm({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="active">上架中</SelectItem>
-                <SelectItem value="inactive">已下架</SelectItem>
-                <SelectItem value="soldout">已售完</SelectItem>
+                <SelectItem value="active">{t('toursTab.statusActive')}</SelectItem>
+                <SelectItem value="inactive">{t('toursTab.statusInactive')}</SelectItem>
+                <SelectItem value="soldout">{t('toursTab.statusSoldOut')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
