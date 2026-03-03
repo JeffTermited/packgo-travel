@@ -4758,11 +4758,11 @@
 - [x] ForgotPassword.tsx / ResetPassword.tsx 接入 useLocale（重寫完成）
 
 ### 任務：SEO 基礎建設
-- [ ] 動態 sitemap.xml 路由（含所有行程頁面）
-- [ ] 安裝 react-helmet-async，加入動態 meta 標籤
-- [ ] 行程詳情頁加入 og:image、og:title、og:description
-- [ ] 首頁加入 Schema.org JSON-LD（Organization + WebSite）
-- [ ] 行程頁加入 Schema.org JSON-LD（TouristTrip）
+- [x] 動態 sitemap.xml 路由（已在 server/_core/index.ts 實作）
+- [x] 安裝 react-helmet-async，建立通用 SEO.tsx 元件
+- [x] 行程詳情頁加入動態 og:image、og:title、og:description
+- [x] 首頁加入 Schema.org JSON-LD（TravelAgency + WebSite）
+- [x] 行程頁加入 Schema.org JSON-LD（TouristTrip）
 
 ### 任務：行程內容多語言（translations 表）
 - [ ] 設計 translations 表 schema（tourId, locale, field, value）

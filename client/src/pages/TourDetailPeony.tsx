@@ -76,6 +76,7 @@ import Footer from "@/components/Footer";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocale } from "@/contexts/LocaleContext";
 import { trackViewTour } from "@/lib/analytics";
+import SEO, { buildTourSchema } from "@/components/SEO";
 import { EditableText, EditableImage, EditableDayCard, EditModeToggle, EditModeBanner } from "@/components/inline-edit";
 import { toast } from "sonner";
 
@@ -1802,6 +1803,24 @@ export default function TourDetailPeony() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
+      {/* 動態 SEO meta 標籤 */}
+      <SEO
+        title={tour.title}
+        description={tour.description ?? undefined}
+        image={(tour as any).heroImage || (tour as any).imageUrl || undefined}
+        url={`/tours/${tour.id}`}
+        type="article"
+        schema={buildTourSchema({
+          id: tour.id,
+          title: tour.title,
+          description: tour.description,
+          price: (tour as any).price,
+          currency: (tour as any).currency ?? "TWD",
+          duration: (tour as any).duration,
+          destination: (tour as any).destinationCountry ?? (tour as any).destination,
+          images: (tour as any).images,
+        })}
+      />
       {/* 編輯模式標題橫幅 */}
       {isAdmin && <EditModeBanner isEditMode={isEditMode} hasChanges={hasChanges} />}
       

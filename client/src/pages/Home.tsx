@@ -1,4 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
+import SEO, { buildOrganizationSchema, buildWebSiteSchema } from "@/components/SEO";
 import EditableDestinations from "@/components/EditableDestinations";
 import FeaturedTours from "@/components/FeaturedTours";
 import Footer from "@/components/Footer";
@@ -20,6 +21,9 @@ function HomeContent() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white font-sans">
+      <SEO
+        schema={[buildOrganizationSchema(), buildWebSiteSchema()]}
+      />
       <Header />
       
       {/* Edit Mode Banner */}
