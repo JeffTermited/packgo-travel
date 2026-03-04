@@ -29,15 +29,19 @@ const LANGUAGE_LABELS: Record<string, string> = {
   ko: "韓文 (KO)",
 };
 
-// 翻譯欄位顯示名稱
+// 翻譯欄位顯示名稱（一般行程 + AI 生成行程）
 const FIELD_LABELS: Record<string, string> = {
   title: "標題",
   description: "描述",
-  heroSubtitle: "副標題",
-  itineraryDetailed: "行程詳情",
-  keyFeatures: "特色亮點",
-  costExplanation: "費用說明",
-  noticeDetailed: "注意事項",
+  highlights: "行程亮點",
+  includes: "費用包含",
+  excludes: "費用不含",
+  notes: "注意事項",
+  heroSubtitle: "副標題 (AI)",
+  keyFeatures: "特色亮點 (AI)",
+  itineraryDetailed: "行程詳情 (AI)",
+  costExplanation: "費用說明 (AI)",
+  noticeDetailed: "注意事項 (AI)",
 };
 
 type TourWithTranslationStatus = {
@@ -119,7 +123,7 @@ export default function TranslationsTab() {
   };
 
   // 建立行程翻譯狀態映射
-  const translationSummaryMap: Record<number, { hasEn: boolean; hasEs: boolean; enCount: number; esCount: number }> =
+  const translationSummaryMap: Record<number, { hasEn: boolean; hasEs: boolean; enCount: number; esCount: number; totalFields: number }> =
     allTranslations
       ? Object.fromEntries(
           allTranslations.map((item: any) => [
@@ -129,6 +133,7 @@ export default function TranslationsTab() {
               hasEs: item.hasEs,
               enCount: item.enFieldCount ?? 0,
               esCount: item.esFieldCount ?? 0,
+              totalFields: item.totalFields ?? 0,
             },
           ])
         )
@@ -238,7 +243,7 @@ export default function TranslationsTab() {
                   const hasEs = translationStatus?.hasEs ?? false;
                   const enCount = translationStatus?.enCount ?? 0;
                   const esCount = translationStatus?.esCount ?? 0;
-                  const totalFields = Object.keys(FIELD_LABELS).length;
+                  const totalFields = translationStatus?.totalFields ?? Object.keys(FIELD_LABELS).length;
 
                   return (
                     <TableRow key={tour.id} className="hover:bg-gray-50">

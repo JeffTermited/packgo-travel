@@ -98,7 +98,7 @@ const generateSmartTags = (tour: any) => {
 };
 
 export default function SearchResults() {
-  const { t, formatPrice, currency, rateDisclaimer } = useLocale();
+  const { t, formatPrice, currency, rateDisclaimer, language } = useLocale();
   const [location, setLocation] = useLocation();
   const searchParams = new URLSearchParams(window.location.search);
   
@@ -186,6 +186,21 @@ export default function SearchResults() {
     pageSize: 100, // 獲取較多資料以便前端篩選
   });
   
+  // 批次查詢翻譯（非中文語系時）
+  const tourIds = useMemo(() => (data?.tours || []).map((t: any) => t.id), [data?.tours]);
+  const shouldFetchTranslations = language !== 'zh-TW' && tourIds.length > 0;
+  const { data: batchTranslations } = trpc.translation.getBatchTourTranslations.useQuery(
+    { tourIds, targetLanguage: language as any },
+    { enabled: shouldFetchTranslations }
+  );
+
+  // 取得翻譯後的標題（fallback 到原始中文）
+  const getTranslatedTitle = (tour: any): string => {
+    if (language === 'zh-TW' || !batchTranslations) return tour.title || '';
+    const tourTranslations = (batchTranslations as any)[tour.id];
+    return tourTranslations?.title || tour.title || '';
+  };
+
   // 在前端過濾多個目的地和智能標籤
   const filteredTours = useMemo(() => {
     let result = data?.tours || [];
@@ -694,7 +709,7 @@ export default function SearchResults() {
 
                           {/* 標題 */}
                           <h3 className="font-bold text-lg text-gray-900 mb-3 line-clamp-2 group-hover:text-black transition-colors">
-                            {tour.title}
+                            {getTranslatedTitle(tour)}
                           </h3>
 
                           {/* 智能標籤 - 最多顯示3個，超過顯示... */}

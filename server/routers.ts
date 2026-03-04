@@ -12,7 +12,7 @@ import { invokeLLM } from "./_core/llm";
 import { sendBookingConfirmationEmail } from "./email";
 import * as auth from "./auth";
 import { createToken } from "./jwt";
-import { translateText, translateBatch, translateTour, translateMultipleTours, getTourTranslations, getAllTourTranslations, getTranslationJobs, getSupportedLanguages, getAllTranslationsSummary, Language } from "./translation";
+import { translateText, translateBatch, translateTour, translateMultipleTours, getTourTranslations, getBatchTourTranslations, getAllTourTranslations, getTranslationJobs, getSupportedLanguages, getAllTranslationsSummary, Language } from "./translation";
 import { getExchangeRates, convertCurrency, getExchangeRate, formatCurrency, getCurrencySymbol, convertPrices, type SupportedCurrency } from "./agents/exchangeRateAgent";
 import { checkForgotPasswordRateLimitByIP, checkForgotPasswordRateLimitByEmail, checkForgotPasswordGlobalRateLimit, isBlockedEmailDomain } from "./rateLimit";
 
@@ -2716,6 +2716,20 @@ export const appRouter = router({
           input.targetLanguage as Language
         );
         return translations;
+      }),
+
+    // Batch get translations for multiple tours
+    getBatchTourTranslations: publicProcedure
+      .input(z.object({
+        tourIds: z.array(z.number()),
+        targetLanguage: z.enum(['zh-TW', 'en', 'es', 'ja', 'ko']),
+      }))
+      .query(async ({ input }) => {
+        const result = await getBatchTourTranslations(
+          input.tourIds,
+          input.targetLanguage as Language
+        );
+        return result;
       }),
 
     // Get all translations for a tour (all languages)

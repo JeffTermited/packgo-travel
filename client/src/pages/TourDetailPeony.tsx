@@ -625,7 +625,7 @@ const AttractionDetailDialog = ({
               <div className="bg-gray-50 rounded-lg p-4">
                 <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
                   <Clock className="h-4 w-4" style={{ color: themeColor.secondary }} />
-                  開放時間
+                  {t('tourDetail.openingHours')}
                 </h4>
                 <p className="text-gray-600 text-sm">{detail.openingHours}</p>
               </div>
@@ -634,7 +634,7 @@ const AttractionDetailDialog = ({
               <div className="bg-gray-50 rounded-lg p-4">
                 <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
                   <Ticket className="h-4 w-4" style={{ color: themeColor.secondary }} />
-                  門票資訊
+                  {t('tourDetail.ticketInfo')}
                 </h4>
                 <p className="text-gray-600 text-sm">{detail.ticketPrice || detail.ticketInfo}</p>
               </div>
@@ -646,7 +646,7 @@ const AttractionDetailDialog = ({
             <div className="bg-amber-50 rounded-lg p-4">
               <h4 className="font-semibold text-amber-800 mb-2 flex items-center gap-2">
                 <AlertCircle className="h-4 w-4" />
-                貼心提示
+                {t('tourDetail.travelTips')}
               </h4>
               <ul className="space-y-1">
                 {detail.tips.map((tip, idx) => (
@@ -682,7 +682,7 @@ const AttractionDetailDialog = ({
                   rel="noopener noreferrer"
                   className="text-blue-600 hover:underline"
                 >
-                  官方網站
+                  {t('tourDetail.officialWebsite')}
                 </a>
               </div>
             )}
@@ -813,7 +813,7 @@ const MealCard = ({
             {/* 特色餐食標籤 */}
             {isSpecialMeal && (
               <div className="absolute top-2 right-2 bg-white backdrop-blur-sm rounded-full px-2 py-0.5 shadow-md border border-gray-200">
-                <span className="text-xs font-medium text-gray-800">特色餐食</span>
+                <span className="text-xs font-medium text-gray-800">{t('tourDetail.specialMeal')}</span>
               </div>
             )}
           </>
@@ -858,6 +858,7 @@ const MealDetailDialog = ({
   themeColor: ReturnType<typeof getThemeColorByDestination>;
 }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const { t } = useLocale();
   
   if (!detail) return null;
   
@@ -929,7 +930,7 @@ const MealDetailDialog = ({
           {/* 餐廳介紹 */}
           {detail.description && (
             <div>
-              <h4 className="font-semibold text-gray-900 mb-2">餐廳介紹</h4>
+              <h4 className="font-semibold text-gray-900 mb-2">{t('tourDetail.restaurantIntro')}</h4>
               <p className="text-gray-600 leading-relaxed">{detail.description}</p>
             </div>
           )}
@@ -937,7 +938,7 @@ const MealDetailDialog = ({
           {/* 推薦菜色 */}
           {detail.menu && detail.menu.length > 0 && (
             <div>
-              <h4 className="font-semibold text-gray-900 mb-2">推薦菜色</h4>
+              <h4 className="font-semibold text-gray-900 mb-2">{t('tourDetail.recommendedDishes')}</h4>
               <div className="grid grid-cols-2 gap-2">
                 {detail.menu.map((item, idx) => (
                   <div key={idx} className="flex items-center gap-2 text-gray-600">
@@ -988,6 +989,7 @@ const DayCard = ({
   onShowMealDetail: (detail: MealDetail) => void;
   onShowAttractionDetail: (activity: any) => void;
 }) => {
+  const { t } = useLocale();
   const isEven = index % 2 === 0;
   const dayImage = day.image || day.imageUrl || `https://images.unsplash.com/photo-${1500000000000 + index * 1000}?w=800`;
   
@@ -1087,7 +1089,7 @@ const DayCard = ({
             <div className="mt-6 pt-6 border-t border-gray-100">
               <h4 className="text-base font-semibold text-gray-800 mb-3 flex items-center gap-2">
                 <Utensils className="h-5 w-5" style={{ color: themeColor.primary }} />
-                今日餐食
+                {t('tourDetail.todayMeals')}
               </h4>
               <div className="grid grid-cols-3 gap-3">
                 {/* 早餐 */}
@@ -1436,7 +1438,7 @@ const HotelCard = ({ hotel, themeColor }: { hotel: any; themeColor: ReturnType<t
                 <div className="flex items-center gap-2 text-gray-600">
                   <Building className="h-4 w-4" style={{ color: themeColor.secondary }} />
                   <a href={detail.website} target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: themeColor.secondary }}>
-                    官方網站
+                    {t('tourDetail.officialWebsite')}
                   </a>
                 </div>
               )}
@@ -1783,7 +1785,7 @@ export default function TourDetailPeony() {
               onClick={() => navigate("/")} 
               className="bg-black text-white hover:bg-gray-800 rounded-none px-8 py-3"
             >
-              返回首頁
+              {t('tourDetail.backToHome')}
             </Button>
           </div>
         </div>
@@ -1983,14 +1985,14 @@ export default function TourDetailPeony() {
                 className="flex items-center gap-2 text-sm text-gray-600 hover:text-black transition-colors"
               >
                 <Printer className="h-4 w-4" />
-                列印
+                {t('tourDetail.print')}
               </button>
               <button 
                 onClick={() => setShowShareDialog(true)}
                 className="flex items-center gap-2 text-sm text-gray-600 hover:text-black transition-colors"
               >
                 <Share2 className="h-4 w-4" />
-                分享
+                {t('tourDetail.share')}
               </button>
             </div>
           </div>
@@ -2011,7 +2013,7 @@ export default function TourDetailPeony() {
       <section ref={sectionRefs.overview} id="overview" className="py-16 lg:py-24">
         <div className="max-w-5xl mx-auto px-6">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-12" style={{ color: themeColor.primary }}>
-            行程簡介
+            {t('tourDetail.description')}
           </h2>
           
           {/* Description */}
@@ -2178,7 +2180,7 @@ export default function TourDetailPeony() {
       <section ref={sectionRefs.itinerary} id="itinerary" className="py-16 lg:py-24 bg-gray-50">
         <div className="max-w-7xl mx-auto px-6">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-4" style={{ color: themeColor.primary }}>
-            精彩行程
+            {t('tourDetail.itineraryHighlights')}
           </h2>
           <p className="text-lg text-gray-700 text-center mb-16">{t('tourDetail.dailyItineraryDesc') || '每一天都是獨特的旅程體驗'}</p>
 
@@ -2232,7 +2234,7 @@ export default function TourDetailPeony() {
       <section ref={sectionRefs.features} id="features" className="py-16 lg:py-24">
         <div className="max-w-5xl mx-auto px-6">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-4" style={{ color: themeColor.primary }}>
-            內容特色 & 升等選項
+            {t('tourDetail.upgradeOptions')}
           </h2>
           <p className="text-lg text-gray-700 text-center mb-12">{t('tourDetail.highlightsDesc') || '精心安排的行程亮點'}</p>
 
@@ -2241,7 +2243,7 @@ export default function TourDetailPeony() {
             <div className="mb-12">
               <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
                 <Camera className="h-5 w-5" style={{ color: themeColor.secondary }} />
-                精選景點
+                {t('tourDetail.attractionFeatures')}
               </h3>
               <div className="grid md:grid-cols-2 gap-4">
                 {attractions.map((attraction: any, index: number) => (
@@ -2269,7 +2271,7 @@ export default function TourDetailPeony() {
             <div className="mb-12">
               <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
                 <Utensils className="h-5 w-5" style={{ color: themeColor.secondary }} />
-                餐飲安排
+                {t('tourDetail.mealPlan')}
               </h3>
               <div className="grid md:grid-cols-2 gap-4">
                 {meals.map((meal: any, index: number) => (
@@ -2295,7 +2297,7 @@ export default function TourDetailPeony() {
                     <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
                       <Check className="h-5 w-5 text-green-600" />
                     </div>
-                    費用包含
+                    {t('tourDetail.includedItems')}
                   </h3>
                   <ul className="space-y-3">
                     {ensureArray(costExplanation.included).map((item: string, index: number) => (
@@ -2315,7 +2317,7 @@ export default function TourDetailPeony() {
                     <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
                       <X className="h-5 w-5 text-red-600" />
                     </div>
-                    費用不含
+                    {t('tourDetail.excludedItems')}
                   </h3>
                   <ul className="space-y-3">
                     {ensureArray(costExplanation.excluded).map((item: string, index: number) => (
@@ -2337,7 +2339,7 @@ export default function TourDetailPeony() {
         <section ref={sectionRefs.hotels} id="hotels" className="py-16 lg:py-24 bg-gray-50">
           <div className="max-w-7xl mx-auto px-6">
             <h2 className="text-3xl md:text-4xl font-bold text-center mb-4" style={{ color: themeColor.primary }}>
-              豪華酒店
+              {t('tourDetail.luxuryHotel')}
             </h2>
             <p className="text-lg text-gray-700 text-center mb-12">{t('tourDetail.hotelDesc') || '嚴選優質住宿，讓您的旅程更加舒適'}</p>
 
@@ -2354,7 +2356,7 @@ export default function TourDetailPeony() {
       <section ref={sectionRefs.pricing} id="pricing" className="py-16 lg:py-24">
         <div className="max-w-5xl mx-auto px-6">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-4" style={{ color: themeColor.primary }}>
-            出發日期 / 售價
+            {t('tourDetail.departurePricing')}
           </h2>
           <p className="text-lg text-gray-700 text-center mb-12">{t('tourDetail.selectDepartureDate') || '選擇您理想的出發日期'}</p>
 
@@ -2373,7 +2375,7 @@ export default function TourDetailPeony() {
               className="px-8 py-4 text-white text-lg font-medium btn-hover-lift transition-all duration-300 hover:shadow-lg"
               style={{ backgroundColor: themeColor.primary }}
             >
-              立即預訂
+              {t('tourDetail.bookNowBtn')}
             </Button>
             <Button 
               variant="outline"
@@ -2381,7 +2383,7 @@ export default function TourDetailPeony() {
               className="px-8 py-4 text-lg font-medium border-2 btn-hover-lift transition-all duration-300 hover:bg-gray-50"
               style={{ borderColor: themeColor.primary, color: themeColor.primary }}
             >
-              聯繫我們
+              {t('tourDetail.contactUs')}
             </Button>
           </div>
 
@@ -2406,7 +2408,7 @@ export default function TourDetailPeony() {
       <section ref={sectionRefs.notes} id="notes" className="py-16 lg:py-24 bg-gray-50">
         <div className="max-w-5xl mx-auto px-6">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-4" style={{ color: themeColor.primary }}>
-            注意事項
+            {t('tourDetail.notices')}
           </h2>
           <p className="text-lg text-gray-700 text-center mb-12">{t('tourDetail.noticesDesc') || '出發前請詳閱以下資訊'}</p>
 
@@ -2535,7 +2537,7 @@ export default function TourDetailPeony() {
             className="px-6 py-3 text-white font-medium"
             style={{ backgroundColor: themeColor.primary }}
           >
-            立即預訂
+            {t('tourDetail.bookNowBtn')}
           </Button>
         </div>
       </div>
@@ -2579,12 +2581,12 @@ export default function TourDetailPeony() {
               <Button
                 onClick={() => {
                   navigator.clipboard.writeText(window.location.href);
-                  toast.success('已複製連結！');
+                  toast.success(t('tourDetail.linkCopied'));
                 }}
                 className="shrink-0"
                 style={{ backgroundColor: themeColor.primary }}
               >
-                複製
+                {t('tourDetail.copyLink')}
               </Button>
             </div>
 

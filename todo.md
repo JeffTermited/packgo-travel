@@ -1654,7 +1654,7 @@
 - [ ] 測試出發日期選擇器和價格計算器
 - [ ] 測試左右分欄編輯介面
 - [ ] 測試 WYSIWYG 直接編輯功能
-- [ ] 儲存 checkpoint 並部署
+- [x] 儲存 checkpoint 並部署
 
 
 ---
@@ -4791,4 +4791,28 @@
 - [ ] 驗證切換英文語系後行程詳情頁正確顯示英文翻譯（由使用者後台操作驗證）
 - [x] 補充缺失的 tourDetail.multipleDates i18n key（三語系）
 - [x] 補充缺失的 tourDetail.tabs.features i18n key（三語系）
-- [ ] 儲存 checkpoint 並部署
+- [x] 儲存 checkpoint 並部署
+
+---
+
+## 多語言功能完整化（2026-03-03）
+
+### 任務一：批次翻譯現有行程
+- [x] translateTour 加入 AI 生成行程欄位（heroSubtitle、keyFeatures、itineraryDetailed、costExplanation、noticeDetailed）
+- [x] TranslationsTab totalFields 改為後端動態計算（根據行程實際有値的欄位數）
+- [ ] 對現有 17 筆行程執行批次翻譯（管理後台操作）
+
+### 任務二：搜尋結果頁 TourCard 多語言
+- [x] 新增 getBatchTourTranslations 後端端點（一次查詢多筆行程翻譯）
+- [x] SearchResults.tsx 加入批次翻譯查詢，行程卡片標題/描述隨語系切換
+
+### 任務三：TourDetailPeony.tsx 硬編碼中文 UI 接入 useLocale
+- [x] 揃描 44 行硬編碼中文 UI 文字
+- [x] 補充 10 個缺失的 i18n key（三語系）：itineraryHighlights、attractionFeatures、mealPlan、luxuryHotel、departurePricing、contactUs、copyLink、linkCopied、shareWith、upgradeOptions
+- [x] MealDetailDialog、DayCard 子元件加入 useLocale hook
+- [x] 替換所有硬編碼中文為 t() 呼叫
+
+### 完成
+- [x] TypeScript 零錯誤
+- [x] 203 tests passed
+- [ ] 儲存 Checkpoint

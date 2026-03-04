@@ -159,7 +159,7 @@ export async function translateTour(
       return { success: false, translatedLanguages: [], errors: ['Tour not found'] };
     }
 
-    // 需要翻譯的欄位
+    // 需要翻譯的欄位（一般行程 + AI 生成行程）
     const fieldsToTranslate = [
       { name: 'title', value: tour.title },
       { name: 'description', value: tour.description },
@@ -167,6 +167,12 @@ export async function translateTour(
       { name: 'includes', value: tour.includes },
       { name: 'excludes', value: tour.excludes },
       { name: 'notes', value: tour.notes },
+      // AI 生成行程欄位
+      { name: 'heroSubtitle', value: (tour as any).heroSubtitle },
+      { name: 'keyFeatures', value: (tour as any).keyFeatures },
+      { name: 'itineraryDetailed', value: (tour as any).itineraryDetailed },
+      { name: 'costExplanation', value: (tour as any).costExplanation },
+      { name: 'noticeDetailed', value: (tour as any).noticeDetailed },
     ];
 
     for (const targetLang of targetLanguages) {
@@ -306,6 +312,39 @@ async function saveTranslation(data: {
     }
   } catch (error) {
     console.error('[Translation Agent] Failed to save translation:', error);
+  }
+}
+
+/**
+ * 批次獲取多筆行程的翻譯內容（避免 N+1 問題）
+ */
+export async function getBatchTourTranslations(
+  tourIds: number[],
+  targetLanguage: Language
+): Promise<Record<number, Record<string, string>>> {
+  if (tourIds.length === 0) return {};
+  const db = await getDb();
+  if (!db) return {};
+
+  try {
+    const { inArray } = await import('drizzle-orm');
+    const results = await db.select().from(translations).where(
+      and(
+        eq(translations.entityType, 'tour'),
+        inArray(translations.entityId, tourIds),
+        eq(translations.targetLanguage, targetLanguage)
+      )
+    );
+
+    const batchMap: Record<number, Record<string, string>> = {};
+    for (const row of results) {
+      if (!batchMap[row.entityId]) batchMap[row.entityId] = {};
+      batchMap[row.entityId][row.fieldName] = row.translatedText;
+    }
+    return batchMap;
+  } catch (error) {
+    console.error('[Translation Agent] Failed to get batch tour translations:', error);
+    return {};
   }
 }
 
@@ -533,10 +572,41 @@ export async function getAllTranslationsSummary(): Promise<Array<{
   hasEs: boolean;
   enFieldCount: number;
   esFieldCount: number;
+  totalFields: number;
 }>> {
   const db = await getDb();
   if (!db) return [];
   try {
+    // 取得所有行程的可翻譯欄位資料
+    const { tours } = await import('../drizzle/schema');
+    const allTours = await db.select({
+      id: tours.id,
+      title: tours.title,
+      description: tours.description,
+      highlights: tours.highlights,
+      includes: tours.includes,
+      excludes: tours.excludes,
+      notes: tours.notes,
+      heroSubtitle: (tours as any).heroSubtitle,
+      keyFeatures: (tours as any).keyFeatures,
+      itineraryDetailed: (tours as any).itineraryDetailed,
+      costExplanation: (tours as any).costExplanation,
+      noticeDetailed: (tours as any).noticeDetailed,
+    }).from(tours);
+
+    // 計算每筆行程的可翻譯欄位數
+    const tourFieldsMap = new Map<number, number>();
+    for (const tour of allTours) {
+      const fieldValues = [
+        tour.title, tour.description, tour.highlights, tour.includes,
+        tour.excludes, tour.notes, tour.heroSubtitle, tour.keyFeatures,
+        tour.itineraryDetailed, tour.costExplanation, tour.noticeDetailed,
+      ];
+      const count = fieldValues.filter(v => v && String(v).trim()).length;
+      tourFieldsMap.set(tour.id, count);
+    }
+
+    // 取得翻譯結果
     const results = await db.select({
       entityId: translations.entityId,
       targetLanguage: translations.targetLanguage,
@@ -562,6 +632,7 @@ export async function getAllTranslationsSummary(): Promise<Array<{
       hasEs: counts.esCount > 0,
       enFieldCount: counts.enCount,
       esFieldCount: counts.esCount,
+      totalFields: tourFieldsMap.get(tourId) ?? 0,
     }));
   } catch (error) {
     console.error('[Translation Agent] Failed to get translations summary:', error);
