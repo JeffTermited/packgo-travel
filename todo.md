@@ -4815,4 +4815,16 @@
 ### 完成
 - [x] TypeScript 零錯誤
 - [x] 203 tests passed
+- [x] 儲存 Checkpoint（版本 72ac7d99）
+
+---
+
+## 行程詳情頁 100% 多語言（2026-03-03）
+- [ ] 全面掃描所有子元件硬編碼中文
+- [ ] DepartureDatePicker：日曆年月、星期、剩餘名額
+- [ ] HotelDetailDialog：飯店介紹、設施、房型
+- [ ] 分享對話框推薦文字
+- [ ] AttractionDetailDialog、MealDetailDialog、DayCard 殘留中文
+- [ ] 補充所有缺失 i18n key（三語系）
+- [ ] TypeScript 零錯誤
 - [ ] 儲存 Checkpoint

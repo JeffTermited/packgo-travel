@@ -12,6 +12,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useRoute, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
+import { useLocale } from "@/contexts/LocaleContext";
 import { 
   Printer,
   ArrowLeft,
@@ -74,6 +75,7 @@ const formatDate = (dateStr: string) => {
 };
 
 export default function TourPrintView() {
+  const { t, language } = useLocale();
   const [, params] = useRoute("/tours/:id/print");
   const [, setLocation] = useLocation();
   const tourId = params?.id ? parseInt(params.id) : null;
@@ -101,7 +103,7 @@ export default function TourPrintView() {
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">載入行程資料中...</p>
+          <p className="text-gray-600">{t('tourPrint.loading')}</p>
         </div>
       </div>
     );
@@ -111,8 +113,8 @@ export default function TourPrintView() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
-          <p className="text-red-600 mb-4">無法載入行程資料</p>
-          <Button onClick={() => setLocation("/")}>返回首頁</Button>
+          <p className="text-red-600 mb-4">{t('tourPrint.loadError')}</p>
+          <Button onClick={() => setLocation("/")}>{t('tourPrint.backHome')}</Button>
         </div>
       </div>
     );
@@ -138,7 +140,7 @@ export default function TourPrintView() {
           className="bg-white shadow-md"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          返回行程
+          {t('tourPrint.backToTour')}
         </Button>
         <Button
           size="sm"
@@ -146,7 +148,7 @@ export default function TourPrintView() {
           className="bg-black text-white shadow-md"
         >
           <Printer className="h-4 w-4 mr-2" />
-          列印 / 下載 PDF
+          {t('tourPrint.printOrDownload')}
         </Button>
       </div>
       
@@ -167,15 +169,15 @@ export default function TourPrintView() {
                 }}
               />
               <div>
-                <h1 className="text-xl font-bold text-gray-900">PACK&GO 旅行社</h1>
-                <p className="text-sm text-gray-500">讓旅行更美好</p>
+                <h1 className="text-xl font-bold text-gray-900">{t('tourPrint.companyName')}</h1>
+                <p className="text-sm text-gray-500">{t('tourPrint.companySlogan')}</p>
               </div>
             </div>
             <div className="text-right text-sm text-gray-500">
-              <p className="font-medium text-gray-700">電話：+886-2-1234-5678</p>
+              <p className="font-medium text-gray-700">{t('tourPrint.phone')}</p>
               <p>Email：info@packgo.travel</p>
-              <p>行程編號：{tour.productCode || `T${tour.id}`}</p>
-              <p>列印日期：{new Date().toLocaleDateString("zh-TW")}</p>
+              <p>{t('tourPrint.tourCode')}{tour.productCode || `T${tour.id}`}</p>
+              <p>{t('tourPrint.printDate')}{new Date().toLocaleDateString(language === 'en' ? 'en-US' : language === 'es' ? 'es-ES' : 'zh-TW')}</p>
             </div>
           </div>
           
@@ -201,13 +203,13 @@ export default function TourPrintView() {
                   className="inline-block px-3 py-1 rounded-full text-sm font-medium mb-3"
                   style={{ backgroundColor: themeColor.primary, color: "white" }}
                 >
-                  {tour.destinationCountry || "精選行程"}
+                  {tour.destinationCountry || t('tourPrint.featuredTour')}
                 </div>
                 <h1 className="print-tour-title">{tour.title}</h1>
                 <div className="print-tour-meta">
-                  <span><Calendar className="inline h-4 w-4 mr-1" />{tour.duration}天</span>
+                  <span><Calendar className="inline h-4 w-4 mr-1" />{tour.duration}{t('tourPrint.days')}</span>
                   <span><MapPin className="inline h-4 w-4 mr-1" />{tour.destination || tour.destinationCountry}</span>
-                  <span><Users className="inline h-4 w-4 mr-1" />10-25人</span>
+                  <span><Users className="inline h-4 w-4 mr-1" />{t('tourPrint.groupSize')}</span>
                 </div>
               </div>
             </div>
@@ -216,7 +218,7 @@ export default function TourPrintView() {
           {/* 行程簡介 */}
           <div className="print-intro">
             <h2 className="print-section-title" style={{ color: themeColor.primary }}>
-              行程簡介
+              {t('tourPrint.tourIntro')}
             </h2>
             <p className="print-intro-text">{tour.description}</p>
           </div>
@@ -224,7 +226,7 @@ export default function TourPrintView() {
           {/* 行程亮點 */}
           {keyFeatures.length > 0 && (
             <div className="print-highlights">
-              <h3 className="text-sm font-bold text-gray-700 mb-2">行程亮點</h3>
+              <h3 className="text-sm font-bold text-gray-700 mb-2">{t('tourPrint.tourHighlights')}</h3>
               <ul className="print-highlights-list">
                 {keyFeatures.slice(0, 6).map((feature: any, idx: number) => (
                   <li key={idx} className="print-highlight-item">
@@ -238,8 +240,8 @@ export default function TourPrintView() {
           
           {/* 頁腳 */}
           <div className="print-page-footer">
-            <span>PACK&GO 旅行社</span>
-            <span>第 1 頁</span>
+            <span>{t('tourPrint.companyName')}</span>
+            <span>{t('tourPrint.pageNum').replace('{num}', '1')}</span>
           </div>
         </div>
         
@@ -249,7 +251,7 @@ export default function TourPrintView() {
             {/* 頁眉 */}
             <div className="print-page-header">
               <span className="font-medium">{tour.title}</span>
-              <span className="text-gray-500">行程編號：{tour.productCode || `T${tour.id}`}</span>
+              <span className="text-gray-500">{t('tourPrint.tourCode')}{tour.productCode || `T${tour.id}`}</span>
             </div>
             
             {/* 日期標題 */}
@@ -261,7 +263,7 @@ export default function TourPrintView() {
                 DAY {day.day || dayIndex + 1}
               </div>
               <div className="print-day-title">
-                <h2>{day.title || `第${day.day || dayIndex + 1}天`}</h2>
+                <h2>{day.title || `${t('tourPrint.dayLabel').replace('{day}', String(day.day || dayIndex + 1))}`}</h2>
                 {day.date && <span className="text-sm text-gray-500">{formatDate(day.date)}</span>}
               </div>
             </div>
@@ -278,7 +280,7 @@ export default function TourPrintView() {
               <div className="print-activities">
                 <h3 className="print-subsection-title">
                   <Clock className="h-4 w-4" style={{ color: themeColor.secondary }} />
-                  今日行程
+                  {t('tourPrint.todayItinerary')}
                 </h3>
                 <div className="print-activities-list">
                   {day.activities.map((activity: any, actIdx: number) => (
@@ -312,7 +314,7 @@ export default function TourPrintView() {
                           )}
                           {activity.ticketPrice && (
                             <span className="print-activity-price">
-                              票價: {activity.ticketPrice}
+                              {t('tourPrint.ticketPrice')}{activity.ticketPrice}
                             </span>
                           )}
                         </div>
@@ -327,20 +329,20 @@ export default function TourPrintView() {
             <div className="print-meals">
               <h3 className="print-subsection-title">
                 <Utensils className="h-4 w-4" style={{ color: themeColor.secondary }} />
-                今日餐食
+                {t('tourPrint.todayMeals')}
               </h3>
               <div className="print-meals-grid">
                 <div className="print-meal-item">
-                  <span className="print-meal-label">早餐</span>
-                  <span className="print-meal-value">{day.meals?.breakfast || day.breakfast || "飯店內用"}</span>
+                  <span className="print-meal-label">{t('tourPrint.breakfast')}</span>
+                  <span className="print-meal-value">{day.meals?.breakfast || day.breakfast || t('tourPrint.hotelMeal')}</span>
                 </div>
                 <div className="print-meal-item">
-                  <span className="print-meal-label">午餐</span>
-                  <span className="print-meal-value">{day.meals?.lunch || day.lunch || "當地風味餐"}</span>
+                  <span className="print-meal-label">{t('tourPrint.lunch')}</span>
+                  <span className="print-meal-value">{day.meals?.lunch || day.lunch || t('tourPrint.localMeal')}</span>
                 </div>
                 <div className="print-meal-item">
-                  <span className="print-meal-label">晚餐</span>
-                  <span className="print-meal-value">{day.meals?.dinner || day.dinner || "飯店內用"}</span>
+                  <span className="print-meal-label">{t('tourPrint.dinner')}</span>
+                  <span className="print-meal-value">{day.meals?.dinner || day.dinner || t('tourPrint.hotelMeal')}</span>
                 </div>
               </div>
             </div>
@@ -350,7 +352,7 @@ export default function TourPrintView() {
               <div className="print-hotel">
                 <h3 className="print-subsection-title">
                   <Building className="h-4 w-4" style={{ color: themeColor.secondary }} />
-                  今晚住宿
+                  {t('tourPrint.tonightHotel')}
                 </h3>
                 <div className="print-hotel-info">
                   <span className="font-medium">{day.hotel}</span>
@@ -366,8 +368,8 @@ export default function TourPrintView() {
             
             {/* 頁腳 */}
             <div className="print-page-footer">
-              <span>PACK&GO 旅行社</span>
-              <span>第 {dayIndex + 2} 頁</span>
+              <span>{t('tourPrint.companyName')}</span>
+              <span>{t('tourPrint.pageNum').replace('{num}', String(dayIndex + 2))}</span>
             </div>
           </div>
         ))}
@@ -378,11 +380,11 @@ export default function TourPrintView() {
             {/* 頁眉 */}
             <div className="print-page-header">
               <span className="font-medium">{tour.title}</span>
-              <span className="text-gray-500">飯店資訊</span>
+              <span className="text-gray-500">{t('tourPrint.hotelInfo')}</span>
             </div>
             
             <h2 className="print-section-title" style={{ color: themeColor.primary }}>
-              精選住宿
+              {t('tourPrint.selectedAccommodation')}
             </h2>
             
             <div className="print-hotels-grid">
@@ -422,7 +424,7 @@ export default function TourPrintView() {
                     {/* 飯店設施 */}
                     {hotel.amenities && hotel.amenities.length > 0 && (
                       <div className="print-hotel-amenities">
-                        <span className="font-medium text-gray-700">設施：</span>
+                        <span className="font-medium text-gray-700">{t('tourPrint.facilities')}</span>
                         <span className="text-gray-600">{hotel.amenities.join('、')}</span>
                       </div>
                     )}
@@ -431,7 +433,7 @@ export default function TourPrintView() {
                     {hotel.nights && (
                       <p className="print-hotel-nights">
                         <Calendar className="inline h-3 w-3 mr-1" />
-                        入住 {hotel.nights} 晚
+                        {t('tourPrint.stayNights').replace('{nights}', String(hotel.nights))}
                       </p>
                     )}
                   </div>
@@ -441,8 +443,8 @@ export default function TourPrintView() {
             
             {/* 頁腳 */}
             <div className="print-page-footer">
-              <span>PACK&GO 旅行社</span>
-              <span>第 {itinerary.length + 2} 頁</span>
+              <span>{t('tourPrint.companyName')}</span>
+              <span>{t('tourPrint.pageNum').replace('{num}', String(itinerary.length + 2))}</span>
             </div>
           </div>
         )}
@@ -452,19 +454,19 @@ export default function TourPrintView() {
           {/* 頁眉 */}
           <div className="print-page-header">
             <span className="font-medium">{tour.title}</span>
-            <span className="text-gray-500">費用說明</span>
+            <span className="text-gray-500">{t('tourPrint.pricingInfo')}</span>
           </div>
           
           <h2 className="print-section-title" style={{ color: themeColor.primary }}>
-            費用說明
+            {t('tourPrint.pricingInfo')}
           </h2>
           
           {/* 價格資訊 */}
           <div className="print-price-box" style={{ backgroundColor: themeColor.light }}>
-            <div className="print-price-label">團費</div>
+            <div className="print-price-label">{t('tourPrint.tourFee')}</div>
             <div className="print-price-value" style={{ color: themeColor.primary }}>
-              NT$ {tour.price?.toLocaleString() || "請洽詢"}
-              <span className="text-sm font-normal text-gray-500"> /人</span>
+              NT$ {tour.price?.toLocaleString() || t('tourPrint.inquire')}
+              <span className="text-sm font-normal text-gray-500"> /{t('tourPrint.person')}</span>
             </div>
           </div>
           
@@ -472,7 +474,7 @@ export default function TourPrintView() {
           <div className="print-inclusions">
             <h3 className="print-subsection-title">
               <Check className="h-4 w-4 text-green-600" />
-              費用包含
+              {t('tourPrint.included')}
             </h3>
             <ul className="print-list">
               {inclusions.length > 0 ? (
@@ -484,11 +486,11 @@ export default function TourPrintView() {
                 ))
               ) : (
                 <>
-                  <li className="print-list-item"><Check className="h-4 w-4 text-green-600" /><span>全程住宿費用</span></li>
-                  <li className="print-list-item"><Check className="h-4 w-4 text-green-600" /><span>行程中標示之餐食</span></li>
-                  <li className="print-list-item"><Check className="h-4 w-4 text-green-600" /><span>行程中交通接駁</span></li>
-                  <li className="print-list-item"><Check className="h-4 w-4 text-green-600" /><span>專業導遊服務</span></li>
-                  <li className="print-list-item"><Check className="h-4 w-4 text-green-600" /><span>行程中景點門票</span></li>
+                  <li className="print-list-item"><Check className="h-4 w-4 text-green-600" /><span>{t('tourPrint.defaultInclude1')}</span></li>
+                  <li className="print-list-item"><Check className="h-4 w-4 text-green-600" /><span>{t('tourPrint.defaultInclude2')}</span></li>
+                  <li className="print-list-item"><Check className="h-4 w-4 text-green-600" /><span>{t('tourPrint.defaultInclude3')}</span></li>
+                  <li className="print-list-item"><Check className="h-4 w-4 text-green-600" /><span>{t('tourPrint.defaultInclude4')}</span></li>
+                  <li className="print-list-item"><Check className="h-4 w-4 text-green-600" /><span>{t('tourPrint.defaultInclude5')}</span></li>
                 </>
               )}
             </ul>
@@ -498,7 +500,7 @@ export default function TourPrintView() {
           <div className="print-exclusions">
             <h3 className="print-subsection-title">
               <X className="h-4 w-4 text-red-600" />
-              費用不含
+              {t('tourPrint.notIncluded')}
             </h3>
             <ul className="print-list">
               {exclusions.length > 0 ? (
@@ -510,11 +512,11 @@ export default function TourPrintView() {
                 ))
               ) : (
                 <>
-                  <li className="print-list-item"><X className="h-4 w-4 text-red-600" /><span>國際機票或往返交通</span></li>
-                  <li className="print-list-item"><X className="h-4 w-4 text-red-600" /><span>個人護照及簽證費用</span></li>
-                  <li className="print-list-item"><X className="h-4 w-4 text-red-600" /><span>旅遊保險</span></li>
-                  <li className="print-list-item"><X className="h-4 w-4 text-red-600" /><span>個人消費及購物</span></li>
-                  <li className="print-list-item"><X className="h-4 w-4 text-red-600" /><span>小費及服務費</span></li>
+                  <li className="print-list-item"><X className="h-4 w-4 text-red-600" /><span>{t('tourPrint.defaultExclude1')}</span></li>
+                  <li className="print-list-item"><X className="h-4 w-4 text-red-600" /><span>{t('tourPrint.defaultExclude2')}</span></li>
+                  <li className="print-list-item"><X className="h-4 w-4 text-red-600" /><span>{t('tourPrint.defaultExclude3')}</span></li>
+                  <li className="print-list-item"><X className="h-4 w-4 text-red-600" /><span>{t('tourPrint.defaultExclude4')}</span></li>
+                  <li className="print-list-item"><X className="h-4 w-4 text-red-600" /><span>{t('tourPrint.defaultExclude5')}</span></li>
                 </>
               )}
             </ul>
@@ -522,8 +524,8 @@ export default function TourPrintView() {
           
           {/* 頁腳 */}
           <div className="print-page-footer">
-            <span>PACK&GO 旅行社</span>
-            <span>第 {dailyItinerary.length + 2} 頁</span>
+              <span>{t('tourPrint.companyName')}</span>
+              <span>{t('tourPrint.pageNum').replace('{num}', String(dailyItinerary.length + 2))}</span>
           </div>
         </div>
         
@@ -532,11 +534,11 @@ export default function TourPrintView() {
           {/* 頁眉 */}
           <div className="print-page-header">
             <span className="font-medium">{tour.title}</span>
-            <span className="text-gray-500">注意事項</span>
+            <span className="text-gray-500">{t('tourPrint.notes')}</span>
           </div>
           
           <h2 className="print-section-title" style={{ color: themeColor.primary }}>
-            注意事項
+            {t('tourPrint.notes')}
           </h2>
           
           {/* 注意事項列表 */}
@@ -546,7 +548,7 @@ export default function TourPrintView() {
                 <div key={idx} className="print-note-section">
                   {typeof note === 'object' ? (
                     <>
-                      <h3 className="print-note-title">{note.title || `注意事項 ${idx + 1}`}</h3>
+                      <h3 className="print-note-title">{note.title || `${t('tourPrint.noteItem')} ${idx + 1}`}</h3>
                       {note.items ? (
                         <ul className="print-note-list">
                           {note.items.map((item: string, itemIdx: number) => (
@@ -565,50 +567,50 @@ export default function TourPrintView() {
             ) : (
               <>
                 <div className="print-note-section">
-                  <h3 className="print-note-title">行前準備</h3>
+                  <h3 className="print-note-title">{t('tourPrint.preTrip')}</h3>
                   <ul className="print-note-list">
-                    <li>請攜帶有效身分證件（身分證或護照）</li>
-                    <li>建議攜帶輕便衣物和防曬用品</li>
-                    <li>準備舒適的步行鞋</li>
-                    <li>攜帶個人常用藥物</li>
-                    <li>建議攜帶雨具或折疊傘</li>
-                    <li>建議攜帶行動電源和充電器</li>
+                    <li>{t('tourPrint.preTrip1')}</li>
+                    <li>{t('tourPrint.preTrip2')}</li>
+                    <li>{t('tourPrint.preTrip3')}</li>
+                    <li>{t('tourPrint.preTrip4')}</li>
+                    <li>{t('tourPrint.preTrip5')}</li>
+                    <li>{t('tourPrint.preTrip6')}</li>
                   </ul>
                 </div>
                 <div className="print-note-section">
-                  <h3 className="print-note-title">集合資訊</h3>
+                  <h3 className="print-note-title">{t('tourPrint.meetingInfo')}</h3>
                   <ul className="print-note-list">
-                    <li>請於出發前 30 分鐘抵達集合地點</li>
-                    <li>領隊會於出發前一天以簡訊通知詳細集合資訊</li>
-                    <li>請保持手機暢通以便聯繫</li>
+                    <li>{t('tourPrint.meetingInfo1')}</li>
+                    <li>{t('tourPrint.meetingInfo2')}</li>
+                    <li>{t('tourPrint.meetingInfo3')}</li>
                   </ul>
                 </div>
                 <div className="print-note-section">
-                  <h3 className="print-note-title">旅遊提示</h3>
+                  <h3 className="print-note-title">{t('tourPrint.travelTips')}</h3>
                   <ul className="print-note-list">
-                    <li>請尊重當地風俗民情和文化習俗</li>
-                    <li>拍照前請先征得當事人同意</li>
-                    <li>請妥善保管貴重物品和證件</li>
-                    <li>建議購買旅遊保險以保障旅途安全</li>
-                    <li>注意飲食衛生，避免食用生冷食物</li>
+                    <li>{t('tourPrint.travelTip1')}</li>
+                    <li>{t('tourPrint.travelTip2')}</li>
+                    <li>{t('tourPrint.travelTip3')}</li>
+                    <li>{t('tourPrint.travelTip4')}</li>
+                    <li>{t('tourPrint.travelTip5')}</li>
                   </ul>
                 </div>
                 <div className="print-note-section">
-                  <h3 className="print-note-title">取消政策</h3>
+                  <h3 className="print-note-title">{t('tourPrint.cancellationPolicy')}</h3>
                   <ul className="print-note-list">
-                    <li>出發前 31 天以上取消，退還全額團費</li>
-                    <li>出發前 21-30 天取消，收取團費 10%</li>
-                    <li>出發前 2-20 天取消，收取團費 30%</li>
-                    <li>出發前 1 天取消，收取團費 50%</li>
-                    <li>出發當天取消或未到，恕不退費</li>
+                    <li>{t('tourPrint.cancel1')}</li>
+                    <li>{t('tourPrint.cancel2')}</li>
+                    <li>{t('tourPrint.cancel3')}</li>
+                    <li>{t('tourPrint.cancel4')}</li>
+                    <li>{t('tourPrint.cancel5')}</li>
                   </ul>
                 </div>
                 <div className="print-note-section">
-                  <h3 className="print-note-title">緊急聯絡</h3>
+                  <h3 className="print-note-title">{t('tourPrint.emergency')}</h3>
                   <ul className="print-note-list">
-                    <li>台灣緊急電話：110（警察）/ 119（消防、救護）</li>
-                    <li>旅行社 24 小時緊急專線：+886-2-1234-5678</li>
-                    <li>領隊隨身電話將於出發前通知</li>
+                    <li>{t('tourPrint.emergency1')}</li>
+                    <li>{t('tourPrint.emergency2')}</li>
+                    <li>{t('tourPrint.emergency3')}</li>
                   </ul>
                 </div>
               </>
@@ -617,7 +619,7 @@ export default function TourPrintView() {
           
           {/* 聯絡資訊 */}
           <div className="print-contact-box" style={{ backgroundColor: themeColor.light }}>
-            <h3 className="font-bold mb-3" style={{ color: themeColor.primary }}>聯絡我們</h3>
+            <h3 className="font-bold mb-3" style={{ color: themeColor.primary }}>{t('tourPrint.contactUs')}</h3>
             <div className="print-contact-grid">
               <div className="print-contact-item">
                 <Phone className="h-4 w-4" style={{ color: themeColor.secondary }} />
@@ -636,8 +638,8 @@ export default function TourPrintView() {
           
           {/* 頁腳 */}
           <div className="print-page-footer">
-            <span>PACK&GO 旅行社</span>
-            <span>第 {dailyItinerary.length + 3} 頁</span>
+              <span>{t('tourPrint.companyName')}</span>
+              <span>{t('tourPrint.pageNum').replace('{num}', String(dailyItinerary.length + 3))}</span>
           </div>
         </div>
         

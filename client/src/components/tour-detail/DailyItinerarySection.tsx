@@ -13,6 +13,7 @@ import { EditableImage } from "./EditableImage";
 import { useEditMode } from "@/contexts/EditModeContext";
 import { cn } from "@/lib/utils";
 import { ensureReadableOnWhite } from "@/lib/colorUtils";
+import { useLocale } from "@/contexts/LocaleContext";
 
 export interface DailyActivity {
   time: string;
@@ -59,6 +60,7 @@ export const DailyItinerarySection: React.FC<DailyItinerarySectionProps> = ({
   onImageUpload,
 }) => {
   const { isEditMode } = useEditMode();
+  const { t } = useLocale();
   const [expandedDays, setExpandedDays] = useState<number[]>(
     itineraries.map((_, i) => i) // 預設全部展開
   );
@@ -92,10 +94,10 @@ export const DailyItinerarySection: React.FC<DailyItinerarySectionProps> = ({
             className="text-3xl lg:text-4xl font-serif font-bold mb-3"
             style={{ color: ensureReadableOnWhite(colorTheme.primary) }}
           >
-            每日行程
+            {t('tourDetail.sections.itinerary')}
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            精心規劃的旅程，每一天都是獨特的體驗
+            {t('tourDetail.sections.itinerarySubtitle')}
           </p>
         </div>
 
@@ -156,7 +158,7 @@ export const DailyItinerarySection: React.FC<DailyItinerarySectionProps> = ({
                   {/* Expand/Collapse Icon */}
                   <div className="flex-shrink-0 flex items-center gap-2">
                     <span className="text-sm font-bold text-gray-900">
-                      {isExpanded ? '收起' : '查看更多'}
+                      {isExpanded ? t('tourDetail.collapse') : t('tourDetail.readMore')}
                     </span>
                     {isExpanded ? (
                       <ChevronUp className="h-6 w-6 text-gray-900" />
@@ -322,7 +324,7 @@ export const DailyItinerarySection: React.FC<DailyItinerarySectionProps> = ({
                         <div className="flex items-center gap-2 mb-4">
                           <Utensils className="h-5 w-5" style={{ color: ensureReadableOnWhite(colorTheme.accent) }} />
                           <h5 className="font-bold text-lg" style={{ color: ensureReadableOnWhite(colorTheme.primary) }}>
-                            今日餐食
+                            {t('tourDetail.todayMeals')}
                           </h5>
                         </div>
                         <div className="space-y-3">
@@ -330,7 +332,7 @@ export const DailyItinerarySection: React.FC<DailyItinerarySectionProps> = ({
                             <div className="flex items-start gap-3">
                               <div className="flex-shrink-0 w-20 flex items-center gap-1.5 text-sm font-medium text-gray-700">
                                 {getMealIcon('breakfast')}
-                                早餐
+                                {t('tourPrint.breakfast')}
                               </div>
                               <p className="text-gray-700 flex-1">{day.meals.breakfast}</p>
                             </div>
@@ -339,7 +341,7 @@ export const DailyItinerarySection: React.FC<DailyItinerarySectionProps> = ({
                             <div className="flex items-start gap-3">
                               <div className="flex-shrink-0 w-20 flex items-center gap-1.5 text-sm font-medium text-gray-700">
                                 {getMealIcon('lunch')}
-                                午餐
+                                {t('tourPrint.lunch')}
                               </div>
                               <p className="text-gray-700 flex-1">{day.meals.lunch}</p>
                             </div>
@@ -348,7 +350,7 @@ export const DailyItinerarySection: React.FC<DailyItinerarySectionProps> = ({
                             <div className="flex items-start gap-3">
                               <div className="flex-shrink-0 w-20 flex items-center gap-1.5 text-sm font-medium text-gray-700">
                                 {getMealIcon('dinner')}
-                                晚餐
+                                {t('tourPrint.dinner')}
                               </div>
                               <p className="text-gray-700 flex-1">{day.meals.dinner}</p>
                             </div>
@@ -362,7 +364,7 @@ export const DailyItinerarySection: React.FC<DailyItinerarySectionProps> = ({
                           <div className="flex items-center gap-2 mb-4">
                             <Hotel className="h-5 w-5" style={{ color: ensureReadableOnWhite(colorTheme.accent) }} />
                             <h5 className="font-bold text-lg" style={{ color: ensureReadableOnWhite(colorTheme.primary) }}>
-                              今晚住宿
+                              {t('tourDetail.tonightHotel')}
                             </h5>
                           </div>
                           <div className="flex gap-4">

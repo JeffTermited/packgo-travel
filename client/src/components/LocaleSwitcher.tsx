@@ -11,12 +11,12 @@ import { Globe, ChevronDown, DollarSign } from 'lucide-react';
 
 // 語言切換組件 - 黑白簡潔風格
 export function LanguageSwitcher() {
-  const { language, setLanguage, languageName } = useLocale();
+  const { language, setLanguage, languageName, t } = useLocale();
 
   const languages: { code: Language; name: string }[] = [
-    { code: 'zh-TW', name: '繁體中文' },
-    { code: 'en', name: 'English' },
-    { code: 'es', name: 'Español' },
+    { code: 'zh-TW', name: t('language.zhTW') },
+    { code: 'en', name: t('language.en') },
+    { code: 'es', name: t('language.es') },
   ];
 
   return (
@@ -53,11 +53,11 @@ export function LanguageSwitcher() {
 
 // 幣值切換組件 - 黑白簡潔風格
 export function CurrencySwitcher() {
-  const { currency, setCurrency } = useLocale();
+  const { currency, setCurrency, t } = useLocale();
 
   const currencies: { code: Currency; name: string; symbol: string }[] = [
-    { code: 'TWD', name: '新台幣', symbol: 'NT$' },
-    { code: 'USD', name: '美金', symbol: '$' },
+    { code: 'TWD', name: t('currency.twd'), symbol: 'NT$' },
+    { code: 'USD', name: t('currency.usd'), symbol: '$' },
   ];
 
   return (
@@ -90,7 +90,7 @@ export function CurrencySwitcher() {
         ))}
         <DropdownMenuSeparator className="bg-gray-200" />
         <div className="px-2 py-1.5 text-[10px] text-gray-500 leading-tight">
-          ※ 轉換價格僅供參考
+          {t('currency.note')}
         </div>
       </DropdownMenuContent>
     </DropdownMenu>

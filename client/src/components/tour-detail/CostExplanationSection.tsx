@@ -6,6 +6,7 @@
 import React from "react";
 import { CheckCircle2, XCircle, AlertCircle, Info } from "lucide-react";
 import { ensureReadableOnWhite } from "@/lib/colorUtils";
+import { useLocale } from "@/contexts/LocaleContext";
 
 export interface CostExplanation {
   included?: string[];
@@ -27,6 +28,8 @@ export const CostExplanationSection: React.FC<CostExplanationSectionProps> = ({
   costExplanation,
   colorTheme,
 }) => {
+  const { t } = useLocale();
+
   if (!costExplanation) {
     return null;
   }
@@ -40,7 +43,7 @@ export const CostExplanationSection: React.FC<CostExplanationSectionProps> = ({
           className="text-2xl lg:text-3xl font-serif font-bold text-center mb-6"
           style={{ color: ensureReadableOnWhite(colorTheme.primary) }}
         >
-          費用說明
+          {t('tourDetail.sections.cost')}
         </h2>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -56,7 +59,7 @@ export const CostExplanationSection: React.FC<CostExplanationSectionProps> = ({
                   className="text-lg font-bold"
                   style={{ color: ensureReadableOnWhite(colorTheme.primary) }}
                 >
-                  費用包含
+                  {t('tourDetail.sections.costIncluded')}
                 </h3>
               </div>
               <ul className="space-y-2">
@@ -85,7 +88,7 @@ export const CostExplanationSection: React.FC<CostExplanationSectionProps> = ({
                   className="text-lg font-bold"
                   style={{ color: ensureReadableOnWhite(colorTheme.primary) }}
                 >
-                  費用不包含
+                  {t('tourDetail.sections.costExcluded')}
                 </h3>
               </div>
               <ul className="space-y-2">
@@ -115,7 +118,7 @@ export const CostExplanationSection: React.FC<CostExplanationSectionProps> = ({
                 className="text-lg font-bold"
                 style={{ color: ensureReadableOnWhite(colorTheme.primary) }}
               >
-                額外費用說明
+                {t('tourDetail.sections.costAdditional')}
               </h3>
             </div>
             <ul className="space-y-2">
@@ -151,7 +154,7 @@ export const CostExplanationSection: React.FC<CostExplanationSectionProps> = ({
                   className="font-bold mb-1.5"
                   style={{ color: ensureReadableOnWhite(colorTheme.primary) }}
                 >
-                  重要提醒
+                  {t('tourDetail.sections.costReminder')}
                 </h4>
                 <p className="text-gray-700 leading-relaxed text-sm">{notes}</p>
               </div>

@@ -6,6 +6,7 @@
 import React from "react";
 import { Plane, Train, Ship, Car, Bus, Clock, MapPin } from "lucide-react";
 import { ensureReadableOnWhite } from "@/lib/colorUtils";
+import { useLocale } from "@/contexts/LocaleContext";
 
 // 交通類型
 export type TransportationType = 'FLIGHT' | 'TRAIN' | 'CAR' | 'CRUISE' | 'BUS' | 'UNKNOWN';
@@ -78,81 +79,12 @@ const getTransportIcon = (type?: TransportationType) => {
   }
 };
 
-// 根據交通類型獲取標題
-const getSectionTitle = (type?: TransportationType, typeName?: string) => {
-  if (typeName) return `${typeName}資訊`;
-  
-  switch (type) {
-    case 'TRAIN':
-      return '火車資訊';
-    case 'CRUISE':
-      return '郵輪資訊';
-    case 'CAR':
-      return '租車資訊';
-    case 'BUS':
-      return '巴士資訊';
-    case 'FLIGHT':
-    default:
-      return '航班資訊';
-  }
-};
-
-// 根據交通類型獲取標籤文字
-const getLabels = (type?: TransportationType) => {
-  switch (type) {
-    case 'TRAIN':
-      return {
-        outboundTitle: '去程列車',
-        inboundTitle: '回程列車',
-        vehicleNo: '車次：',
-        departureTime: '發車時間：',
-        arrivalTime: '抵達時間：',
-        duration: '行車時間：',
-      };
-    case 'CRUISE':
-      return {
-        outboundTitle: '去程航線',
-        inboundTitle: '回程航線',
-        vehicleNo: '船班：',
-        departureTime: '出發時間：',
-        arrivalTime: '抵達時間：',
-        duration: '航行時間：',
-      };
-    case 'CAR':
-      return {
-        outboundTitle: '取車資訊',
-        inboundTitle: '還車資訊',
-        vehicleNo: '車型：',
-        departureTime: '取車時間：',
-        arrivalTime: '還車時間：',
-        duration: '租借時間：',
-      };
-    case 'BUS':
-      return {
-        outboundTitle: '去程巴士',
-        inboundTitle: '回程巴士',
-        vehicleNo: '車號：',
-        departureTime: '發車時間：',
-        arrivalTime: '抵達時間：',
-        duration: '車程時間：',
-      };
-    case 'FLIGHT':
-    default:
-      return {
-        outboundTitle: '去程航班',
-        inboundTitle: '回程航班',
-        vehicleNo: '航班編號：',
-        departureTime: '起飛時間：',
-        arrivalTime: '抵達時間：',
-        duration: '飛行時間：',
-      };
-  }
-};
-
 export const TransportationInfoSection: React.FC<TransportationInfoSectionProps> = ({
   transportationInfo,
   colorTheme,
 }) => {
+  const { t } = useLocale();
+
   if (!transportationInfo) {
     return null;
   }
@@ -161,10 +93,74 @@ export const TransportationInfoSection: React.FC<TransportationInfoSectionProps>
   const type = transportationInfo.type || 'FLIGHT';
   const typeName = transportationInfo.typeName || transportationInfo.extra?.trainName;
   
+  // 根據交通類型獲取標題
+  const getSectionTitle = () => {
+    if (typeName) return t('tourDetail.transport.typeInfo').replace('{type}', typeName);
+    switch (type) {
+      case 'TRAIN': return t('tourDetail.transport.trainInfo');
+      case 'CRUISE': return t('tourDetail.transport.cruiseInfo');
+      case 'CAR': return t('tourDetail.transport.carInfo');
+      case 'BUS': return t('tourDetail.transport.busInfo');
+      default: return t('tourDetail.transport.flightInfo');
+    }
+  };
+
+  // 根據交通類型獲取標籤文字
+  const getLabels = () => {
+    switch (type) {
+      case 'TRAIN':
+        return {
+          outboundTitle: t('tourDetail.transport.outboundTrain'),
+          inboundTitle: t('tourDetail.transport.inboundTrain'),
+          vehicleNo: t('tourDetail.transport.trainNo'),
+          departureTime: t('tourDetail.transport.trainDeparture'),
+          arrivalTime: t('tourDetail.transport.trainArrival'),
+          duration: t('tourDetail.transport.trainDuration'),
+        };
+      case 'CRUISE':
+        return {
+          outboundTitle: t('tourDetail.transport.outboundCruise'),
+          inboundTitle: t('tourDetail.transport.inboundCruise'),
+          vehicleNo: t('tourDetail.transport.cruiseNo'),
+          departureTime: t('tourDetail.transport.cruiseDeparture'),
+          arrivalTime: t('tourDetail.transport.cruiseArrival'),
+          duration: t('tourDetail.transport.cruiseDuration'),
+        };
+      case 'CAR':
+        return {
+          outboundTitle: t('tourDetail.transport.outboundCar'),
+          inboundTitle: t('tourDetail.transport.inboundCar'),
+          vehicleNo: t('tourDetail.transport.carType'),
+          departureTime: t('tourDetail.transport.carPickup'),
+          arrivalTime: t('tourDetail.transport.carReturn'),
+          duration: t('tourDetail.transport.carDuration'),
+        };
+      case 'BUS':
+        return {
+          outboundTitle: t('tourDetail.transport.outboundBus'),
+          inboundTitle: t('tourDetail.transport.inboundBus'),
+          vehicleNo: t('tourDetail.transport.busNo'),
+          departureTime: t('tourDetail.transport.busDeparture'),
+          arrivalTime: t('tourDetail.transport.busArrival'),
+          duration: t('tourDetail.transport.busDuration'),
+        };
+      case 'FLIGHT':
+      default:
+        return {
+          outboundTitle: t('tourDetail.transport.outboundFlight'),
+          inboundTitle: t('tourDetail.transport.inboundFlight'),
+          vehicleNo: t('tourDetail.transport.flightNo'),
+          departureTime: t('tourDetail.transport.flightDeparture'),
+          arrivalTime: t('tourDetail.transport.flightArrival'),
+          duration: t('tourDetail.transport.flightDuration'),
+        };
+    }
+  };
+
   // 獲取圖標和標籤
   const TransportIcon = getTransportIcon(type);
-  const sectionTitle = getSectionTitle(type, typeName);
-  const labels = getLabels(type);
+  const sectionTitle = getSectionTitle();
+  const labels = getLabels();
   
   // 處理資料（向後相容舊格式）
   const outbound = transportationInfo.outbound;
@@ -205,7 +201,7 @@ export const TransportationInfoSection: React.FC<TransportationInfoSectionProps>
         {/* Route for Train */}
         {type === 'TRAIN' && extra?.route && extra.route.length > 0 && (
           <div className="mb-6 text-center">
-            <p className="text-sm text-gray-600 mb-2">沿途停靠站</p>
+            <p className="text-sm text-gray-600 mb-2">{t('tourDetail.transport.trainDeparture')}</p>
             <div className="flex flex-wrap justify-center items-center gap-2">
               {extra.route.map((station, index) => (
                 <React.Fragment key={index}>

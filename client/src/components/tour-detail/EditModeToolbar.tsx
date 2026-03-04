@@ -8,6 +8,7 @@ import { Pencil, X, Save, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEditMode } from "@/contexts/EditModeContext";
 import { cn } from "@/lib/utils";
+import { useLocale } from "@/contexts/LocaleContext";
 
 interface EditModeToolbarProps {
   colorTheme?: {
@@ -19,6 +20,7 @@ interface EditModeToolbarProps {
 
 export const EditModeToolbar: React.FC<EditModeToolbarProps> = ({ colorTheme }) => {
   const { isEditMode, canEdit, hasUnsavedChanges, toggleEditMode } = useEditMode();
+  const { t } = useLocale();
 
   if (!canEdit) return null;
 
@@ -35,16 +37,16 @@ export const EditModeToolbar: React.FC<EditModeToolbarProps> = ({ colorTheme }) 
       >
         <div className="flex items-center gap-3">
           <Pencil className="h-5 w-5" />
-          <span className="font-medium">編輯模式</span>
+          <span className="font-medium">{t('tourDetail.sections.editMode')}</span>
           <span className="text-sm opacity-80">
-            點擊任何文字或圖片即可編輯
+            {t('tourDetail.sections.editModeDesc')}
           </span>
         </div>
         <div className="flex items-center gap-3">
           {hasUnsavedChanges && (
             <div className="flex items-center gap-2 text-sm bg-yellow-500 px-3 py-1 rounded">
               <AlertCircle className="h-4 w-4" />
-              有未儲存的變更
+              {t('tourDetail.sections.unsavedChanges')}
             </div>
           )}
           <Button
@@ -54,7 +56,7 @@ export const EditModeToolbar: React.FC<EditModeToolbarProps> = ({ colorTheme }) 
             className="bg-white hover:bg-gray-100 text-yellow-900 border-yellow-600"
           >
             <X className="h-4 w-4 mr-1" />
-            離開編輯
+            {t('tourDetail.sections.exitEdit')}
           </Button>
         </div>
       </div>

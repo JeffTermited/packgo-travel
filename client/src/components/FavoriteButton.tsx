@@ -4,6 +4,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
 import { getLoginUrl } from "@/const";
+import { useLocale } from "@/contexts/LocaleContext";
 
 interface FavoriteButtonProps {
   tourId: number;
@@ -21,6 +22,7 @@ export function FavoriteButton({
   showText = false,
 }: FavoriteButtonProps) {
   const { isAuthenticated } = useAuth();
+  const { t } = useLocale();
   const utils = trpc.useUtils();
 
   // Get user's favorite IDs
@@ -50,17 +52,17 @@ export function FavoriteButton({
       if (context?.previousIds) {
         utils.favorites.getIds.setData(undefined, context.previousIds);
       }
-      toast.error("操作失敗", {
+      toast.error(t('favorites.toggleFailed'), {
         description: error.message,
       });
     },
     onSuccess: (data) => {
       if (data.isFavorite) {
-        toast.success("已加入收藏", {
-          description: "您可以在會員中心查看收藏的行程",
+        toast.success(t('favorites.addedToFavorites'), {
+          description: t('favorites.viewInProfile'),
         });
       } else {
-        toast.success("已取消收藏");
+        toast.success(t('favorites.removedFromFavorites'));
       }
     },
     onSettled: () => {
@@ -74,10 +76,10 @@ export function FavoriteButton({
     e.stopPropagation();
 
     if (!isAuthenticated) {
-      toast.error("請先登入", {
-        description: "登入後即可收藏喜愛的行程",
+      toast.error(t('favorites.loginRequired'), {
+        description: t('favorites.loginToFavorite'),
         action: {
-          label: "前往登入",
+          label: t('favorites.goToLogin'),
           onClick: () => {
             window.location.href = getLoginUrl();
           },
@@ -124,7 +126,7 @@ export function FavoriteButton({
         />
         {showText && (
           <span className="font-medium text-sm">
-            {isFavorite ? "已收藏" : "收藏"}
+            {isFavorite ? t('favorites.saved') : t('favorites.save')}
           </span>
         )}
       </button>
@@ -146,7 +148,7 @@ export function FavoriteButton({
         toggleMutation.isPending && "opacity-50 cursor-not-allowed",
         className
       )}
-      title={isFavorite ? "取消收藏" : "加入收藏"}
+      title={isFavorite ? t('favorites.removeFavorite') : t('favorites.addFavorite')}
     >
       <Heart
         className={cn(

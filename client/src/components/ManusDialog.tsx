@@ -9,6 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+import { useLocale } from "@/contexts/LocaleContext";
 
 interface ManusDialogProps {
   title?: string;
@@ -27,6 +28,7 @@ export function ManusDialog({
   onOpenChange,
   onClose,
 }: ManusDialogProps) {
+  const { t } = useLocale();
   const [internalOpen, setInternalOpen] = useState(open);
 
   useEffect(() => {
@@ -71,11 +73,11 @@ export function ManusDialog({
             </DialogTitle>
           ) : (
             <VisuallyHidden>
-              <DialogTitle>登入對話框</DialogTitle>
+              <DialogTitle>{t('auth.loginDialog.title')}</DialogTitle>
             </VisuallyHidden>
           )}
           <DialogDescription className="text-sm text-[#858481] leading-5 tracking-[-0.154px]">
-            請使用 Manus 帳號登入以繼續
+            {t('auth.loginDialog.description')}
           </DialogDescription>
         </div>
 
@@ -84,9 +86,9 @@ export function ManusDialog({
           <Button
             onClick={onLogin}
             className="w-full h-10 bg-[#1a1a19] hover:bg-[#1a1a19]/90 text-white rounded-[10px] text-sm font-medium leading-5 tracking-[-0.154px]"
-            aria-label="使用 Manus 帳號登入"
+            aria-label={t('auth.loginDialog.loginButton')}
           >
-            Login with Manus
+            {t('auth.loginDialog.loginButton')}
           </Button>
         </DialogFooter>
       </DialogContent>

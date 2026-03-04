@@ -7,8 +7,8 @@ import ReactCrop, {
 } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
 import { Button } from "@/components/ui/button";
-import { Loader2, Check, RotateCcw, Maximize2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Loader2, Check, RotateCcw } from "lucide-react";
+import { useLocale } from "@/contexts/LocaleContext";
 
 interface ImageCropperProps {
   imageSrc: string;
@@ -17,14 +17,6 @@ interface ImageCropperProps {
   onCancel: () => void;
   isUploading?: boolean;
 }
-
-// 預設裁切比例選項
-const ASPECT_RATIOS = [
-  { label: "16:9", value: 16 / 9 },
-  { label: "4:3", value: 4 / 3 },
-  { label: "1:1", value: 1 },
-  { label: "自由", value: undefined },
-];
 
 function centerAspectCrop(
   mediaWidth: number,
@@ -53,6 +45,7 @@ export function ImageCropper({
   onCancel,
   isUploading = false,
 }: ImageCropperProps) {
+  const { t } = useLocale();
   const [crop, setCrop] = useState<Crop>();
   const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
   const [selectedAspectRatio, setSelectedAspectRatio] = useState<number | undefined>(
@@ -61,7 +54,14 @@ export function ImageCropper({
   const imgRef = useRef<HTMLImageElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // 當圖片載入時，設置初始裁切區域
+  // Aspect ratio options - computed inside component to use t()
+  const ASPECT_RATIOS = [
+    { label: "16:9", value: 16 / 9 },
+    { label: "4:3", value: 4 / 3 },
+    { label: "1:1", value: 1 },
+    { label: t('imageCropper.free'), value: undefined },
+  ];
+
   const onImageLoad = useCallback(
     (e: React.SyntheticEvent<HTMLImageElement>) => {
       const { width, height } = e.currentTarget;
@@ -71,7 +71,6 @@ export function ImageCropper({
     [selectedAspectRatio]
   );
 
-  // 當選擇新的比例時，重新計算裁切區域
   const handleAspectRatioChange = (ratio: number | undefined) => {
     setSelectedAspectRatio(ratio);
     if (imgRef.current && ratio) {
@@ -80,7 +79,6 @@ export function ImageCropper({
     }
   };
 
-  // 生成裁切後的圖片
   const generateCroppedImage = useCallback(async () => {
     if (!completedCrop || !imgRef.current || !canvasRef.current) {
       return;
@@ -94,7 +92,6 @@ export function ImageCropper({
       return;
     }
 
-    // 計算實際的裁切尺寸（考慮圖片的原始尺寸和顯示尺寸的比例）
     const scaleX = image.naturalWidth / image.width;
     const scaleY = image.naturalHeight / image.height;
 
@@ -123,7 +120,6 @@ export function ImageCropper({
       cropHeight
     );
 
-    // 將 canvas 轉換為 Blob
     canvas.toBlob(
       (blob) => {
         if (blob) {
@@ -135,7 +131,6 @@ export function ImageCropper({
     );
   }, [completedCrop, onCropComplete]);
 
-  // 重置裁切區域
   const handleReset = () => {
     if (imgRef.current) {
       const { width, height } = imgRef.current;
@@ -146,9 +141,9 @@ export function ImageCropper({
 
   return (
     <div className="space-y-4">
-      {/* 比例選擇器 */}
+      {/* Aspect ratio selector */}
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-sm text-gray-600 mr-2">裁切比例：</span>
+        <span className="text-sm text-gray-600 mr-2">{t('imageCropper.aspectRatio')}</span>
         {ASPECT_RATIOS.map((ratio) => (
           <Button
             key={ratio.label}
@@ -162,7 +157,7 @@ export function ImageCropper({
         ))}
       </div>
 
-      {/* 裁切區域 */}
+      {/* Crop area */}
       <div className="relative bg-gray-100 rounded-lg overflow-hidden max-h-[400px] flex items-center justify-center">
         <ReactCrop
           crop={crop}
@@ -174,17 +169,17 @@ export function ImageCropper({
           <img
             ref={imgRef}
             src={imageSrc}
-            alt="裁切預覽"
+            alt={t('imageCropper.cropPreview')}
             onLoad={onImageLoad}
             className="max-h-[400px] max-w-full object-contain"
           />
         </ReactCrop>
       </div>
 
-      {/* 隱藏的 canvas 用於生成裁切後的圖片 */}
+      {/* Hidden canvas for generating cropped image */}
       <canvas ref={canvasRef} className="hidden" />
 
-      {/* 操作按鈕 */}
+      {/* Action buttons */}
       <div className="flex items-center justify-between">
         <div className="flex gap-2">
           <Button
@@ -194,7 +189,7 @@ export function ImageCropper({
             disabled={isUploading}
           >
             <RotateCcw className="h-4 w-4 mr-1" />
-            重置
+            {t('imageCropper.reset')}
           </Button>
         </div>
         <div className="flex gap-2">
@@ -203,7 +198,7 @@ export function ImageCropper({
             onClick={onCancel}
             disabled={isUploading}
           >
-            取消
+            {t('common.cancel')}
           </Button>
           <Button
             onClick={generateCroppedImage}
@@ -212,21 +207,21 @@ export function ImageCropper({
             {isUploading ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                上傳中...
+                {t('imageCropper.uploading')}
               </>
             ) : (
               <>
                 <Check className="h-4 w-4 mr-2" />
-                確認裁切
+                {t('imageCropper.confirmCrop')}
               </>
             )}
           </Button>
         </div>
       </div>
 
-      {/* 提示文字 */}
+      {/* Hint text */}
       <p className="text-xs text-gray-500 text-center">
-        拖曳調整裁切區域，選擇您想要的圖片範圍
+        {t('imageCropper.hint')}
       </p>
     </div>
   );

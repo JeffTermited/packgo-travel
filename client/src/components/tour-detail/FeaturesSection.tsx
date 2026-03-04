@@ -8,6 +8,7 @@ import { EditableText } from "./EditableText";
 import { EditableImage } from "./EditableImage";
 import { useEditMode } from "@/contexts/EditModeContext";
 import { ensureReadableOnWhite } from "@/lib/colorUtils";
+import { useLocale } from "@/contexts/LocaleContext";
 
 export interface Feature {
   label: string;
@@ -37,6 +38,7 @@ export const FeaturesSection: React.FC<FeaturesSectionProps> = ({
   onImageUpload,
 }) => {
   const { isEditMode } = useEditMode();
+  const { t } = useLocale();
   
   // 只顯示前 3 個特色
   const displayFeatures = features.slice(0, 3);
@@ -54,10 +56,10 @@ export const FeaturesSection: React.FC<FeaturesSectionProps> = ({
             className="text-3xl lg:text-4xl font-serif font-bold mb-3"
             style={{ color: ensureReadableOnWhite(colorTheme.primary) }}
           >
-            行程特色
+            {t('tourDetail.sections.features')}
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            精心安排的獨特體驗，讓您的旅程與眾不同
+            {t('tourDetail.sections.featuresSubtitle')}
           </p>
         </div>
 

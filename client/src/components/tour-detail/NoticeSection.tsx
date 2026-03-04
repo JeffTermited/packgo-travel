@@ -6,6 +6,7 @@
 import React from "react";
 import { AlertCircle, FileText, Heart, Phone } from "lucide-react";
 import { ensureReadableOnWhite } from "@/lib/colorUtils";
+import { useLocale } from "@/contexts/LocaleContext";
 
 export interface NoticeDetailed {
   preparation?: string[];
@@ -35,30 +36,32 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
   noticeDetailed,
   colorTheme,
 }) => {
+  const { t } = useLocale();
+
   // 預設注意事項（當資料庫為空時使用）
   const defaultNotice: NoticeDetailed = {
     preparation: [
-      "請確認護照效期至少6個月以上，並檢查簽證要求。",
-      "建議提前2小時抵達機場辦理登機手續。",
-      "請攜帶足夠的當地貨幣或信用卡，部分地區可能不接受外幣。",
-      "建議攜帶輕便行李，避免超重費用。",
+      t('tourDetail.notice.defaultPrep1'),
+      t('tourDetail.notice.defaultPrep2'),
+      t('tourDetail.notice.defaultPrep3'),
+      t('tourDetail.notice.defaultPrep4'),
     ],
     culturalNotes: [
-      "尊重當地文化習俗，進入宗教場所請穿著得體。",
-      "拍照前請先徵得當地居民同意。",
-      "用餐時請注意當地禮儀，避免浪費食物。",
+      t('tourDetail.notice.defaultCulture1'),
+      t('tourDetail.notice.defaultCulture2'),
+      t('tourDetail.notice.defaultCulture3'),
     ],
     healthSafety: [
-      "建議出發前諮詢醫生，確認是否需要接種疫苗。",
-      "請攜帶常用藥品及個人醫療用品。",
-      "注意飲食衛生，避免生食或不潔食物。",
-      "購買旅遊保險，確保行程期間的醫療保障。",
+      t('tourDetail.notice.defaultHealth1'),
+      t('tourDetail.notice.defaultHealth2'),
+      t('tourDetail.notice.defaultHealth3'),
+      t('tourDetail.notice.defaultHealth4'),
     ],
     emergency: [
-      "緊急聯絡電話：+886-2-xxxx-xxxx（24小時客服）",
-      "當地緊急救援電話：請參考行前說明會資料",
-      "遺失護照請立即聯絡當地台灣駐外單位。",
-      "如遇緊急狀況，請立即聯絡領隊或導遊。",
+      t('tourDetail.notice.defaultEmergency1'),
+      t('tourDetail.notice.defaultEmergency2'),
+      t('tourDetail.notice.defaultEmergency3'),
+      t('tourDetail.notice.defaultEmergency4'),
     ],
   };
 
@@ -85,7 +88,7 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
           className="text-2xl lg:text-3xl font-serif font-bold text-center mb-6"
           style={{ color: ensureReadableOnWhite(colorTheme.primary) }}
         >
-          注意事項
+          {t('tourDetail.sections.notice')}
         </h2>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -106,7 +109,7 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
                   className="text-lg font-bold"
                   style={{ color: ensureReadableOnWhite(colorTheme.primary) }}
                 >
-                  行前準備
+                  {t('tourDetail.notice.preparation')}
                 </h3>
               </div>
               <ul className="space-y-2">
@@ -142,7 +145,7 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
                   className="text-lg font-bold"
                   style={{ color: ensureReadableOnWhite(colorTheme.primary) }}
                 >
-                  文化禮儀
+                  {t('tourDetail.notice.culturalNotes')}
                 </h3>
               </div>
               <ul className="space-y-2">
@@ -178,7 +181,7 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
                   className="text-lg font-bold"
                   style={{ color: ensureReadableOnWhite(colorTheme.primary) }}
                 >
-                  健康安全
+                  {t('tourDetail.notice.healthSafety')}
                 </h3>
               </div>
               <ul className="space-y-2">
@@ -214,7 +217,7 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
                   className="text-lg font-bold"
                   style={{ color: ensureReadableOnWhite(colorTheme.primary) }}
                 >
-                  緊急聯絡
+                  {t('tourDetail.notice.emergency')}
                 </h3>
               </div>
               <ul className="space-y-2">
@@ -252,10 +255,10 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
                 className="font-bold mb-2"
                 style={{ color: ensureReadableOnWhite(colorTheme.primary) }}
               >
-                重要提醒
+                {t('tourDetail.notice.importantReminder')}
               </h4>
               <p className="text-gray-700 leading-relaxed text-sm">
-                以上注意事項僅供參考，實際行程可能因天氣、交通、政治等不可抗力因素而調整。出發前請務必參加行前說明會，並詳閱旅遊契約書及相關文件。如有任何疑問，請洽詢客服人員。
+                {t('tourDetail.notice.disclaimer')}
               </p>
             </div>
           </div>

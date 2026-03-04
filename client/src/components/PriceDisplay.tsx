@@ -32,7 +32,7 @@ export function PriceDisplay({
   showFrom = false,
   originalPrice,
 }: PriceDisplayProps) {
-  const { currency, formatPrice, rateDisclaimer } = useLocale();
+  const { currency, formatPrice, rateDisclaimer, t } = useLocale();
 
   // 根據 size 決定字體大小
   const sizeClasses = {
@@ -61,9 +61,9 @@ export function PriceDisplay({
         {formattedPrice}
       </span>
       
-      {/* 「起」字 */}
+      {/* From indicator */}
       {showFrom && (
-        <span className="text-sm text-muted-foreground">起</span>
+        <span className="text-sm text-muted-foreground">{t('common.startingFrom')}</span>
       )}
       
       {/* 轉換提示（當使用非原始貨幣時） */}

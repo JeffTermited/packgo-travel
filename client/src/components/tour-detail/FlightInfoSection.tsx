@@ -6,6 +6,7 @@
 import React from "react";
 import { Plane, Clock, MapPin } from "lucide-react";
 import { ensureReadableOnWhite } from "@/lib/colorUtils";
+import { useLocale } from "@/contexts/LocaleContext";
 
 export interface FlightInfo {
   airline?: string;
@@ -42,6 +43,8 @@ export const FlightInfoSection: React.FC<FlightInfoSectionProps> = ({
   flightInfo,
   colorTheme,
 }) => {
+  const { t } = useLocale();
+
   if (!flightInfo) {
     return null;
   }
@@ -55,7 +58,7 @@ export const FlightInfoSection: React.FC<FlightInfoSectionProps> = ({
           className="text-2xl lg:text-3xl font-serif font-bold text-center mb-6"
           style={{ color: ensureReadableOnWhite(colorTheme.primary) }}
         >
-          航班資訊
+          {t('tourDetail.transport.flightInfo')}
         </h2>
 
         {/* Airline & Description */}
@@ -92,14 +95,14 @@ export const FlightInfoSection: React.FC<FlightInfoSectionProps> = ({
                   className="text-lg font-bold"
                   style={{ color: ensureReadableOnWhite(colorTheme.primary) }}
                 >
-                  去程航班
+                  {t('tourDetail.transport.outboundFlight')}
                 </h3>
               </div>
 
               <div className="space-y-3">
                 {outbound.flightNo && (
                   <div className="flex items-start gap-3">
-                    <span className="font-medium text-gray-600 min-w-[80px]">航班編號：</span>
+                    <span className="font-medium text-gray-600 min-w-[80px]">{t('tourDetail.transport.flightNo')}</span>
                     <span className="text-gray-900 font-bold">{outbound.flightNo}</span>
                   </div>
                 )}
@@ -110,7 +113,7 @@ export const FlightInfoSection: React.FC<FlightInfoSectionProps> = ({
                     <div>
                       <p className="text-gray-900 font-medium">{outbound.departureAirport}</p>
                       {outbound.departureTime && (
-                        <p className="text-sm text-gray-600">起飛時間：{outbound.departureTime}</p>
+                        <p className="text-sm text-gray-600">{t('tourDetail.transport.flightDeparture')}{outbound.departureTime}</p>
                       )}
                     </div>
                   </div>
@@ -122,7 +125,7 @@ export const FlightInfoSection: React.FC<FlightInfoSectionProps> = ({
                     <div>
                       <p className="text-gray-900 font-medium">{outbound.arrivalAirport}</p>
                       {outbound.arrivalTime && (
-                        <p className="text-sm text-gray-600">抵達時間：{outbound.arrivalTime}</p>
+                        <p className="text-sm text-gray-600">{t('tourDetail.transport.flightArrival')}{outbound.arrivalTime}</p>
                       )}
                     </div>
                   </div>
@@ -131,7 +134,7 @@ export const FlightInfoSection: React.FC<FlightInfoSectionProps> = ({
                 {outbound.duration && (
                   <div className="flex items-start gap-3">
                     <Clock className="h-5 w-5 flex-shrink-0 mt-0.5" style={{ color: ensureReadableOnWhite(colorTheme.accent) }} />
-                    <span className="text-gray-900">飛行時間：{outbound.duration}</span>
+                    <span className="text-gray-900">{t('tourDetail.transport.flightDuration')}{outbound.duration}</span>
                   </div>
                 )}
               </div>
@@ -155,14 +158,14 @@ export const FlightInfoSection: React.FC<FlightInfoSectionProps> = ({
                   className="text-lg font-bold"
                   style={{ color: ensureReadableOnWhite(colorTheme.primary) }}
                 >
-                  回程航班
+                  {t('tourDetail.transport.inboundFlight')}
                 </h3>
               </div>
 
               <div className="space-y-3">
                 {inbound.flightNo && (
                   <div className="flex items-start gap-3">
-                    <span className="font-medium text-gray-600 min-w-[80px]">航班編號：</span>
+                    <span className="font-medium text-gray-600 min-w-[80px]">{t('tourDetail.transport.flightNo')}</span>
                     <span className="text-gray-900 font-bold">{inbound.flightNo}</span>
                   </div>
                 )}
@@ -173,7 +176,7 @@ export const FlightInfoSection: React.FC<FlightInfoSectionProps> = ({
                     <div>
                       <p className="text-gray-900 font-medium">{inbound.departureAirport}</p>
                       {inbound.departureTime && (
-                        <p className="text-sm text-gray-600">起飛時間：{inbound.departureTime}</p>
+                        <p className="text-sm text-gray-600">{t('tourDetail.transport.flightDeparture')}{inbound.departureTime}</p>
                       )}
                     </div>
                   </div>
@@ -185,7 +188,7 @@ export const FlightInfoSection: React.FC<FlightInfoSectionProps> = ({
                     <div>
                       <p className="text-gray-900 font-medium">{inbound.arrivalAirport}</p>
                       {inbound.arrivalTime && (
-                        <p className="text-sm text-gray-600">抵達時間：{inbound.arrivalTime}</p>
+                        <p className="text-sm text-gray-600">{t('tourDetail.transport.flightArrival')}{inbound.arrivalTime}</p>
                       )}
                     </div>
                   </div>
@@ -194,7 +197,7 @@ export const FlightInfoSection: React.FC<FlightInfoSectionProps> = ({
                 {inbound.duration && (
                   <div className="flex items-start gap-3">
                     <Clock className="h-5 w-5 flex-shrink-0 mt-0.5" style={{ color: ensureReadableOnWhite(colorTheme.accent) }} />
-                    <span className="text-gray-900">飛行時間：{inbound.duration}</span>
+                    <span className="text-gray-900">{t('tourDetail.transport.flightDuration')}{inbound.duration}</span>
                   </div>
                 )}
               </div>

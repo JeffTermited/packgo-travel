@@ -5,6 +5,7 @@
 
 import React from "react";
 import { ensureReadableOnWhite } from "@/lib/colorUtils";
+import { useLocale } from "@/contexts/LocaleContext";
 
 export interface StickyNavProps {
   tourTitle: string;
@@ -17,6 +18,7 @@ export interface StickyNavProps {
 }
 
 export const StickyNav: React.FC<StickyNavProps> = ({ tourTitle, colorTheme, transportationType }) => {
+  const { t } = useLocale();
   // 根據交通類型決定是否顯示航班資訊標籤
   const shouldShowFlightTab = !transportationType || transportationType === 'FLIGHT';
   
@@ -24,27 +26,27 @@ export const StickyNav: React.FC<StickyNavProps> = ({ tourTitle, colorTheme, tra
   const getTransportLabel = () => {
     switch (transportationType) {
       case 'TRAIN':
-        return '交通資訊';
+        return t('tourDetail.nav.transportTrain');
       case 'CRUISE':
-        return '船班資訊';
+        return t('tourDetail.nav.transportCruise');
       case 'CAR':
-        return '交通資訊';
+        return t('tourDetail.nav.transportCar');
       case 'BUS':
-        return '交通資訊';
+        return t('tourDetail.nav.transportBus');
       default:
-        return '航班資訊';
+        return t('tourDetail.nav.transportFlight');
     }
   };
 
   const navItems = [
-    { label: "行程特色", href: "#features" },
-    { label: "每日行程", href: "#itinerary" },
-    { label: "飯店介紹", href: "#hotels" },
-    { label: "費用說明", href: "#cost" },
+    { label: t('tourDetail.nav.features'), href: "#features" },
+    { label: t('tourDetail.nav.itinerary'), href: "#itinerary" },
+    { label: t('tourDetail.nav.hotels'), href: "#hotels" },
+    { label: t('tourDetail.nav.cost'), href: "#cost" },
     // 只有飛機行程才顯示航班資訊標籤，其他類型不顯示獨立的交通區塊
     ...(shouldShowFlightTab ? [{ label: getTransportLabel(), href: "#flights" }] : []),
-    { label: "注意事項", href: "#notice" },
-    { label: "出發日期", href: "#departures" },
+    { label: t('tourDetail.nav.notice'), href: "#notice" },
+    { label: t('tourDetail.nav.departures'), href: "#departures" },
   ];
 
   const scrollToSection = (href: string) => {

@@ -9,6 +9,7 @@ import { EditableText } from "./EditableText";
 import { EditableImage } from "./EditableImage";
 import { useEditMode } from "@/contexts/EditModeContext";
 import { ensureReadableOnWhite } from "@/lib/colorUtils";
+import { useLocale } from "@/contexts/LocaleContext";
 
 export interface ImageTextBlockProps {
   title: string;
@@ -52,6 +53,7 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
   location,
 }) => {
   const { isEditMode } = useEditMode();
+  const { t } = useLocale();
 
   const getFieldName = () => {
     switch (sectionType) {
@@ -134,7 +136,7 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
                   />
                 ))}
                 <span className="ml-2 text-sm text-gray-600">
-                  {stars} 星級
+                  {t('tourDetail.sections.starRating').replace('{stars}', String(stars))}
                 </span>
               </div>
             )}
