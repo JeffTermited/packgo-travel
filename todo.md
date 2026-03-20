@@ -4840,3 +4840,23 @@
 - [x] P1: 前端 AITravelAdvisorDialog.tsx 消費串流端點（SSE fetch streaming）
 - [ ] P2: 管理後台新增 AI 成本分析儀表板頁面（下一階段）
 - [x] P2: 將 ItineraryExtractAgent + ItineraryPolishAgent 合併為 ItineraryUnifiedAgent（單次 LLM 呼叫，節省 15-20 秒）
+
+## 編輯功能 Bug 修復（2026-03-20）
+
+- [ ] 檢查 TourEditDialog 儲存功能（updateTour mutation）
+- [ ] 檢查 ToursTab 編輯按鈕觸發邏輯
+- [ ] 檢查 DeparturesManagement 編輯出發日期功能
+- [ ] 檢查 SkillsTab 編輯技能功能
+- [ ] 檢查 server/routers.ts 中所有 update/edit 相關 procedure
+- [ ] 檢查前端表單 onSubmit 邏輯
+
+
+## 編輯功能 Bug 修復完成（2026-03-20）
+
+- [x] 修復 tours.update schema 缺少 productCode, promotionText, departureCity, departureAirportName, notes, sourceUrl
+- [x] 修復 handleEdit 沒有載入 priceCurrency, heroSubtitle, keyFeatures, attractions, meals, poeticContent, galleryImages, productCode, promotionText, departureCity, departureAirportName
+- [x] 修復 updateTourMutation.onSuccess 沒有關閉 isFullEditDialogOpen
+- [x] 移除 onSave 中過早關閉對話框的邏輯（改由 onSuccess 處理）
+- [x] 修復 departures.update schema 缺少 status, currency, notes
+- [x] 修復 DeparturesManagement handleUpdate 沒有傳送 status, currency, notes
+

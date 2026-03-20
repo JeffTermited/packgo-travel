@@ -627,6 +627,13 @@ export const appRouter = router({
           maxParticipants: z.number().optional(),
           currentParticipants: z.number().optional(),
           
+          // Extra fields
+          productCode: z.string().optional(),
+          promotionText: z.string().optional(),
+          departureCity: z.string().optional(),
+          departureAirportName: z.string().optional(),
+          notes: z.string().optional(),
+          sourceUrl: z.string().optional(),
           // Content (JSON strings)
           highlights: z.string().optional(),
           includes: z.string().optional(),
@@ -652,13 +659,10 @@ export const appRouter = router({
             message: "Only admins can update tours",
           });
         }
-
         const { id, ...updates } = input;
         const tour = await db.updateTour(id, updates);
-
         return tour;
       }),
-
     // Partial update for inline editing (admin only)
     // Allows updating a single field at a time
     patchField: adminProcedure
@@ -1275,6 +1279,9 @@ export const appRouter = router({
           childPriceNoBed: z.number().optional(),
           infantPrice: z.number().optional(),
           singleRoomSupplement: z.number().optional(),
+          status: z.enum(["open", "full", "cancelled"]).optional(),
+          currency: z.string().optional(),
+          notes: z.string().optional(),
         })
       )
       .mutation(async ({ input }) => {

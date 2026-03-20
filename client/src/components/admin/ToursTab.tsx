@@ -113,6 +113,7 @@ export default function ToursTab() {
     onSuccess: () => {
       utils.tours.list.invalidate();
       setIsEditDialogOpen(false);
+      setIsFullEditDialogOpen(false);
       resetForm();
       toast.success(t('toursTab.updateSuccess'));
     },
@@ -391,6 +392,7 @@ export default function ToursTab() {
       setSelectedTourId(tourId);
       // 轉換為 TourEditDialog 需要的格式
       const tourDataForEdit = {
+        // Basic Info
         title: tour.title,
         destination: tour.destination,
         destinationCountry: tour.destinationCountry || "",
@@ -398,24 +400,40 @@ export default function ToursTab() {
         description: tour.description || "",
         duration: tour.duration,
         price: tour.price,
+        priceCurrency: (tour as any).priceCurrency || "TWD",
+        // Images
         heroImage: tour.heroImage || "",
+        heroSubtitle: (tour as any).heroSubtitle || "",
         imageUrl: tour.imageUrl || "",
+        // Category & Status
         category: tour.category,
         status: tour.status,
         featured: tour.featured || 0,
         maxParticipants: tour.maxParticipants || undefined,
+        // Content
         highlights: tour.highlights || "",
         includes: tour.includes || "",
         excludes: tour.excludes || "",
+        keyFeatures: (tour as any).keyFeatures || "",
+        attractions: (tour as any).attractions || "",
+        // Itinerary & Details
         itinerary: (tour as any).itinerary || [],
-        itineraryDetailed: (tour as any).itineraryDetailed || "",  // 加入 itineraryDetailed 欄位
+        itineraryDetailed: (tour as any).itineraryDetailed || "",
         hotels: tour.hotels || [],
+        meals: (tour as any).meals || "",
         flights: tour.flights || null,
         images: (tour as any).images || [],
+        galleryImages: (tour as any).galleryImages || "",
         costExplanation: tour.costExplanation || null,
-        noticeDetailed: (tour as any).noticeDetailed || "",  // 加入 noticeDetailed 欄位
-        notes: tour.notes || null,
+        noticeDetailed: (tour as any).noticeDetailed || "",
+        poeticContent: (tour as any).poeticContent || "",
         colorTheme: tour.colorTheme || null,
+        // Extra fields
+        productCode: (tour as any).productCode || "",
+        promotionText: (tour as any).promotionText || "",
+        departureCity: (tour as any).departureCity || "",
+        departureAirportName: (tour as any).departureAirportName || "",
+        notes: tour.notes || null,
         sourceUrl: tour.sourceUrl || "",
       };
       setSelectedTourForEdit(tourDataForEdit);
@@ -1327,7 +1345,7 @@ export default function ToursTab() {
               id: selectedTourId,
               ...editedData,
             });
-            setIsFullEditDialogOpen(false);
+            // Dialog closes in onSuccess callback
           }
         }}
         isSaving={updateTourMutation.isPending}
