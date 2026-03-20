@@ -2,9 +2,59 @@ import { invokeLLM } from "./_core/llm";
 import { getDb } from "./db";
 import { translations, translationJobs } from "../drizzle/schema";
 import { eq, and, desc } from "drizzle-orm";
+import { redis } from "./redis";
 
-// 翻譯快取（記憶體內）
-const translationCache = new Map<string, string>();
+// 翻譯快取：Redis（持久化）+ 記憶體（fallback）
+// Redis key 格式：translate:{source}:{target}:{hash}
+// TTL：7 天（604800 秒）
+const TRANSLATION_CACHE_TTL = 7 * 24 * 60 * 60; // 7 days in seconds
+const TRANSLATION_CACHE_PREFIX = 'translate:';
+const translationMemCache = new Map<string, string>(); // 記憶體 fallback
+let redisAvailableForTranslation = true;
+
+// 測試 Redis 連線
+redis.ping().catch(() => {
+  console.warn('[Translation Cache] Redis unavailable, using memory cache only');
+  redisAvailableForTranslation = false;
+});
+
+async function getCachedTranslation(cacheKey: string): Promise<string | null> {
+  const redisKey = `${TRANSLATION_CACHE_PREFIX}${cacheKey}`;
+  // 先查 Redis
+  if (redisAvailableForTranslation) {
+    try {
+      const cached = await redis.get(redisKey);
+      if (cached) {
+        // 同步到記憶體快取
+        translationMemCache.set(cacheKey, cached);
+        return cached;
+      }
+    } catch {
+      redisAvailableForTranslation = false;
+    }
+  }
+  // Fallback 到記憶體
+  return translationMemCache.get(cacheKey) ?? null;
+}
+
+async function setCachedTranslation(cacheKey: string, value: string): Promise<void> {
+  const redisKey = `${TRANSLATION_CACHE_PREFIX}${cacheKey}`;
+  // 寫入記憶體
+  translationMemCache.set(cacheKey, value);
+  // 限制記憶體快取大小（最多 2000 筆）
+  if (translationMemCache.size > 2000) {
+    const firstKey = translationMemCache.keys().next().value;
+    if (firstKey) translationMemCache.delete(firstKey);
+  }
+  // 寫入 Redis
+  if (redisAvailableForTranslation) {
+    try {
+      await redis.setex(redisKey, TRANSLATION_CACHE_TTL, value);
+    } catch {
+      redisAvailableForTranslation = false;
+    }
+  }
+}
 
 // 支援的語言
 export type Language = 'zh-TW' | 'en' | 'es' | 'ja' | 'ko';
@@ -46,9 +96,9 @@ export async function translateText(
     return text;
   }
 
-  // 檢查快取
+  // 檢查快取（Redis 優先，記憶體 fallback）
   const cacheKey = getCacheKey(text, sourceLanguage, targetLanguage);
-  const cached = translationCache.get(cacheKey);
+  const cached = await getCachedTranslation(cacheKey);
   if (cached) {
     console.log('[Translation Agent] Cache hit');
     return cached;
@@ -80,8 +130,8 @@ Guidelines:
     const content = response.choices[0]?.message?.content;
     const translatedText = typeof content === 'string' ? content.trim() : text;
     
-    // 儲存到快取
-    translationCache.set(cacheKey, translatedText);
+    // 儲存到快取（Redis 持久化 + 記憶體）
+    await setCachedTranslation(cacheKey, translatedText);
     
     return translatedText;
   } catch (error) {
@@ -674,7 +724,8 @@ function hashCode(str: string): number {
  * 清除翻譯快取
  */
 export function clearTranslationCache(): void {
-  translationCache.clear();
+  translationMemCache.clear();
+  // Redis 快取不在此清除（使用 TTL 自然過期）
 }
 
 /**
@@ -682,7 +733,7 @@ export function clearTranslationCache(): void {
  */
 export function getTranslationCacheStats(): { size: number; keys: string[] } {
   return {
-    size: translationCache.size,
-    keys: Array.from(translationCache.keys()),
+    size: translationMemCache.size,
+    keys: Array.from(translationMemCache.keys()),
   };
 }

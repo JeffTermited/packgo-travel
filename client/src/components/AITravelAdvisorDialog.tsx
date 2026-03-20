@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Button } from "@/components/ui/button";
@@ -53,36 +53,93 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
     setTimeout(() => setIsAnimating(false), 300);
   };
 
-  const chatMutation = trpc.ai.chat.useMutation({
-    onMutate: () => {
-      updatePenguinExpression("thinking");
-    },
-    onSuccess: (data) => {
-      updatePenguinExpression("happy");
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: typeof data.response === 'string' ? data.response : JSON.stringify(data.response),
-          triggeredSkills: data.triggeredSkills,
-          usageLogIds: data.usageLogIds,
-          feedbackGiven: null,
-        },
-      ]);
-      setTimeout(() => updatePenguinExpression("default"), 3000);
-    },
-    onError: () => {
-      updatePenguinExpression("confused");
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: t('aiAdvisor.errorMessage'),
-        },
-      ]);
-      setTimeout(() => updatePenguinExpression("default"), 3000);
-    },
-  });
+  const [isStreaming, setIsStreaming] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  const sendStreamMessage = useCallback(async (userMessage: string, history: Message[]) => {
+    setIsStreaming(true);
+    updatePenguinExpression("thinking");
+
+    // Add empty assistant message placeholder for streaming
+    setMessages((prev) => [
+      ...prev,
+      { role: "assistant", content: "", feedbackGiven: null },
+    ]);
+
+    abortControllerRef.current = new AbortController();
+
+    try {
+      const params = new URLSearchParams({
+        message: userMessage,
+        history: JSON.stringify(history.map(m => ({ role: m.role, content: m.content }))),
+        sessionId,
+      });
+      const response = await fetch(`/api/ai/chat/stream?${params}`, {
+        signal: abortControllerRef.current.signal,
+        credentials: "include",
+      });
+
+      if (!response.ok || !response.body) throw new Error("Stream failed");
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+
+        // Parse SSE events from buffer
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+
+        let eventType = "";
+        for (const line of lines) {
+          if (line.startsWith("event: ")) {
+            eventType = line.slice(7).trim();
+          } else if (line.startsWith("data: ")) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              if (eventType === "chunk" && data.text) {
+                setMessages((prev) => {
+                  const updated = [...prev];
+                  const last = updated[updated.length - 1];
+                  if (last?.role === "assistant") {
+                    updated[updated.length - 1] = { ...last, content: last.content + data.text };
+                  }
+                  return updated;
+                });
+              } else if (eventType === "done") {
+                updatePenguinExpression("happy");
+                setTimeout(() => updatePenguinExpression("default"), 3000);
+              } else if (eventType === "error") {
+                throw new Error(data.message);
+              }
+            } catch {
+              // ignore JSON parse errors
+            }
+          }
+        }
+      }
+    } catch (error: any) {
+      if (error?.name !== "AbortError") {
+        updatePenguinExpression("confused");
+        setMessages((prev) => {
+          const updated = [...prev];
+          const last = updated[updated.length - 1];
+          if (last?.role === "assistant" && last.content === "") {
+            updated[updated.length - 1] = { ...last, content: t('aiAdvisor.errorMessage') };
+          }
+          return updated;
+        });
+        setTimeout(() => updatePenguinExpression("default"), 3000);
+      }
+    } finally {
+      setIsStreaming(false);
+      abortControllerRef.current = null;
+    }
+  }, [sessionId, t]);
 
   const feedbackMutation = trpc.ai.recordFeedback.useMutation({
     onSuccess: () => {
@@ -106,24 +163,18 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
   }, [open]);
 
   const handleSend = () => {
-    if (!input.trim() || chatMutation.isPending) return;
+    if (!input.trim() || isStreaming) return;
 
     const userMessage = input.trim();
     setInput("");
 
-    setMessages((prev) => [
-      ...prev,
-      {
-        role: "user",
-        content: userMessage,
-      },
-    ]);
+    const updatedHistory = [
+      ...messages,
+      { role: "user" as const, content: userMessage },
+    ];
 
-    chatMutation.mutate({
-      message: userMessage,
-      conversationHistory: messages.map(m => ({ role: m.role, content: m.content })),
-      sessionId,
-    });
+    setMessages(updatedHistory);
+    sendStreamMessage(userMessage, messages);
   };
 
   const handleFeedback = (messageIndex: number, feedback: "positive" | "negative") => {
@@ -179,7 +230,7 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
                 src={currentPenguinImage}
                 alt={t('aiAdvisor.title')}
                 className={`w-12 h-12 object-contain transition-all duration-300 ${
-                  chatMutation.isPending ? "animate-bounce" : ""
+                  isStreaming ? "animate-bounce" : ""
                 }`}
               />
               {/* Online Status Indicator */}
@@ -188,7 +239,7 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
             <div>
               <h3 className="font-bold text-lg tracking-wide">{t('aiAdvisor.title')}</h3>
               <p className="text-sm text-gray-300 flex items-center gap-1.5">
-                {chatMutation.isPending ? (
+                {isStreaming ? (
                   <>
                     <span className="inline-block w-1.5 h-1.5 bg-yellow-400 rounded-full animate-pulse"></span>
                     {t('aiAdvisor.thinking')}
@@ -312,8 +363,8 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
             </div>
           ))}
           
-          {/* Loading indicator */}
-          {chatMutation.isPending && (
+          {/* Loading indicator - shown while waiting for first chunk */}
+          {isStreaming && messages[messages.length - 1]?.content === "" && (
             <div className="flex gap-3 justify-start">
               <div className="flex-shrink-0 w-9 h-9 bg-gradient-to-br from-gray-100 to-white rounded-full border border-gray-200 flex items-center justify-center overflow-hidden shadow-sm">
                 <img
@@ -346,16 +397,16 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
               onKeyPress={handleKeyPress}
               placeholder={t('aiAdvisor.inputPlaceholder')}
               className="flex-1 h-11 border border-gray-300 rounded-full px-5 focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-0 focus-visible:border-black bg-gray-50"
-              disabled={chatMutation.isPending}
+              disabled={isStreaming}
               aria-label={t('aiAdvisor.inputPlaceholder')}
             />
             <Button
               onClick={handleSend}
-              disabled={!input.trim() || chatMutation.isPending}
+              disabled={!input.trim() || isStreaming}
               className="h-11 w-11 bg-black hover:bg-gray-800 rounded-full p-0 flex items-center justify-center shadow-lg transition-transform hover:scale-105"
               aria-label={t('aiAdvisor.sendMessage')}
             >
-              {chatMutation.isPending ? (
+              {isStreaming ? (
                 <Loader2 className="h-5 w-5 animate-spin" />
               ) : (
                 <Send className="h-5 w-5" />

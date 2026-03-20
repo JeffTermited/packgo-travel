@@ -13,6 +13,7 @@ import { avatarUploadRouter } from "../avatarUpload";
 import { tourImageUploadRouter } from "../tourImageUpload";
 import { pdfUploadRouter } from "../pdfUpload";
 import { progressRouter } from "../progressRouter";
+import { aiChatStreamRouter } from "../aiChatStreamRouter";
 import { initializeGoogleAuth } from "../googleAuth";
 import "../worker"; // Initialize BullMQ worker
 
@@ -71,6 +72,9 @@ async function startServer() {
   
   // Progress tracking SSE API
   app.use("/api", progressRouter);
+
+  // AI Chat streaming SSE API
+  app.use("/api", aiChatStreamRouter);
 
   // Dynamic sitemap.xml
   app.get('/sitemap.xml', async (_req, res) => {

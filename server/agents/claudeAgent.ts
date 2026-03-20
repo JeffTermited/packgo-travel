@@ -16,6 +16,7 @@
  */
 
 import Anthropic from '@anthropic-ai/sdk';
+import { logLlmUsage } from '../llmUsageService';
 
 // Model constants - Upgraded to Claude 4.5 Series (2026-01-30)
 export const CLAUDE_MODELS = {
@@ -115,6 +116,9 @@ export class ClaudeAgent {
   private client: Anthropic;
   private model: string;
   private usageStats: TokenUsageStats;
+  /** 子類別可覆寫，用於識別記錄來源 */
+  protected agentName: string = 'ClaudeAgent';
+  protected taskType?: string;
 
   constructor(options?: { model?: ClaudeModel }) {
     const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -213,6 +217,17 @@ export class ClaudeAgent {
     if (cacheCreationTokens && cacheCreationTokens > 0) {
       console.log(`[ClaudeAgent] 📝 Cache created: ${cacheCreationTokens} tokens cached for future use`);
     }
+
+    // 非阻塞寫入資料庫（失敗不影響主流程）
+    logLlmUsage({
+      agentName: this.agentName,
+      taskType: this.taskType,
+      model: this.model,
+      inputTokens,
+      outputTokens,
+      cacheCreationInputTokens: cacheCreationTokens ?? 0,
+      cacheReadInputTokens: cacheReadTokens ?? 0,
+    }).catch(() => { /* silent */ });
   }
 
   /**
@@ -504,6 +519,63 @@ export class ClaudeAgent {
         success: false,
         error: error.message || 'Unknown error',
       };
+    }
+  }
+
+  /**
+   * Stream a conversation response using SSE (Server-Sent Events)
+   * Yields text chunks as they arrive from Claude API
+   * 
+   * @param messages - Conversation history
+   * @param options - System prompt, max tokens, etc.
+   * @yields string chunks of the response
+   */
+  async *streamConversation(
+    messages: ClaudeMessage[],
+    options?: {
+      systemPrompt?: string;
+      maxTokens?: number;
+      temperature?: number;
+      enableCaching?: boolean;
+    }
+  ): AsyncGenerator<string, void, unknown> {
+    const startTime = Date.now();
+    const systemPromptText = options?.systemPrompt || '';
+    const shouldCache = options?.enableCaching !== false && systemPromptText.length >= 500;
+
+    const systemParam = shouldCache && systemPromptText
+      ? [{ type: 'text' as const, text: systemPromptText, cache_control: { type: 'ephemeral' as const } }]
+      : systemPromptText || undefined;
+
+    try {
+      const stream = await this.client.messages.stream({
+        model: this.model,
+        max_tokens: options?.maxTokens || 4096,
+        temperature: options?.temperature || 1.0,
+        system: systemParam as any,
+        messages: messages.map((msg) => ({ role: msg.role, content: msg.content })),
+      });
+
+      for await (const event of stream) {
+        if (
+          event.type === 'content_block_delta' &&
+          event.delta.type === 'text_delta'
+        ) {
+          yield event.delta.text;
+        }
+      }
+
+      // 取得最終用量統計
+      const finalMessage = await stream.finalMessage();
+      const duration = Date.now() - startTime;
+      const usage = finalMessage.usage as any;
+      const cacheCreation = usage.cache_creation_input_tokens || 0;
+      const cacheRead = usage.cache_read_input_tokens || 0;
+      this.updateUsageStats(finalMessage.usage.input_tokens, finalMessage.usage.output_tokens, cacheCreation, cacheRead);
+      console.log(`[ClaudeAgent] Stream completed in ${duration}ms`);
+    } catch (error: any) {
+      console.error('[ClaudeAgent] Stream error:', error.message);
+      throw error;
     }
   }
 

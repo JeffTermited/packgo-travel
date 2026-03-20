@@ -4828,3 +4828,14 @@
 - [ ] 補充所有缺失 i18n key（三語系）
 - [ ] TypeScript 零錯誤
 - [ ] 儲存 Checkpoint
+
+---
+
+## Phase 30: AI 效率提升實施計畫（2026-03-20）
+
+- [x] P0: 翻譯快取持久化至 Redis（translation.ts）
+- [x] P1: 新增 llmUsageLogs 資料表（schema.ts + db:push）
+- [x] P1: claudeAgent.ts 寫入 token 用量至資料庫
+- [x] P1: AI 客服串流回應（claudeAgent.ts streamConversation + routers.ts SSE endpoint）
+- [x] P1: 前端 AITravelAdvisorDialog.tsx 消費串流端點（SSE fetch streaming）
+- [ ] P2: 管理後台新增 AI 成本分析儀表板頁面（下一階段）

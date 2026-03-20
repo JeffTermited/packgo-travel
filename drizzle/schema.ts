@@ -1114,3 +1114,42 @@ export const translationJobs = mysqlTable("translationJobs", {
 
 export type TranslationJob = typeof translationJobs.$inferSelect;
 export type InsertTranslationJob = typeof translationJobs.$inferInsert;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LLM 用量監控日誌
+// 記錄每次 Claude API 呼叫的 token 用量與費用，供成本分析使用
+// ─────────────────────────────────────────────────────────────────────────────
+export const llmUsageLogs = mysqlTable("llmUsageLogs", {
+  id: int("id").autoincrement().primaryKey(),
+
+  // 呼叫來源識別
+  agentName: varchar("agentName", { length: 100 }).notNull(), // 例如 "ContentAnalyzerAgent"
+  taskType: varchar("taskType", { length: 100 }),             // 例如 "tour_generation", "ai_chat"
+  taskId: varchar("taskId", { length: 100 }),                 // 關聯的任務 ID（如 tourId）
+
+  // 使用的模型
+  model: varchar("model", { length: 100 }).notNull(),         // 例如 "claude-3-5-haiku-20241022"
+
+  // Token 用量
+  inputTokens: int("inputTokens").default(0).notNull(),
+  outputTokens: int("outputTokens").default(0).notNull(),
+  cacheCreationInputTokens: int("cacheCreationInputTokens").default(0).notNull(),
+  cacheReadInputTokens: int("cacheReadInputTokens").default(0).notNull(),
+  totalTokens: int("totalTokens").default(0).notNull(),
+
+  // 費用估算（USD，精確到小數點後 6 位）
+  estimatedCostUsd: varchar("estimatedCostUsd", { length: 20 }).default("0.000000"),
+
+  // 效能指標
+  processingTimeMs: int("processingTimeMs"),
+  wasFromCache: boolean("wasFromCache").default(false).notNull(),
+
+  // 使用者關聯（可選）
+  userId: int("userId"),
+
+  // 時間戳記
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type LlmUsageLog = typeof llmUsageLogs.$inferSelect;
+export type InsertLlmUsageLog = typeof llmUsageLogs.$inferInsert;
