@@ -197,7 +197,7 @@ export default function ToursTab() {
       setIsGenerating(false);
       setCurrentTaskId(null);
       console.error("[SubmitAsyncGeneration] Error:", error);
-      toast.error(`提交失敗：${error.message}`);
+      toast.error(t('toursTab.submitError').replace('{message}', error.message));
     },
   });
 
@@ -246,7 +246,7 @@ export default function ToursTab() {
         toast.success(
           t('toursTab.generationSuccess'),
           {
-            description: generationStatus.result.tourId ? `行程 ID: ${generationStatus.result.tourId}` : undefined,
+            description: generationStatus.result.tourId ? t('toursTab.tourIdLabel').replace('{id}', String(generationStatus.result.tourId)) : undefined,
             duration: 5000,
           }
         );
@@ -276,7 +276,7 @@ export default function ToursTab() {
       toast.success(
         result.message || t('toursTab.saveTourSuccess'),
         {
-          description: `行程 ID: ${result.tourId}`,
+          description: t('toursTab.tourIdLabel').replace('{id}', String(result.tourId)),
           duration: 5000,
         }
       );
@@ -337,7 +337,7 @@ export default function ToursTab() {
       } catch (error: any) {
         setPdfUploading(false);
         console.error("[PDF Upload] Error:", error);
-        toast.error(`PDF 上傳失敗：${error.message}`);
+        toast.error(t('toursTab.pdfUploadError').replace('{message}', error.message));
       }
     }
   };
@@ -538,7 +538,7 @@ export default function ToursTab() {
               className="rounded-full"
             >
               <Trash2 className="h-4 w-4 mr-2" />
-              刪除所選 ({selectedTourIds.length})
+              {t('toursTab.deleteSelected').replace('{count}', String(selectedTourIds.length))}
             </Button>
           )}
           <Button
@@ -547,14 +547,14 @@ export default function ToursTab() {
             className="rounded-full border-purple-300 text-purple-700 hover:bg-purple-50"
           >
             <Sparkles className="h-4 w-4 mr-2" />
-            AI 自動生成
+            {t('toursTab.aiAutoGenerate')}
           </Button>
           <Button
             onClick={() => setIsCreateDialogOpen(true)}
             className="bg-black text-white hover:bg-gray-800 rounded-full"
           >
             <Plus className="h-4 w-4 mr-2" />
-            新增行程
+            {t('toursTab.addTour')}
           </Button>
         </div>
       </div>
@@ -662,8 +662,8 @@ export default function ToursTab() {
                             <div className="flex items-center gap-2">
                               <span className="inline-flex items-center gap-1 text-xs text-purple-600">
                                 <Sparkles className="h-3 w-3" />
-                                AI 生成
-                              </span>
+                {t('toursTab.aiGenerated')}
+              </span>
                               {tour.sourceUrl && (
                                 <a
                                   href={tour.sourceUrl}
@@ -674,8 +674,8 @@ export default function ToursTab() {
                                   onClick={(e) => e.stopPropagation()}
                                 >
                                   <ExternalLink className="h-3 w-3" />
-                                  原始連結
-                                </a>
+                  {t('toursTab.originalLink')}
+                </a>
                               )}
                             </div>
                           )}
@@ -791,7 +791,7 @@ export default function ToursTab() {
               }}
               className="text-primary mt-2"
             >
-              {t('common.clearFilters') || '清除篩選條件'}
+              {t('common.clearFilters')}
             </Button>
           </div>
         ) : (
@@ -815,7 +815,7 @@ export default function ToursTab() {
               onClick={() => setIsCreateDialogOpen(false)}
               className="rounded-full"
             >
-              取消
+              {t('common.cancel')}
             </Button>
             <Button
               onClick={handleCreate}
@@ -842,7 +842,7 @@ export default function ToursTab() {
               onClick={() => setIsEditDialogOpen(false)}
               className="rounded-full"
             >
-              取消
+              {t('common.cancel')}
             </Button>
             <Button
               onClick={handleUpdate}
@@ -861,7 +861,7 @@ export default function ToursTab() {
           <DialogHeader>
             <DialogTitle>{t('toursTab.deleteDialogTitle')}</DialogTitle>
             <DialogDescription>
-              確定要刪除這個行程嗎？此操作無法復原。
+              {t('toursTab.deleteConfirmDesc')}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -870,7 +870,7 @@ export default function ToursTab() {
               onClick={() => setIsDeleteDialogOpen(false)}
               className="rounded-full"
             >
-              取消
+              {t('common.cancel')}
             </Button>
             <Button
               variant="destructive"
@@ -890,7 +890,7 @@ export default function ToursTab() {
           <DialogHeader>
             <DialogTitle>{t('toursTab.batchDeleteDialogTitle')}</DialogTitle>
             <DialogDescription>
-              確定要刪除所選的 {selectedTourIds.length} 個行程嗎？此操作無法復原。
+              {t('toursTab.batchDeleteConfirmDesc').replace('{count}', String(selectedTourIds.length))}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -899,7 +899,7 @@ export default function ToursTab() {
               onClick={() => setIsBatchDeleteDialogOpen(false)}
               className="rounded-full"
             >
-              取消
+              {t('common.cancel')}
             </Button>
             <Button
               variant="destructive"
@@ -928,10 +928,10 @@ export default function ToursTab() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-purple-600" />
-              AI 自動生成行程
+              {t('toursTab.aiAutoGenerateTitle')}
             </DialogTitle>
             <DialogDescription>
-              上傳旅行社 PDF 行程表，AI 將自動提取並生成行程資訊
+              {t('toursTab.aiAutoGenerateDesc')}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -986,7 +986,7 @@ export default function ToursTab() {
                     onClick={() => setPdfFile(null)}
                     className="text-xs text-red-500 hover:text-red-700"
                   >
-                    清除檔案
+                    {t('toursTab.clearFile')}
                   </button>
                 )}
               </div>
@@ -1002,7 +1002,7 @@ export default function ToursTab() {
                 className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
               />
               <Label htmlFor="forceRegenerate" className="text-sm font-normal cursor-pointer">
-                強制重新生成（忽略快取）
+                {t('toursTab.forceRegenerate')}
               </Label>
             </div>
             
@@ -1038,7 +1038,7 @@ export default function ToursTab() {
               disabled={submitAsyncGenerationMutation.isPending || isGenerating}
               className="rounded-full"
             >
-              取消
+              {t('common.cancel')}
             </Button>
             <Button
               onClick={handleAutoGenerate}
@@ -1048,12 +1048,12 @@ export default function ToursTab() {
               {(submitAsyncGenerationMutation.isPending || isGenerating || pdfUploading) ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  生成中...
+                  {t('toursTab.generating')}
                 </>
               ) : (
                 <>
                   <Sparkles className="h-4 w-4 mr-2" />
-                  開始生成
+                  {t('toursTab.startGenerate')}
                 </>
               )}
             </Button>
@@ -1085,10 +1085,10 @@ export default function ToursTab() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-purple-600" />
-              行程預覽
+              {t('toursTab.previewTitle')}
             </DialogTitle>
             <DialogDescription>
-              請檢查 AI 自動生成的行程資訊，確認無誤後再儲存
+              {t('toursTab.previewDesc')}
             </DialogDescription>
           </DialogHeader>
           {generatedTourData && (
@@ -1229,7 +1229,7 @@ export default function ToursTab() {
               {isAdmin && generatedTourData.sourceUrl && (
                 <div className="text-xs text-gray-400 flex items-center gap-2">
                   <ExternalLink className="h-3 w-3" />
-                  來源：
+                  {t('toursTab.sourceLabel')}
                   <a 
                     href={generatedTourData.sourceUrl} 
                     target="_blank" 
@@ -1263,7 +1263,7 @@ export default function ToursTab() {
               }}
               className="rounded-full"
             >
-              取消
+              {t('common.cancel')}
             </Button>
             <Button
               variant="outline"
@@ -1271,7 +1271,7 @@ export default function ToursTab() {
               className="rounded-full border-purple-300 text-purple-700 hover:bg-purple-50"
             >
               <RefreshCw className="h-4 w-4 mr-2" />
-              重新生成
+              {t('toursTab.regenerate')}
             </Button>
             <Button
               variant="outline"
@@ -1282,7 +1282,7 @@ export default function ToursTab() {
               className="rounded-full border-purple-300 text-purple-700 hover:bg-purple-50"
             >
               <Edit className="h-4 w-4 mr-2" />
-              編輯
+              {t('common.edit')}
             </Button>
             <Button
               onClick={handleConfirmGeneratedTour}

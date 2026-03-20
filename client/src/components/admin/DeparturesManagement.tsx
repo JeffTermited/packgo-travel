@@ -22,6 +22,7 @@ import { Calendar, Edit, Loader2, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { useLocale } from "@/contexts/LocaleContext";
 
 type DepartureFormData = {
   tourId: number;
@@ -44,6 +45,7 @@ interface DeparturesManagementProps {
 }
 
 export default function DeparturesManagement({ tourId, tourTitle }: DeparturesManagementProps) {
+  const { t } = useLocale();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -71,10 +73,10 @@ export default function DeparturesManagement({ tourId, tourTitle }: DeparturesMa
       utils.departures.listByTour.invalidate({ tourId });
       setIsCreateDialogOpen(false);
       resetForm();
-      toast.success("出發日期已成功建立");
+      toast.success(t('departuresTab.createSuccess'));
     },
     onError: (error) => {
-      toast.error(`建立失敗：${error.message}`);
+      toast.error(t('departuresTab.createError').replace('{message}', error.message));
     },
   });
 
@@ -83,10 +85,10 @@ export default function DeparturesManagement({ tourId, tourTitle }: DeparturesMa
       utils.departures.listByTour.invalidate({ tourId });
       setIsEditDialogOpen(false);
       resetForm();
-      toast.success("出發日期已成功更新");
+      toast.success(t('departuresTab.updateSuccess'));
     },
     onError: (error) => {
-      toast.error(`更新失敗：${error.message}`);
+      toast.error(t('departuresTab.updateError').replace('{message}', error.message));
     },
   });
 
@@ -95,10 +97,10 @@ export default function DeparturesManagement({ tourId, tourTitle }: DeparturesMa
       utils.departures.listByTour.invalidate({ tourId });
       setIsDeleteDialogOpen(false);
       setSelectedDepartureId(null);
-      toast.success("出發日期已成功刪除");
+      toast.success(t('departuresTab.deleteSuccess'));
     },
     onError: (error) => {
-      toast.error(`刪除失敗：${error.message}`);
+      toast.error(t('departuresTab.deleteError').replace('{message}', error.message));
     },
   });
 
@@ -168,9 +170,9 @@ export default function DeparturesManagement({ tourId, tourTitle }: DeparturesMa
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      open: { label: "開放報名", className: "bg-green-100 text-green-800" },
-      full: { label: "已額滿", className: "bg-red-100 text-red-800" },
-      cancelled: { label: "已取消", className: "bg-gray-100 text-gray-800" },
+      open: { label: t('departuresTab.statusOpen'), className: "bg-green-100 text-green-800" },
+      full: { label: t('departuresTab.statusFull'), className: "bg-red-100 text-red-800" },
+      cancelled: { label: t('departuresTab.statusCancelled'), className: "bg-gray-100 text-gray-800" },
     };
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.open;
     return (
@@ -192,12 +194,12 @@ export default function DeparturesManagement({ tourId, tourTitle }: DeparturesMa
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-bold">出發日期管理</h3>
+          <h3 className="text-lg font-bold">{t('departuresTab.title')}</h3>
           <p className="text-sm text-gray-600">{tourTitle}</p>
         </div>
         <Button onClick={() => setIsCreateDialogOpen(true)}>
           <Plus className="w-4 h-4 mr-2" />
-          新增出發日期
+          {t('departuresTab.addDeparture')}
         </Button>
       </div>
 
@@ -207,22 +209,22 @@ export default function DeparturesManagement({ tourId, tourTitle }: DeparturesMa
           <thead className="bg-gray-50">
             <tr>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                出發日期
+                {t('departuresTab.colDepartureDate')}
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                回程日期
+                {t('departuresTab.colReturnDate')}
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                成人價格
+                {t('departuresTab.colAdultPrice')}
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                名額
+                {t('departuresTab.colSlots')}
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                狀態
+                {t('departuresTab.colStatus')}
               </th>
               <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                操作
+                {t('departuresTab.colActions')}
               </th>
             </tr>
           </thead>
@@ -265,8 +267,8 @@ export default function DeparturesManagement({ tourId, tourTitle }: DeparturesMa
               <tr>
                 <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
                   <Calendar className="w-12 h-12 mx-auto mb-2 text-gray-400" />
-                  <p>尚未設定出發日期</p>
-                  <p className="text-sm">點擊上方按鈕新增第一個出發日期</p>
+                  <p>{t('departuresTab.noDepartures')}</p>
+                  <p className="text-sm">{t('departuresTab.noDeparturesHint')}</p>
                 </td>
               </tr>
             )}
@@ -278,12 +280,12 @@ export default function DeparturesManagement({ tourId, tourTitle }: DeparturesMa
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>新增出發日期</DialogTitle>
-            <DialogDescription>為此行程新增一個出發日期</DialogDescription>
+            <DialogTitle>{t('departuresTab.createTitle')}</DialogTitle>
+            <DialogDescription>{t('departuresTab.createDesc')}</DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-2 gap-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="departureDate">出發日期 *</Label>
+              <Label htmlFor="departureDate">{t('departuresTab.fieldDepartureDate')}</Label>
               <Input
                 id="departureDate"
                 type="date"
@@ -294,7 +296,7 @@ export default function DeparturesManagement({ tourId, tourTitle }: DeparturesMa
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="returnDate">回程日期 *</Label>
+              <Label htmlFor="returnDate">{t('departuresTab.fieldReturnDate')}</Label>
               <Input
                 id="returnDate"
                 type="date"
@@ -305,7 +307,7 @@ export default function DeparturesManagement({ tourId, tourTitle }: DeparturesMa
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="adultPrice">成人價格 *</Label>
+              <Label htmlFor="adultPrice">{t('departuresTab.fieldAdultPrice')}</Label>
               <Input
                 id="adultPrice"
                 type="number"
@@ -316,7 +318,7 @@ export default function DeparturesManagement({ tourId, tourTitle }: DeparturesMa
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="childPriceWithBed">兒童價格（佔床）</Label>
+              <Label htmlFor="childPriceWithBed">{t('departuresTab.fieldChildPriceWithBed')}</Label>
               <Input
                 id="childPriceWithBed"
                 type="number"
@@ -330,7 +332,7 @@ export default function DeparturesManagement({ tourId, tourTitle }: DeparturesMa
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="childPriceNoBed">兒童價格（不佔床）</Label>
+              <Label htmlFor="childPriceNoBed">{t('departuresTab.fieldChildPriceNoBed')}</Label>
               <Input
                 id="childPriceNoBed"
                 type="number"
@@ -344,7 +346,7 @@ export default function DeparturesManagement({ tourId, tourTitle }: DeparturesMa
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="infantPrice">嬰兒價格</Label>
+              <Label htmlFor="infantPrice">{t('departuresTab.fieldInfantPrice')}</Label>
               <Input
                 id="infantPrice"
                 type="number"
@@ -358,7 +360,7 @@ export default function DeparturesManagement({ tourId, tourTitle }: DeparturesMa
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="singleRoomSupplement">單人房差價</Label>
+              <Label htmlFor="singleRoomSupplement">{t('departuresTab.fieldSingleRoomSupplement')}</Label>
               <Input
                 id="singleRoomSupplement"
                 type="number"
@@ -372,7 +374,7 @@ export default function DeparturesManagement({ tourId, tourTitle }: DeparturesMa
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="totalSlots">總名額 *</Label>
+              <Label htmlFor="totalSlots">{t('departuresTab.fieldTotalSlots')}</Label>
               <Input
                 id="totalSlots"
                 type="number"
@@ -383,7 +385,7 @@ export default function DeparturesManagement({ tourId, tourTitle }: DeparturesMa
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="status">狀態</Label>
+              <Label htmlFor="status">{t('departuresTab.fieldStatus')}</Label>
               <Select
                 value={formData.status}
                 onValueChange={(value: any) =>
@@ -394,14 +396,14 @@ export default function DeparturesManagement({ tourId, tourTitle }: DeparturesMa
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="open">開放報名</SelectItem>
-                  <SelectItem value="full">已額滿</SelectItem>
-                  <SelectItem value="cancelled">已取消</SelectItem>
+                  <SelectItem value="open">{t('departuresTab.statusOpen')}</SelectItem>
+                  <SelectItem value="full">{t('departuresTab.statusFull')}</SelectItem>
+                  <SelectItem value="cancelled">{t('departuresTab.statusCancelled')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="col-span-2 space-y-2">
-              <Label htmlFor="notes">備註</Label>
+              <Label htmlFor="notes">{t('departuresTab.fieldNotes')}</Label>
               <Textarea
                 id="notes"
                 value={formData.notes}
@@ -415,7 +417,7 @@ export default function DeparturesManagement({ tourId, tourTitle }: DeparturesMa
               variant="outline"
               onClick={() => setIsCreateDialogOpen(false)}
             >
-              取消
+              {t('common.cancel')}
             </Button>
             <Button
               onClick={handleCreate}
@@ -424,7 +426,7 @@ export default function DeparturesManagement({ tourId, tourTitle }: DeparturesMa
               {createMutation.isPending && (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               )}
-              建立
+              {t('departuresTab.create')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -434,12 +436,12 @@ export default function DeparturesManagement({ tourId, tourTitle }: DeparturesMa
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>編輯出發日期</DialogTitle>
-            <DialogDescription>修改此出發日期的資訊</DialogDescription>
+            <DialogTitle>{t('departuresTab.editTitle')}</DialogTitle>
+            <DialogDescription>{t('departuresTab.editDesc')}</DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-2 gap-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="edit-departureDate">出發日期 *</Label>
+              <Label htmlFor="edit-departureDate">{t('departuresTab.fieldDepartureDate')}</Label>
               <Input
                 id="edit-departureDate"
                 type="date"
@@ -450,7 +452,7 @@ export default function DeparturesManagement({ tourId, tourTitle }: DeparturesMa
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-returnDate">回程日期 *</Label>
+              <Label htmlFor="edit-returnDate">{t('departuresTab.fieldReturnDate')}</Label>
               <Input
                 id="edit-returnDate"
                 type="date"
@@ -461,7 +463,7 @@ export default function DeparturesManagement({ tourId, tourTitle }: DeparturesMa
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-adultPrice">成人價格 *</Label>
+              <Label htmlFor="edit-adultPrice">{t('departuresTab.fieldAdultPrice')}</Label>
               <Input
                 id="edit-adultPrice"
                 type="number"
@@ -472,7 +474,7 @@ export default function DeparturesManagement({ tourId, tourTitle }: DeparturesMa
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-childPriceWithBed">兒童價格（佔床）</Label>
+              <Label htmlFor="edit-childPriceWithBed">{t('departuresTab.fieldChildPriceWithBed')}</Label>
               <Input
                 id="edit-childPriceWithBed"
                 type="number"
@@ -486,7 +488,7 @@ export default function DeparturesManagement({ tourId, tourTitle }: DeparturesMa
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-childPriceNoBed">兒童價格（不佔床）</Label>
+              <Label htmlFor="edit-childPriceNoBed">{t('departuresTab.fieldChildPriceNoBed')}</Label>
               <Input
                 id="edit-childPriceNoBed"
                 type="number"
@@ -500,7 +502,7 @@ export default function DeparturesManagement({ tourId, tourTitle }: DeparturesMa
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-infantPrice">嬰兒價格</Label>
+              <Label htmlFor="edit-infantPrice">{t('departuresTab.fieldInfantPrice')}</Label>
               <Input
                 id="edit-infantPrice"
                 type="number"
@@ -514,7 +516,7 @@ export default function DeparturesManagement({ tourId, tourTitle }: DeparturesMa
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-singleRoomSupplement">單人房差價</Label>
+              <Label htmlFor="edit-singleRoomSupplement">{t('departuresTab.fieldSingleRoomSupplement')}</Label>
               <Input
                 id="edit-singleRoomSupplement"
                 type="number"
@@ -528,7 +530,7 @@ export default function DeparturesManagement({ tourId, tourTitle }: DeparturesMa
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-totalSlots">總名額 *</Label>
+              <Label htmlFor="edit-totalSlots">{t('departuresTab.fieldTotalSlots')}</Label>
               <Input
                 id="edit-totalSlots"
                 type="number"
@@ -539,7 +541,7 @@ export default function DeparturesManagement({ tourId, tourTitle }: DeparturesMa
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-status">狀態</Label>
+              <Label htmlFor="edit-status">{t('departuresTab.fieldStatus')}</Label>
               <Select
                 value={formData.status}
                 onValueChange={(value: any) =>
@@ -550,14 +552,14 @@ export default function DeparturesManagement({ tourId, tourTitle }: DeparturesMa
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="open">開放報名</SelectItem>
-                  <SelectItem value="full">已額滿</SelectItem>
-                  <SelectItem value="cancelled">已取消</SelectItem>
+                  <SelectItem value="open">{t('departuresTab.statusOpen')}</SelectItem>
+                  <SelectItem value="full">{t('departuresTab.statusFull')}</SelectItem>
+                  <SelectItem value="cancelled">{t('departuresTab.statusCancelled')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="col-span-2 space-y-2">
-              <Label htmlFor="edit-notes">備註</Label>
+              <Label htmlFor="edit-notes">{t('departuresTab.fieldNotes')}</Label>
               <Textarea
                 id="edit-notes"
                 value={formData.notes}
@@ -571,7 +573,7 @@ export default function DeparturesManagement({ tourId, tourTitle }: DeparturesMa
               variant="outline"
               onClick={() => setIsEditDialogOpen(false)}
             >
-              取消
+              {t('common.cancel')}
             </Button>
             <Button
               onClick={handleUpdate}
@@ -580,7 +582,7 @@ export default function DeparturesManagement({ tourId, tourTitle }: DeparturesMa
               {updateMutation.isPending && (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               )}
-              更新
+              {t('departuresTab.update')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -590,9 +592,9 @@ export default function DeparturesManagement({ tourId, tourTitle }: DeparturesMa
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>確認刪除</DialogTitle>
+            <DialogTitle>{t('departuresTab.deleteTitle')}</DialogTitle>
             <DialogDescription>
-              確定要刪除此出發日期嗎？此操作無法復原。
+              {t('departuresTab.deleteDesc')}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -600,7 +602,7 @@ export default function DeparturesManagement({ tourId, tourTitle }: DeparturesMa
               variant="outline"
               onClick={() => setIsDeleteDialogOpen(false)}
             >
-              取消
+              {t('common.cancel')}
             </Button>
             <Button
               variant="destructive"
@@ -614,7 +616,7 @@ export default function DeparturesManagement({ tourId, tourTitle }: DeparturesMa
               {deleteMutation.isPending && (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               )}
-              刪除
+              {t('common.delete')}
             </Button>
           </DialogFooter>
         </DialogContent>

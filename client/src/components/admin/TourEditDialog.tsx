@@ -300,7 +300,7 @@ export function TourEditDialog({
 
                   <div>
                     <Label htmlFor="promotionText" className="text-sm font-medium">
-                      促銷文字
+                      {t('tourEditDialog.promotionText')}
                     </Label>
                     <Input
                       id="promotionText"
@@ -312,7 +312,7 @@ export function TourEditDialog({
 
                   <div>
                     <Label htmlFor="duration" className="text-sm font-medium">
-                      天數 <span className="text-red-500">*</span>
+                      {t('tourEditDialog.duration')} <span className="text-red-500">*</span>
                     </Label>
                     <Input
                       id="duration"
@@ -326,7 +326,7 @@ export function TourEditDialog({
 
                   <div>
                     <Label htmlFor="price" className="text-sm font-medium">
-                      價格 <span className="text-red-500">*</span>
+                      {t('tourEditDialog.price')} <span className="text-red-500">*</span>
                     </Label>
                     <div className="flex gap-2 mt-2">
                       <Input
@@ -342,7 +342,7 @@ export function TourEditDialog({
                         onValueChange={(value) => setEditedData({ ...editedData, priceCurrency: value })}
                       >
                         <SelectTrigger className="w-[100px]">
-                          <SelectValue placeholder="貨幣" />
+                          {t('tourEditDialog.currency')}
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="TWD">NT$ TWD</SelectItem>
@@ -354,7 +354,7 @@ export function TourEditDialog({
 
                   <div className="col-span-2">
                     <Label htmlFor="description" className="text-sm font-medium">
-                      行程描述
+                      {t('tourEditDialog.description')}
                     </Label>
                     <Textarea
                       id="description"
@@ -368,12 +368,12 @@ export function TourEditDialog({
               </div>
 
               <div className="bg-blue-50 rounded-2xl p-6 space-y-4">
-                <h3 className="font-semibold text-blue-900 mb-4">地點資訊</h3>
+                <h3 className="font-semibold text-blue-900 mb-4">{t('tourEditDialog.locationInfo')}</h3>
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="departureCity" className="text-sm font-medium">
-                      出發城市
+                      {t('tourEditDialog.departureCity')}
                     </Label>
                     <Input
                       id="departureCity"
@@ -385,7 +385,7 @@ export function TourEditDialog({
 
                   <div>
                     <Label htmlFor="departureAirportName" className="text-sm font-medium">
-                      出發機場
+                      {t('tourEditDialog.departureAirport')}
                     </Label>
                     <Input
                       id="departureAirportName"
@@ -397,7 +397,7 @@ export function TourEditDialog({
 
                   <div>
                     <Label htmlFor="destinationCountry" className="text-sm font-medium">
-                      目的地國家
+                      {t('tourEditDialog.destinationCountry')}
                     </Label>
                     <Input
                       id="destinationCountry"
@@ -409,7 +409,7 @@ export function TourEditDialog({
 
                   <div>
                     <Label htmlFor="destinationCity" className="text-sm font-medium">
-                      目的地城市
+                      {t('tourEditDialog.destinationCity')}
                     </Label>
                     <Input
                       id="destinationCity"
@@ -422,12 +422,12 @@ export function TourEditDialog({
               </div>
 
               <div className="bg-amber-50 rounded-2xl p-6 space-y-4">
-                <h3 className="font-semibold text-amber-900 mb-4">Hero 圖片</h3>
+                <h3 className="font-semibold text-amber-900 mb-4">{t('tourEditDialog.heroImageSection')}</h3>
                 
                 <div className="space-y-4">
                   <div>
                     <Label htmlFor="heroImage" className="text-sm font-medium">
-                      圖片網址
+                      {t('tourEditDialog.imageUrl')}
                     </Label>
                     <Input
                       id="heroImage"
@@ -450,7 +450,7 @@ export function TourEditDialog({
 
                   <div>
                     <Label htmlFor="heroSubtitle" className="text-sm font-medium">
-                      Hero 副標題
+                      {t('tourEditDialog.heroSubtitle')}
                     </Label>
                     <Input
                       id="heroSubtitle"
@@ -466,7 +466,7 @@ export function TourEditDialog({
             {/* 每日行程 Tab */}
             <TabsContent value="itinerary" className="mt-0 space-y-4">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-gray-900">每日行程</h3>
+                <h3 className="font-semibold text-gray-900">{t('tourEditDialog.dailyItinerary')}</h3>
                 <Button
                   type="button"
                   variant="outline"
@@ -475,14 +475,14 @@ export function TourEditDialog({
                   className="rounded-full"
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  新增一天
+                  {t('tourEditDialog.addDay')}
                 </Button>
               </div>
 
               {editedData.itineraryDetailed?.map((day: any, dayIndex: number) => (
                 <div key={dayIndex} className="bg-green-50 rounded-2xl p-6 space-y-4">
                   <div className="flex items-center justify-between">
-                    <h4 className="font-semibold text-green-900">第 {day.day} 天</h4>
+                    <h4 className="font-semibold text-green-900">{t('tourEditDialog.dayLabel').replace('{day}', String(day.day))}</h4>
                     <Button
                       type="button"
                       variant="ghost"
@@ -495,58 +495,58 @@ export function TourEditDialog({
                   </div>
 
                   <div>
-                    <Label className="text-sm font-medium">標題</Label>
+                    <Label className="text-sm font-medium">{t('tourEditDialog.dayTitle')}</Label>
                     <Input
                       value={day.title || ""}
                       onChange={(e) => updateDailyItinerary(dayIndex, 'title', e.target.value)}
                       className="mt-2"
-                      placeholder="例如：抵達東京，淺草寺巡禮"
+                      placeholder={t('tourEditDialog.dayTitlePlaceholder')}
                     />
                   </div>
 
                   <div>
-                    <Label className="text-sm font-medium">住宿</Label>
+                    <Label className="text-sm font-medium">{t('tourEditDialog.accommodation')}</Label>
                     <Input
                       value={day.accommodation || ""}
                       onChange={(e) => updateDailyItinerary(dayIndex, 'accommodation', e.target.value)}
                       className="mt-2"
-                      placeholder="例如：東京希爾頓酒店"
+                      placeholder={t('tourEditDialog.accommodationPlaceholder')}
                     />
                   </div>
 
                   <div className="grid grid-cols-3 gap-4">
                     <div>
-                      <Label className="text-sm font-medium">早餐</Label>
+                      <Label className="text-sm font-medium">{t('tourEditDialog.breakfast')}</Label>
                       <Input
                         value={day.meals?.breakfast || ""}
                         onChange={(e) => updateDailyItinerary(dayIndex, 'meals', { ...day.meals, breakfast: e.target.value })}
                         className="mt-2"
-                        placeholder="例如：飯店內"
+                        placeholder={t('tourEditDialog.breakfastPlaceholder')}
                       />
                     </div>
                     <div>
-                      <Label className="text-sm font-medium">午餐</Label>
+                      <Label className="text-sm font-medium">{t('tourEditDialog.lunch')}</Label>
                       <Input
                         value={day.meals?.lunch || ""}
                         onChange={(e) => updateDailyItinerary(dayIndex, 'meals', { ...day.meals, lunch: e.target.value })}
                         className="mt-2"
-                        placeholder="例如：日式料理"
+                        placeholder={t('tourEditDialog.lunchPlaceholder')}
                       />
                     </div>
                     <div>
-                      <Label className="text-sm font-medium">晚餐</Label>
+                      <Label className="text-sm font-medium">{t('tourEditDialog.dinner')}</Label>
                       <Input
                         value={day.meals?.dinner || ""}
                         onChange={(e) => updateDailyItinerary(dayIndex, 'meals', { ...day.meals, dinner: e.target.value })}
                         className="mt-2"
-                        placeholder="例如：自理"
+                        placeholder={t('tourEditDialog.dinnerPlaceholder')}
                       />
                     </div>
                   </div>
 
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <Label className="text-sm font-medium">活動安排</Label>
+                      <Label className="text-sm font-medium">{t('tourEditDialog.activities')}</Label>
                       <Button
                         type="button"
                         variant="outline"
@@ -555,14 +555,14 @@ export function TourEditDialog({
                         className="rounded-full"
                       >
                         <Plus className="h-3 w-3 mr-1" />
-                        新增活動
+                        {t('tourEditDialog.addActivity')}
                       </Button>
                     </div>
 
                     {day.activities?.map((activity: any, activityIndex: number) => (
                       <div key={activityIndex} className="bg-white rounded-xl p-4 space-y-3 border border-green-200">
                         <div className="flex items-center justify-between">
-                          <Label className="text-xs font-medium text-gray-600">活動 {activityIndex + 1}</Label>
+                          <Label className="text-xs font-medium text-gray-600">{t('tourEditDialog.activityLabel').replace('{n}', String(activityIndex + 1))}</Label>
                           <Button
                             type="button"
                             variant="ghost"
@@ -576,53 +576,53 @@ export function TourEditDialog({
 
                         <div className="grid grid-cols-2 gap-3">
                           <div>
-                            <Label className="text-xs font-medium">時間</Label>
+                            <Label className="text-xs font-medium">{t('tourEditDialog.activityTime')}</Label>
                             <Input
                               value={activity.time || ""}
                               onChange={(e) => updateActivity(dayIndex, activityIndex, 'time', e.target.value)}
                               className="mt-1 h-8 text-sm"
-                              placeholder="例如：09:00"
+                              placeholder={t('tourEditDialog.activityTimePlaceholder')}
                             />
                           </div>
                           <div>
-                            <Label className="text-xs font-medium">地點</Label>
+                            <Label className="text-xs font-medium">{t('tourEditDialog.activityLocation')}</Label>
                             <Input
                               value={activity.location || ""}
                               onChange={(e) => updateActivity(dayIndex, activityIndex, 'location', e.target.value)}
                               className="mt-1 h-8 text-sm"
-                              placeholder="例如：淺草寺"
+                              placeholder={t('tourEditDialog.activityLocationPlaceholder')}
                             />
                           </div>
                         </div>
 
                         <div>
-                          <Label className="text-xs font-medium">標題</Label>
+                          <Label className="text-xs font-medium">{t('tourEditDialog.activityTitle')}</Label>
                           <Input
                             value={activity.title || ""}
                             onChange={(e) => updateActivity(dayIndex, activityIndex, 'title', e.target.value)}
                             className="mt-1 h-8 text-sm"
-                            placeholder="例如：參觀淺草寺"
+                            placeholder={t('tourEditDialog.activityTitlePlaceholder')}
                           />
                         </div>
 
                         <div>
-                          <Label className="text-xs font-medium">描述</Label>
+                          <Label className="text-xs font-medium">{t('tourEditDialog.activityDesc')}</Label>
                           <Textarea
                             value={activity.description || ""}
                             onChange={(e) => updateActivity(dayIndex, activityIndex, 'description', e.target.value)}
                             className="mt-1 text-sm"
                             rows={2}
-                            placeholder="詳細描述活動內容..."
+                            placeholder={t('tourEditDialog.activityDescPlaceholder')}
                           />
                         </div>
 
                         <div>
-                          <Label className="text-xs font-medium">交通方式</Label>
+                          <Label className="text-xs font-medium">{t('tourEditDialog.transportation')}</Label>
                           <Input
                             value={activity.transportation || ""}
                             onChange={(e) => updateActivity(dayIndex, activityIndex, 'transportation', e.target.value)}
                             className="mt-1 h-8 text-sm"
-                            placeholder="例如：遊覽車"
+                            placeholder={t('tourEditDialog.transportationPlaceholder')}
                           />
                         </div>
                       </div>
@@ -633,8 +633,8 @@ export function TourEditDialog({
 
               {(!editedData.itineraryDetailed || editedData.itineraryDetailed.length === 0) && (
                 <div className="text-center py-12 text-gray-500">
-                  <p>尚未新增每日行程</p>
-                  <p className="text-sm mt-2">點擊上方「新增一天」按鈕開始編輯</p>
+                  <p>{t('tourEditDialog.noItinerary')}</p>
+                  <p className="text-sm mt-2">{t('tourEditDialog.noItineraryHint')}</p>
                 </div>
               )}
             </TabsContent>
@@ -652,7 +652,7 @@ export function TourEditDialog({
                     className="rounded-full"
                   >
                     <Plus className="h-4 w-4 mr-2" />
-                    新增項目
+                    {t('tourEditDialog.addItem')}
                   </Button>
                 </div>
 
@@ -661,7 +661,7 @@ export function TourEditDialog({
                     <Input
                       value={item}
                       onChange={(e) => updateCostItem('included', index, e.target.value)}
-                      placeholder="例如：來回經濟艙機票"
+                      placeholder={t('tourEditDialog.includedPlaceholder')}
                     />
                     <Button
                       type="button"
@@ -687,7 +687,7 @@ export function TourEditDialog({
                     className="rounded-full"
                   >
                     <Plus className="h-4 w-4 mr-2" />
-                    新增項目
+                    {t('tourEditDialog.addItem')}
                   </Button>
                 </div>
 
@@ -696,7 +696,7 @@ export function TourEditDialog({
                     <Input
                       value={item}
                       onChange={(e) => updateCostItem('excluded', index, e.target.value)}
-                      placeholder="例如：個人消費"
+                      placeholder={t('tourEditDialog.excludedPlaceholder')}
                     />
                     <Button
                       type="button"
@@ -722,7 +722,7 @@ export function TourEditDialog({
                     className="rounded-full"
                   >
                     <Plus className="h-4 w-4 mr-2" />
-                    新增項目
+                    {t('tourEditDialog.addItem')}
                   </Button>
                 </div>
 
@@ -731,7 +731,7 @@ export function TourEditDialog({
                     <Input
                       value={item}
                       onChange={(e) => updateCostItem('additionalCosts', index, e.target.value)}
-                      placeholder="例如：單人房差 NT$ 5,000"
+                      placeholder={t('tourEditDialog.additionalCostPlaceholder')}
                     />
                     <Button
                       type="button"
@@ -755,7 +755,7 @@ export function TourEditDialog({
                     costExplanation: { ...editedData.costExplanation, notes: e.target.value }
                   })}
                   rows={4}
-                  placeholder="其他費用相關說明..."
+                  placeholder={t('tourEditDialog.costNotesPlaceholder')}
                 />
               </div>
             </TabsContent>
@@ -773,7 +773,7 @@ export function TourEditDialog({
                     className="rounded-full"
                   >
                     <Plus className="h-4 w-4 mr-2" />
-                    新增項目
+                    {t('tourEditDialog.addItem')}
                   </Button>
                 </div>
 
@@ -782,7 +782,7 @@ export function TourEditDialog({
                     <Input
                       value={item}
                       onChange={(e) => updateNoticeItem('preparation', index, e.target.value)}
-                      placeholder="例如：請攜帶有效護照"
+                      placeholder={t('tourEditDialog.preparationPlaceholder')}
                     />
                     <Button
                       type="button"
@@ -808,7 +808,7 @@ export function TourEditDialog({
                     className="rounded-full"
                   >
                     <Plus className="h-4 w-4 mr-2" />
-                    新增項目
+                    {t('tourEditDialog.addItem')}
                   </Button>
                 </div>
 
@@ -817,7 +817,7 @@ export function TourEditDialog({
                     <Input
                       value={item}
                       onChange={(e) => updateNoticeItem('culturalNotes', index, e.target.value)}
-                      placeholder="例如：進入寺廟請脫鞋"
+                      placeholder={t('tourEditDialog.culturalNotesPlaceholder')}
                     />
                     <Button
                       type="button"
@@ -843,7 +843,7 @@ export function TourEditDialog({
                     className="rounded-full"
                   >
                     <Plus className="h-4 w-4 mr-2" />
-                    新增項目
+                    {t('tourEditDialog.addItem')}
                   </Button>
                 </div>
 
@@ -852,7 +852,7 @@ export function TourEditDialog({
                     <Input
                       value={item}
                       onChange={(e) => updateNoticeItem('healthSafety', index, e.target.value)}
-                      placeholder="例如：建議購買旅遊保險"
+                      placeholder={t('tourEditDialog.healthSafetyPlaceholder')}
                     />
                     <Button
                       type="button"
@@ -878,7 +878,7 @@ export function TourEditDialog({
                     className="rounded-full"
                   >
                     <Plus className="h-4 w-4 mr-2" />
-                    新增項目
+                    {t('tourEditDialog.addItem')}
                   </Button>
                 </div>
 
@@ -887,7 +887,7 @@ export function TourEditDialog({
                     <Input
                       value={item}
                       onChange={(e) => updateNoticeItem('emergency', index, e.target.value)}
-                      placeholder="例如：緊急聯絡電話：+886-2-1234-5678"
+                      placeholder={t('tourEditDialog.emergencyPlaceholder')}
                     />
                     <Button
                       type="button"
@@ -965,7 +965,7 @@ export function TourEditDialog({
                         flights: { ...editedData.flights, typeName: e.target.value }
                       })}
                       className="mt-2"
-                      placeholder="例如：鳴日號、山嵐號、長榮航空..."
+                      placeholder={t('tourEditDialog.transportNamePlaceholder')}
                     />
                   </div>
                 </div>
@@ -977,7 +977,7 @@ export function TourEditDialog({
                     
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label className="text-sm font-medium">列車名稱</Label>
+                        <Label className="text-sm font-medium">{t('tourEditDialog.trainName')}</Label>
                         <Input
                           value={editedData.flights?.trainName || ''}
                           onChange={(e) => setEditedData({
@@ -985,11 +985,11 @@ export function TourEditDialog({
                             flights: { ...editedData.flights, trainName: e.target.value }
                           })}
                           className="mt-2"
-                          placeholder="例如：鳴日號觀光列車"
+                          placeholder={t('tourEditDialog.trainNamePlaceholder')}
                         />
                       </div>
                       <div>
-                        <Label className="text-sm font-medium">列車類型</Label>
+                        <Label className="text-sm font-medium">{t('tourEditDialog.trainType')}</Label>
                         <Input
                           value={editedData.flights?.trainType || ''}
                           onChange={(e) => setEditedData({
@@ -997,13 +997,13 @@ export function TourEditDialog({
                             flights: { ...editedData.flights, trainType: e.target.value }
                           })}
                           className="mt-2"
-                          placeholder="例如：觀光列車、普悠瑪號、自強號"
+                          placeholder={t('tourEditDialog.trainTypePlaceholder')}
                         />
                       </div>
                     </div>
 
                     <div>
-                      <Label className="text-sm font-medium">列車介紹</Label>
+                      <Label className="text-sm font-medium">{t('tourEditDialog.trainDesc')}</Label>
                       <Textarea
                         value={editedData.flights?.description || ''}
                         onChange={(e) => setEditedData({
@@ -1012,12 +1012,12 @@ export function TourEditDialog({
                         })}
                         className="mt-2"
                         rows={3}
-                        placeholder="詳細介紹列車特色..."
+                        placeholder={t('tourEditDialog.trainDescPlaceholder')}
                       />
                     </div>
 
                     <div>
-                      <Label className="text-sm font-medium">列車特色（每行一個）</Label>
+                      <Label className="text-sm font-medium">{t('tourEditDialog.trainFeatures')}</Label>
                       <Textarea
                         value={editedData.flights?.features?.join('\n') || ''}
                         onChange={(e) => setEditedData({
@@ -1026,12 +1026,12 @@ export function TourEditDialog({
                         })}
                         className="mt-2"
                         rows={4}
-                        placeholder="頂級觀光列車\n原住民文化車廂\n專屬餐飲服務"
+                        placeholder={t('tourEditDialog.trainFeaturesPlaceholder')}
                       />
                     </div>
 
                     <div>
-                      <Label className="text-sm font-medium">行駛路線（每行一個站）</Label>
+                      <Label className="text-sm font-medium">{t('tourEditDialog.trainRoute')}</Label>
                       <Textarea
                         value={editedData.flights?.route?.join('\n') || ''}
                         onChange={(e) => setEditedData({
@@ -1040,7 +1040,7 @@ export function TourEditDialog({
                         })}
                         className="mt-2"
                         rows={4}
-                        placeholder="南港站\n花蓮站\n台東站"
+                        placeholder={t('tourEditDialog.trainRoutePlaceholder')}
                       />
                     </div>
                   </div>
@@ -1053,7 +1053,7 @@ export function TourEditDialog({
                     
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label className="text-sm font-medium">船名</Label>
+                        <Label className="text-sm font-medium">{t('tourEditDialog.shipName')}</Label>
                         <Input
                           value={editedData.flights?.shipName || ''}
                           onChange={(e) => setEditedData({
@@ -1061,11 +1061,11 @@ export function TourEditDialog({
                             flights: { ...editedData.flights, shipName: e.target.value }
                           })}
                           className="mt-2"
-                          placeholder="例如：黃金公主號"
+                          placeholder={t('tourEditDialog.shipNamePlaceholder')}
                         />
                       </div>
                       <div>
-                        <Label className="text-sm font-medium">航線</Label>
+                        <Label className="text-sm font-medium">{t('tourEditDialog.cruiseRoute')}</Label>
                         <Input
                           value={editedData.flights?.cruiseRoute || ''}
                           onChange={(e) => setEditedData({
@@ -1073,13 +1073,13 @@ export function TourEditDialog({
                             flights: { ...editedData.flights, cruiseRoute: e.target.value }
                           })}
                           className="mt-2"
-                          placeholder="例如：基隆-那霸-石垣島"
+                          placeholder={t('tourEditDialog.cruiseRoutePlaceholder')}
                         />
                       </div>
                     </div>
 
                     <div>
-                      <Label className="text-sm font-medium">郵輪介紹</Label>
+                      <Label className="text-sm font-medium">{t('tourEditDialog.cruiseDesc')}</Label>
                       <Textarea
                         value={editedData.flights?.description || ''}
                         onChange={(e) => setEditedData({
@@ -1088,12 +1088,12 @@ export function TourEditDialog({
                         })}
                         className="mt-2"
                         rows={3}
-                        placeholder="詳細介紹郵輪特色..."
+                        placeholder={t('tourEditDialog.cruiseDescPlaceholder')}
                       />
                     </div>
 
                     <div>
-                      <Label className="text-sm font-medium">船上設施（每行一個）</Label>
+                      <Label className="text-sm font-medium">{t('tourEditDialog.cruiseFacilities')}</Label>
                       <Textarea
                         value={editedData.flights?.features?.join('\n') || ''}
                         onChange={(e) => setEditedData({
@@ -1102,7 +1102,7 @@ export function TourEditDialog({
                         })}
                         className="mt-2"
                         rows={4}
-                        placeholder="無邊際泳池\n全天候自助餐廳\nSPA水療中心"
+                        placeholder={t('tourEditDialog.cruiseFacilitiesPlaceholder')}
                       />
                     </div>
                   </div>
@@ -1115,7 +1115,7 @@ export function TourEditDialog({
                     
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label className="text-sm font-medium">航空公司</Label>
+                        <Label className="text-sm font-medium">{t('tourEditDialog.airline')}</Label>
                         <Input
                           value={editedData.flights?.airline || ''}
                           onChange={(e) => setEditedData({
@@ -1123,11 +1123,11 @@ export function TourEditDialog({
                             flights: { ...editedData.flights, airline: e.target.value }
                           })}
                           className="mt-2"
-                          placeholder="例如：長榮航空、華航"
+                          placeholder={t('tourEditDialog.airlinePlaceholder')}
                         />
                       </div>
                       <div>
-                        <Label className="text-sm font-medium">航班號碼</Label>
+                        <Label className="text-sm font-medium">{t('tourEditDialog.flightNumber')}</Label>
                         <Input
                           value={editedData.flights?.flightNumber || ''}
                           onChange={(e) => setEditedData({
@@ -1135,14 +1135,14 @@ export function TourEditDialog({
                             flights: { ...editedData.flights, flightNumber: e.target.value }
                           })}
                           className="mt-2"
-                          placeholder="例如：BR123"
+                          placeholder={t('tourEditDialog.flightNumberPlaceholder')}
                         />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label className="text-sm font-medium">去程出發時間</Label>
+                        <Label className="text-sm font-medium">{t('tourEditDialog.outboundDeparture')}</Label>
                         <Input
                           value={editedData.flights?.outbound?.departureTime || ''}
                           onChange={(e) => setEditedData({
@@ -1153,11 +1153,11 @@ export function TourEditDialog({
                             }
                           })}
                           className="mt-2"
-                          placeholder="例如：08:30"
+                          placeholder={t('tourEditDialog.outboundDeparturePlaceholder')}
                         />
                       </div>
                       <div>
-                        <Label className="text-sm font-medium">去程抵達時間</Label>
+                        <Label className="text-sm font-medium">{t('tourEditDialog.outboundArrival')}</Label>
                         <Input
                           value={editedData.flights?.outbound?.arrivalTime || ''}
                           onChange={(e) => setEditedData({
@@ -1168,14 +1168,14 @@ export function TourEditDialog({
                             }
                           })}
                           className="mt-2"
-                          placeholder="例如：12:30"
+                          placeholder={t('tourEditDialog.outboundArrivalPlaceholder')}
                         />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label className="text-sm font-medium">回程出發時間</Label>
+                        <Label className="text-sm font-medium">{t('tourEditDialog.inboundDeparture')}</Label>
                         <Input
                           value={editedData.flights?.inbound?.departureTime || ''}
                           onChange={(e) => setEditedData({
@@ -1186,11 +1186,11 @@ export function TourEditDialog({
                             }
                           })}
                           className="mt-2"
-                          placeholder="例如：14:00"
+                          placeholder={t('tourEditDialog.inboundDeparturePlaceholder')}
                         />
                       </div>
                       <div>
-                        <Label className="text-sm font-medium">回程抵達時間</Label>
+                        <Label className="text-sm font-medium">{t('tourEditDialog.inboundArrival')}</Label>
                         <Input
                           value={editedData.flights?.inbound?.arrivalTime || ''}
                           onChange={(e) => setEditedData({
@@ -1201,7 +1201,7 @@ export function TourEditDialog({
                             }
                           })}
                           className="mt-2"
-                          placeholder="例如：18:00"
+                          placeholder={t('tourEditDialog.inboundArrivalPlaceholder')}
                         />
                       </div>
                     </div>
@@ -1229,7 +1229,7 @@ export function TourEditDialog({
                     className="rounded-full"
                   >
                     <Plus className="h-4 w-4 mr-2" />
-                    新增照片
+                    {t('tourEditDialog.addPhoto')}
                   </Button>
                 </div>
 
@@ -1237,7 +1237,7 @@ export function TourEditDialog({
                   {editedData.images?.map((image: any, index: number) => (
                     <div key={index} className="bg-white rounded-xl p-4 space-y-3 border border-violet-200">
                       <div className="flex items-center justify-between">
-                        <Label className="text-sm font-medium text-violet-800">照片 {index + 1}</Label>
+                        <Label className="text-sm font-medium text-violet-800">{t('tourEditDialog.photoLabel').replace('{n}', String(index + 1))}</Label>
                         <Button
                           type="button"
                           variant="ghost"
@@ -1257,14 +1257,14 @@ export function TourEditDialog({
                         <div className="relative rounded-lg overflow-hidden">
                           <img 
                             src={image.url} 
-                            alt={image.alt || '行程照片'} 
+                            alt={image.alt || t('tourEditDialog.tourPhotoAlt')} 
                             className="w-full h-32 object-cover"
                           />
                         </div>
                       )}
 
                       <div>
-                        <Label className="text-xs font-medium">圖片網址</Label>
+                        <Label className="text-xs font-medium">{t('tourEditDialog.photoUrl')}</Label>
                         <Input
                           value={image.url || ''}
                           onChange={(e) => {
@@ -1278,7 +1278,7 @@ export function TourEditDialog({
                       </div>
 
                       <div>
-                        <Label className="text-xs font-medium">替代文字 (Alt)</Label>
+                        <Label className="text-xs font-medium">{t('tourEditDialog.photoAlt')}</Label>
                         <Input
                           value={image.alt || ''}
                           onChange={(e) => {
@@ -1287,12 +1287,12 @@ export function TourEditDialog({
                             setEditedData({ ...editedData, images: updated });
                           }}
                           className="mt-1 h-8 text-sm"
-                          placeholder="描述圖片內容..."
+                          placeholder={t('tourEditDialog.photoAltPlaceholder')}
                         />
                       </div>
 
                       <div>
-                        <Label className="text-xs font-medium">圖片說明</Label>
+                        <Label className="text-xs font-medium">{t('tourEditDialog.photoCaption')}</Label>
                         <Input
                           value={image.caption || ''}
                           onChange={(e) => {
@@ -1301,7 +1301,7 @@ export function TourEditDialog({
                             setEditedData({ ...editedData, images: updated });
                           }}
                           className="mt-1 h-8 text-sm"
-                          placeholder="例如：東京鐵塔夜景"
+                          placeholder={t('tourEditDialog.photoCaptionPlaceholder')}
                         />
                       </div>
                     </div>
@@ -1357,7 +1357,7 @@ export function TourEditDialog({
             className="rounded-full"
             disabled={isSaving}
           >
-            取消
+            {t('common.cancel')}
           </Button>
           <Button
             onClick={handleSave}

@@ -9,6 +9,7 @@
  */
 
 import { useEffect, useState, useRef } from "react";
+import { useLocale } from "@/contexts/LocaleContext";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -152,6 +153,7 @@ export function GenerationProgressComponent({
   onComplete,
   onError 
 }: GenerationProgressProps) {
+  const { t } = useLocale();
   const [progress, setProgress] = useState<GenerationProgress | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -161,17 +163,17 @@ export function GenerationProgressComponent({
 
   // 定義所有階段
   const allPhases: AgentPhase[] = [
-    { id: 'web_scraper', name: '網頁爬取', shortName: '爬取', description: '從來源網站提取行程資訊', status: 'pending', progress: 0 },
-    { id: 'content_analyzer', name: '內容分析', shortName: '分析', description: '分析並結構化行程資料', status: 'pending', progress: 0 },
-    { id: 'itinerary', name: '行程規劃', shortName: '行程', description: '生成詳細每日行程', status: 'pending', progress: 0 },
-    { id: 'hotel_agent', name: '住宿資訊', shortName: '住宿', description: '提取住宿資訊', status: 'pending', progress: 0 },
-    { id: 'meal_agent', name: '餐飲資訊', shortName: '餐飲', description: '提取餐飲資訊', status: 'pending', progress: 0 },
-    { id: 'flight_agent', name: '航班資訊', shortName: '航班', description: '提取航班資訊', status: 'pending', progress: 0 },
-    { id: 'cost_agent', name: '費用分析', shortName: '費用', description: '分析費用明細', status: 'pending', progress: 0 },
-    { id: 'notice_agent', name: '注意事項', shortName: '注意', description: '整理注意事項', status: 'pending', progress: 0 },
-    { id: 'color_theme', name: '配色主題', shortName: '配色', description: '生成行程配色方案', status: 'pending', progress: 0 },
-    { id: 'learning', name: '技能學習', shortName: '學習', description: '應用與學習新技能', status: 'pending', progress: 0 },
-    { id: 'finalize', name: '完成組裝', shortName: '完成', description: '組裝最終行程資料', status: 'pending', progress: 0 },
+    { id: 'web_scraper', name: t('generationProgress.phaseWebScraper'), shortName: t('generationProgress.phaseWebScraperShort'), description: t('generationProgress.phaseWebScraperDesc'), status: 'pending', progress: 0 },
+    { id: 'content_analyzer', name: t('generationProgress.phaseContentAnalyzer'), shortName: t('generationProgress.phaseContentAnalyzerShort'), description: t('generationProgress.phaseContentAnalyzerDesc'), status: 'pending', progress: 0 },
+    { id: 'itinerary', name: t('generationProgress.phaseItinerary'), shortName: t('generationProgress.phaseItineraryShort'), description: t('generationProgress.phaseItineraryDesc'), status: 'pending', progress: 0 },
+    { id: 'hotel_agent', name: t('generationProgress.phaseHotel'), shortName: t('generationProgress.phaseHotelShort'), description: t('generationProgress.phaseHotelDesc'), status: 'pending', progress: 0 },
+    { id: 'meal_agent', name: t('generationProgress.phaseMeal'), shortName: t('generationProgress.phaseMealShort'), description: t('generationProgress.phaseMealDesc'), status: 'pending', progress: 0 },
+    { id: 'flight_agent', name: t('generationProgress.phaseFlight'), shortName: t('generationProgress.phaseFlightShort'), description: t('generationProgress.phaseFlightDesc'), status: 'pending', progress: 0 },
+    { id: 'cost_agent', name: t('generationProgress.phaseCost'), shortName: t('generationProgress.phaseCostShort'), description: t('generationProgress.phaseCostDesc'), status: 'pending', progress: 0 },
+    { id: 'notice_agent', name: t('generationProgress.phaseNotice'), shortName: t('generationProgress.phaseNoticeShort'), description: t('generationProgress.phaseNoticeDesc'), status: 'pending', progress: 0 },
+    { id: 'color_theme', name: t('generationProgress.phaseColorTheme'), shortName: t('generationProgress.phaseColorThemeShort'), description: t('generationProgress.phaseColorThemeDesc'), status: 'pending', progress: 0 },
+    { id: 'learning', name: t('generationProgress.phaseLearning'), shortName: t('generationProgress.phaseLearningShort'), description: t('generationProgress.phaseLearningDesc'), status: 'pending', progress: 0 },
+    { id: 'finalize', name: t('generationProgress.phaseFinalize'), shortName: t('generationProgress.phaseFinalizeShort'), description: t('generationProgress.phaseFinalizeDesc'), status: 'pending', progress: 0 },
   ];
 
   // 根據輪詢狀態更新進度
@@ -300,8 +302,8 @@ export function GenerationProgressComponent({
             {currentStatus === 'failed' && <XCircle className="h-4 w-4 text-red-500" />}
             <span className="text-sm font-medium">
               {currentStatus === 'running' && currentPhase?.currentTask}
-              {currentStatus === 'completed' && '生成完成'}
-              {currentStatus === 'failed' && '生成失敗'}
+              {currentStatus === 'completed' && t('generationProgress.completed')}
+              {currentStatus === 'failed' && t('generationProgress.failed')}
             </span>
           </div>
           <div className="flex items-center gap-3 text-xs text-gray-500">
@@ -349,7 +351,7 @@ export function GenerationProgressComponent({
           <div className="mt-2 flex items-center gap-2 text-xs">
             <Sparkles className="h-3 w-3 text-amber-500" />
             <span className="text-amber-600">
-              已學習 {skillNotifications.length} 個新技能
+              {t('generationProgress.skillsLearned').replace('{count}', String(skillNotifications.length))}
             </span>
             {skillNotifications.slice(-2).map((skill, idx) => (
               <Badge key={idx} variant="outline" className="text-xs py-0 bg-amber-50 border-amber-200 text-amber-700">
@@ -368,12 +370,12 @@ export function GenerationProgressComponent({
         {isExpanded ? (
           <>
             <ChevronUp className="h-3 w-3" />
-            收合詳情
+            {t('generationProgress.collapse')}
           </>
         ) : (
           <>
             <ChevronDown className="h-3 w-3" />
-            展開詳情 ({completedCount}/{displayPhases.length})
+            {t('generationProgress.expand').replace('{completed}', String(completedCount)).replace('{total}', String(displayPhases.length))}
           </>
         )}
       </button>
@@ -426,7 +428,7 @@ export function GenerationProgressComponent({
             <div className="p-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded border border-blue-100 space-y-2">
               <h4 className="text-xs font-semibold text-gray-700 flex items-center gap-1">
                 <Package className="h-3 w-3 text-blue-500" />
-                即時預覽
+                {t('generationProgress.livePreview')}
               </h4>
               
               {progress.partialResults.title && (
@@ -448,7 +450,7 @@ export function GenerationProgressComponent({
               
               {progress.partialResults.colorTheme && typeof progress.partialResults.colorTheme === 'object' && (
                 <div className="flex items-center gap-1">
-                  <span className="text-xs text-gray-500">配色：</span>
+                  <span className="text-xs text-gray-500">{t('generationProgress.colorThemeLabel')}</span>
                   <div className="flex gap-0.5">
                     {Object.entries(progress.partialResults.colorTheme).slice(0, 5).map(([key, color]) => {
                       const colorValue = typeof color === 'string' ? color : '#cccccc';
@@ -470,7 +472,7 @@ export function GenerationProgressComponent({
           {/* 錯誤訊息 */}
           {progress?.error && (
             <div className="p-2 bg-red-50 border border-red-200 rounded text-xs text-red-600">
-              <strong>錯誤：</strong> {typeof progress.error === 'string' ? progress.error : String(progress.error)}
+              <strong>{t('generationProgress.errorLabel')}</strong> {typeof progress.error === 'string' ? progress.error : String(progress.error)}
             </div>
           )}
         </div>

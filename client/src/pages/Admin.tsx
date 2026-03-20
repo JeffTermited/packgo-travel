@@ -108,7 +108,7 @@ export default function Admin() {
             </TabsTrigger>
             <TabsTrigger value="translations" className="rounded-full">
               <Languages className="h-4 w-4 mr-2" />
-              多語言翻譯
+              {t('admin.translations')}
             </TabsTrigger>
           </TabsList>
 
