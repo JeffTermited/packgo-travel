@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocale } from "@/contexts/LocaleContext";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -75,26 +76,8 @@ import {
   ChevronRight,
 } from "lucide-react";
 
-// 技能類型選項（對應後端 schema 的 skillType enum）
-const SKILL_TYPE_OPTIONS = [
-  { value: "feature_classification", label: "特色分類", color: "bg-purple-100 text-purple-800", icon: Tag },
-  { value: "tag_rule", label: "標籤規則", color: "bg-blue-100 text-blue-800", icon: Target },
-  { value: "itinerary_structure", label: "行程結構", color: "bg-green-100 text-green-800", icon: FileText },
-  { value: "highlight_detection", label: "亮點識別", color: "bg-yellow-100 text-yellow-800", icon: Lightbulb },
-  { value: "transportation_type", label: "交通類型", color: "bg-orange-100 text-orange-800", icon: GitBranch },
-  { value: "meal_classification", label: "餐食分類", color: "bg-pink-100 text-pink-800", icon: Zap },
-  { value: "accommodation_type", label: "住宿類型", color: "bg-indigo-100 text-indigo-800", icon: Shield },
-] as const;
-
-// Superpowers 風格的技能分類
-const SKILL_CATEGORY_OPTIONS = [
-  { value: "technique", label: "技術", description: "具體方法，有明確步驟可循", color: "bg-emerald-100 text-emerald-800" },
-  { value: "pattern", label: "模式", description: "思考問題的方式", color: "bg-amber-100 text-amber-800" },
-  { value: "reference", label: "參考", description: "API 文檔、語法指南", color: "bg-cyan-100 text-cyan-800" },
-] as const;
-
-type SkillType = typeof SKILL_TYPE_OPTIONS[number]["value"];
-type SkillCategory = typeof SKILL_CATEGORY_OPTIONS[number]["value"];
+type SkillType = "feature_classification" | "tag_rule" | "itinerary_structure" | "highlight_detection" | "transportation_type" | "meal_classification" | "accommodation_type";
+type SkillCategory = "technique" | "pattern" | "reference";
 
 interface TestCase {
   id: string;
@@ -104,6 +87,26 @@ interface TestCase {
 }
 
 export default function SkillsTab() {
+  const { t } = useLocale();
+
+  // 技能類型選項（對應後端 schema 的 skillType enum）
+  const SKILL_TYPE_OPTIONS = [
+    { value: "feature_classification" as SkillType, label: t('admin.skillsTab.categoryFeature'), color: "bg-purple-100 text-purple-800", icon: Tag },
+    { value: "tag_rule" as SkillType, label: t('admin.skillsTab.categoryTagRule'), color: "bg-blue-100 text-blue-800", icon: Target },
+    { value: "itinerary_structure" as SkillType, label: t('admin.skillsTab.categoryItinerary'), color: "bg-green-100 text-green-800", icon: FileText },
+    { value: "highlight_detection" as SkillType, label: t('admin.skillsTab.categoryHighlight'), color: "bg-yellow-100 text-yellow-800", icon: Lightbulb },
+    { value: "transportation_type" as SkillType, label: t('admin.skillsTab.categoryTransport'), color: "bg-orange-100 text-orange-800", icon: GitBranch },
+    { value: "meal_classification" as SkillType, label: t('admin.skillsTab.categoryMeal'), color: "bg-pink-100 text-pink-800", icon: Zap },
+    { value: "accommodation_type" as SkillType, label: t('admin.skillsTab.categoryAccommodation'), color: "bg-indigo-100 text-indigo-800", icon: Shield },
+  ];
+
+  // Superpowers 風格的技能分類
+  const SKILL_CATEGORY_OPTIONS = [
+    { value: "technique" as SkillCategory, label: t('admin.skillsTab.typeTechnique'), description: t('admin.skillsTab.typeTechniqueDesc'), color: "bg-emerald-100 text-emerald-800" },
+    { value: "pattern" as SkillCategory, label: t('admin.skillsTab.typePattern'), description: t('admin.skillsTab.typePatternDesc'), color: "bg-amber-100 text-amber-800" },
+    { value: "reference" as SkillCategory, label: t('admin.skillsTab.typeReference'), description: t('admin.skillsTab.typeReferenceDesc'), color: "bg-cyan-100 text-cyan-800" },
+  ];
+
   const [activeTab, setActiveTab] = useState("overview");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -151,67 +154,67 @@ export default function SkillsTab() {
   // Mutations
   const createSkill = trpc.skills.create.useMutation({
     onSuccess: () => {
-      toast.success("技能已新增", { description: "新技能已成功加入資料庫" });
+      toast.success(t('admin.skillsTab.addSuccess'), { description: t('admin.skillsTab.addSuccessDesc') });
       setIsAddDialogOpen(false);
       resetForm();
       refetch();
     },
     onError: (error) => {
-      toast.error("新增失敗", { description: error.message });
+      toast.error(t('admin.skillsTab.addError'), { description: error.message });
     },
   });
 
   const updateSkill = trpc.skills.update.useMutation({
     onSuccess: () => {
-      toast.success("技能已更新", { description: "技能資訊已成功更新" });
+      toast.success(t('admin.skillsTab.updateSuccess'), { description: t('admin.skillsTab.updateSuccessDesc') });
       setIsEditDialogOpen(false);
       setSelectedSkillId(null);
       resetForm();
       refetch();
     },
     onError: (error) => {
-      toast.error("更新失敗", { description: error.message });
+      toast.error(t('admin.skillsTab.updateError'), { description: error.message });
     },
   });
 
   const deleteSkill = trpc.skills.delete.useMutation({
     onSuccess: () => {
-      toast.success("技能已刪除", { description: "技能已從資料庫中移除" });
+      toast.success(t('admin.skillsTab.deleteSuccess'), { description: t('admin.skillsTab.deleteSuccessDesc') });
       refetch();
     },
     onError: (error) => {
-      toast.error("刪除失敗", { description: error.message });
+      toast.error(t('admin.skillsTab.deleteError'), { description: error.message });
     },
   });
 
   const initializeBuiltIn = trpc.skills.initializeBuiltIn.useMutation({
     onSuccess: () => {
-      toast.success("內建技能已初始化", { description: "已載入預設技能" });
+      toast.success(t('admin.skillsTab.initSuccess'), { description: t('admin.skillsTab.initSuccessDesc') });
       refetch();
     },
     onError: (error) => {
-      toast.error("初始化失敗", { description: error.message });
+      toast.error(t('admin.skillsTab.initError'), { description: error.message });
     },
   });
 
   const runTests = trpc.skills.runTests.useMutation({
     onSuccess: (data) => {
       if (data.totalTests === 0) {
-        toast.info("無測試案例", { description: "此技能尚未定義測試案例" });
+        toast.info(t('admin.skillsTab.noTestCases'), { description: t('admin.skillsTab.noTestCasesDesc') });
       } else {
         const passRate = (data.passRate * 100).toFixed(0);
         if (data.passRate === 1) {
-          toast.success("所有測試通過", { description: `${data.passedTests}/${data.totalTests} 測試通過 (${passRate}%)` });
+          toast.success(t('admin.skillsTab.allTestsPassed'), { description: `${data.passedTests}/${data.totalTests} 測試通過 (${passRate}%)` });
         } else if (data.passRate >= 0.5) {
-          toast.warning("部分測試失敗", { description: `${data.passedTests}/${data.totalTests} 測試通過 (${passRate}%)` });
+          toast.warning(t('admin.skillsTab.someTestsFailed'), { description: `${data.passedTests}/${data.totalTests} 測試通過 (${passRate}%)` });
         } else {
-          toast.error("多數測試失敗", { description: `${data.passedTests}/${data.totalTests} 測試通過 (${passRate}%)` });
+          toast.error(t('admin.skillsTab.mostTestsFailed'), { description: `${data.passedTests}/${data.totalTests} 測試通過 (${passRate}%)` });
         }
       }
       refetch();
     },
     onError: (error) => {
-      toast.error("測試執行失敗", { description: error.message });
+      toast.error(t('admin.skillsTab.testRunError'), { description: error.message });
     },
   });
 
@@ -280,7 +283,7 @@ export default function SkillsTab() {
   };
 
   const handleDelete = (skillId: number, skillName: string) => {
-    if (confirm(`確定要刪除技能「${skillName}」嗎？`)) {
+    if (confirm(t('admin.skillsTab.confirmDelete').replace('{name}', skillName))) {
       deleteSkill.mutate({ id: skillId });
     }
   };
@@ -393,7 +396,7 @@ export default function SkillsTab() {
     return category ? (
       <Badge variant="outline" className={category.color}>{category.label}</Badge>
     ) : (
-      <Badge variant="outline">技術</Badge>
+      <span>{t('admin.skillsTab.typeTechniqueLabel')}</span>
     );
   };
 
@@ -425,7 +428,7 @@ export default function SkillsTab() {
             <Brain className="h-5 w-5 text-primary" />
             <div>
               <p className="text-2xl font-bold">{stats?.totalSkills || 0}</p>
-              <p className="text-xs text-muted-foreground">總技能數</p>
+              <p className="text-xs text-muted-foreground">{t('admin.skillsTab.statTotal')}</p>
             </div>
           </div>
         </CardContent>
@@ -436,7 +439,7 @@ export default function SkillsTab() {
             <CheckCircle2 className="h-5 w-5 text-green-500" />
             <div>
               <p className="text-2xl font-bold">{stats?.activeSkills || 0}</p>
-              <p className="text-xs text-muted-foreground">啟用中</p>
+              <p className="text-xs text-muted-foreground">{t('admin.skillsTab.statActive')}</p>
             </div>
           </div>
         </CardContent>
@@ -447,7 +450,7 @@ export default function SkillsTab() {
             <TrendingUp className="h-5 w-5 text-blue-500" />
             <div>
               <p className="text-2xl font-bold">{stats?.totalUsage || 0}</p>
-              <p className="text-xs text-muted-foreground">總使用次數</p>
+              <p className="text-xs text-muted-foreground">{t('admin.skillsTab.statUsage')}</p>
             </div>
           </div>
         </CardContent>
@@ -458,7 +461,7 @@ export default function SkillsTab() {
             <Target className="h-5 w-5 text-amber-500" />
             <div>
               <p className="text-2xl font-bold">{stats?.overallSuccessRate || 0}%</p>
-              <p className="text-xs text-muted-foreground">成功率</p>
+              <p className="text-xs text-muted-foreground">{t('admin.skillsTab.statSuccessRate')}</p>
             </div>
           </div>
         </CardContent>
@@ -470,7 +473,7 @@ export default function SkillsTab() {
   const CategoryDistribution = () => (
     <Card className="mb-6">
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm">技能分類分佈</CardTitle>
+        <CardTitle className="text-sm">{t('admin.skillsTab.categoryDistribution')}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="flex gap-4">
@@ -501,40 +504,40 @@ export default function SkillsTab() {
       onSuccess: (result) => {
         setLearningResults(result);
         setIsLearning(false);
-        toast.success(`學習完成！發現 ${result.keywordSuggestions?.length || 0} 個新關鍵字建議`);
+        toast.success(t('admin.skillsTab.learnComplete').replace('{count}', String(result.keywordSuggestions?.length || 0)));
         refetch();
       },
       onError: (error) => {
         setIsLearning(false);
-        toast.error(`學習失敗: ${error.message}`);
+        toast.error(t('admin.skillsTab.learnError').replace('{msg}', error.message));
       },
     });
     
     // 應用關鍵字建議
     const applyKeywords = trpc.skills.applyLearnedKeywords.useMutation({
       onSuccess: () => {
-        toast.success("關鍵字已成功新增到技能");
+        toast.success(t('admin.skillsTab.keywordAdded'));
         refetch();
       },
       onError: (error) => {
-        toast.error(`應用失敗: ${error.message}`);
+        toast.error(t('admin.skillsTab.applyError').replace('{msg}', error.message));
       },
     });
     
     // 創建新技能
     const createSkill = trpc.skills.createSuggestedSkill.useMutation({
       onSuccess: () => {
-        toast.success("新技能已成功創建");
+        toast.success(t('admin.skillsTab.skillCreated'));
         refetch();
       },
       onError: (error) => {
-        toast.error(`創建失敗: ${error.message}`);
+        toast.error(t('admin.skillsTab.createError').replace('{msg}', error.message));
       },
     });
     
     const handleLearnFromTour = async () => {
       if (!selectedTourId) {
-        toast.error("請選擇一個行程");
+        toast.error(t('admin.skillsTab.selectTourFirst'));
         return;
       }
       
@@ -564,12 +567,12 @@ export default function SkillsTab() {
     
     const handleLearnFromAllTours = async () => {
       if (!tours || tours.length === 0) {
-        toast.error("沒有可用的行程資料");
+        toast.error(t('admin.skillsTab.noTourData'));
         return;
       }
       
       setIsLearning(true);
-      toast.info(`開始從 ${tours.length} 個行程中學習...`);
+      toast.info(t('admin.skillsTab.batchLearnStart').replace('{count}', String(tours.length)));
       
       // 逐個學習以避免過載
       let totalSuggestions = 0;
@@ -597,7 +600,7 @@ export default function SkillsTab() {
       }
       
       setIsLearning(false);
-      toast.success(`批量學習完成！共發現 ${totalSuggestions} 個新關鍵字建議`);
+      toast.success(t('admin.skillsTab.batchLearnComplete').replace('{count}', String(totalSuggestions)));
     };
     
     return (
@@ -607,20 +610,20 @@ export default function SkillsTab() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <GraduationCap className="h-5 w-5 text-primary" />
-              AI 自動學習
+              {t('admin.skillsTab.aiLearningTitle')}
             </CardTitle>
             <CardDescription>
-              讓 AI 從現有行程內容中自動學習新的關鍵字和模式，持續優化技能系統
+              {t('admin.skillsTab.aiLearningDesc')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* 單一行程學習 */}
             <div className="flex items-end gap-4">
               <div className="flex-1 space-y-2">
-                <Label>選擇行程進行學習</Label>
+                <Label>{t('admin.skillsTab.selectTourLabel')}</Label>
                 <Select value={selectedTourId} onValueChange={setSelectedTourId}>
                   <SelectTrigger>
-                    <SelectValue placeholder="選擇一個行程..." />
+                    <SelectValue {...{placeholder: t('admin.skillsTab.selectTourPlaceholder')}} />
                   </SelectTrigger>
                   <SelectContent>
                     {tours?.map(tour => (
@@ -640,7 +643,7 @@ export default function SkillsTab() {
                 ) : (
                   <Wand2 className="h-4 w-4 mr-2" />
                 )}
-                開始學習
+                {t('admin.skillsTab.startLearning')}
               </Button>
             </div>
             
@@ -649,9 +652,9 @@ export default function SkillsTab() {
             {/* 批量學習 */}
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium">批量學習</p>
+                <p className="font-medium">{t('admin.skillsTab.batchLearn')}</p>
                 <p className="text-sm text-muted-foreground">
-                  從所有行程中學習新的關鍵字和模式（最多 5 個）
+                  {t('admin.skillsTab.batchLearnDesc')}
                 </p>
               </div>
               <Button
@@ -664,7 +667,7 @@ export default function SkillsTab() {
                 ) : (
                   <Database className="h-4 w-4 mr-2" />
                 )}
-                批量學習
+                {t('admin.skillsTab.batchLearnBtn')}
               </Button>
             </div>
           </CardContent>
@@ -674,11 +677,11 @@ export default function SkillsTab() {
         {learningResults && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">學習結果</CardTitle>
+              <CardTitle className="text-base">{t('admin.skillsTab.learnResults')}</CardTitle>
               <CardDescription>
-                處理時間: {learningResults.stats?.processingTimeMs || 0}ms | 
-                發現關鍵字: {learningResults.stats?.totalKeywordsFound || 0} | 
-                新關鍵字: {learningResults.stats?.newKeywordsFound || 0}
+                {t('admin.skillsTab.processingTime').replace('{ms}', String(learningResults.stats?.processingTimeMs || 0))} | 
+                {t('admin.skillsTab.foundKeywords').replace('{count}', String(learningResults.stats?.totalKeywordsFound || 0))} | 
+                {t('admin.skillsTab.newKeywords').replace('{count}', String(learningResults.stats?.newKeywordsFound || 0))}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -687,7 +690,7 @@ export default function SkillsTab() {
                 <div className="space-y-3">
                   <h4 className="font-medium flex items-center gap-2">
                     <Tag className="h-4 w-4" />
-                    關鍵字建議 ({learningResults.keywordSuggestions.length})
+                    {t('admin.skillsTab.keywordSuggestions').replace('{count}', String(learningResults.keywordSuggestions.length))}
                   </h4>
                   {learningResults.keywordSuggestions.map((suggestion: any, idx: number) => (
                     <div key={idx} className="p-3 border rounded-lg space-y-2">
@@ -697,7 +700,7 @@ export default function SkillsTab() {
                           <p className="text-sm text-muted-foreground">{suggestion.reason}</p>
                         </div>
                         <Badge variant="outline">
-                          信心度: {Math.round((suggestion.confidence || 0) * 100)}%
+                          {t('admin.skillsTab.confidence').replace('{pct}', String(Math.round((suggestion.confidence || 0) * 100)))}
                         </Badge>
                       </div>
                       <div className="flex flex-wrap gap-2">
@@ -715,7 +718,7 @@ export default function SkillsTab() {
                           disabled={applyKeywords.isPending}
                         >
                           <ThumbsUp className="h-3 w-3 mr-1" />
-                          採納
+                          {t('admin.skillsTab.accept')}
                         </Button>
                         <Button
                           size="sm"
@@ -730,7 +733,7 @@ export default function SkillsTab() {
                           }}
                         >
                           <ThumbsDown className="h-3 w-3 mr-1" />
-                          忽略
+                          {t('admin.skillsTab.ignore')}
                         </Button>
                       </div>
                     </div>
@@ -743,7 +746,7 @@ export default function SkillsTab() {
                 <div className="space-y-3">
                   <h4 className="font-medium flex items-center gap-2">
                     <Sparkles className="h-4 w-4" />
-                    新技能建議 ({learningResults.newSkillSuggestions.length})
+                    {t('admin.skillsTab.newSkillSuggestions').replace('{count}', String(learningResults.newSkillSuggestions.length))}
                   </h4>
                   {learningResults.newSkillSuggestions.map((suggestion: any, idx: number) => (
                     <div key={idx} className="p-3 border rounded-lg space-y-2">
@@ -753,7 +756,7 @@ export default function SkillsTab() {
                           <p className="text-sm text-muted-foreground">{suggestion.description}</p>
                         </div>
                         <Badge variant="outline">
-                          信心度: {Math.round((suggestion.confidence || 0) * 100)}%
+                          {t('admin.skillsTab.confidence').replace('{pct}', String(Math.round((suggestion.confidence || 0) * 100)))}
                         </Badge>
                       </div>
                       <div className="flex flex-wrap gap-2">
@@ -776,7 +779,7 @@ export default function SkillsTab() {
                           disabled={createSkill.isPending}
                         >
                           <Plus className="h-3 w-3 mr-1" />
-                          創建技能
+                          {t('admin.skillsTab.createSkill')}
                         </Button>
                         <Button
                           size="sm"
@@ -791,7 +794,7 @@ export default function SkillsTab() {
                           }}
                         >
                           <ThumbsDown className="h-3 w-3 mr-1" />
-                          忽略
+                          {t('admin.skillsTab.ignore')}
                         </Button>
                       </div>
                     </div>
@@ -804,7 +807,7 @@ export default function SkillsTab() {
                 <div className="space-y-3">
                   <h4 className="font-medium flex items-center gap-2">
                     <Tag className="h-4 w-4" />
-                    識別出的標籤 ({learningResults.identifiedTags.length})
+                    {t('admin.skillsTab.identifiedTags').replace('{count}', String(learningResults.identifiedTags.length))}
                   </h4>
                   <div className="flex flex-wrap gap-2">
                     {learningResults.identifiedTags.map((tag: any, idx: number) => (
@@ -814,7 +817,7 @@ export default function SkillsTab() {
                         className={tag.isNew ? "bg-green-100 text-green-800" : ""}
                       >
                         {tag.tag}
-                        {tag.isNew && <span className="ml-1 text-xs">(新)</span>}
+                        {tag.isNew && <span className="ml-1 text-xs">({t('admin.skillsTab.newTag')})</span>}
                       </Badge>
                     ))}
                   </div>
@@ -827,8 +830,8 @@ export default function SkillsTab() {
                !learningResults.identifiedTags?.length && (
                 <div className="text-center py-8 text-muted-foreground">
                   <Brain className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>未發現新的學習內容</p>
-                  <p className="text-sm">現有技能已能充分覆蓋此行程的特徵</p>
+                  <p>{t('admin.skillsTab.noNewContent')}</p>
+                  <p className="text-sm">{t('admin.skillsTab.existingSkillsCover')}</p>
                 </div>
               )}
             </CardContent>
@@ -840,16 +843,16 @@ export default function SkillsTab() {
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <Lightbulb className="h-4 w-4" />
-              學習提示
+              {t('admin.skillsTab.learningTips')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>• AI 會從行程內容中自動識別新的關鍵字和模式</li>
-              <li>• 建議的關鍵字需要您審核後才會新增到技能中</li>
-              <li>• 新技能建議需要您確認後才會創建</li>
-              <li>• 學習過程中會自動跳過已存在的關鍵字</li>
-              <li>• 建議定期從新上架的行程中進行學習以保持技能更新</li>
+              <li>{t('admin.skillsTab.tip1')}</li>
+              <li>{t('admin.skillsTab.tip2')}</li>
+              <li>{t('admin.skillsTab.tip3')}</li>
+              <li>{t('admin.skillsTab.tip4')}</li>
+              <li>{t('admin.skillsTab.tip5')}</li>
             </ul>
           </CardContent>
         </Card>
@@ -885,7 +888,7 @@ export default function SkillsTab() {
     // 創建排程
     const createSchedule = trpc.skills.createSchedule.useMutation({
       onSuccess: () => {
-        toast.success('排程已創建');
+        toast.success(t('admin.skillsTab.scheduleCreated'));
         setIsCreateDialogOpen(false);
         refetchSchedules();
         setNewSchedule({
@@ -904,62 +907,62 @@ export default function SkillsTab() {
         });
       },
       onError: (error) => {
-        toast.error(`創建失敗: ${error.message}`);
+        toast.error(t('admin.skillsTab.createError').replace('{msg}', error.message));
       },
     });
 
     // 更新排程
     const updateSchedule = trpc.skills.updateSchedule.useMutation({
       onSuccess: () => {
-        toast.success('排程已更新');
+        toast.success(t('admin.skillsTab.scheduleUpdated'));
         refetchSchedules();
       },
       onError: (error) => {
-        toast.error(`更新失敗: ${error.message}`);
+        toast.error(t('admin.skillsTab.scheduleUpdateError').replace('{msg}', error.message));
       },
     });
 
     // 刪除排程
     const deleteSchedule = trpc.skills.deleteSchedule.useMutation({
       onSuccess: () => {
-        toast.success('排程已刪除');
+        toast.success(t('admin.skillsTab.scheduleDeleted'));
         refetchSchedules();
       },
       onError: (error) => {
-        toast.error(`刪除失敗: ${error.message}`);
+        toast.error(t('admin.skillsTab.scheduleDeleteError').replace('{msg}', error.message));
       },
     });
 
     // 手動觸發排程
     const triggerSchedule = trpc.skills.triggerScheduledLearning.useMutation({
       onSuccess: (result) => {
-        toast.success(`學習完成！處理了 ${(result.result as any)?.toursProcessed || 0} 個行程`);
+        toast.success(t('admin.skillsTab.scheduleRunComplete').replace('{count}', String((result.result as any)?.toursProcessed || 0)));
         refetchHistory();
         refetchSchedules();
       },
       onError: (error) => {
-        toast.error(`執行失敗: ${error.message}`);
+        toast.error(t('admin.skillsTab.scheduleRunError').replace('{msg}', error.message));
       },
     });
 
     const frequencyLabels = {
-      daily: '每天',
-      weekly: '每週',
-      monthly: '每月',
+      daily: t('admin.skillsTab.freqDaily'),
+      weekly: t('admin.skillsTab.freqWeekly'),
+      monthly: t('admin.skillsTab.freqMonthly'),
     };
 
-    const dayOfWeekLabels = ['週日', '週一', '週二', '週三', '週四', '週五', '週六'];
+    const dayOfWeekLabels = [t('admin.skillsTab.sun'), t('admin.skillsTab.mon'), t('admin.skillsTab.tue'), t('admin.skillsTab.wed'), t('admin.skillsTab.thu'), t('admin.skillsTab.fri'), t('admin.skillsTab.sat')];
 
     const formatScheduleTime = (schedule: any) => {
       const hour = String(schedule.hour || 0).padStart(2, '0');
       const minute = String(schedule.minute || 0).padStart(2, '0');
       
       if (schedule.frequency === 'daily') {
-        return `每天 ${hour}:${minute}`;
+        return t('admin.skillsTab.scheduleEveryDay').replace('{h}', hour).replace('{m}', minute);
       } else if (schedule.frequency === 'weekly') {
-        return `每${dayOfWeekLabels[schedule.dayOfWeek || 0]} ${hour}:${minute}`;
+        return t('admin.skillsTab.scheduleEveryWeek').replace('{day}', dayOfWeekLabels[schedule.dayOfWeek || 0]).replace('{h}', hour).replace('{m}', minute);
       } else {
-        return `每月 ${schedule.dayOfMonth || 1} 日 ${hour}:${minute}`;
+        return t('admin.skillsTab.scheduleEveryMonth').replace('{d}', String(schedule.dayOfMonth || 1)).replace('{h}', hour).replace('{m}', minute);
       }
     };
 
@@ -972,15 +975,15 @@ export default function SkillsTab() {
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <Clock className="h-5 w-5 text-primary" />
-                  自動學習排程
+                  {t('admin.skillsTab.autoScheduleTitle')}
                 </CardTitle>
                 <CardDescription>
-                  設定自動學習任務，讓系統定期從新行程中學習
+                  {t('admin.skillsTab.autoScheduleDesc')}
                 </CardDescription>
               </div>
               <Button onClick={() => setIsCreateDialogOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
-                新增排程
+                {t('admin.skillsTab.addSchedule')}
               </Button>
             </div>
           </CardHeader>
@@ -1002,11 +1005,11 @@ export default function SkillsTab() {
                       <div>
                         <p className="font-medium">{schedule.name}</p>
                         <p className="text-sm text-muted-foreground">
-                          {formatScheduleTime(schedule)} | 每次最多 {schedule.maxToursPerRun} 個行程
+                          {formatScheduleTime(schedule)} | {t('admin.skillsTab.maxToursPerRun').replace('{n}', String(schedule.maxToursPerRun))}
                         </p>
                         {schedule.lastRunAt && (
                           <p className="text-xs text-muted-foreground">
-                            上次執行: {new Date(schedule.lastRunAt).toLocaleString('zh-TW')}
+                            {t('admin.skillsTab.lastRun')} {new Date(schedule.lastRunAt).toLocaleString()}
                           </p>
                         )}
                       </div>
@@ -1039,8 +1042,8 @@ export default function SkillsTab() {
             ) : (
               <div className="text-center py-8 text-muted-foreground">
                 <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>尚未設定任何自動學習排程</p>
-                <p className="text-sm">點擊「新增排程」開始設定</p>
+                <p>{t('admin.skillsTab.noSchedules')}</p>
+                <p className="text-sm">{t('admin.skillsTab.noSchedulesHint')}</p>
               </div>
             )}
           </CardContent>
@@ -1051,10 +1054,10 @@ export default function SkillsTab() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BarChart3 className="h-5 w-5 text-primary" />
-              學習歷史記錄
+              {t('admin.skillsTab.learningHistory')}
             </CardTitle>
             <CardDescription>
-              查看過去的自動學習結果
+              {t('admin.skillsTab.learningHistoryDesc')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -1068,16 +1071,16 @@ export default function SkillsTab() {
                     <div>
                       <div className="flex items-center gap-2">
                         <Badge variant={history.status === 'completed' ? 'default' : history.status === 'failed' ? 'destructive' : 'secondary'}>
-                          {history.status === 'completed' ? '完成' : history.status === 'failed' ? '失敗' : '進行中'}
+                          {history.status === 'completed' ? t('admin.skillsTab.statusCompleted') : history.status === 'failed' ? t('admin.skillsTab.statusFailed') : t('admin.skillsTab.statusRunning')}
                         </Badge>
                         <span className="text-sm font-medium">
-                          {history.sourceType === 'scheduled' ? '排程學習' : history.sourceType === 'manual' ? '手動學習' : '批量學習'}
+                          {history.sourceType === 'scheduled' ? t('admin.skillsTab.sourceScheduled') : history.sourceType === 'manual' ? t('admin.skillsTab.sourceManual') : t('admin.skillsTab.sourceBatch')}
                         </span>
                       </div>
                       <p className="text-sm text-muted-foreground mt-1">
-                        處理 {history.toursProcessed || 0} 個行程 | 
-                        發現 {history.keywordSuggestions || 0} 個關鍵字 | 
-                        新技能 {history.newSkillSuggestions || 0} 個
+                        {t('admin.skillsTab.histProcessed').replace('{n}', String(history.toursProcessed || 0))} | 
+                        {t('admin.skillsTab.histKeywords').replace('{n}', String(history.keywordSuggestions || 0))} | 
+                        {t('admin.skillsTab.histNewSkills').replace('{n}', String(history.newSkillSuggestions || 0))}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {new Date(history.createdAt).toLocaleString('zh-TW')}
@@ -1085,10 +1088,10 @@ export default function SkillsTab() {
                     </div>
                     <div className="text-right text-sm">
                       {history.suggestionsAccepted > 0 && (
-                        <p className="text-green-600">採納: {history.suggestionsAccepted}</p>
+                        <p className="text-green-600">{t('admin.skillsTab.histAccepted').replace('{n}', String(history.suggestionsAccepted))}</p>
                       )}
                       {history.suggestionsRejected > 0 && (
-                        <p className="text-red-600">拒絕: {history.suggestionsRejected}</p>
+                        <p className="text-red-600">{t('admin.skillsTab.histRejected').replace('{n}', String(history.suggestionsRejected))}</p>
                       )}
                     </div>
                   </div>
@@ -1097,7 +1100,7 @@ export default function SkillsTab() {
             ) : (
               <div className="text-center py-8 text-muted-foreground">
                 <BarChart3 className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>尚無學習歷史記錄</p>
+                <p>{t('admin.skillsTab.noHistory')}</p>
               </div>
             )}
           </CardContent>
@@ -1107,23 +1110,23 @@ export default function SkillsTab() {
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>新增自動學習排程</DialogTitle>
+              <DialogTitle>{t('admin.skillsTab.addScheduleTitle')}</DialogTitle>
               <DialogDescription>
-                設定系統自動從新行程中學習的時間和參數
+                {t('admin.skillsTab.addScheduleDesc')}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label>排程名稱</Label>
+                <Label>{t('admin.skillsTab.scheduleName')}</Label>
                 <Input
                   value={newSchedule.name}
                   onChange={(e) => setNewSchedule({ ...newSchedule, name: e.target.value })}
-                  placeholder="例如：每週自動學習"
+                  {...{placeholder: t('admin.skillsTab.scheduleNamePlaceholder')}}
                 />
               </div>
               
               <div className="space-y-2">
-                <Label>執行頻率</Label>
+                <Label>{t('admin.skillsTab.frequency')}</Label>
                 <Select
                   value={newSchedule.frequency}
                   onValueChange={(value: 'daily' | 'weekly' | 'monthly') =>
@@ -1134,16 +1137,16 @@ export default function SkillsTab() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="daily">每天</SelectItem>
-                    <SelectItem value="weekly">每週</SelectItem>
-                    <SelectItem value="monthly">每月</SelectItem>
+                    <SelectItem value="daily">{t('admin.skillsTab.freqDaily')}</SelectItem>
+                    <SelectItem value="weekly">{t('admin.skillsTab.freqWeekly')}</SelectItem>
+                    <SelectItem value="monthly">{t('admin.skillsTab.freqMonthly')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               {newSchedule.frequency === 'weekly' && (
                 <div className="space-y-2">
-                  <Label>執行日</Label>
+                  <Label>{t('admin.skillsTab.dayOfWeekLabel')}</Label>
                   <Select
                     value={String(newSchedule.dayOfWeek)}
                     onValueChange={(value) =>
@@ -1164,7 +1167,7 @@ export default function SkillsTab() {
 
               {newSchedule.frequency === 'monthly' && (
                 <div className="space-y-2">
-                  <Label>執行日期</Label>
+                  <Label>{t('admin.skillsTab.dayOfMonthLabel')}</Label>
                   <Select
                     value={String(newSchedule.dayOfMonth)}
                     onValueChange={(value) =>
@@ -1176,7 +1179,7 @@ export default function SkillsTab() {
                     </SelectTrigger>
                     <SelectContent>
                       {Array.from({ length: 28 }, (_, i) => i + 1).map((day) => (
-                        <SelectItem key={day} value={String(day)}>{day} 日</SelectItem>
+                        <SelectItem key={day} value={String(day)}>{t('admin.skillsTab.dayUnit').replace('{d}', String(day))}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -1185,7 +1188,7 @@ export default function SkillsTab() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>執行時間 (時)</Label>
+                  <Label>{t('admin.skillsTab.hourLabel')}</Label>
                   <Select
                     value={String(newSchedule.hour)}
                     onValueChange={(value) =>
@@ -1205,7 +1208,7 @@ export default function SkillsTab() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>執行時間 (分)</Label>
+                  <Label>{t('admin.skillsTab.minuteLabel')}</Label>
                   <Select
                     value={String(newSchedule.minute)}
                     onValueChange={(value) =>
@@ -1227,7 +1230,7 @@ export default function SkillsTab() {
               </div>
 
               <div className="space-y-2">
-                <Label>每次最多處理行程數</Label>
+                <Label>{t('admin.skillsTab.maxToursLabel')}</Label>
                 <Input
                   type="number"
                   min={1}
@@ -1244,9 +1247,9 @@ export default function SkillsTab() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label>自動應用高信心度建議</Label>
+                    <Label>{t('admin.skillsTab.autoApplyLabel')}</Label>
                     <p className="text-xs text-muted-foreground">
-                      自動採納信心度超過閾值的建議
+                      {t('admin.skillsTab.autoApplyDesc')}
                     </p>
                   </div>
                   <Switch
@@ -1259,9 +1262,9 @@ export default function SkillsTab() {
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label>完成時通知</Label>
+                    <Label>{t('admin.skillsTab.notifyOnComplete')}</Label>
                     <p className="text-xs text-muted-foreground">
-                      學習完成後發送通知
+                      {t('admin.skillsTab.notifyOnCompleteDesc')}
                     </p>
                   </div>
                   <Switch
@@ -1274,9 +1277,9 @@ export default function SkillsTab() {
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label>新建議通知</Label>
+                    <Label>{t('admin.skillsTab.notifyOnNew')}</Label>
                     <p className="text-xs text-muted-foreground">
-                      發現新建議時發送通知
+                      {t('admin.skillsTab.notifyOnNewDesc')}
                     </p>
                   </div>
                   <Switch
@@ -1290,7 +1293,7 @@ export default function SkillsTab() {
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                取消
+                {t('admin.skillsTab.cancel')}
               </Button>
               <Button
                 onClick={() => createSchedule.mutate(newSchedule)}
@@ -1301,7 +1304,7 @@ export default function SkillsTab() {
                 ) : (
                   <Plus className="h-4 w-4 mr-2" />
                 )}
-                創建排程
+                {t('admin.skillsTab.createSchedule')}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -1336,7 +1339,7 @@ export default function SkillsTab() {
             <CardContent className="pt-6">
               <div className="text-center">
                 <p className="text-2xl font-bold">{dashboardStats?.totalLearnings || 0}</p>
-                <p className="text-sm text-muted-foreground">總學習次數</p>
+                <p className="text-sm text-muted-foreground">{t('admin.skillsTab.totalLearning')}</p>
               </div>
             </CardContent>
           </Card>
@@ -1344,7 +1347,7 @@ export default function SkillsTab() {
             <CardContent className="pt-6">
               <div className="text-center">
                 <p className="text-2xl font-bold">{dashboardStats?.totalKeywordsSuggested || 0}</p>
-                <p className="text-sm text-muted-foreground">建議關鍵字</p>
+                <p className="text-sm text-muted-foreground">{t('admin.skillsTab.suggestedKeywords')}</p>
               </div>
             </CardContent>
           </Card>
@@ -1352,7 +1355,7 @@ export default function SkillsTab() {
             <CardContent className="pt-6">
               <div className="text-center">
                 <p className="text-2xl font-bold">{dashboardStats?.totalSkillsSuggested || 0}</p>
-                <p className="text-sm text-muted-foreground">建議技能</p>
+                <p className="text-sm text-muted-foreground">{t('admin.skillsTab.suggestedSkills')}</p>
               </div>
             </CardContent>
           </Card>
@@ -1360,7 +1363,7 @@ export default function SkillsTab() {
             <CardContent className="pt-6">
               <div className="text-center">
                 <p className="text-2xl font-bold text-green-600">{dashboardStats?.overallAdoptionRate?.toFixed(1) || 0}%</p>
-                <p className="text-sm text-muted-foreground">採納率</p>
+                <p className="text-sm text-muted-foreground">{t('admin.skillsTab.acceptanceRate')}</p>
               </div>
             </CardContent>
           </Card>
@@ -1368,7 +1371,7 @@ export default function SkillsTab() {
             <CardContent className="pt-6">
               <div className="text-center">
                 <p className="text-2xl font-bold text-amber-600">{dashboardStats?.pendingReviews || 0}</p>
-                <p className="text-sm text-muted-foreground">待審核</p>
+                <p className="text-sm text-muted-foreground">{t('admin.skillsTab.pendingReview')}</p>
               </div>
             </CardContent>
           </Card>
@@ -1376,7 +1379,7 @@ export default function SkillsTab() {
             <CardContent className="pt-6">
               <div className="text-center">
                 <p className="text-2xl font-bold text-primary">{dashboardStats?.activeSkills || 0}</p>
-                <p className="text-sm text-muted-foreground">已啟用技能</p>
+                <p className="text-sm text-muted-foreground">{t('admin.skillsTab.enabledSkills')}</p>
               </div>
             </CardContent>
           </Card>
@@ -1389,7 +1392,7 @@ export default function SkillsTab() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <TrendingUp className="h-5 w-5 text-primary" />
-                學習趨勢 (過去 30 天)
+                {t('admin.skillsTab.learningTrend')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -1401,7 +1404,7 @@ export default function SkillsTab() {
                         key={idx}
                         className="flex-1 bg-primary/20 hover:bg-primary/40 transition-colors rounded-t"
                         style={{ height: `${Math.max(10, (day.learningCount / Math.max(...learningTrends.map((d: any) => d.learningCount || 1))) * 100)}%` }}
-                        title={`${day.date}: ${day.learningCount} 次學習`}
+                        title={`${day.date}: ${day.learningCount} ${t('admin.skillsTab.learningCount')}`}
                       />
                     ))}
                   </div>
@@ -1413,7 +1416,7 @@ export default function SkillsTab() {
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
                   <TrendingUp className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>尚無學習趨勢數據</p>
+                  <p>{t('admin.skillsTab.noTrendData')}</p>
                 </div>
               )}
             </CardContent>
@@ -1424,7 +1427,7 @@ export default function SkillsTab() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <BarChart3 className="h-5 w-5 text-primary" />
-                技能採納率
+                {t('admin.skillsTab.skillAcceptanceRate')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -1439,9 +1442,9 @@ export default function SkillsTab() {
                       <div className="h-2 bg-muted rounded-full overflow-hidden">
                         <div
                           className={`h-full rounded-full ${
-                            rate.category === '已批准' ? 'bg-green-500' :
-                            rate.category === '已拒絕' ? 'bg-red-500' :
-                            rate.category === '待審核' ? 'bg-amber-500' : 'bg-blue-500'
+                            rate.category === t('admin.skillsTab.approved') ? 'bg-green-500' :
+                            rate.category === t('admin.skillsTab.rejected') ? 'bg-red-500' :
+                            rate.category === t('admin.skillsTab.pending') ? 'bg-amber-500' : 'bg-blue-500'
                           }`}
                           style={{ width: `${rate.percentage}%` }}
                         />
@@ -1452,7 +1455,7 @@ export default function SkillsTab() {
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
                   <BarChart3 className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>尚無採納率數據</p>
+                  <p>{t('admin.skillsTab.noAcceptanceData')}</p>
                 </div>
               )}
             </CardContent>
@@ -1466,7 +1469,7 @@ export default function SkillsTab() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Database className="h-5 w-5 text-primary" />
-                學習來源分佈
+                {t('admin.skillsTab.learningSourceDist')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -1476,7 +1479,7 @@ export default function SkillsTab() {
                     <div key={idx} className="flex items-center justify-between p-2 border rounded-lg">
                       <span className="font-medium">{source.source}</span>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">{source.count} 次</span>
+                        <span className="text-sm text-muted-foreground">{t('admin.skillsTab.sourceCount').replace('{n}', String(source.count))}</span>
                         <Badge variant="outline">{source.percentage.toFixed(1)}%</Badge>
                       </div>
                     </div>
@@ -1485,7 +1488,7 @@ export default function SkillsTab() {
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
                   <Database className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>尚無來源分佈數據</p>
+                  <p>{t('admin.skillsTab.noSourceData')}</p>
                 </div>
               )}
             </CardContent>
@@ -1496,10 +1499,10 @@ export default function SkillsTab() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Target className="h-5 w-5 text-primary" />
-                優先學習行程
+                {t('admin.skillsTab.priorityTours')}
               </CardTitle>
               <CardDescription>
-                根據熱門度排名，尚未學習的行程
+                {t('admin.skillsTab.priorityToursDesc')}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -1512,8 +1515,8 @@ export default function SkillsTab() {
                         <p className="text-xs text-muted-foreground">{tour.destination}</p>
                       </div>
                       <div className="text-right text-xs">
-                        <p>瀏覽: {tour.viewCount}</p>
-                        <p>預訂: {tour.bookingCount}</p>
+                        <p>{t('admin.skillsTab.views').replace('{n}', String(tour.viewCount))}</p>
+                        <p>{t('admin.skillsTab.bookings').replace('{n}', String(tour.bookingCount))}</p>
                       </div>
                     </div>
                   ))}
@@ -1521,7 +1524,7 @@ export default function SkillsTab() {
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
                   <Target className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>所有行程已學習完成</p>
+                  <p>{t('admin.skillsTab.allToursLearned')}</p>
                 </div>
               )}
             </CardContent>
@@ -1537,17 +1540,17 @@ export default function SkillsTab() {
     const { data: reviewQueue, isLoading, refetch } = trpc.skills.getReviewQueue.useQuery({ status: statusFilter, limit: 20 });
     const approveSkill = trpc.skills.approveSkill.useMutation({
       onSuccess: () => {
-        toast.success('技能已批准並建立');
+        toast.success(t('admin.skillsTab.approveSuccess'));
         refetch();
       },
-      onError: (error) => toast.error(`批准失敗: ${error.message}`),
+      onError: (error) => toast.error(t('admin.skillsTab.approveError').replace('{msg}', error.message)),
     });
     const rejectSkill = trpc.skills.rejectSkill.useMutation({
       onSuccess: () => {
-        toast.success('技能已拒絕');
+        toast.success(t('admin.skillsTab.rejectSuccess'));
         refetch();
       },
-      onError: (error) => toast.error(`拒絕失敗: ${error.message}`),
+      onError: (error) => toast.error(t('admin.skillsTab.rejectError').replace('{msg}', error.message)),
     });
 
     if (isLoading) {
@@ -1562,25 +1565,25 @@ export default function SkillsTab() {
       <div className="space-y-6">
         {/* Filter */}
         <div className="flex items-center gap-4">
-          <Label>狀態篩選：</Label>
+          <Label>{t('admin.skillsTab.statusFilter')}</Label>
           <Select value={statusFilter || 'all'} onValueChange={(v) => setStatusFilter(v === 'all' ? undefined : v as any)}>
             <SelectTrigger className="w-[180px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">全部</SelectItem>
-              <SelectItem value="pending">待審核</SelectItem>
-              <SelectItem value="approved">已批准</SelectItem>
-              <SelectItem value="rejected">已拒絕</SelectItem>
-              <SelectItem value="merged">已合併</SelectItem>
+              <SelectItem value="all">{t('admin.skillsTab.filterAll')}</SelectItem>
+              <SelectItem value="pending">{t('admin.skillsTab.filterPending')}</SelectItem>
+              <SelectItem value="approved">{t('admin.skillsTab.filterApproved')}</SelectItem>
+              <SelectItem value="rejected">{t('admin.skillsTab.filterRejected')}</SelectItem>
+              <SelectItem value="merged">{t('admin.skillsTab.filterMerged')}</SelectItem>
             </SelectContent>
           </Select>
           <span className="text-sm text-muted-foreground">
-            共 {reviewQueue?.total || 0} 項
+            {t('admin.skillsTab.totalItems').replace('{n}', String(reviewQueue?.total || 0))}
           </span>
           <Button variant="outline" size="sm" onClick={() => refetch()}>
             <RefreshCw className="h-4 w-4 mr-2" />
-            重新整理
+            {t('admin.skillsTab.refresh')}
           </Button>
         </div>
 
@@ -1595,12 +1598,12 @@ export default function SkillsTab() {
                       <div className="flex items-center gap-2">
                         <h3 className="font-semibold">{item.skillName}</h3>
                         <Badge variant={item.status === 'pending' ? 'secondary' : item.status === 'approved' ? 'default' : 'destructive'}>
-                          {item.status === 'pending' ? '待審核' : item.status === 'approved' ? '已批准' : item.status === 'rejected' ? '已拒絕' : '已合併'}
+                          {item.status === 'pending' ? t('admin.skillsTab.filterPending') : item.status === 'approved' ? t('admin.skillsTab.filterApproved') : item.status === 'rejected' ? t('admin.skillsTab.filterRejected') : t('admin.skillsTab.filterMerged')}
                         </Badge>
                         <Badge variant="outline">{item.skillType}</Badge>
                         {item.confidence && (
                           <Badge variant="outline" className="bg-blue-50">
-                            信心度: {(Number(item.confidence) * 100).toFixed(0)}%
+                            {t('admin.skillsTab.confidence').replace('{pct}', (Number(item.confidence) * 100).toFixed(0))}
                           </Badge>
                         )}
                       </div>
@@ -1616,9 +1619,9 @@ export default function SkillsTab() {
                         )}
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        來源: {item.sourceType === 'ai_learning' ? 'AI 學習' : item.sourceType === 'scheduled' ? '排程學習' : '手動新增'}
-                        {item.sourceTourId && ` | 行程 ID: ${item.sourceTourId}`}
-                        {' | '}建立時間: {new Date(item.createdAt).toLocaleString('zh-TW')}
+                        {t('admin.skillsTab.source')}: {item.sourceType === 'ai_learning' ? t('admin.skillsTab.sourceAI') : item.sourceType === 'scheduled' ? t('admin.skillsTab.sourceScheduled') : t('admin.skillsTab.sourceManual')}
+                        {item.sourceTourId && ` | ${t('admin.skillsTab.tourId')}: ${item.sourceTourId}`}
+                        {' | '}{t('admin.skillsTab.createdAt')} {new Date(item.createdAt).toLocaleString()}
                       </p>
                     </div>
                     {item.status === 'pending' && (
@@ -1635,7 +1638,7 @@ export default function SkillsTab() {
                           ) : (
                             <ThumbsUp className="h-4 w-4 mr-1" />
                           )}
-                          批准
+                          {t('admin.skillsTab.approve')}
                         </Button>
                         <Button
                           size="sm"
@@ -1649,7 +1652,7 @@ export default function SkillsTab() {
                           ) : (
                             <ThumbsDown className="h-4 w-4 mr-1" />
                           )}
-                          拒絕
+                          {t('admin.skillsTab.reject')}
                         </Button>
                       </div>
                     )}
@@ -1663,7 +1666,7 @@ export default function SkillsTab() {
             <CardContent className="py-12">
               <div className="text-center text-muted-foreground">
                 <Shield className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>沒有{statusFilter === 'pending' ? '待審核' : ''}的技能</p>
+                <p>{t('admin.skillsTab.noSkillsWithStatus').replace('{status}', statusFilter === 'pending' ? t('admin.skillsTab.filterPending') : '')}</p>
               </div>
             </CardContent>
           </Card>
@@ -1695,7 +1698,7 @@ export default function SkillsTab() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">總觸發次數</p>
+                  <p className="text-sm text-muted-foreground">{t('admin.skillsTab.totalTriggers')}</p>
                   <p className="text-2xl font-bold">{summary.totalTriggers || 0}</p>
                 </div>
                 <Zap className="h-8 w-8 text-blue-500 opacity-50" />
@@ -1706,7 +1709,7 @@ export default function SkillsTab() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">成功率</p>
+                  <p className="text-sm text-muted-foreground">{t('admin.skillsTab.successRate')}</p>
                   <p className="text-2xl font-bold">
                     {((summary.overallSuccessRate || 0) * 100).toFixed(1)}%
                   </p>
@@ -1719,7 +1722,7 @@ export default function SkillsTab() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">滿意度</p>
+                  <p className="text-sm text-muted-foreground">{t('admin.skillsTab.satisfaction')}</p>
                   <p className="text-2xl font-bold">
                     {((summary.overallSatisfactionRate || 0) * 100).toFixed(1)}%
                   </p>
@@ -1732,7 +1735,7 @@ export default function SkillsTab() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">轉換率</p>
+                  <p className="text-sm text-muted-foreground">{t('admin.skillsTab.conversionRate')}</p>
                   <p className="text-2xl font-bold">
                     {((summary.overallConversionRate || 0) * 100).toFixed(1)}%
                   </p>
@@ -1746,8 +1749,8 @@ export default function SkillsTab() {
         {/* Top Skills */}
         <Card>
           <CardHeader>
-            <CardTitle>技能效能排名</CardTitle>
-            <CardDescription>根據觸發次數、成功率和滿意度排序</CardDescription>
+            <CardTitle>{t('admin.skillsTab.performanceRanking')}</CardTitle>
+            <CardDescription>{t('admin.skillsTab.performanceRankingDesc')}</CardDescription>
           </CardHeader>
           <CardContent>
             {skillSummary && skillSummary.length > 0 ? (
@@ -1759,9 +1762,9 @@ export default function SkillsTab() {
                       <div>
                         <p className="font-medium">{skill.skillName}</p>
                         <p className="text-sm text-muted-foreground">
-                          {skill.totalTriggers} 次觸發 | 
-                          成功率 {(skill.successRate * 100).toFixed(0)}% | 
-                          滿意度 {(skill.satisfactionRate * 100).toFixed(0)}%
+                          {skill.totalTriggers} {t('admin.skillsTab.triggers')} | 
+                          {t('admin.skillsTab.successRateVal').replace('{pct}', (skill.successRate * 100).toFixed(0))} | 
+                          {t('admin.skillsTab.satisfactionVal').replace('{pct}', (skill.satisfactionRate * 100).toFixed(0))}
                         </p>
                       </div>
                     </div>
@@ -1781,7 +1784,7 @@ export default function SkillsTab() {
             ) : (
               <div className="text-center py-8 text-muted-foreground">
                 <BarChart3 className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>尚無效能數據</p>
+                <p>{t('admin.skillsTab.noPerformanceData')}</p>
               </div>
             )}
           </CardContent>
@@ -1790,8 +1793,8 @@ export default function SkillsTab() {
         {/* Recent Logs */}
         <Card>
           <CardHeader>
-            <CardTitle>最近使用記錄</CardTitle>
-            <CardDescription>最近的技能觸發事件</CardDescription>
+            <CardTitle>{t('admin.skillsTab.recentUsage')}</CardTitle>
+            <CardDescription>{t('admin.skillsTab.recentUsageDesc')}</CardDescription>
           </CardHeader>
           <CardContent>
             {dashboard?.recentLogs && dashboard.recentLogs.length > 0 ? (
@@ -1800,7 +1803,7 @@ export default function SkillsTab() {
                   <div key={log.id} className="flex items-center justify-between p-2 border-b last:border-0">
                     <div className="flex items-center gap-3">
                       <Badge variant={log.wasSuccessful ? 'default' : 'destructive'} className="text-xs">
-                        {log.wasSuccessful ? '成功' : '失敗'}
+                        {log.wasSuccessful ? t('admin.skillsTab.success') : t('admin.skillsTab.failure')}
                       </Badge>
                       <span className="font-medium">{log.skillName}</span>
                       <span className="text-sm text-muted-foreground">{log.contextType}</span>
@@ -1818,7 +1821,7 @@ export default function SkillsTab() {
             ) : (
               <div className="text-center py-8 text-muted-foreground">
                 <Eye className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>尚無使用記錄</p>
+                <p>{t('admin.skillsTab.noUsageLog')}</p>
               </div>
             )}
           </CardContent>
@@ -1843,7 +1846,7 @@ export default function SkillsTab() {
     const { data: stats } = trpc.skills.getRuleStatistics.useQuery();
     const createRule = trpc.skills.createAutoApprovalRule.useMutation({
       onSuccess: () => {
-        toast.success('規則已建立');
+        toast.success(t('admin.skillsTab.ruleCreated'));
         setIsAddRuleOpen(false);
         refetch();
       },
@@ -1851,39 +1854,39 @@ export default function SkillsTab() {
     });
     const updateRule = trpc.skills.updateAutoApprovalRule.useMutation({
       onSuccess: () => {
-        toast.success('規則已更新');
+        toast.success(t('admin.skillsTab.ruleUpdated'));
         refetch();
       },
       onError: (error) => toast.error(error.message),
     });
     const deleteRule = trpc.skills.deleteAutoApprovalRule.useMutation({
       onSuccess: () => {
-        toast.success('規則已刪除');
+        toast.success(t('admin.skillsTab.ruleDeleted'));
         refetch();
       },
       onError: (error) => toast.error(error.message),
     });
     const initializeDefault = trpc.skills.initializeDefaultRules.useMutation({
       onSuccess: () => {
-        toast.success('預設規則已初始化');
+        toast.success(t('admin.skillsTab.defaultRulesInit'));
         refetch();
       },
       onError: (error) => toast.error(error.message),
     });
 
     const RULE_TYPES = [
-      { value: 'confidence_threshold', label: '信心度閾值' },
-      { value: 'source_type', label: '來源類型' },
-      { value: 'keyword_count', label: '關鍵字數量' },
-      { value: 'skill_category', label: '技能類別' },
-      { value: 'combined', label: '組合條件' },
+      { value: 'confidence_threshold', label: t('admin.skillsTab.condConfidence') },
+      { value: 'source_type', label: t('admin.skillsTab.condSource') },
+      { value: 'keyword_count', label: t('admin.skillsTab.condKeywordCount') },
+      { value: 'skill_category', label: t('admin.skillsTab.condCategory') },
+      { value: 'combined', label: t('admin.skillsTab.condCombined') },
     ];
 
     const ACTIONS = [
-      { value: 'auto_approve', label: '自動批准', color: 'text-green-600' },
-      { value: 'auto_reject', label: '自動拒絕', color: 'text-red-600' },
-      { value: 'flag_priority', label: '標記高優先', color: 'text-yellow-600' },
-      { value: 'notify_admin', label: '通知管理員', color: 'text-blue-600' },
+      { value: 'auto_approve', label: t('admin.skillsTab.actionAutoApprove'), color: 'text-green-600' },
+      { value: 'auto_reject', label: t('admin.skillsTab.actionAutoReject'), color: 'text-red-600' },
+      { value: 'flag_priority', label: t('admin.skillsTab.actionFlagPriority'), color: 'text-yellow-600' },
+      { value: 'notify_admin', label: t('admin.skillsTab.actionNotifyAdmin'), color: 'text-blue-600' },
     ];
 
     if (isLoading) {
@@ -1902,7 +1905,7 @@ export default function SkillsTab() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">總規則數</p>
+                  <p className="text-sm text-muted-foreground">{t('admin.skillsTab.totalRules')}</p>
                   <p className="text-2xl font-bold">{stats?.totalRules || 0}</p>
                 </div>
                 <Zap className="h-8 w-8 text-blue-500 opacity-50" />
@@ -1913,7 +1916,7 @@ export default function SkillsTab() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">啟用中</p>
+                  <p className="text-sm text-muted-foreground">{t('admin.skillsTab.activeRules')}</p>
                   <p className="text-2xl font-bold">{stats?.activeRules || 0}</p>
                 </div>
                 <CheckCircle2 className="h-8 w-8 text-green-500 opacity-50" />
@@ -1924,7 +1927,7 @@ export default function SkillsTab() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">總觸發次數</p>
+                  <p className="text-sm text-muted-foreground">{t('admin.skillsTab.totalTriggers')}</p>
                   <p className="text-2xl font-bold">{stats?.totalTriggered || 0}</p>
                 </div>
                 <TrendingUp className="h-8 w-8 text-purple-500 opacity-50" />
@@ -1945,11 +1948,11 @@ export default function SkillsTab() {
                   ) : (
                     <Sparkles className="h-4 w-4 mr-1" />
                   )}
-                  初始化預設
+                  {t('admin.skillsTab.initDefaults')}
                 </Button>
                 <Button size="sm" onClick={() => setIsAddRuleOpen(true)}>
                   <Plus className="h-4 w-4 mr-1" />
-                  新增規則
+                  {t('admin.skillsTab.addRule')}
                 </Button>
               </div>
             </CardContent>
@@ -1959,8 +1962,8 @@ export default function SkillsTab() {
         {/* Rules List */}
         <Card>
           <CardHeader>
-            <CardTitle>自動審核規則</CardTitle>
-            <CardDescription>根據條件自動處理技能建議</CardDescription>
+            <CardTitle>{t('admin.skillsTab.autoRulesTitle')}</CardTitle>
+            <CardDescription>{t('admin.skillsTab.autoRulesDesc')}</CardDescription>
           </CardHeader>
           <CardContent>
             {rules && rules.length > 0 ? (
@@ -1971,7 +1974,7 @@ export default function SkillsTab() {
                       <div className="flex items-center gap-2">
                         <h4 className="font-medium">{rule.ruleName}</h4>
                         <Badge variant={rule.isActive ? 'default' : 'secondary'}>
-                          {rule.isActive ? '啟用' : '停用'}
+                          {rule.isActive ? t('admin.skillsTab.enabled') : t('admin.skillsTab.disabled')}
                         </Badge>
                         <Badge variant="outline">
                           {RULE_TYPES.find(t => t.value === rule.ruleType)?.label}
@@ -1987,8 +1990,8 @@ export default function SkillsTab() {
                         <p className="text-sm text-muted-foreground mt-1">{rule.description}</p>
                       )}
                       <p className="text-xs text-muted-foreground mt-1">
-                        優先級: {rule.priority} | 觸發次數: {rule.timesTriggered}
-                        {rule.lastTriggeredAt && ` | 最後觸發: ${new Date(rule.lastTriggeredAt).toLocaleString('zh-TW')}`}
+                        {t('admin.skillsTab.rulePriority').replace('{p}', String(rule.priority)).replace('{t}', String(rule.timesTriggered))}
+                        {rule.lastTriggeredAt && ` | t('admin.skillsTab.lastTriggered').replace('{d}', new Date(rule.lastTriggeredAt).toLocaleString())`}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
@@ -2012,8 +2015,8 @@ export default function SkillsTab() {
             ) : (
               <div className="text-center py-8 text-muted-foreground">
                 <Zap className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>尚無自動審核規則</p>
-                <p className="text-sm">點擊「初始化預設」建立基本規則</p>
+                <p>{t('admin.skillsTab.noRules')}</p>
+                <p className="text-sm">{t('admin.skillsTab.noRulesHint')}</p>
               </div>
             )}
           </CardContent>
@@ -2023,29 +2026,29 @@ export default function SkillsTab() {
         <Dialog open={isAddRuleOpen} onOpenChange={setIsAddRuleOpen}>
           <DialogContent className="max-w-lg">
             <DialogHeader>
-              <DialogTitle>新增自動審核規則</DialogTitle>
-              <DialogDescription>設定條件和動作以自動處理技能建議</DialogDescription>
+              <DialogTitle>{t('admin.skillsTab.addRuleTitle')}</DialogTitle>
+              <DialogDescription>{t('admin.skillsTab.addRuleDesc')}</DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label>規則名稱</Label>
+                <Label>{t('admin.skillsTab.ruleName')}</Label>
                 <Input
                   value={newRule.ruleName}
                   onChange={(e) => setNewRule({ ...newRule, ruleName: e.target.value })}
-                  placeholder="例如：高信心度自動批准"
+                  {...{placeholder: t('admin.skillsTab.ruleNamePlaceholder')}}
                 />
               </div>
               <div className="space-y-2">
-                <Label>描述</Label>
+                <Label>{t('admin.skillsTab.ruleDescription')}</Label>
                 <Textarea
                   value={newRule.description}
                   onChange={(e) => setNewRule({ ...newRule, description: e.target.value })}
-                  placeholder="規則說明..."
+                  {...{placeholder: t('admin.skillsTab.ruleDescPlaceholder')}}
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>規則類型</Label>
+                  <Label>{t('admin.skillsTab.ruleType')}</Label>
                   <Select
                     value={newRule.ruleType}
                     onValueChange={(v: any) => setNewRule({ ...newRule, ruleType: v })}
@@ -2063,7 +2066,7 @@ export default function SkillsTab() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>執行動作</Label>
+                  <Label>{t('admin.skillsTab.ruleAction')}</Label>
                   <Select
                     value={newRule.action}
                     onValueChange={(v: any) => setNewRule({ ...newRule, action: v })}
@@ -2082,7 +2085,7 @@ export default function SkillsTab() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>信心度閾值 (適用於信心度規則)</Label>
+                <Label>{t('admin.skillsTab.confidenceThreshold')}</Label>
                 <Input
                   type="number"
                   min="0"
@@ -2096,7 +2099,7 @@ export default function SkillsTab() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>優先級 (0-100)</Label>
+                <Label>{t('admin.skillsTab.rulePriorityLabel')}</Label>
                 <Input
                   type="number"
                   min="0"
@@ -2107,13 +2110,13 @@ export default function SkillsTab() {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsAddRuleOpen(false)}>取消</Button>
+              <Button variant="outline" onClick={() => setIsAddRuleOpen(false)}>{t('admin.skillsTab.cancel')}</Button>
               <Button
                 onClick={() => createRule.mutate(newRule)}
                 disabled={createRule.isPending || !newRule.ruleName}
               >
                 {createRule.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                建立規則
+                {t('admin.skillsTab.createRule')}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -2129,9 +2132,9 @@ export default function SkillsTab() {
         <div className="flex items-center gap-3">
           <Brain className="h-6 w-6 text-primary" />
           <div>
-            <h2 className="text-xl font-semibold">AI Agent 技能管理</h2>
+            <h2 className="text-xl font-semibold">{t('admin.skillsTab.title')}</h2>
             <p className="text-sm text-muted-foreground">
-              基於 Superpowers 架構的模組化技能系統
+              {t('admin.skillsTab.subtitle')}
             </p>
           </div>
         </div>
@@ -2147,7 +2150,7 @@ export default function SkillsTab() {
             ) : (
               <Sparkles className="h-4 w-4 mr-2" />
             )}
-            初始化內建技能
+            {t('admin.skillsTab.initBuiltin')}
           </Button>
           <Button
             variant="outline"
@@ -2155,7 +2158,7 @@ export default function SkillsTab() {
             onClick={() => refetch()}
           >
             <RefreshCw className="h-4 w-4 mr-2" />
-            重新整理
+            {t('admin.skillsTab.refresh')}
           </Button>
           <Button
             size="sm"
@@ -2165,7 +2168,7 @@ export default function SkillsTab() {
             }}
           >
             <Plus className="h-4 w-4 mr-2" />
-            新增技能
+            {t('admin.skillsTab.addSkillTitle')}
           </Button>
         </div>
       </div>
@@ -2179,46 +2182,46 @@ export default function SkillsTab() {
       {/* Main Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
-          <TabsTrigger value="overview">技能總覽</TabsTrigger>
-          <TabsTrigger value="techniques">技術</TabsTrigger>
-          <TabsTrigger value="patterns">模式</TabsTrigger>
-          <TabsTrigger value="references">參考</TabsTrigger>
+          <TabsTrigger value="overview">{t('admin.skillsTab.tabOverview')}</TabsTrigger>
+          <TabsTrigger value="techniques">{t('admin.skillsTab.tabTechniques')}</TabsTrigger>
+          <TabsTrigger value="patterns">{t('admin.skillsTab.tabPatterns')}</TabsTrigger>
+          <TabsTrigger value="references">{t('admin.skillsTab.tabReferences')}</TabsTrigger>
           <TabsTrigger value="ai-learning" className="flex items-center gap-1">
             <Sparkles className="h-3 w-3" />
-            AI 學習
+            {t('admin.skillsTab.tabAILearning')}
           </TabsTrigger>
           <TabsTrigger value="scheduled-learning" className="flex items-center gap-1">
             <Clock className="h-3 w-3" />
-            自動排程
+            {t('admin.skillsTab.tabAutoSchedule')}
           </TabsTrigger>
           <TabsTrigger value="analytics" className="flex items-center gap-1">
             <BarChart3 className="h-3 w-3" />
-            學習分析
+            {t('admin.skillsTab.tabAnalytics')}
           </TabsTrigger>
           <TabsTrigger value="review" className="flex items-center gap-1">
             <Shield className="h-3 w-3" />
-            審核佇列
+            {t('admin.skillsTab.tabReviewQueue')}
           </TabsTrigger>
           <TabsTrigger value="performance" className="flex items-center gap-1">
             <TrendingUp className="h-3 w-3" />
-            效能追蹤
+            {t('admin.skillsTab.tabPerformance')}
           </TabsTrigger>
           <TabsTrigger value="auto-rules" className="flex items-center gap-1">
             <Zap className="h-3 w-3" />
-            自動規則
+            {t('admin.skillsTab.tabAutoRules')}
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-4">
           {/* Filter */}
           <div className="flex items-center gap-4 mb-4">
-            <Label>篩選類型：</Label>
+            <Label>{t('admin.skillsTab.filterType')}</Label>
             <Select value={filterType} onValueChange={setFilterType}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="選擇類型" />
+                <SelectValue {...{placeholder: t('admin.skillsTab.selectType')}} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">全部</SelectItem>
+                <SelectItem value="all">{t('admin.skillsTab.filterAll')}</SelectItem>
                 {SKILL_TYPE_OPTIONS.map(type => (
                   <SelectItem key={type.value} value={type.value}>
                     {type.label}
@@ -2226,13 +2229,13 @@ export default function SkillsTab() {
                 ))}
               </SelectContent>
             </Select>
-            <Label>篩選分類：</Label>
+            <Label>{t('admin.skillsTab.filterCategory')}</Label>
             <Select value={filterCategory} onValueChange={setFilterCategory}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="選擇分類" />
+                <SelectValue {...{placeholder: t('admin.skillsTab.selectCategory')}} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">全部</SelectItem>
+                <SelectItem value="all">{t('admin.skillsTab.filterAll')}</SelectItem>
                 {SKILL_CATEGORY_OPTIONS.map(cat => (
                   <SelectItem key={cat.value} value={cat.value}>
                     {cat.label}
@@ -2241,7 +2244,7 @@ export default function SkillsTab() {
               </SelectContent>
             </Select>
             <span className="text-sm text-muted-foreground">
-              共 {filteredSkills?.length || 0} 個技能
+              {t('admin.skillsTab.totalSkills').replace('{n}', String(filteredSkills?.length || 0))}
             </span>
           </div>
 
@@ -2323,7 +2326,7 @@ export default function SkillsTab() {
                       {hasDocumentation && (
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <BookOpen className="h-3 w-3" />
-                          <span>包含 Superpowers 文檔</span>
+                          <span>{t('admin.skillsTab.hasSuperpowers')}</span>
                         </div>
                       )}
                       
@@ -2348,12 +2351,12 @@ export default function SkillsTab() {
                       <div className="flex items-center gap-4 text-xs text-muted-foreground pt-2 border-t">
                         <div className="flex items-center gap-1">
                           <BarChart3 className="h-3 w-3" />
-                          使用 {skill.usageCount} 次
+                          {t('admin.skillsTab.usageCount').replace('{n}', String(skill.usageCount))}
                         </div>
                         {testPassRate !== null && (
                           <div className="flex items-center gap-1">
                             <TestTube className="h-3 w-3" />
-                            測試 {testPassRate.toFixed(0)}%
+                            {t('admin.skillsTab.testRate').replace('{pct}', testPassRate.toFixed(0))}
                           </div>
                         )}
                         <div className="flex items-center gap-1">
@@ -2370,9 +2373,9 @@ export default function SkillsTab() {
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <Brain className="h-12 w-12 text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">尚無技能資料</p>
+                <p className="text-muted-foreground">{t('admin.skillsTab.noSkills')}</p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  點擊「初始化內建技能」載入預設技能，或手動新增技能
+                  {t('admin.skillsTab.noSkillsHint')}
                 </p>
               </CardContent>
             </Card>
@@ -2418,7 +2421,7 @@ export default function SkillsTab() {
               ) : (
                 <Card>
                   <CardContent className="flex flex-col items-center justify-center py-12">
-                    <p className="text-muted-foreground">此分類尚無技能</p>
+                    <p className="text-muted-foreground">{t('admin.skillsTab.noCategorySkills')}</p>
                   </CardContent>
                 </Card>
               )}
@@ -2459,31 +2462,31 @@ export default function SkillsTab() {
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>新增技能</DialogTitle>
+            <DialogTitle>{t('admin.skillsTab.addSkillTitle')}</DialogTitle>
             <DialogDescription>
-              新增一個 AI Agent 可以學習和應用的技能（支援 Superpowers 風格文檔）
+              {t('admin.skillsTab.addSkillDesc')}
             </DialogDescription>
           </DialogHeader>
           
           <Tabs defaultValue="basic" className="mt-4">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="basic">基本資訊</TabsTrigger>
-              <TabsTrigger value="documentation">文檔</TabsTrigger>
-              <TabsTrigger value="testing">測試案例</TabsTrigger>
+              <TabsTrigger value="basic">{t('admin.skillsTab.tabBasicInfo')}</TabsTrigger>
+              <TabsTrigger value="documentation">{t('admin.skillsTab.tabDocumentation')}</TabsTrigger>
+              <TabsTrigger value="testing">{t('admin.skillsTab.tabTestCases')}</TabsTrigger>
             </TabsList>
             
             <TabsContent value="basic" className="space-y-4 mt-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>技能名稱 *</Label>
+                  <Label>{t('admin.skillsTab.skillName')}</Label>
                   <Input
                     value={formData.skillName}
                     onChange={(e) => setFormData({ ...formData, skillName: e.target.value })}
-                    placeholder="例如：ESG 永續旅遊識別"
+                    {...{placeholder: t('admin.skillsTab.skillNamePlaceholder')}}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>技能類型 *</Label>
+                  <Label>{t('admin.skillsTab.skillType')}</Label>
                   <Select
                     value={formData.skillType}
                     onValueChange={(value) => setFormData({ ...formData, skillType: value as SkillType })}
@@ -2503,7 +2506,7 @@ export default function SkillsTab() {
               </div>
               
               <div className="space-y-2">
-                <Label>技能分類（Superpowers 風格）</Label>
+                <Label>{t('admin.skillsTab.skillCategory')}</Label>
                 <Select
                   value={formData.skillCategory}
                   onValueChange={(value) => setFormData({ ...formData, skillCategory: value as SkillCategory })}
@@ -2525,21 +2528,21 @@ export default function SkillsTab() {
               </div>
               
               <div className="space-y-2">
-                <Label>描述</Label>
+                <Label>{t('admin.skillsTab.ruleDescription')}</Label>
                 <Textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="技能的詳細描述..."
+                  {...{placeholder: t('admin.skillsTab.descriptionPlaceholder')}}
                   rows={3}
                 />
               </div>
               
               <div className="space-y-2">
-                <Label>關鍵字（以逗號分隔）</Label>
+                <Label>{t('admin.skillsTab.keywords')}</Label>
                 <Input
                   value={formData.keywords}
                   onChange={(e) => setFormData({ ...formData, keywords: e.target.value })}
-                  placeholder="例如：永續, 環保, 綠色旅遊, ESG"
+                  {...{placeholder: t('admin.skillsTab.keywordsPlaceholder')}}
                 />
               </div>
               
@@ -2548,7 +2551,7 @@ export default function SkillsTab() {
                   checked={formData.isActive}
                   onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
                 />
-                <Label>啟用此技能</Label>
+                <Label>{t('admin.skillsTab.enableSkill')}</Label>
               </div>
             </TabsContent>
             
@@ -2556,12 +2559,12 @@ export default function SkillsTab() {
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
                   <Target className="h-4 w-4" />
-                  何時使用 (When to Use)
+                  {t('admin.skillsTab.whenToUse')}
                 </Label>
                 <Textarea
                   value={formData.whenToUse}
                   onChange={(e) => setFormData({ ...formData, whenToUse: e.target.value })}
-                  placeholder="描述此技能應該在什麼情況下被觸發..."
+                  {...{placeholder: t('admin.skillsTab.whenToUsePlaceholder')}}
                   rows={3}
                 />
               </div>
@@ -2569,12 +2572,12 @@ export default function SkillsTab() {
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
                   <Zap className="h-4 w-4" />
-                  核心模式 (Core Pattern)
+                  {t('admin.skillsTab.corePattern')}
                 </Label>
                 <Textarea
                   value={formData.corePattern}
                   onChange={(e) => setFormData({ ...formData, corePattern: e.target.value })}
-                  placeholder="描述此技能的核心邏輯和執行步驟..."
+                  {...{placeholder: t('admin.skillsTab.corePatternPlaceholder')}}
                   rows={3}
                 />
               </div>
@@ -2582,12 +2585,12 @@ export default function SkillsTab() {
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
                   <BookOpen className="h-4 w-4" />
-                  快速參考 (Quick Reference)
+                  {t('admin.skillsTab.quickRef')}
                 </Label>
                 <Textarea
                   value={formData.quickReference}
                   onChange={(e) => setFormData({ ...formData, quickReference: e.target.value })}
-                  placeholder="常用操作的速查表..."
+                  {...{placeholder: t('admin.skillsTab.quickRefPlaceholder')}}
                   rows={3}
                 />
               </div>
@@ -2595,12 +2598,12 @@ export default function SkillsTab() {
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4" />
-                  常見錯誤 (Common Mistakes)
+                  {t('admin.skillsTab.commonMistakes')}
                 </Label>
                 <Textarea
                   value={formData.commonMistakes}
                   onChange={(e) => setFormData({ ...formData, commonMistakes: e.target.value })}
-                  placeholder="使用此技能時應避免的陷阱..."
+                  {...{placeholder: t('admin.skillsTab.commonMistakesPlaceholder')}}
                   rows={3}
                 />
               </div>
@@ -2608,12 +2611,12 @@ export default function SkillsTab() {
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
                   <TrendingUp className="h-4 w-4" />
-                  實際影響 (Real World Impact)
+                  {t('admin.skillsTab.realWorldImpact')}
                 </Label>
                 <Textarea
                   value={formData.realWorldImpact}
                   onChange={(e) => setFormData({ ...formData, realWorldImpact: e.target.value })}
-                  placeholder="使用此技能能帶來的實際效果..."
+                  {...{placeholder: t('admin.skillsTab.realWorldImpactPlaceholder')}}
                   rows={3}
                 />
               </div>
@@ -2624,23 +2627,23 @@ export default function SkillsTab() {
                 <div className="p-4 border rounded-lg space-y-3">
                   <Label className="flex items-center gap-2">
                     <TestTube className="h-4 w-4" />
-                    新增測試案例
+                    {t('admin.skillsTab.addTestCaseLabel')}
                   </Label>
                   <div className="space-y-2">
                     <Input
                       value={newTestCase.input}
                       onChange={(e) => setNewTestCase({ ...newTestCase, input: e.target.value })}
-                      placeholder="輸入內容（例如：行程描述文字）"
+                      {...{placeholder: t('admin.skillsTab.testInputPlaceholder')}}
                     />
                     <Input
                       value={newTestCase.expectedOutput}
                       onChange={(e) => setNewTestCase({ ...newTestCase, expectedOutput: e.target.value })}
-                      placeholder="預期輸出（例如：ESG, 永續旅遊）"
+                      {...{placeholder: t('admin.skillsTab.testOutputPlaceholder')}}
                     />
                     <Input
                       value={newTestCase.description}
                       onChange={(e) => setNewTestCase({ ...newTestCase, description: e.target.value })}
-                      placeholder="測試描述（選填）"
+                      {...{placeholder: t('admin.skillsTab.testDescPlaceholder')}}
                     />
                     <Button
                       type="button"
@@ -2650,20 +2653,20 @@ export default function SkillsTab() {
                       disabled={!newTestCase.input || !newTestCase.expectedOutput}
                     >
                       <Plus className="h-4 w-4 mr-2" />
-                      新增測試案例
+                      {t('admin.skillsTab.addTestCaseLabel')}
                     </Button>
                   </div>
                 </div>
                 
                 {formData.testCases.length > 0 && (
                   <div className="space-y-2">
-                    <Label>已新增的測試案例 ({formData.testCases.length})</Label>
+                    <Label>{t('admin.skillsTab.addedTestCases').replace('{n}', String(formData.testCases.length))}</Label>
                     {formData.testCases.map((tc, idx) => (
                       <div key={tc.id} className="flex items-center gap-2 p-2 border rounded">
                         <div className="flex-1">
-                          <p className="text-sm font-medium">測試 #{idx + 1}</p>
-                          <p className="text-xs text-muted-foreground truncate">輸入: {tc.input}</p>
-                          <p className="text-xs text-muted-foreground truncate">預期: {tc.expectedOutput}</p>
+                          <p className="text-sm font-medium">{t('admin.skillsTab.testNum').replace('{n}', String(idx + 1))}</p>
+                          <p className="text-xs text-muted-foreground truncate">{t('admin.skillsTab.testInput').replace('{v}', tc.input)}</p>
+                          <p className="text-xs text-muted-foreground truncate">{t('admin.skillsTab.testExpected').replace('{v}', tc.expectedOutput)}</p>
                         </div>
                         <Button
                           variant="ghost"
@@ -2683,11 +2686,11 @@ export default function SkillsTab() {
           
           <DialogFooter className="mt-4">
             <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
-              取消
+              {t('admin.skillsTab.cancel')}
             </Button>
             <Button onClick={handleAdd} disabled={createSkill.isPending || !formData.skillName}>
               {createSkill.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              新增
+              {t('admin.skillsTab.add')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -2697,30 +2700,30 @@ export default function SkillsTab() {
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>編輯技能</DialogTitle>
+            <DialogTitle>{t('admin.skillsTab.editSkillTitle')}</DialogTitle>
             <DialogDescription>
-              修改技能的資訊和設定
+              {t('admin.skillsTab.editSkillDesc')}
             </DialogDescription>
           </DialogHeader>
           
           <Tabs defaultValue="basic" className="mt-4">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="basic">基本資訊</TabsTrigger>
-              <TabsTrigger value="documentation">文檔</TabsTrigger>
-              <TabsTrigger value="testing">測試案例</TabsTrigger>
+              <TabsTrigger value="basic">{t('admin.skillsTab.tabBasicInfo')}</TabsTrigger>
+              <TabsTrigger value="documentation">{t('admin.skillsTab.tabDocumentation')}</TabsTrigger>
+              <TabsTrigger value="testing">{t('admin.skillsTab.tabTestCases')}</TabsTrigger>
             </TabsList>
             
             <TabsContent value="basic" className="space-y-4 mt-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>技能名稱</Label>
+                  <Label>{t('admin.skillsTab.skillName')}</Label>
                   <Input
                     value={formData.skillName}
                     onChange={(e) => setFormData({ ...formData, skillName: e.target.value })}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>技能類型</Label>
+                  <Label>{t('admin.skillsTab.skillType')}</Label>
                   <Select value={formData.skillType} disabled>
                     <SelectTrigger>
                       <SelectValue />
@@ -2733,12 +2736,12 @@ export default function SkillsTab() {
                       ))}
                     </SelectContent>
                   </Select>
-                  <p className="text-xs text-muted-foreground">技能類型建立後無法更改</p>
+                  <p className="text-xs text-muted-foreground">{t('admin.skillsTab.typeImmutable')}</p>
                 </div>
               </div>
               
               <div className="space-y-2">
-                <Label>技能分類</Label>
+                <Label>{t('admin.skillsTab.skillCategory')}</Label>
                 <Select
                   value={formData.skillCategory}
                   onValueChange={(value) => setFormData({ ...formData, skillCategory: value as SkillCategory })}
@@ -2757,7 +2760,7 @@ export default function SkillsTab() {
               </div>
               
               <div className="space-y-2">
-                <Label>描述</Label>
+                <Label>{t('admin.skillsTab.ruleDescription')}</Label>
                 <Textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -2766,7 +2769,7 @@ export default function SkillsTab() {
               </div>
               
               <div className="space-y-2">
-                <Label>關鍵字（以逗號分隔）</Label>
+                <Label>{t('admin.skillsTab.keywords')}</Label>
                 <Input
                   value={formData.keywords}
                   onChange={(e) => setFormData({ ...formData, keywords: e.target.value })}
@@ -2778,7 +2781,7 @@ export default function SkillsTab() {
                   checked={formData.isActive}
                   onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
                 />
-                <Label>啟用此技能</Label>
+                <Label>{t('admin.skillsTab.enableSkill')}</Label>
               </div>
             </TabsContent>
             
@@ -2786,7 +2789,7 @@ export default function SkillsTab() {
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
                   <Target className="h-4 w-4" />
-                  何時使用
+                  {t('admin.skillsTab.whenToUse')}
                 </Label>
                 <Textarea
                   value={formData.whenToUse}
@@ -2798,7 +2801,7 @@ export default function SkillsTab() {
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
                   <Zap className="h-4 w-4" />
-                  核心模式
+                  {t('admin.skillsTab.corePattern')}
                 </Label>
                 <Textarea
                   value={formData.corePattern}
@@ -2810,7 +2813,7 @@ export default function SkillsTab() {
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
                   <BookOpen className="h-4 w-4" />
-                  快速參考
+                  {t('admin.skillsTab.quickRef')}
                 </Label>
                 <Textarea
                   value={formData.quickReference}
@@ -2822,7 +2825,7 @@ export default function SkillsTab() {
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4" />
-                  常見錯誤
+                  {t('admin.skillsTab.commonMistakes')}
                 </Label>
                 <Textarea
                   value={formData.commonMistakes}
@@ -2834,7 +2837,7 @@ export default function SkillsTab() {
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
                   <TrendingUp className="h-4 w-4" />
-                  實際影響
+                  {t('admin.skillsTab.realWorldImpact')}
                 </Label>
                 <Textarea
                   value={formData.realWorldImpact}
@@ -2847,22 +2850,22 @@ export default function SkillsTab() {
             <TabsContent value="testing" className="space-y-4 mt-4">
               <div className="space-y-4">
                 <div className="p-4 border rounded-lg space-y-3">
-                  <Label>新增測試案例</Label>
+                  <Label>{t('admin.skillsTab.addTestCaseLabel')}</Label>
                   <div className="space-y-2">
                     <Input
                       value={newTestCase.input}
                       onChange={(e) => setNewTestCase({ ...newTestCase, input: e.target.value })}
-                      placeholder="輸入內容"
+                      {...{placeholder: t('admin.skillsTab.testInputPlaceholder')}}
                     />
                     <Input
                       value={newTestCase.expectedOutput}
                       onChange={(e) => setNewTestCase({ ...newTestCase, expectedOutput: e.target.value })}
-                      placeholder="預期輸出"
+                      {...{placeholder: t('admin.skillsTab.testOutputPlaceholder')}}
                     />
                     <Input
                       value={newTestCase.description}
                       onChange={(e) => setNewTestCase({ ...newTestCase, description: e.target.value })}
-                      placeholder="測試描述（選填）"
+                      {...{placeholder: t('admin.skillsTab.testDescPlaceholder')}}
                     />
                     <Button
                       type="button"
@@ -2872,20 +2875,20 @@ export default function SkillsTab() {
                       disabled={!newTestCase.input || !newTestCase.expectedOutput}
                     >
                       <Plus className="h-4 w-4 mr-2" />
-                      新增
+                      {t('admin.skillsTab.add')}
                     </Button>
                   </div>
                 </div>
                 
                 {formData.testCases.length > 0 && (
                   <div className="space-y-2">
-                    <Label>測試案例 ({formData.testCases.length})</Label>
+                    <Label>{t('admin.skillsTab.testCasesLabel').replace('{n}', String(formData.testCases.length))}</Label>
                     {formData.testCases.map((tc, idx) => (
                       <div key={tc.id} className="flex items-center gap-2 p-2 border rounded">
                         <div className="flex-1">
-                          <p className="text-sm font-medium">測試 #{idx + 1}</p>
-                          <p className="text-xs text-muted-foreground truncate">輸入: {tc.input}</p>
-                          <p className="text-xs text-muted-foreground truncate">預期: {tc.expectedOutput}</p>
+                          <p className="text-sm font-medium">{t('admin.skillsTab.testNum').replace('{n}', String(idx + 1))}</p>
+                          <p className="text-xs text-muted-foreground truncate">{t('admin.skillsTab.testInput').replace('{v}', tc.input)}</p>
+                          <p className="text-xs text-muted-foreground truncate">{t('admin.skillsTab.testExpected').replace('{v}', tc.expectedOutput)}</p>
                         </div>
                         <Button
                           variant="ghost"
@@ -2905,11 +2908,11 @@ export default function SkillsTab() {
           
           <DialogFooter className="mt-4">
             <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-              取消
+              {t('admin.skillsTab.cancel')}
             </Button>
             <Button onClick={handleEdit} disabled={updateSkill.isPending || !formData.skillName}>
               {updateSkill.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              儲存
+              {t('admin.skillsTab.save')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -2924,7 +2927,7 @@ export default function SkillsTab() {
               {getCategoryBadge(formData.skillCategory)}
             </DialogTitle>
             <DialogDescription>
-              {formData.description || "無描述"}
+              {formData.description || t('admin.skillsTab.noDescription')}
             </DialogDescription>
           </DialogHeader>
           
@@ -2946,7 +2949,7 @@ export default function SkillsTab() {
                   <AccordionTrigger>
                     <div className="flex items-center gap-2">
                       <Target className="h-4 w-4" />
-                      何時使用
+                      {t('admin.skillsTab.whenToUse')}
                     </div>
                   </AccordionTrigger>
                   <AccordionContent>
@@ -2960,7 +2963,7 @@ export default function SkillsTab() {
                   <AccordionTrigger>
                     <div className="flex items-center gap-2">
                       <Zap className="h-4 w-4" />
-                      核心模式
+                      {t('admin.skillsTab.corePattern')}
                     </div>
                   </AccordionTrigger>
                   <AccordionContent>
@@ -2974,7 +2977,7 @@ export default function SkillsTab() {
                   <AccordionTrigger>
                     <div className="flex items-center gap-2">
                       <BookOpen className="h-4 w-4" />
-                      快速參考
+                      {t('admin.skillsTab.quickRef')}
                     </div>
                   </AccordionTrigger>
                   <AccordionContent>
@@ -2988,7 +2991,7 @@ export default function SkillsTab() {
                   <AccordionTrigger>
                     <div className="flex items-center gap-2">
                       <AlertTriangle className="h-4 w-4" />
-                      常見錯誤
+                      {t('admin.skillsTab.commonMistakes')}
                     </div>
                   </AccordionTrigger>
                   <AccordionContent>
@@ -3002,7 +3005,7 @@ export default function SkillsTab() {
                   <AccordionTrigger>
                     <div className="flex items-center gap-2">
                       <TrendingUp className="h-4 w-4" />
-                      實際影響
+                      {t('admin.skillsTab.realWorldImpact')}
                     </div>
                   </AccordionTrigger>
                   <AccordionContent>
@@ -3016,16 +3019,16 @@ export default function SkillsTab() {
                   <AccordionTrigger>
                     <div className="flex items-center gap-2">
                       <TestTube className="h-4 w-4" />
-                      測試案例 ({formData.testCases.length})
+                      {t('admin.skillsTab.testCasesLabel').replace('{n}', String(formData.testCases.length))}
                     </div>
                   </AccordionTrigger>
                   <AccordionContent>
                     <div className="space-y-2">
                       {formData.testCases.map((tc, idx) => (
                         <div key={tc.id} className="p-2 border rounded text-sm">
-                          <p className="font-medium">測試 #{idx + 1}</p>
-                          <p className="text-muted-foreground">輸入: {tc.input}</p>
-                          <p className="text-muted-foreground">預期: {tc.expectedOutput}</p>
+                          <p className="font-medium">{t('admin.skillsTab.testNum').replace('{n}', String(idx + 1))}</p>
+                          <p className="text-muted-foreground">{t('admin.skillsTab.testInput').replace('{v}', tc.input)}</p>
+                          <p className="text-muted-foreground">{t('admin.skillsTab.testExpected').replace('{v}', tc.expectedOutput)}</p>
                           {tc.description && <p className="text-xs">{tc.description}</p>}
                         </div>
                       ))}
@@ -3038,7 +3041,7 @@ export default function SkillsTab() {
           
           <DialogFooter className="mt-4">
             <Button variant="outline" onClick={() => setIsDetailDialogOpen(false)}>
-              關閉
+              {t('admin.skillsTab.close')}
             </Button>
             <Button
               variant="outline"
@@ -3054,14 +3057,14 @@ export default function SkillsTab() {
               ) : (
                 <Play className="h-4 w-4 mr-2" />
               )}
-              執行測試
+              {t('admin.skillsTab.runTests')}
             </Button>
             <Button onClick={() => {
               setIsDetailDialogOpen(false);
               setIsEditDialogOpen(true);
             }}>
               <Pencil className="h-4 w-4 mr-2" />
-              編輯
+              {t('admin.skillsTab.edit')}
             </Button>
           </DialogFooter>
         </DialogContent>
