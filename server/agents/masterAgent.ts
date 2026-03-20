@@ -20,8 +20,8 @@ import { ContentAnalyzerAgent } from "./contentAnalyzerAgent";
 import { ImagePromptAgent } from "./imagePromptAgent";
 import { ImageGenerationAgent } from "./imageGenerationAgent";
 import { ColorThemeAgent } from "./colorThemeAgent";
-import { ItineraryExtractAgent } from "./itineraryExtractAgent";
-import { ItineraryPolishAgent } from "./itineraryPolishAgent";
+import { ItineraryUnifiedAgent } from "./itineraryUnifiedAgent";
+// ItineraryExtractAgent + ItineraryPolishAgent merged into ItineraryUnifiedAgent (single LLM call)
 // CostAgent, NoticeAgent, HotelAgent, MealAgent replaced by DetailsSkill
 import { getDetailsSkill, DetailsSkill } from "../skills/details/detailsSkill";
 import { FlightAgent } from "./flightAgent";
@@ -39,7 +39,7 @@ import {
 import { progressTracker } from "./progressTracker";
 import generationCache from "../cache/generation-cache";
 import { generateSmartTags, mergeWithExistingTags } from "../utils/tagGenerator";
-import { TourType } from "./itineraryExtractAgent";
+import { TourType } from "./itineraryUnifiedAgent";
 import { applyLearnedSkills } from "./learningAgent";
 
 export interface MasterAgentResult {
@@ -130,8 +130,7 @@ export class MasterAgent {
   private imagePromptAgent: ImagePromptAgent;
   private imageGenerationAgent: ImageGenerationAgent;
   private colorThemeAgent: ColorThemeAgent;
-  private itineraryExtractAgent: ItineraryExtractAgent;
-  private itineraryPolishAgent: ItineraryPolishAgent;
+  private itineraryUnifiedAgent: ItineraryUnifiedAgent; // merged Extract + Polish
   // DetailsSkill replaces CostAgent, NoticeAgent, HotelAgent, MealAgent
   private detailsSkill: DetailsSkill;
   private flightAgent: FlightAgent;
@@ -158,8 +157,7 @@ export class MasterAgent {
     this.imagePromptAgent = new ImagePromptAgent();
     this.imageGenerationAgent = new ImageGenerationAgent();
     this.colorThemeAgent = new ColorThemeAgent();
-    this.itineraryExtractAgent = new ItineraryExtractAgent();
-    this.itineraryPolishAgent = new ItineraryPolishAgent();
+    this.itineraryUnifiedAgent = new ItineraryUnifiedAgent(); // single LLM call for extract + polish
     // DetailsSkill replaces CostAgent, NoticeAgent, HotelAgent, MealAgent
     this.detailsSkill = getDetailsSkill();
     this.flightAgent = new FlightAgent();
@@ -466,63 +464,41 @@ export class MasterAgent {
         progressTracker.startPhase(taskId, 'flight_agent');
       }
       
-      // Execute Itinerary Extract + Polish sequentially first
-      // Phase 1 優化：傳遞原始資料快照給 ItineraryPolishAgent
+      // Execute Itinerary (Unified: Extract + Polish in single LLM call)
+      // ItineraryUnifiedAgent replaces ItineraryExtractAgent + ItineraryPolishAgent
       let itineraryData = "";
-      let tourType = 'GENERAL'; // 預設行程類型
+      let tourType: TourType = 'GENERAL'; // 預設行程類型
       try {
-        // Step 1: Extract raw itinerary from scraped data
-        this.monitor.startAgent('ItineraryExtractAgent');
+        this.monitor.startAgent('ItineraryUnifiedAgent');
         if (taskId) progressTracker.startPhase(taskId, 'itinerary');
         
-        const extractResult = await this.itineraryExtractAgent.execute(rawData);
+        const unifiedResult = await this.itineraryUnifiedAgent.execute(rawData);
         
-        if (extractResult.success && extractResult.data && extractResult.data.extractedItineraries.length > 0) {
-          console.log(`[MasterAgent] ✓ ItineraryExtractAgent completed: ${extractResult.data.extractedItineraries.length} days, method: ${extractResult.data.extractionMethod}`);
-          console.log(`[MasterAgent] Tour Type: ${extractResult.data.tourType}, Transportation: ${extractResult.data.originalTransportation}`);
+        if (unifiedResult.success && unifiedResult.data && unifiedResult.data.polishedItineraries.length > 0) {
+          const { polishedItineraries, fidelityCheck, extractionMethod, llmCallCount, totalElapsedMs } = unifiedResult.data;
+          
           // 保存 tourType 供 TransportationAgent 使用
-          tourType = extractResult.data.tourType || 'GENERAL';
-          this.monitor.completeAgent('ItineraryExtractAgent', extractResult);
+          tourType = unifiedResult.data.tourType || 'GENERAL';
           
-          // Step 2: Polish the extracted itinerary
-          // Phase 1 優化：傳遞原始資料快照
-          this.monitor.startAgent('ItineraryPolishAgent');
+          console.log(`[MasterAgent] ✓ ItineraryUnifiedAgent completed: ${polishedItineraries.length} days`);
+          console.log(`[MasterAgent] Extraction method: ${extractionMethod}, LLM calls: ${llmCallCount}, Time: ${totalElapsedMs}ms`);
+          console.log(`[MasterAgent] Tour Type: ${tourType}, Transportation: ${unifiedResult.data.originalTransportation}`);
+          console.log(`[MasterAgent] Fidelity: score=${fidelityCheck.overallScore}, transport=${fidelityCheck.transportationMatch}, hotel=${fidelityCheck.hotelMatch}`);
+          if (fidelityCheck.issues.length > 0) {
+            console.warn(`[MasterAgent] Fidelity Issues: ${fidelityCheck.issues.join(', ')}`);
+          }
           
-          const polishResult = await this.itineraryPolishAgent.execute(
-            extractResult.data.extractedItineraries,
-            { country: rawData?.location?.destinationCountry, city: rawData?.location?.destinationCity },
-            // Phase 1 新增：傳遞原始資料快照
-            {
-              tourType: extractResult.data.tourType,
-              originalTransportation: extractResult.data.originalTransportation,
-              originalHotels: extractResult.data.originalHotels,
-              originalAttractions: extractResult.data.originalAttractions,
-            }
+          // 為每日行程配置圖片
+          const { assignItineraryImages } = await import("../services/itineraryImageService");
+          const itinerariesWithImages = await assignItineraryImages(
+            polishedItineraries,
+            { country: rawData?.location?.destinationCountry, city: rawData?.location?.destinationCity }
           );
           
-          if (polishResult.success && polishResult.data) {
-            // Phase 2 新增：為每日行程配置圖片
-            const { assignItineraryImages } = await import("../services/itineraryImageService");
-            const itinerariesWithImages = await assignItineraryImages(
-              polishResult.data.polishedItineraries,
-              { country: rawData?.location?.destinationCountry, city: rawData?.location?.destinationCity }
-            );
-            
-            itineraryData = JSON.stringify(itinerariesWithImages);
-            console.log(`[MasterAgent] ✓ ItineraryPolishAgent completed: ${itinerariesWithImages.length} days polished with images`);
-            // Phase 1 新增：輸出忠實度檢查結果
-            console.log(`[MasterAgent] Fidelity Check: Score=${polishResult.data.fidelityCheck.overallScore}, Transportation=${polishResult.data.fidelityCheck.transportationMatch}, Hotel=${polishResult.data.fidelityCheck.hotelMatch}`);
-            if (polishResult.data.fidelityCheck.issues.length > 0) {
-              console.warn(`[MasterAgent] Fidelity Issues: ${polishResult.data.fidelityCheck.issues.join(', ')}`);
-            }
-            this.monitor.completeAgent('ItineraryPolishAgent', polishResult);
-          } else {
-            // Use extracted data without polish if polish fails
-            itineraryData = JSON.stringify(extractResult.data.extractedItineraries);
-            console.warn("[MasterAgent] ⚠ ItineraryPolishAgent failed, using extracted data");
-          }
+          itineraryData = JSON.stringify(itinerariesWithImages);
+          this.monitor.completeAgent('ItineraryUnifiedAgent', unifiedResult);
         } else {
-          console.warn("[MasterAgent] ⚠ ItineraryExtractAgent returned no data");
+          console.warn("[MasterAgent] ⚠ ItineraryUnifiedAgent returned no data");
           itineraryData = JSON.stringify([]);
         }
         

@@ -4839,3 +4839,4 @@
 - [x] P1: AI 客服串流回應（claudeAgent.ts streamConversation + routers.ts SSE endpoint）
 - [x] P1: 前端 AITravelAdvisorDialog.tsx 消費串流端點（SSE fetch streaming）
 - [ ] P2: 管理後台新增 AI 成本分析儀表板頁面（下一階段）
+- [x] P2: 將 ItineraryExtractAgent + ItineraryPolishAgent 合併為 ItineraryUnifiedAgent（單次 LLM 呼叫，節省 15-20 秒）
