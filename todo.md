@@ -4860,3 +4860,14 @@
 - [x] 修復 departures.update schema 缺少 status, currency, notes
 - [x] 修復 DeparturesManagement handleUpdate 沒有傳送 status, currency, notes
 
+
+## 管理後台 UI/UX 重新設計（2026-03-21）
+
+- [x] Admin.tsx 改為左側邊欄導航，移除頂部 Tab 列
+- [x] 新增 badge 顯示待處理詢問數、上架行程數
+- [x] DashboardTab 重新設計：清晰數據卡片、待辦事項、快速操作
+- [x] InquiriesTab 重新設計：更清晰的表格、狀態標籤、詳情對話框
+- [x] BookingsTab 重新設計：統一風格
+- [x] ReviewsTab 重新設計：統一風格
+- [x] DeparturesManagement 重新設計：佔用率進度條、統一表格風格
+- [x] 移除所有 rounded-3xl，統一使用直線邊框後台風格
