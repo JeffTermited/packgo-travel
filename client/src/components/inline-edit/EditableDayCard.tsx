@@ -251,7 +251,7 @@ export function EditableDayCard({
               {(day.activities || []).slice(0, isExpanded ? undefined : 3).map((activity, actIndex) => (
                 <div key={actIndex} className="flex items-start gap-3 group">
                   <div 
-                    className="w-2 h-2 rounded-full mt-2 flex-shrink-0"
+                    className="w-2 h-2 rounded-none mt-2 flex-shrink-0"
                     style={{ backgroundColor: themeColor.secondary }}
                   />
                   <div className="flex-1">

@@ -359,7 +359,7 @@ export function EditableImage({
                 <div
                   ref={dropZoneRef}
                   className={cn(
-                    "relative border-2 border-dashed rounded-lg transition-all duration-200",
+                    "relative border-2 border-dashed rounded-none transition-all duration-200",
                     isDragging 
                       ? "border-primary bg-primary/10" 
                       : "border-gray-300 hover:border-gray-400",
@@ -372,7 +372,7 @@ export function EditableImage({
                   onClick={() => !isUploading && fileInputRef.current?.click()}
                 >
                   {/* 預覽圖片 */}
-                  <div className="aspect-video bg-gray-50 rounded-lg overflow-hidden">
+                  <div className="aspect-video bg-gray-50 rounded-none overflow-hidden">
                     {imageUrl ? (
                       <img
                         src={imageUrl}
@@ -389,7 +389,7 @@ export function EditableImage({
 
                   {/* 拖放覆蓋層 */}
                   {(isDragging || isUploading) && (
-                    <div className="absolute inset-0 bg-white/90 flex flex-col items-center justify-center rounded-lg">
+                    <div className="absolute inset-0 bg-white/90 flex flex-col items-center justify-center rounded-none">
                       {isUploading ? (
                         <>
                           <Loader2 className="h-12 w-12 text-primary animate-spin mb-3" />
@@ -448,7 +448,7 @@ export function EditableImage({
                     {libraryImages.map((image: ImageLibraryItem) => (
                       <div
                         key={image.id}
-                        className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden cursor-pointer group hover:ring-2 hover:ring-primary transition-all"
+                        className="relative aspect-video bg-gray-100 rounded-none overflow-hidden cursor-pointer group hover:ring-2 hover:ring-primary transition-all"
                         onClick={() => handleSelectFromLibrary(image.url)}
                       >
                         <img

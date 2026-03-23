@@ -349,7 +349,7 @@ export default function SearchResults() {
                     value={keyword}
                     onChange={setKeyword}
                     placeholder={t('search.searchPlaceholder')}
-                    className="w-full [&_input]:pl-12 [&_input]:h-12 [&_input]:text-base [&_input]:rounded-full [&_input]:border-gray-300 [&_input]:focus:border-black [&_input]:focus:ring-black"
+                    className="w-full [&_input]:pl-12 [&_input]:h-12 [&_input]:text-base [&_input]:rounded-none [&_input]:border-gray-300 [&_input]:focus:border-black [&_input]:focus:ring-black"
                   />
                   {keyword && (
                     <button
@@ -367,7 +367,7 @@ export default function SearchResults() {
                 <Button
                   variant="outline"
                   onClick={() => setShowFilters(!showFilters)}
-                  className={`h-12 px-4 rounded-full border-gray-300 ${showFilters ? 'bg-black text-white border-black' : ''}`}
+                  className={`h-12 px-4 rounded-none border-gray-300 ${showFilters ? 'bg-black text-white border-black' : ''}`}
                 >
                   <Filter className="h-4 w-4 mr-2" />
                   {t('search.filter')}
@@ -380,7 +380,7 @@ export default function SearchResults() {
                 </Button>
 
                 <Select value={sortBy} onValueChange={(value) => setSortBy(value as any)}>
-                  <SelectTrigger className="w-40 h-12 rounded-full border-gray-300">
+                  <SelectTrigger className="w-40 h-12 rounded-none border-gray-300">
                     <SelectValue placeholder={t('search.sortBy')} />
                   </SelectTrigger>
                   <SelectContent>
@@ -394,7 +394,7 @@ export default function SearchResults() {
 
                 <Button 
                   onClick={handleSearch}
-                  className="h-12 px-8 bg-black hover:bg-gray-800 text-white rounded-full font-medium"
+                  className="h-12 px-8 bg-black hover:bg-gray-800 text-white rounded-none font-medium"
                 >
                   {t('common.search')}
                 </Button>
@@ -403,7 +403,7 @@ export default function SearchResults() {
 
             {/* 可展開的篩選面板 */}
             {showFilters && filterOptions && (
-              <div className="mt-4 p-6 bg-gray-50 rounded-2xl border border-gray-200 animate-in slide-in-from-top-2 duration-200">
+              <div className="mt-4 p-6 bg-gray-50  border border-gray-200 animate-in slide-in-from-top-2 duration-200">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="font-bold text-gray-900">{t('search.advancedFilter')}</h3>
                   {activeFilterCount > 0 && (
@@ -426,7 +426,7 @@ export default function SearchResults() {
                       <h4 className="text-sm font-medium text-gray-700 mb-3">{t('search.destination')}</h4>
                       <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
                         {Object.entries(groupedDestinations).map(([continent, destinations]) => (
-                          <div key={continent} className="border border-gray-200 rounded-lg overflow-hidden">
+                          <div key={continent} className="border border-gray-200 rounded-none overflow-hidden">
                             {/* 洲別標題 */}
                             <button
                               onClick={() => toggleContinent(continent)}
@@ -650,7 +650,7 @@ export default function SearchResults() {
           <div className="container">
             {isLoading ? (
               <div className="text-center py-16">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
+                <div className="animate-spin rounded-none h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
                 <p className="text-gray-500">{t('common.loading')}</p>
               </div>
             ) : tours && tours.length > 0 ? (
@@ -671,7 +671,7 @@ export default function SearchResults() {
                     return (
                       <Card 
                         key={tour.id} 
-                        className="group border-0 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden bg-white"
+                        className="group border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer overflow-hidden bg-white"
                         onClick={() => setLocation(`/tours/${tour.id}`)}
                       >
                         {/* 圖片區域 */}
@@ -689,7 +689,7 @@ export default function SearchResults() {
                           )}
                           
                           {/* 天數標籤 */}
-                          <div className="absolute top-4 left-4 bg-black/80 text-white px-3 py-1.5 text-sm font-medium rounded-full">
+                          <div className="absolute top-4 left-4 bg-black/80 text-white px-3 py-1.5 text-sm font-medium rounded-none">
                             {tour.duration} {t('search.days')}
                           </div>
                           
@@ -777,7 +777,7 @@ export default function SearchResults() {
                   <div className="flex items-center justify-center gap-2 mt-12">
                     <Button
                       variant="outline"
-                      className="rounded-full"
+                      className="rounded-none"
                       onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                       disabled={currentPage === 1}
                     >
@@ -798,7 +798,7 @@ export default function SearchResults() {
                               {showEllipsisBefore && <span className="px-2 text-gray-400">…</span>}
                               <Button
                                 variant={currentPage === page ? "default" : "outline"}
-                                className={`rounded-full w-10 h-10 p-0 ${currentPage === page ? "bg-black text-white" : ""}`}
+                                className={`rounded-none w-10 h-10 p-0 ${currentPage === page ? "bg-black text-white" : ""}`}
                                 onClick={() => setCurrentPage(page)}
                               >
                                 {page}
@@ -810,7 +810,7 @@ export default function SearchResults() {
                     
                     <Button
                       variant="outline"
-                      className="rounded-full"
+                      className="rounded-none"
                       onClick={() => setCurrentPage(p => Math.min(pagination.totalPages, p + 1))}
                       disabled={currentPage === pagination.totalPages}
                     >
@@ -821,7 +821,7 @@ export default function SearchResults() {
               </>
             ) : (
               <div className="text-center py-16">
-                <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <div className="w-20 h-20 bg-gray-100 rounded-none flex items-center justify-center mx-auto mb-6">
                   <MapPin className="h-10 w-10 text-gray-400" />
                 </div>
                 <h3 className="text-xl font-bold text-gray-700 mb-2">{t('search.noResults')}</h3>
@@ -830,7 +830,7 @@ export default function SearchResults() {
                   <Button 
                     onClick={handleClearSearch}
                     variant="outline"
-                    className="rounded-full"
+                    className="rounded-none"
                   >
                     {t('search.clearFilters')}
                   </Button>
@@ -838,7 +838,7 @@ export default function SearchResults() {
                     <Button 
                       onClick={handleClearFilters}
                       variant="outline"
-                      className="rounded-full"
+                      className="rounded-none"
                     >
                       {t('search.clearFilters')}
                     </Button>

@@ -76,7 +76,7 @@ export const EditModeButton: React.FC<EditModeToolbarProps> = ({ colorTheme }) =
   return (
     <Button
       onClick={toggleEditMode}
-      className="fixed bottom-24 right-6 z-50 rounded-full w-14 h-14 shadow-lg hover:shadow-xl transition-all"
+      className="fixed bottom-24 right-6 z-50 rounded-none w-14 h-14 shadow-lg hover:shadow-xl transition-all"
       style={{
         backgroundColor: colorTheme?.accent || "#E63946",
       }}

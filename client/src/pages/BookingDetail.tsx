@@ -165,7 +165,7 @@ export default function BookingDetail() {
         <Button 
           variant="outline" 
           onClick={() => navigate("/profile")}
-          className="mb-6 border-2 border-black rounded-3xl hover:bg-black hover:text-white"
+          className="mb-6 border-2 border-black  hover:bg-black hover:text-white"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           {t('bookingDetail.backToProfile2')}
@@ -175,7 +175,7 @@ export default function BookingDetail() {
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Booking Header */}
-            <Card className="border-2 border-black rounded-3xl">
+            <Card className="border-2 border-black ">
               <CardHeader className="pb-4">
                 <div className="flex items-start justify-between">
                   <div>
@@ -193,7 +193,7 @@ export default function BookingDetail() {
             </Card>
 
             {/* Tour Information */}
-            <Card className="border-2 border-black rounded-3xl">
+            <Card className="border-2 border-black ">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <MapPin className="h-5 w-5" />
@@ -245,7 +245,7 @@ export default function BookingDetail() {
             </Card>
 
             {/* Contact Information */}
-            <Card className="border-2 border-black rounded-3xl">
+            <Card className="border-2 border-black ">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <User className="h-5 w-5" />
@@ -280,7 +280,7 @@ export default function BookingDetail() {
 
           {/* Sidebar - Payment Card */}
           <div className="lg:col-span-1">
-            <Card className="border-2 border-black rounded-3xl sticky top-4">
+            <Card className="border-2 border-black  sticky top-4">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <CreditCard className="h-5 w-5" />
@@ -367,7 +367,7 @@ export default function BookingDetail() {
                 )}
 
                 {isFullyPaid && (
-                  <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4 text-center">
+                  <div className="bg-green-50 border-2 border-green-200 rounded-none p-4 text-center">
                     <CheckCircle2 className="h-8 w-8 text-green-600 mx-auto mb-2" />
                     <p className="font-bold text-green-800">{t('bookingDetail.paymentCompleted')}</p>
                     <p className="text-sm text-green-600 mt-1">{t('bookingDetail.thankYou')}</p>

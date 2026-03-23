@@ -88,12 +88,12 @@ export function DepartureAutocomplete({
           onChange={(e) => onChange(e.target.value)}
           onFocus={handleFocus}
           placeholder={placeholder}
-          className="w-full h-12 pl-12 pr-4 rounded-2xl border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-gray-400 hover:border-gray-400 transition-all"
+          className="w-full h-12 pl-12 pr-4 border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-gray-400 hover:border-gray-400 transition-all"
         />
       </div>
 
       {isOpen && (filteredCities.length > 0 || !value.trim()) && (
-        <div className="absolute z-[9999] w-full mt-2 bg-white border-2 border-gray-300 rounded-lg shadow-xl max-h-80 overflow-y-auto" style={{ minHeight: filteredCities.length > 0 || !value.trim() ? 'auto' : '0' }}>
+        <div className="absolute z-[9999] w-full mt-2 bg-white border-2 border-gray-300 rounded-none shadow-xl max-h-80 overflow-y-auto" style={{ minHeight: filteredCities.length > 0 || !value.trim() ? 'auto' : '0' }}>
           {(value.trim() ? filteredCities : taiwanCities).map((city, index) => (
             <button
               key={index}

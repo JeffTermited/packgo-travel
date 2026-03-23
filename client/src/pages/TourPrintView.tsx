@@ -200,7 +200,7 @@ export default function TourPrintView() {
             <div className="print-cover-overlay">
               <div className="print-cover-content">
                 <div 
-                  className="inline-block px-3 py-1 rounded-full text-sm font-medium mb-3"
+                  className="inline-block px-3 py-1 text-sm font-medium mb-3"
                   style={{ backgroundColor: themeColor.primary, color: "white" }}
                 >
                   {tour.destinationCountry || t('tourPrint.featuredTour')}

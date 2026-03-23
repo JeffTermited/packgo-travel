@@ -131,7 +131,7 @@ export default function ResetPassword() {
                       placeholder={t("resetPassword.newPasswordPlaceholder")}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="pl-12 h-12 border-2 border-black rounded-full focus:ring-2 focus:ring-black"
+                      className="pl-12 h-12 border-2 border-black focus:ring-2 focus:ring-black"
                       required
                       minLength={8}
                     />
@@ -150,7 +150,7 @@ export default function ResetPassword() {
                       placeholder={t("resetPassword.confirmPasswordPlaceholder")}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="pl-12 h-12 border-2 border-black rounded-full focus:ring-2 focus:ring-black"
+                      className="pl-12 h-12 border-2 border-black focus:ring-2 focus:ring-black"
                       required
                       minLength={8}
                     />
@@ -159,7 +159,7 @@ export default function ResetPassword() {
 
                 <Button
                   type="submit"
-                  className="w-full h-12 bg-black hover:bg-gray-800 text-white font-bold tracking-wide rounded-full"
+                  className="w-full h-12 bg-black hover:bg-gray-800 text-white font-bold tracking-wide"
                   disabled={resetPasswordMutation.isPending}
                 >
                   {resetPasswordMutation.isPending ? t("resetPassword.resetting") : t("resetPassword.submit")}
@@ -181,7 +181,7 @@ export default function ResetPassword() {
               </div>
               <Link href="/login">
                 <Button
-                  className="w-full h-12 bg-black hover:bg-gray-800 text-white font-bold tracking-wide rounded-full"
+                  className="w-full h-12 bg-black hover:bg-gray-800 text-white font-bold tracking-wide"
                 >
                   {t("resetPassword.goToLogin")}
                 </Button>

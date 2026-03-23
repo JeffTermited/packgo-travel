@@ -90,7 +90,7 @@ export const EditableText: React.FC<EditableTextProps> = ({
       <div
         className={cn(
           "relative inline-flex items-center gap-2 group",
-          isEditable && "cursor-pointer hover:ring-2 hover:ring-yellow-400 hover:ring-offset-2 rounded-lg px-2 py-1 transition-all duration-200"
+          isEditable && "cursor-pointer hover:ring-2 hover:ring-yellow-400 hover:ring-offset-2 rounded-none px-2 py-1 transition-all duration-200"
         )}
         onMouseEnter={() => setShowEditIcon(true)}
         onMouseLeave={() => setShowEditIcon(false)}
@@ -102,7 +102,7 @@ export const EditableText: React.FC<EditableTextProps> = ({
         </Component>
         {isEditable && (
           <div className="absolute -right-8 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-            <div className="bg-yellow-400 text-yellow-900 p-1.5 rounded-full shadow-lg">
+            <div className="bg-yellow-400 text-yellow-900 p-1.5 rounded-none shadow-lg">
               <Pencil className="h-4 w-4" />
             </div>
           </div>

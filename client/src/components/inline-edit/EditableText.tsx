@@ -88,7 +88,7 @@ export function EditableText({
 
   // 編輯模式且激活：顯示輸入框
   return (
-    <div className="inline-flex items-center gap-2 bg-white/95 rounded-lg p-2 border-2 border-yellow-400 shadow-xl backdrop-blur-sm">
+    <div className="inline-flex items-center gap-2 bg-white/95 rounded-none p-2 border-2 border-yellow-400 shadow-xl backdrop-blur-sm">
       {multiline ? (
         <textarea
           ref={inputRef as React.RefObject<HTMLTextAreaElement>}

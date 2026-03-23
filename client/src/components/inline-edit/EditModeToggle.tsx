@@ -25,14 +25,14 @@ export function EditModeToggle({
   return (
     <div
       className={cn(
-        "fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-white rounded-full shadow-lg border border-gray-200 p-2",
+        "fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-white rounded-none shadow-lg border border-gray-200 p-2",
         className
       )}
     >
       {isEditMode ? (
         <>
           {/* 編輯模式下的按鈕 */}
-          <div className="flex items-center gap-2 px-3 py-1 bg-yellow-100 rounded-full text-yellow-800 text-sm font-medium">
+          <div className="flex items-center gap-2 px-3 py-1 bg-yellow-100 rounded-none text-yellow-800 text-sm font-medium">
             <Pencil className="h-4 w-4" />
             編輯模式
           </div>
@@ -41,7 +41,7 @@ export function EditModeToggle({
             <Button
               onClick={onSave}
               disabled={isSaving}
-              className="rounded-full bg-green-600 hover:bg-green-700"
+              className="rounded-none bg-green-600 hover:bg-green-700"
             >
               {isSaving ? (
                 <>
@@ -60,7 +60,7 @@ export function EditModeToggle({
           <Button
             variant="outline"
             onClick={onCancel || onToggle}
-            className="rounded-full"
+            className="rounded-none"
           >
             <X className="h-4 w-4 mr-2" />
             {hasChanges ? "放棄變更" : "退出編輯"}
@@ -71,7 +71,7 @@ export function EditModeToggle({
           {/* 預覽模式下的按鈕 */}
           <Button
             onClick={onToggle}
-            className="rounded-full bg-yellow-500 hover:bg-yellow-600 text-white"
+            className="rounded-none bg-yellow-500 hover:bg-yellow-600 text-white"
           >
             <Pencil className="h-4 w-4 mr-2" />
             進入編輯模式

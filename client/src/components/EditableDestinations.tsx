@@ -198,7 +198,7 @@ export default function EditableDestinations() {
             <div 
               key={dest.id} 
               onClick={() => handleDestinationClick(dest.region || '')}
-              className={`group relative aspect-[4/3] overflow-hidden shadow-md hover:shadow-xl transition-all duration-500 rounded-3xl ${
+              className={`group relative aspect-[4/3] overflow-hidden shadow-md hover:shadow-xl transition-all duration-500  ${
                 isEditMode ? 'cursor-default' : 'cursor-pointer'
               }`}
             >
@@ -227,7 +227,7 @@ export default function EditableDestinations() {
                       e.stopPropagation();
                       handleEdit(dest as Destination);
                     }}
-                    className="bg-black/70 hover:bg-black text-white p-2 rounded-full transition-colors"
+                    className="bg-black/70 hover:bg-black text-white p-2 rounded-none transition-colors"
                   >
                     <Pencil className="h-4 w-4" />
                   </button>
@@ -236,7 +236,7 @@ export default function EditableDestinations() {
                       e.stopPropagation();
                       handleDelete(dest.id);
                     }}
-                    className="bg-red-600/70 hover:bg-red-600 text-white p-2 rounded-full transition-colors"
+                    className="bg-red-600/70 hover:bg-red-600 text-white p-2 rounded-none transition-colors"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>

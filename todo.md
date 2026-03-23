@@ -4880,3 +4880,16 @@
 - [x] AI 學習簡化為一個操作流程
 - [x] 移除排程學習、審核佇列、自動規則等進階功能（對一般管理員不必要）
 - [x] 新增/編輯表單只保留必要欄位
+
+## 前台頁面 UI 整齊化（2026-03-22）
+
+- [ ] Tours.tsx：行程卡片、分頁按鈕移除圓角，統一方形設計
+- [ ] SearchResults.tsx：搜尋欄、按鈕、卡片移除圓角
+- [ ] Profile.tsx：卡片、按鈕移除圓角
+- [ ] Login.tsx：表單元素移除圓角
+- [ ] CustomTourRequest.tsx：表單元素移除圓角
+- [ ] QuickInquiry.tsx：表單元素移除圓角
+- [ ] BookingDetail.tsx：卡片移除圓角
+- [ ] PaymentSuccess/Failure.tsx：移除圓角
+- [ ] Header.tsx / Footer.tsx：統一樣式
+- [ ] 共用元件（FeaturedTours、Destinations 等）：統一方形設計

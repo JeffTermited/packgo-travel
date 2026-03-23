@@ -47,7 +47,7 @@ export function DateRangePicker({
         <Button
           variant="outline"
           className={cn(
-            "w-full h-12 px-4 justify-start text-left font-normal rounded-2xl border border-gray-300 bg-white hover:border-gray-400 transition-all",
+            "w-full h-12 px-4 justify-start text-left font-normal border border-gray-300 bg-white hover:border-gray-400 transition-all",
             !value && "text-gray-500",
             className
           )}
@@ -56,7 +56,7 @@ export function DateRangePicker({
           <span>{formatDateRange()}</span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0 rounded-2xl shadow-2xl border-2 border-gray-200" align="start">
+      <PopoverContent className="w-auto p-0 shadow-2xl border-2 border-gray-200" align="start">
         <div className="p-4">
           <DayPicker
             mode="range"
@@ -72,19 +72,19 @@ export function DateRangePicker({
               caption_label: "text-base font-semibold text-black",
               nav: "space-x-1 flex items-center",
               nav_button: cn(
-                "h-8 w-8 bg-transparent p-0 opacity-50 hover:opacity-100 rounded-lg hover:bg-gray-100 transition-all"
+                "h-8 w-8 bg-transparent p-0 opacity-50 hover:opacity-100 rounded-none hover:bg-gray-100 transition-all"
               ),
               nav_button_previous: "absolute left-1",
               nav_button_next: "absolute right-1",
               table: "w-full border-collapse space-y-1",
               head_row: "flex",
-              head_cell: "text-gray-600 rounded-lg w-10 font-medium text-sm",
+              head_cell: "text-gray-600 rounded-none w-10 font-medium text-sm",
               row: "flex w-full mt-2",
               cell: cn(
                 "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-gray-100 [&:has([aria-selected].day-range-end)]:rounded-r-lg [&:has([aria-selected].day-range-start)]:rounded-l-lg first:[&:has([aria-selected])]:rounded-l-lg last:[&:has([aria-selected])]:rounded-r-lg"
               ),
               day: cn(
-                "h-10 w-10 p-0 font-normal aria-selected:opacity-100 rounded-lg hover:bg-gray-100 transition-all"
+                "h-10 w-10 p-0 font-normal aria-selected:opacity-100 rounded-none hover:bg-gray-100 transition-all"
               ),
               day_range_start: "day-range-start bg-black text-white hover:bg-black hover:text-white",
               day_range_end: "day-range-end bg-black text-white hover:bg-black hover:text-white",

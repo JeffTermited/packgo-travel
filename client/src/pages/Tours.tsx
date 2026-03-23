@@ -42,7 +42,7 @@ function TourCard({ tour, language, t, formatPrice }: {
 
   return (
     <Link href={`/tours/${tour.id}`}>
-      <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group rounded-3xl border-0">
+      <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group border border-gray-200">
         <div className="relative aspect-[4/3] overflow-hidden">
           {tour.imageUrl || tour.heroImage ? (
             <img
@@ -57,7 +57,7 @@ function TourCard({ tour, language, t, formatPrice }: {
           )}
           
           {tour.status === "inactive" && (
-            <Badge className="absolute top-4 right-4 bg-red-500 text-white rounded-full">
+            <Badge className="absolute top-4 right-4 bg-red-500 text-white rounded-none">
               {t('tours.inactive')}
             </Badge>
           )}
@@ -89,7 +89,7 @@ function TourCard({ tour, language, t, formatPrice }: {
               </span>
               <span className="text-sm text-gray-500 ml-1">{t('tours.startingFrom')}</span>
             </div>
-            <Button className="rounded-full bg-black text-white hover:bg-gray-800">
+            <Button className="rounded-none bg-black text-white hover:bg-gray-800">
               {t('tours.viewDetails')}
             </Button>
           </div>
@@ -124,7 +124,7 @@ function Pagination({
       <Button
         variant="outline"
         size="sm"
-        className="rounded-full"
+        className="rounded-none"
         onClick={() => onPageChange(page - 1)}
         disabled={page <= 1}
       >
@@ -133,7 +133,7 @@ function Pagination({
       
       {start > 1 && (
         <>
-          <Button variant="outline" size="sm" className="rounded-full w-9 h-9 p-0" onClick={() => onPageChange(1)}>1</Button>
+          <Button variant="outline" size="sm" className="rounded-none w-9 h-9 p-0" onClick={() => onPageChange(1)}>1</Button>
           {start > 2 && <span className="text-gray-400">…</span>}
         </>
       )}
@@ -143,7 +143,7 @@ function Pagination({
           key={p}
           variant={p === page ? "default" : "outline"}
           size="sm"
-          className={`rounded-full w-9 h-9 p-0 ${p === page ? 'bg-black text-white' : ''}`}
+          className={`rounded-none w-9 h-9 p-0 ${p === page ? 'bg-black text-white' : ''}`}
           onClick={() => onPageChange(p)}
         >
           {p}
@@ -153,14 +153,14 @@ function Pagination({
       {end < totalPages && (
         <>
           {end < totalPages - 1 && <span className="text-gray-400">…</span>}
-          <Button variant="outline" size="sm" className="rounded-full w-9 h-9 p-0" onClick={() => onPageChange(totalPages)}>{totalPages}</Button>
+          <Button variant="outline" size="sm" className="rounded-none w-9 h-9 p-0" onClick={() => onPageChange(totalPages)}>{totalPages}</Button>
         </>
       )}
       
       <Button
         variant="outline"
         size="sm"
-        className="rounded-full"
+        className="rounded-none"
         onClick={() => onPageChange(page + 1)}
         disabled={page >= totalPages}
       >
@@ -222,7 +222,7 @@ export default function Tours() {
         <section className="bg-gradient-to-r from-gray-900 to-gray-800 text-white py-16">
           <div className="container">
             <Link href="/">
-              <Button variant="ghost" className="text-white hover:text-gray-200 mb-4 rounded-full">
+              <Button variant="ghost" className="text-white hover:text-gray-200 mb-4 rounded-none">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 {t('common.backToHome')}
               </Button>
@@ -245,13 +245,13 @@ export default function Tours() {
                   placeholder={t('tours.searchPlaceholder')}
                   value={searchInput}
                   onChange={(e) => handleSearchChange(e.target.value)}
-                  className="pl-10 rounded-full"
+                  className="pl-10 rounded-none"
                 />
               </div>
 
               {/* 國家篩選 */}
               <Select value={selectedCountry} onValueChange={handleCountryChange}>
-                <SelectTrigger className="w-full md:w-[200px] rounded-full">
+                <SelectTrigger className="w-full md:w-[200px] rounded-none">
                   <SelectValue placeholder={t('tours.selectCountry')} />
                 </SelectTrigger>
                 <SelectContent>
@@ -269,7 +269,7 @@ export default function Tours() {
 
               {/* 排序 */}
               <Select value={selectedSortBy} onValueChange={handleSortChange}>
-                <SelectTrigger className="w-full md:w-[200px] rounded-full">
+                <SelectTrigger className="w-full md:w-[200px] rounded-none">
                   <SelectValue placeholder={t('tours.sortBy') || '排序方式'} />
                 </SelectTrigger>
                 <SelectContent>

@@ -69,7 +69,7 @@ export const FeaturesSection: React.FC<FeaturesSectionProps> = ({
             <div
               key={index}
               className={`
-                relative group overflow-hidden rounded-2xl shadow-lg
+                relative group overflow-hidden  shadow-lg
                 ${index === 0 ? 'lg:col-span-2 lg:row-span-2' : ''}
               `}
             >
@@ -110,7 +110,7 @@ export const FeaturesSection: React.FC<FeaturesSectionProps> = ({
               <div className="absolute inset-0 flex flex-col justify-end p-6">
                 {/* 標籤 */}
                 <div
-                  className="inline-flex self-start px-3 py-1 rounded-full text-sm font-bold text-white mb-3"
+                  className="inline-flex self-start px-3 py-1 rounded-none text-sm font-bold text-white mb-3"
                   style={{ backgroundColor: colorTheme.accent }}
                 >
                   {feature.label}

@@ -151,16 +151,16 @@ export default function Login() {
             onValueChange={(v) => setActiveTab(v as "signin" | "register")}
             className="w-full"
           >
-            <TabsList className="grid w-full grid-cols-2 mb-8 h-12 bg-transparent border border-black rounded-full">
+            <TabsList className="grid w-full grid-cols-2 mb-8 h-12 bg-transparent border border-black rounded-none">
               <TabsTrigger
                 value="signin"
-                className="data-[state=active]:bg-black data-[state=active]:text-white text-black font-bold tracking-wide rounded-full"
+                className="data-[state=active]:bg-black data-[state=active]:text-white text-black font-bold tracking-wide rounded-none"
               >
                 {t('nav.login')}
               </TabsTrigger>
               <TabsTrigger
                 value="register"
-                className="data-[state=active]:bg-black data-[state=active]:text-white text-black font-bold tracking-wide rounded-full"
+                className="data-[state=active]:bg-black data-[state=active]:text-white text-black font-bold tracking-wide rounded-none"
               >
                 {t('nav.register')}
               </TabsTrigger>
@@ -189,7 +189,7 @@ export default function Login() {
                       placeholder={t('auth.login.emailPlaceholder')}
                       value={signInEmail}
                       onChange={(e) => setSignInEmail(e.target.value)}
-                      className="pl-12 h-12 border-2 border-black rounded-full focus:ring-2 focus:ring-black"
+                      className="pl-12 h-12 border-2 border-black rounded-none focus:ring-2 focus:ring-black"
                       required
                     />
                   </div>
@@ -207,7 +207,7 @@ export default function Login() {
                       placeholder={t('auth.login.passwordPlaceholder')}
                       value={signInPassword}
                       onChange={(e) => setSignInPassword(e.target.value)}
-                      className="pl-12 h-12 border-2 border-black rounded-full focus:ring-2 focus:ring-black"
+                      className="pl-12 h-12 border-2 border-black rounded-none focus:ring-2 focus:ring-black"
                       required
                     />
                   </div>
@@ -233,7 +233,7 @@ export default function Login() {
 
                 <Button
                   type="submit"
-                  className="w-full h-12 bg-black hover:bg-gray-800 text-white font-bold tracking-wide rounded-full"
+                  className="w-full h-12 bg-black hover:bg-gray-800 text-white font-bold tracking-wide rounded-none"
                   disabled={loginMutation.isPending}
                 >
                   {loginMutation.isPending ? t('auth.login.loggingIn') : t('auth.login.loginButton')}
@@ -251,7 +251,7 @@ export default function Login() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full h-12 border-2 border-black hover:bg-gray-50 text-black font-bold tracking-wide rounded-full"
+                  className="w-full h-12 border-2 border-black hover:bg-gray-50 text-black font-bold tracking-wide rounded-none"
                   onClick={handleGoogleLogin}
                 >
                   <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
@@ -298,7 +298,7 @@ export default function Login() {
                     placeholder={t('auth.register.namePlaceholder')}
                     value={registerName}
                     onChange={(e) => setRegisterName(e.target.value)}
-                    className="h-12 border-2 border-black rounded-full focus:ring-2 focus:ring-black"
+                    className="h-12 border-2 border-black rounded-none focus:ring-2 focus:ring-black"
                     required
                   />
                 </div>
@@ -315,7 +315,7 @@ export default function Login() {
                       placeholder={t('auth.register.emailPlaceholder')}
                       value={registerEmail}
                       onChange={(e) => setRegisterEmail(e.target.value)}
-                      className="pl-12 h-12 border-2 border-black rounded-full focus:ring-2 focus:ring-black"
+                      className="pl-12 h-12 border-2 border-black rounded-none focus:ring-2 focus:ring-black"
                       required
                     />
                   </div>
@@ -333,7 +333,7 @@ export default function Login() {
                       placeholder={t('auth.register.passwordPlaceholder')}
                       value={registerPassword}
                       onChange={(e) => setRegisterPassword(e.target.value)}
-                      className="pl-12 h-12 border-2 border-black rounded-full focus:ring-2 focus:ring-black"
+                      className="pl-12 h-12 border-2 border-black rounded-none focus:ring-2 focus:ring-black"
                       required
                       minLength={8}
                     />
@@ -352,7 +352,7 @@ export default function Login() {
                       placeholder={t('auth.register.confirmPasswordPlaceholder')}
                       value={registerConfirmPassword}
                       onChange={(e) => setRegisterConfirmPassword(e.target.value)}
-                      className="pl-12 h-12 border-2 border-black rounded-full focus:ring-2 focus:ring-black"
+                      className="pl-12 h-12 border-2 border-black rounded-none focus:ring-2 focus:ring-black"
                       required
                       minLength={8}
                     />
@@ -361,7 +361,7 @@ export default function Login() {
 
                 <Button
                   type="submit"
-                  className="w-full h-12 bg-black hover:bg-gray-800 text-white font-bold tracking-wide rounded-full"
+                  className="w-full h-12 bg-black hover:bg-gray-800 text-white font-bold tracking-wide rounded-none"
                   disabled={registerMutation.isPending}
                 >
                   {registerMutation.isPending ? t('auth.register.registering') : t('auth.register.registerButton')}
@@ -379,7 +379,7 @@ export default function Login() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full h-12 border-2 border-black hover:bg-gray-50 text-black font-bold tracking-wide rounded-full"
+                  className="w-full h-12 border-2 border-black hover:bg-gray-50 text-black font-bold tracking-wide rounded-none"
                   onClick={handleGoogleLogin}
                 >
                   <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">

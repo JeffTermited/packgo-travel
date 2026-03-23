@@ -94,10 +94,10 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* 行前準備 */}
           {displayPreparation.length > 0 && (
-            <div className="bg-gray-50 rounded-lg p-5 shadow-sm">
+            <div className="bg-gray-50 rounded-none p-5 shadow-sm">
               <div className="flex items-center gap-2 mb-3">
                 <div
-                  className="flex items-center justify-center w-8 h-8 rounded-full"
+                  className="flex items-center justify-center w-8 h-8 rounded-none"
                   style={{ backgroundColor: colorTheme.accent + "20" }}
                 >
                   <FileText
@@ -116,7 +116,7 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
                 {displayPreparation.map((item, index) => (
                   <li key={index} className="flex items-start gap-3">
                     <span
-                      className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                      className="flex-shrink-0 w-6 h-6 rounded-none flex items-center justify-center text-xs font-bold text-white"
                       style={{ backgroundColor: colorTheme.accent }}
                     >
                       {index + 1}
@@ -130,10 +130,10 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
 
           {/* 文化禮儀 */}
           {displayCulturalNotes.length > 0 && (
-            <div className="bg-gray-50 rounded-lg p-5 shadow-sm">
+            <div className="bg-gray-50 rounded-none p-5 shadow-sm">
               <div className="flex items-center gap-2 mb-3">
                 <div
-                  className="flex items-center justify-center w-8 h-8 rounded-full"
+                  className="flex items-center justify-center w-8 h-8 rounded-none"
                   style={{ backgroundColor: "#3B82F6" + "20" }}
                 >
                   <AlertCircle
@@ -152,7 +152,7 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
                 {displayCulturalNotes.map((item, index) => (
                   <li key={index} className="flex items-start gap-3">
                     <span
-                      className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                      className="flex-shrink-0 w-6 h-6 rounded-none flex items-center justify-center text-xs font-bold text-white"
                       style={{ backgroundColor: "#3B82F6" }}
                     >
                       {index + 1}
@@ -166,10 +166,10 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
 
           {/* 健康安全 */}
           {displayHealthSafety.length > 0 && (
-            <div className="bg-gray-50 rounded-lg p-5 shadow-sm">
+            <div className="bg-gray-50 rounded-none p-5 shadow-sm">
               <div className="flex items-center gap-2 mb-3">
                 <div
-                  className="flex items-center justify-center w-8 h-8 rounded-full"
+                  className="flex items-center justify-center w-8 h-8 rounded-none"
                   style={{ backgroundColor: "#10B981" + "20" }}
                 >
                   <Heart
@@ -188,7 +188,7 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
                 {displayHealthSafety.map((item, index) => (
                   <li key={index} className="flex items-start gap-3">
                     <span
-                      className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                      className="flex-shrink-0 w-6 h-6 rounded-none flex items-center justify-center text-xs font-bold text-white"
                       style={{ backgroundColor: "#10B981" }}
                     >
                       {index + 1}
@@ -202,10 +202,10 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
 
           {/* 緊急聯絡 */}
           {displayEmergency.length > 0 && (
-            <div className="bg-gray-50 rounded-lg p-5 shadow-sm">
+            <div className="bg-gray-50 rounded-none p-5 shadow-sm">
               <div className="flex items-center gap-2 mb-3">
                 <div
-                  className="flex items-center justify-center w-8 h-8 rounded-full"
+                  className="flex items-center justify-center w-8 h-8 rounded-none"
                   style={{ backgroundColor: "#EF4444" + "20" }}
                 >
                   <Phone
@@ -224,7 +224,7 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
                 {displayEmergency.map((item, index) => (
                   <li key={index} className="flex items-start gap-3">
                     <span
-                      className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                      className="flex-shrink-0 w-6 h-6 rounded-none flex items-center justify-center text-xs font-bold text-white"
                       style={{ backgroundColor: "#EF4444" }}
                     >
                       {index + 1}
@@ -239,7 +239,7 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
 
         {/* 免責聲明 */}
         <div
-          className="mt-8 rounded-lg p-6"
+          className="mt-8 rounded-none p-6"
           style={{
             backgroundColor: colorTheme.accent + "10",
             borderLeft: `4px solid ${colorTheme.accent}`,

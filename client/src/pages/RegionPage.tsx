@@ -256,7 +256,7 @@ export default function RegionPage() {
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {[1, 2, 3, 4, 5, 6].map((i) => (
                   <div key={i} className="animate-pulse">
-                    <div className="aspect-[4/3] bg-gray-200 rounded-2xl mb-3" />
+                    <div className="aspect-[4/3] bg-gray-200  mb-3" />
                     <div className="h-5 bg-gray-200 rounded w-2/3" />
                   </div>
                 ))}
@@ -281,7 +281,7 @@ export default function RegionPage() {
                     onClick={() => handleCountryClick(country.country)}
                     className="group cursor-pointer"
                   >
-                    <div className="relative aspect-[4/3] overflow-hidden rounded-2xl mb-3 shadow-md hover:shadow-xl transition-all duration-300">
+                    <div className="relative aspect-[4/3] overflow-hidden  mb-3 shadow-md hover:shadow-xl transition-all duration-300">
                       <img
                         src={countryImages[country.country] || `https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800`}
                         alt={country.country}
@@ -293,7 +293,7 @@ export default function RegionPage() {
                         <p className="text-gray-200 text-sm">{country.count} {t('countryPage.tours')}</p>
                       </div>
                       <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <div className="bg-white/90 rounded-full p-2">
+                        <div className="bg-white/90 rounded-none p-2">
                           <ArrowRight className="h-4 w-4 text-gray-900" />
                         </div>
                       </div>

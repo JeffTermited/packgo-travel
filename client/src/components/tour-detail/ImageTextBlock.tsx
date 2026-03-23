@@ -75,7 +75,7 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
           {/* 圖片區塊 */}
           <div className="w-full lg:w-3/5 relative">
             {/* 主圖 */}
-            <div className="relative rounded-2xl overflow-hidden shadow-xl">
+            <div className="relative  overflow-hidden shadow-xl">
               {isEditMode && onImageUpload ? (
                 <EditableImage
                   src={mainImage}
@@ -111,13 +111,13 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
                     }}
                     isEditable={isEditMode}
                     aspectRatio="1/1"
-                    className="w-28 h-28 lg:w-36 lg:h-36 rounded-xl shadow-xl border-4 border-white"
+                    className="w-28 h-28 lg:w-36 lg:h-36 rounded-none shadow-xl border-4 border-white"
                   />
                 ) : smallImage ? (
                   <img
                     src={smallImage}
                     alt={smallImageAlt || ""}
-                    className="w-28 h-28 lg:w-36 lg:h-36 object-cover rounded-xl shadow-xl border-4 border-white"
+                    className="w-28 h-28 lg:w-36 lg:h-36 object-cover rounded-none shadow-xl border-4 border-white"
                   />
                 ) : null}
               </div>
@@ -167,7 +167,7 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
             {location && (
               <p className="text-sm text-gray-700 flex items-center gap-2">
                 <span
-                  className="w-2 h-2 rounded-full"
+                  className="w-2 h-2 rounded-none"
                   style={{ backgroundColor: colorTheme.accent }}
                 />
                 {location}
@@ -194,7 +194,7 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
 
             {/* 裝飾線 */}
             <div
-              className="w-16 h-1 rounded-full mt-2"
+              className="w-16 h-1 rounded-none mt-2"
               style={{ backgroundColor: colorTheme.accent }}
             />
           </div>

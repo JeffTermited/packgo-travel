@@ -113,7 +113,7 @@ export default function ForgotPassword() {
                       placeholder={t("forgotPassword.emailPlaceholder")}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="pl-12 h-12 border-2 border-black rounded-full focus:ring-2 focus:ring-black"
+                      className="pl-12 h-12 border-2 border-black focus:ring-2 focus:ring-black"
                       required
                     />
                   </div>
@@ -121,7 +121,7 @@ export default function ForgotPassword() {
 
                 <Button
                   type="submit"
-                  className="w-full h-12 bg-black hover:bg-gray-800 text-white font-bold tracking-wide rounded-full"
+                  className="w-full h-12 bg-black hover:bg-gray-800 text-white font-bold tracking-wide"
                   disabled={requestResetMutation.isPending}
                 >
                   {requestResetMutation.isPending ? t("forgotPassword.sending") : t("forgotPassword.submit")}
@@ -177,7 +177,7 @@ export default function ForgotPassword() {
               <Link href="/login">
                 <Button
                   variant="outline"
-                  className="w-full h-12 border-2 border-black hover:bg-gray-50 text-black font-bold tracking-wide rounded-full"
+                  className="w-full h-12 border-2 border-black hover:bg-gray-50 text-black font-bold tracking-wide"
                 >
                   {t("forgotPassword.backToLogin")}
                 </Button>

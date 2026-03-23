@@ -159,11 +159,11 @@ export default function AvatarUpload({ currentAvatar, onUploadComplete, onDelete
       </div>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="max-w-2xl rounded-3xl">
+        <DialogContent className="max-w-2xl ">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold">裁切頭像</DialogTitle>
           </DialogHeader>
-          <div className="relative h-96 bg-gray-100 rounded-2xl overflow-hidden">
+          <div className="relative h-96 bg-gray-100 ">
             {imageSrc && (
               <Cropper
                 image={imageSrc}

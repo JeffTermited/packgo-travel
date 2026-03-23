@@ -39,7 +39,7 @@ export default function Destinations() {
             <div 
               key={dest.id} 
               onClick={() => handleDestinationClick(dest.region)}
-              className="group relative aspect-[4/3] overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-all duration-500 rounded-3xl"
+              className="group relative aspect-[4/3] overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-all duration-500 "
             >
               <img 
                 src={dest.image} 

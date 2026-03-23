@@ -110,8 +110,8 @@ export default function CustomTours() {
                   description: t('customTours.description')
                 },
               ].map((feature, idx) => (
-                <div key={idx} className="flex gap-6 p-8 bg-gray-50 rounded-3xl hover:shadow-lg transition-all">
-                  <div className="flex-shrink-0 w-16 h-16 bg-black text-white rounded-full flex items-center justify-center">
+                <div key={idx} className="flex gap-6 p-8 bg-gray-50  hover:shadow-lg transition-all">
+                  <div className="flex-shrink-0 w-16 h-16 bg-black text-white rounded-none flex items-center justify-center">
                     {feature.icon}
                   </div>
                   <div>
@@ -132,7 +132,7 @@ export default function CustomTours() {
               <p className="text-gray-600 text-lg">{t('customTours.success.description')}</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="bg-white rounded-3xl p-12 shadow-lg">
+            <form onSubmit={handleSubmit} className="bg-white  p-12 shadow-lg">
               <div className="grid md:grid-cols-2 gap-6 mb-6">
                 <div>
                   <label className="block text-sm font-medium mb-2">{t('quickInquiry.form.name')} *</label>
@@ -141,7 +141,7 @@ export default function CustomTours() {
                     required
                     value={formData.customerName}
                     onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-none focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
                     placeholder={t('quickInquiry.form.namePlaceholder')}
                   />
                 </div>
@@ -152,7 +152,7 @@ export default function CustomTours() {
                     required
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-none focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
                     placeholder={t('quickInquiry.form.emailPlaceholder')}
                   />
                 </div>
@@ -166,7 +166,7 @@ export default function CustomTours() {
                     required
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-none focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
                     placeholder={t('quickInquiry.form.phonePlaceholder')}
                   />
                 </div>
@@ -177,7 +177,7 @@ export default function CustomTours() {
                     required
                     value={formData.destination}
                     onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-none focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
                     placeholder={t('customTours.form.destinationPlaceholder')}
                   />
                 </div>
@@ -191,7 +191,7 @@ export default function CustomTours() {
                     required
                     value={formData.duration}
                     onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-none focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
                     placeholder="7"
                   />
                 </div>
@@ -202,7 +202,7 @@ export default function CustomTours() {
                     required
                     value={formData.travelers}
                     onChange={(e) => setFormData({ ...formData, travelers: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-none focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
                     placeholder="2"
                   />
                 </div>
@@ -212,7 +212,7 @@ export default function CustomTours() {
                     type="text"
                     value={formData.budget}
                     onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-none focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
                     placeholder={t('customTours.form.budgetPerPerson')}
                   />
                 </div>
@@ -224,7 +224,7 @@ export default function CustomTours() {
                   type="date"
                   value={formData.departureDate}
                   onChange={(e) => setFormData({ ...formData, departureDate: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-none focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
                 />
               </div>
 
@@ -234,7 +234,7 @@ export default function CustomTours() {
                   rows={6}
                   value={formData.requirements}
                   onChange={(e) => setFormData({ ...formData, requirements: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all resize-none"
+                  className="w-full px-4 py-3 border border-gray-300  focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all resize-none"
                   placeholder={t('customTours.form.specialRequestsPlaceholder')}
                 />
               </div>
@@ -242,7 +242,7 @@ export default function CustomTours() {
               <Button
                 type="submit"
                 disabled={createInquiry.isPending}
-                className="w-full h-14 bg-black hover:bg-gray-800 text-white rounded-full text-lg font-bold transition-all"
+                className="w-full h-14 bg-black hover:bg-gray-800 text-white rounded-none text-lg font-bold transition-all"
               >
                 <MessageCircle className="h-5 w-5 mr-2" />
                 {createInquiry.isPending ? t('customTours.form.submitting') : t('customTours.form.submitRequest')}

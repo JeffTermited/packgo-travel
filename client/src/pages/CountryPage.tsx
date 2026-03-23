@@ -209,7 +209,7 @@ export default function CountryPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[1, 2, 3, 4, 5, 6].map((i) => (
                   <div key={i} className="animate-pulse">
-                    <div className="aspect-[16/10] bg-gray-200 rounded-xl mb-4" />
+                    <div className="aspect-[16/10] bg-gray-200 rounded-none mb-4" />
                     <div className="h-6 bg-gray-200 rounded w-3/4 mb-2" />
                     <div className="h-4 bg-gray-200 rounded w-1/2" />
                   </div>
@@ -242,7 +242,7 @@ export default function CountryPage() {
                     <div
                       key={tour.id}
                       onClick={() => handleTourClick(tour.id)}
-                      className="group cursor-pointer bg-white border border-gray-100 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300"
+                      className="group cursor-pointer bg-white border border-gray-100 rounded-none overflow-hidden hover:shadow-lg transition-all duration-300"
                     >
                       {/* 圖片 */}
                       <div className="relative aspect-[16/10] overflow-hidden">
@@ -253,14 +253,14 @@ export default function CountryPage() {
                         />
                         <button
                           onClick={(e) => toggleFavorite(e, tour.id)}
-                          className="absolute top-3 right-3 p-2 bg-white/90 rounded-full hover:bg-white transition-colors"
+                          className="absolute top-3 right-3 p-2 bg-white/90 rounded-none hover:bg-white transition-colors"
                         >
                           <Heart 
                             className={`h-5 w-5 ${favorites.has(tour.id) ? 'fill-red-500 text-red-500' : 'text-gray-600'}`}
                           />
                         </button>
                         {tour.duration && (
-                          <div className="absolute bottom-3 left-3 px-3 py-1 bg-black/70 text-white text-sm rounded-full">
+                          <div className="absolute bottom-3 left-3 px-3 py-1 bg-black/70 text-white text-sm rounded-none">
                             {tour.duration} {t('common.days')}
                           </div>
                         )}
@@ -284,7 +284,7 @@ export default function CountryPage() {
                             return (
                               <span
                                 key={idx}
-                                className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full ${tag.color}`}
+                                className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-none ${tag.color}`}
                               >
                                 <IconComponent className="h-3 w-3" />
                                 {tag.label}
@@ -292,7 +292,7 @@ export default function CountryPage() {
                             );
                           })}
                           {hasMoreTags && (
-                            <span className="inline-flex items-center px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-600">
+                            <span className="inline-flex items-center px-2 py-0.5 text-xs rounded-none bg-gray-100 text-gray-600">
                               +{smartTags.length - 3}
                             </span>
                           )}

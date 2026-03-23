@@ -46,7 +46,7 @@ export default function QuickInquiry() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12">
         <div className="container max-w-2xl">
-          <div className="bg-white rounded-3xl shadow-lg p-12 text-center">
+          <div className="bg-white  shadow-lg p-12 text-center">
             <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-6" />
             <h2 className="text-3xl font-serif font-bold text-gray-900 mb-4">
               {t('quickInquiry.success.title')}
@@ -56,7 +56,7 @@ export default function QuickInquiry() {
             </p>
             <div className="flex gap-4 justify-center">
               <Link href="/">
-                <Button className="rounded-full">
+                <Button className="rounded-none">
                   <Home className="h-4 w-4 mr-2" />
                   {t('common.backToHome')}
                 </Button>
@@ -64,7 +64,7 @@ export default function QuickInquiry() {
               <Button
                 variant="outline"
                 onClick={() => setIsSubmitted(false)}
-                className="rounded-full"
+                className="rounded-none"
               >
                 {t('common.submit')}
               </Button>
@@ -85,7 +85,7 @@ export default function QuickInquiry() {
             <p className="text-gray-600">{t('quickInquiry.subtitle')}</p>
           </div>
           <Link href="/">
-            <Button variant="outline" className="rounded-full">
+            <Button variant="outline" className="rounded-none">
               <Home className="h-4 w-4 mr-2" />
               {t('common.backToHome')}
             </Button>
@@ -93,7 +93,7 @@ export default function QuickInquiry() {
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit(onSubmit)} className="bg-white rounded-3xl shadow-lg p-8">
+        <form onSubmit={handleSubmit(onSubmit)} className="bg-white  shadow-lg p-8">
           <div className="space-y-6">
             {/* Customer Name */}
             <div>
@@ -102,7 +102,7 @@ export default function QuickInquiry() {
                 id="customerName"
                 {...register("customerName")}
                 placeholder={t('quickInquiry.form.namePlaceholder')}
-                className="rounded-full mt-2"
+                className="rounded-none mt-2"
               />
               {errors.customerName && (
                 <p className="text-red-500 text-sm mt-1">{errors.customerName.message}</p>
@@ -117,7 +117,7 @@ export default function QuickInquiry() {
                 type="email"
                 {...register("customerEmail")}
                 placeholder={t('quickInquiry.form.emailPlaceholder')}
-                className="rounded-full mt-2"
+                className="rounded-none mt-2"
               />
               {errors.customerEmail && (
                 <p className="text-red-500 text-sm mt-1">{errors.customerEmail.message}</p>
@@ -131,7 +131,7 @@ export default function QuickInquiry() {
                 id="customerPhone"
                 {...register("customerPhone")}
                 placeholder={t('quickInquiry.form.phonePlaceholder')}
-                className="rounded-full mt-2"
+                className="rounded-none mt-2"
               />
               {errors.customerPhone && (
                 <p className="text-red-500 text-sm mt-1">{errors.customerPhone.message}</p>
@@ -145,7 +145,7 @@ export default function QuickInquiry() {
                 id="subject"
                 {...register("subject")}
                 placeholder={t('quickInquiry.form.subjectPlaceholder')}
-                className="rounded-full mt-2"
+                className="rounded-none mt-2"
               />
               {errors.subject && (
                 <p className="text-red-500 text-sm mt-1">{errors.subject.message}</p>
@@ -160,7 +160,7 @@ export default function QuickInquiry() {
                 {...register("message")}
                 placeholder={t('quickInquiry.form.messagePlaceholder')}
                 rows={6}
-                className="rounded-2xl mt-2"
+                className=" mt-2"
               />
               {errors.message && (
                 <p className="text-red-500 text-sm mt-1">{errors.message.message}</p>
@@ -171,7 +171,7 @@ export default function QuickInquiry() {
             <Button
               type="submit"
               disabled={createInquiry.isPending}
-              className="w-full rounded-full h-12 text-lg"
+              className="w-full rounded-none h-12 text-lg"
             >
               <MessageSquare className="h-5 w-5 mr-2" />
               {createInquiry.isPending ? t('quickInquiry.form.submitting') : t('quickInquiry.form.submitButton')}
@@ -180,7 +180,7 @@ export default function QuickInquiry() {
         </form>
 
         {/* Info Box */}
-        <div className="mt-8 bg-blue-50 rounded-3xl p-6">
+        <div className="mt-8 bg-blue-50  p-6">
           <h3 className="font-semibold text-gray-900 mb-3">{t('contactUs.businessHours')}</h3>
           <p className="text-gray-700 text-sm">
             {t('contactUs.weekdays')}：09:00 - 18:00<br />

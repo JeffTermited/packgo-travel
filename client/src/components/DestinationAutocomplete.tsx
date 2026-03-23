@@ -81,12 +81,12 @@ export function DestinationAutocomplete({
             }
           }}
           placeholder={placeholder}
-          className="w-full h-12 pl-12 pr-4 rounded-2xl border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-gray-400 hover:border-gray-400 transition-all"
+          className="w-full h-12 pl-12 pr-4 border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-gray-400 hover:border-gray-400 transition-all"
         />
       </div>
 
       {isOpen && filteredDestinations.length > 0 && (
-        <div className="absolute z-50 w-full mt-2 bg-white border-2 border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+        <div className="absolute z-50 w-full mt-2 bg-white border-2 border-gray-300 rounded-none shadow-lg max-h-60 overflow-y-auto">
           {filteredDestinations.map((dest, index) => (
             <button
               key={index}

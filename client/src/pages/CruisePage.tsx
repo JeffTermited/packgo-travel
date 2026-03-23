@@ -171,7 +171,7 @@ export default function CruisePage() {
           <div className="container">
             {isLoading ? (
               <div className="flex justify-center items-center py-20">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                <div className="animate-spin rounded-none h-12 w-12 border-b-2 border-primary"></div>
               </div>
             ) : cruiseTours.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -182,7 +182,7 @@ export default function CruisePage() {
                   
                   return (
                     <Link key={tour.id} href={`/tours/${tour.id}`}>
-                      <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group cursor-pointer h-full flex flex-col">
+                      <div className="bg-white rounded-none overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group cursor-pointer h-full flex flex-col">
                         {/* 圖片 */}
                         <div className="relative h-48 overflow-hidden">
                           <img
@@ -199,7 +199,7 @@ export default function CruisePage() {
                               e.stopPropagation();
                               toggleFavorite(tour.id);
                             }}
-                            className="absolute top-3 right-3 p-2 rounded-full bg-white/90 hover:bg-white transition-colors"
+                            className="absolute top-3 right-3 p-2 rounded-none bg-white/90 hover:bg-white transition-colors"
                           >
                             <Heart
                               className={`h-5 w-5 ${
@@ -211,7 +211,7 @@ export default function CruisePage() {
                           </button>
                           
                           {/* 郵輪標識 */}
-                          <div className="absolute top-3 left-3 bg-cyan-500 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1">
+                          <div className="absolute top-3 left-3 bg-cyan-500 text-white px-3 py-1 rounded-none text-sm font-medium flex items-center gap-1">
                             <Ship className="h-4 w-4" />
                             郵輪
                           </div>
@@ -299,7 +299,7 @@ export default function CruisePage() {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="text-center">
-                <div className="w-16 h-16 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-cyan-100 rounded-none flex items-center justify-center mx-auto mb-4">
                   <Ship className="h-8 w-8 text-cyan-600" />
                 </div>
                 <h3 className="font-bold mb-2">{t('cruise.feature1Title')}</h3>
@@ -308,7 +308,7 @@ export default function CruisePage() {
                 </p>
               </div>
               <div className="text-center">
-                <div className="w-16 h-16 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-cyan-100 rounded-none flex items-center justify-center mx-auto mb-4">
                   <Star className="h-8 w-8 text-cyan-600" />
                 </div>
                 <h3 className="font-bold mb-2">{t('cruise.feature2Title')}</h3>
@@ -317,7 +317,7 @@ export default function CruisePage() {
                 </p>
               </div>
               <div className="text-center">
-                <div className="w-16 h-16 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-cyan-100 rounded-none flex items-center justify-center mx-auto mb-4">
                   <Waves className="h-8 w-8 text-cyan-600" />
                 </div>
                 <h3 className="font-bold mb-2">{t('cruise.feature3Title')}</h3>

@@ -135,7 +135,7 @@ export default function Admin() {
                   setSidebarOpen(false);
                 }}
                 className={`
-                  w-full flex items-center justify-between px-3 py-3 rounded-lg text-sm font-medium
+                  w-full flex items-center justify-between px-3 py-3 rounded-none text-sm font-medium
                   transition-all duration-150 group
                   ${isActive
                     ? "bg-black text-white"
@@ -164,14 +164,14 @@ export default function Admin() {
         <div className="px-3 py-4 border-t border-gray-100 space-y-1">
           <button
             onClick={() => setLocation("/")}
-            className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-all"
+            className="w-full flex items-center gap-3 px-3 py-3 rounded-none text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-all"
           >
             <Home className="h-5 w-5 text-gray-400" />
             <span>{t('admin.backToHome')}</span>
           </button>
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-red-50 hover:text-red-700 transition-all"
+            className="w-full flex items-center gap-3 px-3 py-3 rounded-none text-sm font-medium text-gray-600 hover:bg-red-50 hover:text-red-700 transition-all"
           >
             <LogOut className="h-5 w-5 text-gray-400" />
             <span>{t('admin.logout')}</span>
@@ -187,7 +187,7 @@ export default function Admin() {
             {/* Mobile menu button */}
             <button
               onClick={() => setSidebarOpen(true)}
-              className="lg:hidden p-2 rounded-lg hover:bg-gray-100"
+              className="lg:hidden p-2 rounded-none hover:bg-gray-100"
             >
               <Menu className="h-5 w-5 text-gray-600" />
             </button>

@@ -158,7 +158,7 @@ export function ImageCropper({
       </div>
 
       {/* Crop area */}
-      <div className="relative bg-gray-100 rounded-lg overflow-hidden max-h-[400px] flex items-center justify-center">
+      <div className="relative bg-gray-100 rounded-none overflow-hidden max-h-[400px] flex items-center justify-center">
         <ReactCrop
           crop={crop}
           onChange={(_, percentCrop) => setCrop(percentCrop)}
