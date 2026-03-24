@@ -7,7 +7,7 @@ describe("LLM Cache with Redis", () => {
   beforeEach(async () => {
     // Clear all caches before each test
     await clearCache();
-  });
+  }, 15000); // Upstash may have higher latency
 
   it("should cache and retrieve LLM responses from Redis", async () => {
     const params: InvokeParams = {
@@ -31,7 +31,7 @@ describe("LLM Cache with Redis", () => {
     expect(cached2).not.toBeNull();
     expect(cached2?.text).toBe(result.text);
     expect(cached2?.usage.inputTokens).toBe(result.usage.inputTokens);
-  });
+  }, 15000);
 
   it("should store cache in Redis (not just memory)", async () => {
     const params: InvokeParams = {
@@ -55,7 +55,7 @@ describe("LLM Cache with Redis", () => {
     expect(redisValue).not.toBeNull();
     const parsed = JSON.parse(redisValue!) as InvokeResult;
     expect(parsed.text).toBe(result.text);
-  });
+  }, 15000);
 
   it("should return cache statistics", async () => {
     const params: InvokeParams = {
@@ -74,7 +74,7 @@ describe("LLM Cache with Redis", () => {
     const stats = await getCacheStats();
     expect(stats.redis.available).toBe(true);
     expect(stats.redis.keys).toBeGreaterThan(0);
-  });
+  }, 15000);
 
   it("should clear all caches", async () => {
     const params: InvokeParams = {
@@ -103,7 +103,7 @@ describe("LLM Cache with Redis", () => {
     // Verify Redis is empty
     const keys = await redis.keys("llm:cache:*");
     expect(keys.length).toBe(0);
-  });
+  }, 20000); // Multiple Redis operations need more time
 
   it("should handle different cache keys for different prompts", async () => {
     const params1: InvokeParams = {
@@ -135,5 +135,5 @@ describe("LLM Cache with Redis", () => {
     expect(cached1?.text).toBe(result1.text);
     expect(cached2?.text).toBe(result2.text);
     expect(cached1?.text).not.toBe(cached2?.text);
-  });
+  }, 15000);
 });

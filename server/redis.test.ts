@@ -29,7 +29,7 @@ describe("Upstash Redis Connection", () => {
   it("should connect to Upstash Redis successfully", async () => {
     const pong = await redis.ping();
     expect(pong).toBe("PONG");
-  });
+  }, 15000); // Upstash may have higher latency on first connection
 
   it("should be able to set and get a value", async () => {
     const testKey = `test:connection:${Date.now()}`;

@@ -1,6 +1,41 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { translateText, translateBatch, translateObject, clearTranslationCache, getTranslationCacheStats, getSupportedLanguages } from './translation';
 
+// Mock Redis to prevent cross-test cache contamination via Redis
+// (clearTranslationCache only clears in-memory cache, not Redis)
+vi.mock('./redis', () => {
+  const store = new Map<string, string>();
+  return {
+    default: {
+      ping: vi.fn().mockResolvedValue('PONG'),
+      get: vi.fn().mockImplementation((key: string) => Promise.resolve(store.get(key) ?? null)),
+      setex: vi.fn().mockImplementation((key: string, _ttl: number, value: string) => {
+        store.set(key, value);
+        return Promise.resolve('OK');
+      }),
+      del: vi.fn().mockImplementation((key: string) => {
+        store.delete(key);
+        return Promise.resolve(1);
+      }),
+      on: vi.fn(),
+    },
+    redis: {
+      ping: vi.fn().mockResolvedValue('PONG'),
+      get: vi.fn().mockImplementation((key: string) => Promise.resolve(store.get(key) ?? null)),
+      setex: vi.fn().mockImplementation((key: string, _ttl: number, value: string) => {
+        store.set(key, value);
+        return Promise.resolve('OK');
+      }),
+      del: vi.fn().mockImplementation((key: string) => {
+        store.delete(key);
+        return Promise.resolve(1);
+      }),
+      on: vi.fn(),
+    },
+    __store: store,
+  };
+});
+
 // Mock the LLM module
 vi.mock('./_core/llm', () => ({
   invokeLLM: vi.fn().mockResolvedValue({
@@ -13,8 +48,14 @@ vi.mock('./_core/llm', () => ({
 }));
 
 describe('Translation Agent', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
+    // Clear both in-memory cache and the mocked Redis store
     clearTranslationCache();
+    // Also clear the mocked Redis store
+    const redisMock = await import('./redis');
+    (redisMock as any).__store?.clear();
+    // Reset mock call counts
+    vi.clearAllMocks();
   });
 
   afterEach(() => {
@@ -46,11 +87,11 @@ describe('Translation Agent', () => {
     it('should use cache for repeated translations', async () => {
       const { invokeLLM } = await import('./_core/llm');
       
-      // First call
+      // First call - should invoke LLM
       await translateText('你好', 'en', 'zh-TW');
       expect(invokeLLM).toHaveBeenCalledTimes(1);
       
-      // Second call with same parameters should use cache
+      // Second call with same parameters should use cache (memory or Redis mock)
       await translateText('你好', 'en', 'zh-TW');
       expect(invokeLLM).toHaveBeenCalledTimes(1); // Still 1, cache hit
     });

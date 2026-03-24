@@ -42,7 +42,7 @@ describe("Tour Generation System", () => {
     } catch {
       // If removal fails, it's not critical for the test assertion
     }
-  });
+  }, 15000); // BullMQ job operations may take time with Upstash Redis
   
   it("should be able to get job status", async () => {
     const testUrl = "https://www.liontravel.com/webpd/webpdsh00.aspx?sKind=1&sProd=24JO217BRC-T";

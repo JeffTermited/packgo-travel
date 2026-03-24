@@ -1,6 +1,13 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import * as auth from './auth';
 import * as db from './db';
+
+// Mock the email service to prevent real SMTP/SendGrid calls (which cause timeouts in test env)
+vi.mock('./emailService', () => ({
+  sendPasswordResetEmail: vi.fn().mockResolvedValue(true),
+  sendWelcomeEmail: vi.fn().mockResolvedValue(true),
+  sendBookingConfirmationEmail: vi.fn().mockResolvedValue(true),
+}));
 
 describe('Forgot Password Flow', () => {
   const testPassword = 'TestPassword123!';
