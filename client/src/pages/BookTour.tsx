@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import SEO from "@/components/SEO";
 import { useParams, useLocation, useRoute } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -218,6 +219,7 @@ export default function BookTour() {
   if (tourLoading || authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
+      <SEO title="預訂行程" description="預訂 PACK&GO 旅遊行程，填寫旅客資料完成預訂，開始您的旅遊之旅。" url="/book" />
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
@@ -267,7 +269,7 @@ export default function BookTour() {
                     >
                       <Icon className="h-6 w-6" />
                     </div>
-                    <span className={`mt-2 text-sm ${isActive ? "font-bold" : ""}`}>
+                    <span className={`mt-2 text-xs sm:text-sm hidden sm:block ${isActive ? "font-bold" : ""}`}>
                       {step.label}
                     </span>
                   </div>

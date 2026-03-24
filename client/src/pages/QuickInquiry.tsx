@@ -1,4 +1,5 @@
 import { useState } from "react";
+import SEO from "@/components/SEO";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { trpc } from "@/lib/trpc";
@@ -45,6 +46,7 @@ export default function QuickInquiry() {
   if (isSubmitted) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12">
+      <SEO title="快速諮詢" description="快速填寫諮詢表單，PACK&GO 旅遊顧問將在最短時間內回覆您的旅遊需求。" url="/inquiry" />
         <div className="container max-w-2xl">
           <div className="bg-white  shadow-lg p-12 text-center">
             <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-6" />

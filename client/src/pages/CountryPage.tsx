@@ -1,4 +1,5 @@
 import { useParams, useLocation } from "wouter";
+import SEO from "@/components/SEO";
 
 import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
@@ -172,6 +173,7 @@ export default function CountryPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
+      <SEO title="目的地" description="探索 PACK&GO 精選旅遊目的地，發現世界各地的精彩旅遊行程。" url="/destinations" />
       <Header />
       <main className="flex-grow">
         {/* Hero Section */}

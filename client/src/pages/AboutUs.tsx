@@ -1,3 +1,4 @@
+import SEO from "@/components/SEO";
 import GenericPage from "@/components/GenericPage";
 import { useLocale } from "@/contexts/LocaleContext";
 

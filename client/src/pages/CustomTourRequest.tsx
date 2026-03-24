@@ -1,4 +1,5 @@
 import { useState } from "react";
+import SEO from "@/components/SEO";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { trpc } from "@/lib/trpc";
@@ -50,6 +51,7 @@ export default function CustomTourRequest() {
   if (isSubmitted) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12">
+      <SEO title="客製行程申請" description="填寫您的旅遊需求，PACK&GO 專業顧問將為您規劃最適合的客製化行程。" url="/custom-tour-request" />
         <div className="container max-w-2xl">
           <div className="bg-white  shadow-lg p-12 text-center">
             <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-6" />

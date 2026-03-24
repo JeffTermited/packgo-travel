@@ -1,4 +1,5 @@
 import { useParams, useLocation } from "wouter";
+import SEO from "@/components/SEO";
 import { ArrowLeft, ArrowRight, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
@@ -173,6 +174,7 @@ export default function RegionPage() {
   if (region === "cruise") {
     return (
       <div className="min-h-screen flex flex-col bg-white">
+      <SEO title="地區行程" description="瀏覽 PACK&GO 各地區精選旅遊行程，找到最適合您的旅遊目的地。" url="/regions" />
         <Header />
         <main className="flex-grow">
           {/* Hero Section */}

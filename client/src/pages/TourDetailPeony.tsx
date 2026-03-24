@@ -9,6 +9,7 @@
  */
 
 import React, { useEffect, useState, useRef, useMemo } from "react";
+import SimilarTours from "@/components/SimilarTours";
 import {
   Dialog,
   DialogContent,
@@ -2523,6 +2524,9 @@ export default function TourDetailPeony() {
           )}
         </div>
       </section>
+
+      {/* Similar Tours Recommendation */}
+      {tour?.id && <SimilarTours tourId={tour.id} />}
 
       {/* Fixed Bottom CTA (Mobile) */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 md:hidden z-50">

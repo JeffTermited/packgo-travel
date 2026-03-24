@@ -13,6 +13,8 @@ import {
   ChevronRight,
   Menu,
   X,
+  BarChart2,
+  TrendingUp,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
@@ -27,8 +29,10 @@ import InquiriesTab from "@/components/admin/InquiriesTab";
 import ReviewsTab from "@/components/admin/ReviewsTab";
 import SkillsTab from "@/components/admin/SkillsTab";
 import TranslationsTab from "@/components/admin/TranslationsTab";
+import AiCostTab from "@/components/admin/AiCostTab";
+import AnalyticsTab from "@/components/admin/AnalyticsTab";
 
-type AdminTab = "dashboard" | "tours" | "bookings" | "inquiries" | "reviews" | "skills" | "translations";
+type AdminTab = "dashboard" | "tours" | "bookings" | "inquiries" | "reviews" | "skills" | "translations" | "ai-cost" | "analytics";
 
 export default function Admin() {
   const { user, loading, isAuthenticated, logout } = useAuth();
@@ -59,6 +63,8 @@ export default function Admin() {
     { id: "reviews", icon: Star, label: t('admin.reviews') },
     { id: "skills", icon: Brain, label: t('admin.skills') },
     { id: "translations", icon: Languages, label: t('admin.translations') },
+    { id: "analytics", icon: TrendingUp, label: t('admin.analytics') },
+    { id: "ai-cost", icon: BarChart2, label: 'AI 成本分析' },
   ];
 
   const currentNavItem = navItems.find(item => item.id === activeTab);
@@ -210,6 +216,8 @@ export default function Admin() {
           {activeTab === "reviews" && <ReviewsTab />}
           {activeTab === "skills" && <SkillsTab />}
           {activeTab === "translations" && <TranslationsTab />}
+          {activeTab === "analytics" && <AnalyticsTab />}
+          {activeTab === "ai-cost" && <AiCostTab />}
         </main>
       </div>
     </div>

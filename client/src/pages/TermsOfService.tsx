@@ -1,4 +1,5 @@
 import GenericPage from "@/components/GenericPage";
+import SEO from "@/components/SEO";
 import { useLocale } from "@/contexts/LocaleContext";
 
 export default function TermsOfService() {

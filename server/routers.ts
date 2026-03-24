@@ -1029,6 +1029,67 @@ export const appRouter = router({
         
         return report;
       }),
+    // Get similar tours based on destination/category/price
+    getSimilar: publicProcedure
+      .input(z.object({
+        tourId: z.number(),
+        limit: z.number().optional().default(4),
+      }))
+      .query(async ({ input }) => {
+        const allTours = await db.getAllTours({ status: 'active' });
+        const currentTour = (allTours as any[]).find((t: any) => t.id === input.tourId);
+        if (!currentTour) return [];
+        const scored = (allTours as any[])
+          .filter((t: any) => t.id !== input.tourId)
+          .map((t: any) => {
+            let score = 0;
+            if (t.destinationCountry === currentTour.destinationCountry) score += 3;
+            if (t.category === currentTour.category) score += 2;
+            const priceDiff = Math.abs(t.price - currentTour.price) / (currentTour.price || 1);
+            if (priceDiff < 0.2) score += 2;
+            else if (priceDiff < 0.5) score += 1;
+            const durationDiff = Math.abs(t.duration - currentTour.duration);
+            if (durationDiff <= 1) score += 1;
+            if (t.featured) score += 0.5;
+            return { ...t, _score: score };
+          })
+          .sort((a: any, b: any) => b._score - a._score)
+          .slice(0, input.limit);
+        return scored;
+      }),
+    // Get personalized recommendations based on browsing history
+    getRecommended: publicProcedure
+      .input(z.object({
+        limit: z.number().optional().default(6),
+        userId: z.number().optional(),
+      }))
+      .query(async ({ input }) => {
+        const allTours = await db.getAllTours({ status: 'active', featured: true });
+        if (!input.userId) return (allTours as any[]).slice(0, input.limit);
+        const history = await db.getUserBrowsingHistory(input.userId, 10);
+        if (!history || (history as any[]).length === 0) return (allTours as any[]).slice(0, input.limit);
+        const viewedIds = new Set((history as any[]).map((h: any) => h.tourId));
+        const countryCounts: Record<string, number> = {};
+        const categoryCounts: Record<string, number> = {};
+        (history as any[]).forEach((h: any) => {
+          if (h.tour?.destinationCountry) countryCounts[h.tour.destinationCountry] = (countryCounts[h.tour.destinationCountry] || 0) + 1;
+          if (h.tour?.category) categoryCounts[h.tour.category] = (categoryCounts[h.tour.category] || 0) + 1;
+        });
+        const topCountry = Object.entries(countryCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
+        const topCategory = Object.entries(categoryCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
+        const scored = (allTours as any[])
+          .filter((t: any) => !viewedIds.has(t.id))
+          .map((t: any) => {
+            let score = 0;
+            if (topCountry && t.destinationCountry === topCountry) score += 3;
+            if (topCategory && t.category === topCategory) score += 2;
+            if (t.featured) score += 1;
+            return { ...t, _score: score };
+          })
+          .sort((a: any, b: any) => b._score - a._score)
+          .slice(0, input.limit);
+        return scored.length > 0 ? scored : (allTours as any[]).slice(0, input.limit);
+      }),
   }),
 
   // Booking management router
@@ -1431,29 +1492,293 @@ export const appRouter = router({
     subscribe: publicProcedure
       .input(z.object({ email: z.string().email() }))
       .mutation(async ({ input }) => {
-        // TODO: Implement newsletter subscription logic
-        console.log(`Newsletter subscription: ${input.email}`);
-        return { success: true, message: "訂閱成功！感謝您的支持" };
+        try {
+          // Check if already subscribed
+          const existing = await db.getNewsletterSubscriberByEmail(input.email);
+          if (existing) {
+            if (existing.status === 'active') {
+              return { success: true, message: '您已訂閱電子報，感謝您的支持！', alreadySubscribed: true };
+            }
+            // Re-subscribe
+            await db.resubscribeNewsletter(input.email);
+          } else {
+            await db.createNewsletterSubscriber({ email: input.email });
+          }
+          // Send confirmation email (best-effort)
+          try {
+            const { sendNewsletterConfirmationEmail } = await import('./emailService');
+            await sendNewsletterConfirmationEmail(input.email);
+          } catch (emailErr) {
+            console.warn('[Newsletter] Failed to send confirmation email:', emailErr);
+          }
+          // Notify owner
+          try {
+            const { notifyOwner } = await import('./_core/notification');
+            await notifyOwner({ title: '新電子報訂閱', content: `新訂閱者：${input.email}` });
+          } catch {}
+          return { success: true, message: '訂閱成功！感謝您的支持，我們會定期發送最新旅遊資訊。', alreadySubscribed: false };
+        } catch (err: any) {
+          if (err?.code === 'ER_DUP_ENTRY') {
+            return { success: true, message: '您已訂閱電子報，感謝您的支持！', alreadySubscribed: true };
+          }
+          throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: '訂閱失敗，請稍後再試' });
+        }
+      }),
+
+    // Unsubscribe from newsletter
+    unsubscribe: publicProcedure
+      .input(z.object({ email: z.string().email() }))
+      .mutation(async ({ input }) => {
+        await db.unsubscribeNewsletter(input.email);
+        return { success: true };
+      }),
+
+    // Admin: list all subscribers
+    listSubscribers: adminProcedure
+      .input(z.object({
+        status: z.enum(['active', 'unsubscribed', 'all']).default('active'),
+        limit: z.number().default(100),
+        offset: z.number().default(0),
+      }))
+      .query(async ({ input }) => {
+        const subscribers = await db.getAllNewsletterSubscribers();
+        const filtered = input.status === 'all'
+          ? subscribers
+          : subscribers.filter((s: any) => s.status === input.status);
+        return {
+          subscribers: filtered.slice(input.offset, input.offset + input.limit),
+          total: filtered.length,
+        };
+      }),
+
+    // Admin: export subscribers as CSV
+    exportSubscribers: adminProcedure
+      .query(async () => {
+        const subscribers = await db.getAllNewsletterSubscribers();
+        const csv = [
+          'Email,Status,Subscribed At',
+          ...subscribers.map((s: any) =>
+            `${s.email},${s.status},${new Date(s.subscribedAt).toISOString()}`
+          )
+        ].join('\n');
+        return { csv, count: subscribers.length };
       }),
   }),
 
   // Admin dashboard router
   admin: router({
-    // Get dashboard statistics
+    // Get dashboard statistics (real data)
     getStats: adminProcedure.query(async () => {
-      // TODO: Implement dashboard statistics logic
+      const { tours: toursTable, bookings: bookingsTable, inquiries: inquiriesTable, users: usersTable, newsletterSubscribers: newsletterTable } = await import('../drizzle/schema');
+      const { sql: sqlFn, eq: eqFn, gte: gteFn, count: countFn } = await import('drizzle-orm');
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) {
+        return { totalTours: 0, totalBookings: 0, totalRevenue: 0, totalInquiries: 0, activeTours: 0, pendingInquiries: 0, thisMonthRevenue: 0, revenueGrowth: 0, todayBookings: 0, totalUsers: 0, totalSubscribers: 0 };
+      }
+      const now = new Date();
+      const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+      const [totalToursRow] = await drizzleDb.select({ count: countFn() }).from(toursTable);
+      const [activeToursRow] = await drizzleDb.select({ count: countFn() }).from(toursTable).where(eqFn(toursTable.status, 'active'));
+      const [totalBookingsRow] = await drizzleDb.select({ count: countFn() }).from(bookingsTable);
+      const [todayBookingsRow] = await drizzleDb.select({ count: countFn() }).from(bookingsTable).where(gteFn(bookingsTable.createdAt, startOfToday));
+      const [totalRevenueRow] = await drizzleDb.select({ total: sqlFn<number>`COALESCE(SUM(${bookingsTable.totalPrice}), 0)` }).from(bookingsTable).where(sqlFn`${bookingsTable.bookingStatus} IN ('confirmed', 'completed')`);
+      const [thisMonthRevenueRow] = await drizzleDb.select({ total: sqlFn<number>`COALESCE(SUM(${bookingsTable.totalPrice}), 0)` }).from(bookingsTable).where(sqlFn`${bookingsTable.bookingStatus} IN ('confirmed', 'completed') AND ${bookingsTable.createdAt} >= ${startOfThisMonth}`);
+      const [lastMonthRevenueRow] = await drizzleDb.select({ total: sqlFn<number>`COALESCE(SUM(${bookingsTable.totalPrice}), 0)` }).from(bookingsTable).where(sqlFn`${bookingsTable.bookingStatus} IN ('confirmed', 'completed') AND ${bookingsTable.createdAt} >= ${startOfLastMonth} AND ${bookingsTable.createdAt} <= ${endOfLastMonth}`);
+      const [totalInquiriesRow] = await drizzleDb.select({ count: countFn() }).from(inquiriesTable);
+      const [pendingInquiriesRow] = await drizzleDb.select({ count: countFn() }).from(inquiriesTable).where(sqlFn`${inquiriesTable.status} IN ('new', 'in_progress')`);
+      const [totalUsersRow] = await drizzleDb.select({ count: countFn() }).from(usersTable);
+      const [totalSubscribersRow] = await drizzleDb.select({ count: countFn() }).from(newsletterTable).where(eqFn(newsletterTable.status, 'active'));
+      const thisMonthRevenue = Number(thisMonthRevenueRow?.total ?? 0);
+      const lastMonthRevenue = Number(lastMonthRevenueRow?.total ?? 0);
+      const revenueGrowth = lastMonthRevenue > 0 ? ((thisMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100 : (thisMonthRevenue > 0 ? 100 : 0);
       return {
-        totalTours: 0,
-        totalBookings: 0,
-        totalRevenue: 0,
-        totalInquiries: 0,
-        activeTours: 0,
-        pendingInquiries: 0,
-        thisMonthRevenue: 0,
-        revenueGrowth: 0,
-        todayBookings: 0,
+        totalTours: Number(totalToursRow?.count ?? 0),
+        activeTours: Number(activeToursRow?.count ?? 0),
+        totalBookings: Number(totalBookingsRow?.count ?? 0),
+        todayBookings: Number(todayBookingsRow?.count ?? 0),
+        totalRevenue: Number(totalRevenueRow?.total ?? 0),
+        thisMonthRevenue,
+        revenueGrowth: Math.round(revenueGrowth * 10) / 10,
+        totalInquiries: Number(totalInquiriesRow?.count ?? 0),
+        pendingInquiries: Number(pendingInquiriesRow?.count ?? 0),
+        totalUsers: Number(totalUsersRow?.count ?? 0),
+        totalSubscribers: Number(totalSubscribersRow?.count ?? 0),
       };
     }),
+
+    // Get detailed analytics data for charts
+    getAnalytics: adminProcedure
+      .input(z.object({ days: z.number().min(7).max(180).default(30) }))
+      .query(async ({ input }) => {
+        const { tours: toursTable, bookings: bookingsTable, inquiries: inquiriesTable } = await import('../drizzle/schema');
+        const { sql: sqlFn2, count: countFn2, gte: gteFn2, desc: descFn2, inArray: inArrayFn } = await import('drizzle-orm');
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return { bookingTrend: [], tourCategoryDist: [], inquiryStatusDist: [], topTours: [] };
+        const since = new Date();
+        since.setDate(since.getDate() - input.days);
+        since.setHours(0, 0, 0, 0);
+        // Daily booking & revenue trend
+        const bookingTrendRaw = await drizzleDb
+          .select({
+            date: sqlFn2<string>`DATE(${bookingsTable.createdAt})`,
+            bookings: countFn2(),
+            revenue: sqlFn2<number>`COALESCE(SUM(CASE WHEN ${bookingsTable.bookingStatus} IN ('confirmed', 'completed') THEN ${bookingsTable.totalPrice} ELSE 0 END), 0)`,
+          })
+          .from(bookingsTable)
+          .where(gteFn2(bookingsTable.createdAt, since))
+          .groupBy(sqlFn2`DATE(${bookingsTable.createdAt})`)
+          .orderBy(sqlFn2`DATE(${bookingsTable.createdAt})`);
+        // Tour category distribution
+        const tourCategoryRaw = await drizzleDb
+          .select({ category: toursTable.category, count: countFn2() })
+          .from(toursTable)
+          .groupBy(toursTable.category);
+        // Inquiry status distribution
+        const inquiryStatusRaw = await drizzleDb
+          .select({ status: inquiriesTable.status, count: countFn2() })
+          .from(inquiriesTable)
+          .groupBy(inquiriesTable.status);
+        // Top tours by booking count
+        const topToursRaw = await drizzleDb
+          .select({
+            tourId: bookingsTable.tourId,
+            bookingCount: countFn2(),
+            revenue: sqlFn2<number>`COALESCE(SUM(${bookingsTable.totalPrice}), 0)`,
+          })
+          .from(bookingsTable)
+          .groupBy(bookingsTable.tourId)
+          .orderBy(descFn2(countFn2()))
+          .limit(10);
+        let topTourTitles: Record<number, string> = {};
+        if (topToursRaw.length > 0) {
+          const topTourIds = topToursRaw.map((t: any) => t.tourId);
+          const tourRows = await drizzleDb.select({ id: toursTable.id, title: toursTable.title }).from(toursTable).where(inArrayFn(toursTable.id, topTourIds));
+          topTourTitles = Object.fromEntries(tourRows.map((t: any) => [t.id, t.title]));
+        }
+        const categoryLabels: Record<string, string> = { group: '團體旅遊', custom: '客製旅遊', package: '包團旅遊', cruise: '郵輪旅遊', theme: '主題旅遊' };
+        const statusLabels: Record<string, string> = { new: '新諮詢', in_progress: '處理中', replied: '已回覆', resolved: '已解決', closed: '已關閉' };
+        return {
+          bookingTrend: bookingTrendRaw.map((r: any) => ({ date: r.date?.slice(5) ?? '', bookings: Number(r.bookings), revenue: Number(r.revenue) })),
+          tourCategoryDist: tourCategoryRaw.map((r: any) => ({ name: categoryLabels[r.category] ?? r.category, value: Number(r.count) })),
+          inquiryStatusDist: inquiryStatusRaw.map((r: any) => ({ name: statusLabels[r.status] ?? r.status, value: Number(r.count) })),
+          topTours: topToursRaw.map((r: any) => ({ tourId: r.tourId, title: topTourTitles[r.tourId] ?? `行程 #${r.tourId}`, bookingCount: Number(r.bookingCount), revenue: Number(r.revenue) })),
+        };
+      }),
+
+    // ─── LLM 成本分析 ──────────────────────────────────────────────────
+    getLlmStats: adminProcedure
+      .input(z.object({
+        days: z.number().min(1).max(90).default(30),
+      }))
+      .query(async ({ input }) => {
+        const { llmUsageLogs } = await import('../drizzle/schema');
+        const { gte, sql, desc } = await import('drizzle-orm');
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'DB not available' });
+
+        const since = new Date();
+        since.setDate(since.getDate() - input.days);
+
+        const [totals] = await drizzleDb
+          .select({
+            totalCalls: sql<number>`COUNT(*)`,
+            totalTokens: sql<number>`SUM(${llmUsageLogs.totalTokens})`,
+            totalCostUsd: sql<string>`SUM(CAST(${llmUsageLogs.estimatedCostUsd} AS DECIMAL(20,6)))`,
+            cachedCalls: sql<number>`SUM(CASE WHEN ${llmUsageLogs.wasFromCache} = 1 THEN 1 ELSE 0 END)`,
+            avgProcessingMs: sql<number>`AVG(${llmUsageLogs.processingTimeMs})`,
+          })
+          .from(llmUsageLogs)
+          .where(gte(llmUsageLogs.createdAt, since));
+
+        const dailyCosts = await drizzleDb
+          .select({
+            date: sql<string>`DATE(${llmUsageLogs.createdAt})`,
+            calls: sql<number>`COUNT(*)`,
+            tokens: sql<number>`SUM(${llmUsageLogs.totalTokens})`,
+            costUsd: sql<string>`SUM(CAST(${llmUsageLogs.estimatedCostUsd} AS DECIMAL(20,6)))`,
+          })
+          .from(llmUsageLogs)
+          .where(gte(llmUsageLogs.createdAt, since))
+          .groupBy(sql`DATE(${llmUsageLogs.createdAt})`)
+          .orderBy(sql`DATE(${llmUsageLogs.createdAt})`);
+
+        const agentCosts = await drizzleDb
+          .select({
+            agentName: llmUsageLogs.agentName,
+            calls: sql<number>`COUNT(*)`,
+            tokens: sql<number>`SUM(${llmUsageLogs.totalTokens})`,
+            costUsd: sql<string>`SUM(CAST(${llmUsageLogs.estimatedCostUsd} AS DECIMAL(20,6)))`,
+          })
+          .from(llmUsageLogs)
+          .where(gte(llmUsageLogs.createdAt, since))
+          .groupBy(llmUsageLogs.agentName)
+          .orderBy(desc(sql`SUM(CAST(${llmUsageLogs.estimatedCostUsd} AS DECIMAL(20,6)))`));
+
+        const taskTypeCosts = await drizzleDb
+          .select({
+            taskType: llmUsageLogs.taskType,
+            calls: sql<number>`COUNT(*)`,
+            tokens: sql<number>`SUM(${llmUsageLogs.totalTokens})`,
+            costUsd: sql<string>`SUM(CAST(${llmUsageLogs.estimatedCostUsd} AS DECIMAL(20,6)))`,
+          })
+          .from(llmUsageLogs)
+          .where(gte(llmUsageLogs.createdAt, since))
+          .groupBy(llmUsageLogs.taskType)
+          .orderBy(desc(sql`SUM(CAST(${llmUsageLogs.estimatedCostUsd} AS DECIMAL(20,6)))`));
+
+        const recentLogs = await drizzleDb
+          .select()
+          .from(llmUsageLogs)
+          .orderBy(desc(llmUsageLogs.createdAt))
+          .limit(50);
+
+        return {
+          totals: {
+            totalCalls: Number(totals?.totalCalls ?? 0),
+            totalTokens: Number(totals?.totalTokens ?? 0),
+            totalCostUsd: parseFloat(totals?.totalCostUsd ?? '0').toFixed(4),
+            cachedCalls: Number(totals?.cachedCalls ?? 0),
+            cacheHitRate: totals?.totalCalls
+              ? ((Number(totals.cachedCalls) / Number(totals.totalCalls)) * 100).toFixed(1)
+              : '0.0',
+            avgProcessingMs: Math.round(Number(totals?.avgProcessingMs ?? 0)),
+          },
+          dailyCosts: dailyCosts.map((d: any) => ({
+            date: d.date,
+            calls: Number(d.calls),
+            tokens: Number(d.tokens),
+            costUsd: parseFloat(d.costUsd ?? '0').toFixed(4),
+          })),
+          agentCosts: agentCosts.map((a: any) => ({
+            agentName: a.agentName,
+            calls: Number(a.calls),
+            tokens: Number(a.tokens),
+            costUsd: parseFloat(a.costUsd ?? '0').toFixed(4),
+          })),
+          taskTypeCosts: taskTypeCosts.map((t: any) => ({
+            taskType: t.taskType ?? 'unknown',
+            calls: Number(t.calls),
+            tokens: Number(t.tokens),
+            costUsd: parseFloat(t.costUsd ?? '0').toFixed(4),
+          })),
+          recentLogs: recentLogs.map((l: any) => ({
+            id: l.id,
+            agentName: l.agentName,
+            taskType: l.taskType,
+            model: l.model,
+            inputTokens: l.inputTokens,
+            outputTokens: l.outputTokens,
+            totalTokens: l.totalTokens,
+            estimatedCostUsd: l.estimatedCostUsd,
+            wasFromCache: l.wasFromCache,
+            processingTimeMs: l.processingTimeMs,
+            createdAt: l.createdAt,
+          })),
+        };
+      }),
   }),
 
   // Image Library router
@@ -1521,6 +1846,123 @@ export const appRouter = router({
           });
         }
         return { success: true };
+      }),
+
+    // ─── LLM 成本分析 ──────────────────────────────────────────────────
+    getLlmStats: adminProcedure
+      .input(z.object({
+        days: z.number().min(1).max(90).default(30),
+      }))
+      .query(async ({ input }) => {
+        const { llmUsageLogs } = await import('../drizzle/schema');
+        const { gte, sql, desc } = await import('drizzle-orm');
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'DB not available' });
+
+        const since = new Date();
+        since.setDate(since.getDate() - input.days);
+
+        // 總計
+        const [totals] = await drizzleDb
+          .select({
+            totalCalls: sql<number>`COUNT(*)`,
+            totalTokens: sql<number>`SUM(${llmUsageLogs.totalTokens})`,
+            totalCostUsd: sql<string>`SUM(CAST(${llmUsageLogs.estimatedCostUsd} AS DECIMAL(20,6)))`,
+            cachedCalls: sql<number>`SUM(CASE WHEN ${llmUsageLogs.wasFromCache} = 1 THEN 1 ELSE 0 END)`,
+            avgProcessingMs: sql<number>`AVG(${llmUsageLogs.processingTimeMs})`,
+          })
+          .from(llmUsageLogs)
+          .where(gte(llmUsageLogs.createdAt, since));
+
+        // 每日費用趨勢
+        const dailyCosts = await drizzleDb
+          .select({
+            date: sql<string>`DATE(${llmUsageLogs.createdAt})`,
+            calls: sql<number>`COUNT(*)`,
+            tokens: sql<number>`SUM(${llmUsageLogs.totalTokens})`,
+            costUsd: sql<string>`SUM(CAST(${llmUsageLogs.estimatedCostUsd} AS DECIMAL(20,6)))`,
+          })
+          .from(llmUsageLogs)
+          .where(gte(llmUsageLogs.createdAt, since))
+          .groupBy(sql`DATE(${llmUsageLogs.createdAt})`)
+          .orderBy(sql`DATE(${llmUsageLogs.createdAt})`);
+
+        // 各 Agent 費用佔比
+        const agentCosts = await drizzleDb
+          .select({
+            agentName: llmUsageLogs.agentName,
+            calls: sql<number>`COUNT(*)`,
+            tokens: sql<number>`SUM(${llmUsageLogs.totalTokens})`,
+            costUsd: sql<string>`SUM(CAST(${llmUsageLogs.estimatedCostUsd} AS DECIMAL(20,6)))`,
+          })
+          .from(llmUsageLogs)
+          .where(gte(llmUsageLogs.createdAt, since))
+          .groupBy(llmUsageLogs.agentName)
+          .orderBy(desc(sql`SUM(CAST(${llmUsageLogs.estimatedCostUsd} AS DECIMAL(20,6)))`));
+
+        // 各任務類型費用
+        const taskTypeCosts = await drizzleDb
+          .select({
+            taskType: llmUsageLogs.taskType,
+            calls: sql<number>`COUNT(*)`,
+            tokens: sql<number>`SUM(${llmUsageLogs.totalTokens})`,
+            costUsd: sql<string>`SUM(CAST(${llmUsageLogs.estimatedCostUsd} AS DECIMAL(20,6)))`,
+          })
+          .from(llmUsageLogs)
+          .where(gte(llmUsageLogs.createdAt, since))
+          .groupBy(llmUsageLogs.taskType)
+          .orderBy(desc(sql`SUM(CAST(${llmUsageLogs.estimatedCostUsd} AS DECIMAL(20,6)))`));
+
+        // 最近 50 筆記錄
+        const recentLogs = await drizzleDb
+          .select()
+          .from(llmUsageLogs)
+          .orderBy(desc(llmUsageLogs.createdAt))
+          .limit(50);
+
+        return {
+          totals: {
+            totalCalls: Number(totals?.totalCalls ?? 0),
+            totalTokens: Number(totals?.totalTokens ?? 0),
+            totalCostUsd: parseFloat(totals?.totalCostUsd ?? '0').toFixed(4),
+            cachedCalls: Number(totals?.cachedCalls ?? 0),
+            cacheHitRate: totals?.totalCalls
+              ? ((Number(totals.cachedCalls) / Number(totals.totalCalls)) * 100).toFixed(1)
+              : '0.0',
+            avgProcessingMs: Math.round(Number(totals?.avgProcessingMs ?? 0)),
+          },
+          dailyCosts: dailyCosts.map((d: { date: string; calls: number; tokens: number; costUsd: string }) => ({
+            date: d.date,
+            calls: Number(d.calls),
+            tokens: Number(d.tokens),
+            costUsd: parseFloat(d.costUsd ?? '0').toFixed(4),
+          })),
+          agentCosts: agentCosts.map((a: { agentName: string; calls: number; tokens: number; costUsd: string }) => ({
+            agentName: a.agentName,
+            calls: Number(a.calls),
+            tokens: Number(a.tokens),
+            costUsd: parseFloat(a.costUsd ?? '0').toFixed(4),
+          })),
+          taskTypeCosts: taskTypeCosts.map((t: { taskType: string | null; calls: number; tokens: number; costUsd: string }) => ({
+            taskType: t.taskType ?? 'unknown',
+            calls: Number(t.calls),
+            tokens: Number(t.tokens),
+            costUsd: parseFloat(t.costUsd ?? '0').toFixed(4),
+          })),
+          recentLogs: recentLogs.map((l: typeof recentLogs[number]) => ({
+            id: l.id,
+            agentName: l.agentName,
+            taskType: l.taskType,
+            model: l.model,
+            inputTokens: l.inputTokens,
+            outputTokens: l.outputTokens,
+            totalTokens: l.totalTokens,
+            estimatedCostUsd: l.estimatedCostUsd,
+            wasFromCache: l.wasFromCache,
+            processingTimeMs: l.processingTimeMs,
+            createdAt: l.createdAt,
+          })),
+        };
       }),
   }),
 

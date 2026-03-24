@@ -454,6 +454,54 @@ async function sendWelcomeEmailViaSMTP(
 }
 
 /**
+ * Send newsletter subscription confirmation email
+ */
+export async function sendNewsletterConfirmationEmail(to: string): Promise<boolean> {
+  const subject = '感謝訂閱 PACK&GO 旅行社電子報！';
+  const htmlContent = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div style="background-color: #000; color: #fff; padding: 20px; text-align: center;">
+        <h1 style="margin: 0; font-size: 24px;">PACK&amp;GO</h1>
+        <p style="color: #ccc; margin: 5px 0 0; font-size: 13px;">讓旅行更美好</p>
+      </div>
+      <div style="padding: 30px; background-color: #f9f9f9;">
+        <h2 style="color: #1a1a1a; font-size: 20px; margin-bottom: 16px;">感謝您訂閱我們的電子報！</h2>
+        <p style="color: #555; font-size: 15px; line-height: 1.7;">
+          您已成功訂閱 PACK&amp;GO 旅行社電子報。我們會定期為您發送最新旅遊資訊、特惠行程與旅遊小知識。
+        </p>
+        <div style="text-align: center; margin: 24px 0;">
+          <a href="${BASE_URL}" style="display: inline-block; background-color: #000; color: #fff; text-decoration: none; padding: 12px 32px; font-weight: bold; font-size: 15px;">瀏覽行程</a>
+        </div>
+        <p style="color: #888; font-size: 13px; line-height: 1.6;">
+          如需取消訂閱，請回覆此郵件或聯繫我們的客服團隊。
+        </p>
+      </div>
+      <div style="padding: 16px; text-align: center; border-top: 1px solid #eee;">
+        <p style="color: #999; font-size: 12px; margin: 0;">PACK&amp;GO 旅行社 | 讓每一次旅行都成為難忘的回憶</p>
+      </div>
+    </div>
+  `;
+
+  if (SENDGRID_API_KEY) {
+    try {
+      await sgMail.send({ to, from: EMAIL_FROM, subject, html: htmlContent });
+      return true;
+    } catch (error) {
+      console.error('[Email] Failed to send newsletter confirmation via SendGrid:', error);
+    }
+  }
+
+  try {
+    const transporter = getTransporter();
+    await transporter.sendMail({ from: `"PACK&GO 旅行社" <${EMAIL_FROM}>`, to, subject, html: htmlContent });
+    return true;
+  } catch (error) {
+    console.error('[Email] Failed to send newsletter confirmation via SMTP:', error);
+    return false;
+  }
+}
+
+/**
  * Test email configuration
  */
 export async function testEmailConfiguration(): Promise<boolean> {

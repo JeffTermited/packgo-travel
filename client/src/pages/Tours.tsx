@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
 import { Link } from "wouter";
+import SEO from "@/components/SEO";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -215,6 +216,12 @@ export default function Tours() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
+      <SEO
+        title="所有行程"
+        description="瀏覽 PACK&GO 旅行社所有精選旅遊行程，包含日本、歐洲、東南亞等熱門目的地，提供客製化旅遊規劃服務。"
+        url="/tours"
+        type="website"
+      />
       <Header />
       
       <main className="flex-grow">

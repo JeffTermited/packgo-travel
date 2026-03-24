@@ -19,8 +19,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocale } from "@/contexts/LocaleContext";
+import { toast } from "sonner";
 
 interface TourEditDialogProps {
   open: boolean;
@@ -39,6 +40,71 @@ export function TourEditDialog({
 }: TourEditDialogProps) {
   const { t } = useLocale();
   const [editedData, setEditedData] = useState<any>(null);
+  const [uploadingImages, setUploadingImages] = useState<Record<number, boolean>>({});
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // 上傳圖片到 S3
+  const uploadImageFile = useCallback(async (file: File, index?: number): Promise<string | null> => {
+    if (!file.type.startsWith('image/')) {
+      toast.error('只支援圖片格式（JPG、PNG、WebP）');
+      return null;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('圖片大小不能超過 10MB');
+      return null;
+    }
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const base64 = e.target?.result as string;
+        try {
+          const response = await fetch('/api/upload/tour-image', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image: base64, path: 'gallery' }),
+          });
+          if (!response.ok) throw new Error('Upload failed');
+          const { url } = await response.json();
+          resolve(url);
+        } catch (err) {
+          toast.error('圖片上傳失敗，請重試');
+          resolve(null);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  }, []);
+
+  // 處理拖曳上傳多張圖片
+  const handleDropImages = useCallback(async (files: FileList) => {
+    const imageFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
+    if (imageFiles.length === 0) return;
+    toast.info(`正在上傳 ${imageFiles.length} 張圖片...`);
+    const newImages = [...(editedData?.images || [])];
+    const startIndex = newImages.length;
+    // 先加入佔位符
+    imageFiles.forEach(() => newImages.push({ url: '', alt: '', caption: '' }));
+    setEditedData((prev: any) => ({ ...prev, images: newImages }));
+    // 並行上傳
+    const uploadPromises = imageFiles.map(async (file, i) => {
+      const idx = startIndex + i;
+      setUploadingImages(prev => ({ ...prev, [idx]: true }));
+      const url = await uploadImageFile(file, idx);
+      setUploadingImages(prev => ({ ...prev, [idx]: false }));
+      return { idx, url };
+    });
+    const results = await Promise.all(uploadPromises);
+    setEditedData((prev: any) => {
+      const updated = [...(prev?.images || [])];
+      results.forEach(({ idx, url }) => {
+        if (url) updated[idx] = { ...updated[idx], url };
+        else updated.splice(idx, 1);
+      });
+      return { ...prev, images: updated.filter((img: any) => img.url !== '' || updated.indexOf(img) < startIndex) };
+    });
+    toast.success(`${results.filter(r => r.url).length} 張圖片上傳成功`);
+  }, [editedData?.images, uploadImageFile]);
 
   // 當 tourData 變化時，更新 editedData
   useEffect(() => {
@@ -1212,32 +1278,81 @@ export function TourEditDialog({
 
             {/* 照片管理 Tab */}
             <TabsContent value="photos" className="mt-0 space-y-6">
-              <div className="bg-violet-50 rounded-2xl p-6 space-y-6">
+              <div className="bg-white border border-gray-200 p-6 space-y-6">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-violet-900">{t('tourEditDialog.tourPhotos')}</h3>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      const newImage = { url: '', alt: '', caption: '' };
-                      setEditedData({
-                        ...editedData,
-                        images: [...(editedData.images || []), newImage]
-                      });
-                    }}
-                    className="rounded-full"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    {t('tourEditDialog.addPhoto')}
-                  </Button>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">{t('tourEditDialog.tourPhotos')}</h3>
+                    <p className="text-xs text-gray-500 mt-0.5">支援拖曳上傳、點擊選擇或輸入圖片 URL（JPG/PNG/WebP，最大 10MB）</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      上傳圖片
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const newImage = { url: '', alt: '', caption: '' };
+                        setEditedData({
+                          ...editedData,
+                          images: [...(editedData.images || []), newImage]
+                        });
+                      }}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      {t('tourEditDialog.addPhoto')}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* 隱藏的 file input */}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={async (e) => {
+                    if (e.target.files && e.target.files.length > 0) {
+                      await handleDropImages(e.target.files);
+                      e.target.value = '';
+                    }
+                  }}
+                />
+
+                {/* 拖曳上傳區域 */}
+                <div
+                  className={`border-2 border-dashed p-8 text-center transition-colors cursor-pointer ${
+                    isDraggingOver ? 'border-blue-400 bg-blue-50' : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50'
+                  }`}
+                  onDragOver={(e) => { e.preventDefault(); setIsDraggingOver(true); }}
+                  onDragLeave={() => setIsDraggingOver(false)}
+                  onDrop={async (e) => {
+                    e.preventDefault();
+                    setIsDraggingOver(false);
+                    if (e.dataTransfer.files.length > 0) {
+                      await handleDropImages(e.dataTransfer.files);
+                    }
+                  }}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Upload className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                  <p className="text-sm font-medium text-gray-600">拖曳圖片到此處，或點擊選擇檔案</p>
+                  <p className="text-xs text-gray-400 mt-1">支援批量上傳，每張最大 10MB</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   {editedData.images?.map((image: any, index: number) => (
-                    <div key={index} className="bg-white rounded-xl p-4 space-y-3 border border-violet-200">
+                    <div key={index} className="bg-gray-50 p-4 space-y-3 border border-gray-200">
                       <div className="flex items-center justify-between">
-                        <Label className="text-sm font-medium text-violet-800">{t('tourEditDialog.photoLabel').replace('{n}', String(index + 1))}</Label>
+                        <Label className="text-sm font-medium text-gray-700">{t('tourEditDialog.photoLabel').replace('{n}', String(index + 1))}</Label>
                         <Button
                           type="button"
                           variant="ghost"
@@ -1253,18 +1368,72 @@ export function TourEditDialog({
                         </Button>
                       </div>
 
-                      {image.url && (
-                        <div className="relative rounded-lg overflow-hidden">
+                      {/* 圖片預覽或上傳中狀態 */}
+                      {uploadingImages[index] ? (
+                        <div className="w-full h-32 bg-gray-100 flex items-center justify-center">
+                          <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+                          <span className="ml-2 text-sm text-gray-500">上傳中...</span>
+                        </div>
+                      ) : image.url ? (
+                        <div className="relative overflow-hidden group">
                           <img 
                             src={image.url} 
                             alt={image.alt || t('tourEditDialog.tourPhotoAlt')} 
                             className="w-full h-32 object-cover"
                           />
+                          {/* 替換圖片按鈕 */}
+                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <label className="cursor-pointer bg-white text-gray-800 text-xs px-3 py-1.5 font-medium hover:bg-gray-100">
+                              <Upload className="h-3 w-3 inline mr-1" />
+                              替換圖片
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={async (e) => {
+                                  if (e.target.files?.[0]) {
+                                    setUploadingImages(prev => ({ ...prev, [index]: true }));
+                                    const url = await uploadImageFile(e.target.files![0], index);
+                                    setUploadingImages(prev => ({ ...prev, [index]: false }));
+                                    if (url) {
+                                      const updated = [...editedData.images];
+                                      updated[index] = { ...updated[index], url };
+                                      setEditedData({ ...editedData, images: updated });
+                                    }
+                                    e.target.value = '';
+                                  }
+                                }}
+                              />
+                            </label>
+                          </div>
                         </div>
+                      ) : (
+                        <label className="w-full h-32 bg-white border border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50">
+                          <Upload className="h-6 w-6 text-gray-400 mb-1" />
+                          <span className="text-xs text-gray-500">點擊上傳圖片</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={async (e) => {
+                              if (e.target.files?.[0]) {
+                                setUploadingImages(prev => ({ ...prev, [index]: true }));
+                                const url = await uploadImageFile(e.target.files![0], index);
+                                setUploadingImages(prev => ({ ...prev, [index]: false }));
+                                if (url) {
+                                  const updated = [...editedData.images];
+                                  updated[index] = { ...updated[index], url };
+                                  setEditedData({ ...editedData, images: updated });
+                                }
+                                e.target.value = '';
+                              }
+                            }}
+                          />
+                        </label>
                       )}
 
                       <div>
-                        <Label className="text-xs font-medium">{t('tourEditDialog.photoUrl')}</Label>
+                        <Label className="text-xs font-medium text-gray-600">圖片 URL（或上傳後自動填入）</Label>
                         <Input
                           value={image.url || ''}
                           onChange={(e) => {
@@ -1278,7 +1447,7 @@ export function TourEditDialog({
                       </div>
 
                       <div>
-                        <Label className="text-xs font-medium">{t('tourEditDialog.photoAlt')}</Label>
+                        <Label className="text-xs font-medium text-gray-600">{t('tourEditDialog.photoAlt')}</Label>
                         <Input
                           value={image.alt || ''}
                           onChange={(e) => {
@@ -1292,7 +1461,7 @@ export function TourEditDialog({
                       </div>
 
                       <div>
-                        <Label className="text-xs font-medium">{t('tourEditDialog.photoCaption')}</Label>
+                        <Label className="text-xs font-medium text-gray-600">{t('tourEditDialog.photoCaption')}</Label>
                         <Input
                           value={image.caption || ''}
                           onChange={(e) => {
@@ -1309,10 +1478,10 @@ export function TourEditDialog({
                 </div>
 
                 {(!editedData.images || editedData.images.length === 0) && (
-                  <div className="text-center py-12 text-gray-500">
-                    <Image className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                        <p>{t('tourEditDialog.noPhotos')}</p>
-                    <p className="text-sm mt-2">{t('tourEditDialog.noPhotosHint')}</p>
+                  <div className="text-center py-8 text-gray-400">
+                    <Image className="h-10 w-10 mx-auto mb-3 text-gray-300" />
+                    <p className="text-sm">{t('tourEditDialog.noPhotos')}</p>
+                    <p className="text-xs mt-1">{t('tourEditDialog.noPhotosHint')}</p>
                   </div>
                 )}
               </div>

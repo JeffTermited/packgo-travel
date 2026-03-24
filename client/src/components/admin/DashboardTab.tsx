@@ -1,5 +1,5 @@
 import { trpc } from "@/lib/trpc";
-import { Users, Plane, ShoppingCart, MessageSquare, DollarSign, TrendingUp, ArrowRight, AlertCircle, CheckCircle2, Clock } from "lucide-react";
+import { Users, Plane, ShoppingCart, MessageSquare, DollarSign, TrendingUp, ArrowRight, AlertCircle, CheckCircle2, Clock, Mail } from "lucide-react";
 
 export default function DashboardTab() {
   const { data: statsData, isLoading } = trpc.admin.getStats.useQuery();
@@ -41,6 +41,20 @@ export default function DashboardTab() {
       icon: Plane,
       accent: "text-gray-900",
     },
+    {
+      title: "會員數",
+      value: isLoading ? "—" : (statsData?.totalUsers ?? 0).toLocaleString(),
+      sub: "已註冊用戶",
+      icon: Users,
+      accent: "text-gray-900",
+    },
+    {
+      title: "電子報訂閱",
+      value: isLoading ? "—" : (statsData?.totalSubscribers ?? 0).toLocaleString(),
+      sub: "有效訂閱者",
+      icon: Mail,
+      accent: "text-gray-900",
+    },
   ];
 
   const newInquiries = statsData?.pendingInquiries || 0;
@@ -55,7 +69,7 @@ export default function DashboardTab() {
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
         {stats.map((stat, index) => {
           const Icon = stat.icon;
           return (

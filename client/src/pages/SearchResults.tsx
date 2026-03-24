@@ -1,4 +1,5 @@
 import { useState, useEffect, Fragment, useMemo } from "react";
+import SEO from "@/components/SEO";
 import { useLocation } from "wouter";
 import { useLocale } from "@/contexts/LocaleContext";
 import { trackSearch } from "@/lib/analytics";
@@ -326,6 +327,7 @@ export default function SearchResults() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
+      <SEO title="搜尋結果" description="搜尋 PACK&GO 旅行社的旅遊行程，找到最適合您的旅遊方案。" url="/search" />
       <Header />
       
       <main className="flex-grow">

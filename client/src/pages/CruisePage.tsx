@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import SEO from "@/components/SEO";
 import { useLocale } from "@/contexts/LocaleContext";
 import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
@@ -104,6 +105,7 @@ export default function CruisePage() {
   
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
+      <SEO title="郵輪旅遊" description="PACK&GO 精選郵輪旅遊行程，帶您暢遊地中海、加勒比海等世界頂級郵輪航線。" url="/cruise" />
       <Header />
       
       <main className="flex-grow">

@@ -1827,3 +1827,25 @@ export async function clearBrowsingHistory(userId: number): Promise<void> {
 
   await db.delete(userBrowsingHistory).where(eq(userBrowsingHistory.userId, userId));
 }
+
+// Get newsletter subscriber by email
+export async function getNewsletterSubscriberByEmail(email: string): Promise<NewsletterSubscriber | null> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const [subscriber] = await db
+    .select()
+    .from(newsletterSubscribers)
+    .where(eq(newsletterSubscribers.email, email))
+    .limit(1);
+  return subscriber ?? null;
+}
+
+// Re-subscribe a previously unsubscribed email
+export async function resubscribeNewsletter(email: string): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db
+    .update(newsletterSubscribers)
+    .set({ status: "active", unsubscribedAt: null })
+    .where(eq(newsletterSubscribers.email, email));
+}

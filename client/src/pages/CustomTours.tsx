@@ -1,4 +1,5 @@
 import Header from "@/components/Header";
+import SEO from "@/components/SEO";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Check, MapPin, Calendar, Users, DollarSign, MessageCircle, Star } from "lucide-react";
@@ -54,6 +55,7 @@ export default function CustomTours() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
+      <SEO title="客製行程" description="讓 PACK&GO 為您量身打造專屬旅遊行程，從路線規劃到住宿安排，一切由您決定。" url="/custom-tours" />
       <Header />
 
       {/* Hero Section */}

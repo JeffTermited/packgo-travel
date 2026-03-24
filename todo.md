@@ -4893,3 +4893,17 @@
 - [ ] PaymentSuccess/Failure.tsx：移除圓角
 - [ ] Header.tsx / Footer.tsx：統一樣式
 - [ ] 共用元件（FeaturedTours、Destinations 等）：統一方形設計
+
+## 11 項改進計畫（2026-03-24）
+
+- [ ] 項目1：行程圖片上傳介面（TourEditDialog S3 上傳 + 拖曳）
+- [ ] 項目2：訂單狀態快速切換（BookingsTab inline 點擊切換）
+- [ ] 項目3：AI 生成時間優化（並行執行 + prompt 精簡）
+- [ ] 項目4：SEO Meta 標籤與 Open Graph（動態 meta + JSON-LD）
+- [ ] 項目5：AI 成本分析儀表板（llmUsageLogs 視覺化圖表）
+- [ ] 項目6：電子報訂閱功能（API + 確認信 + 後台訂閱者管理）
+- [ ] 項目7：行程 PDF 下載品質提升（品牌化排版）
+- [ ] 項目8：行動版體驗優化（手機版專項修復）
+- [ ] 項目9：行程推薦引擎（瀏覽歷史 + 個人化推薦）
+- [ ] 項目10：多幣值即時匯率（Open Exchange Rates API）
+- [ ] 項目11：後台數據分析強化（月度趨勢圖、轉換率、回購率）
