@@ -218,7 +218,7 @@ const DeparturePriceCalendar = ({
       {/* 價格圖例 */}
       <div className="flex items-center justify-center gap-6 py-4 bg-gray-50 border-b border-gray-100">
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: themeColor.secondary }}></div>
+          <div className="w-4 h-4 rounded-none" style={{ backgroundColor: themeColor.secondary }}></div>
           <span className="text-sm text-gray-600">{t('tourDetail.available') || '可預訂'}</span>
         </div>
         <div className="flex items-center gap-2">
@@ -286,11 +286,11 @@ const DeparturePriceCalendar = ({
                   {departure && (
                     <div className="mt-auto">
                       {isFull ? (
-                        <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded">{t('tourDetail.soldOut')}</span>
+                        <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-none">{t('tourDetail.soldOut')}</span>
                       ) : (
                         <>
                           <div 
-                            className="text-xs font-bold px-2 py-1 rounded-md text-white shadow-sm"
+                            className="text-xs font-bold px-2 py-1 rounded-none text-white shadow-sm"
                             style={{ backgroundColor: themeColor.secondary }}
                           >
                             ${(departure.adultPrice || basePrice).toLocaleString()}
@@ -2581,7 +2581,7 @@ export default function TourDetailPeony() {
                 type="text"
                 readOnly
                 value={typeof window !== 'undefined' ? window.location.href : ''}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-50"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-none text-sm bg-gray-50"
               />
               <Button
                 onClick={() => {

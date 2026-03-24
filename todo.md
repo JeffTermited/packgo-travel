@@ -4907,3 +4907,26 @@
 - [ ] 項目9：行程推薦引擎（瀏覽歷史 + 個人化推薦）
 - [ ] 項目10：多幣值即時匯率（Open Exchange Rates API）
 - [ ] 項目11：後台數據分析強化（月度趨勢圖、轉換率、回購率）
+
+
+## Sprint 1 - Phase 2 任務 2.3：圓角統一化（2026-03-24）
+
+- [ ] Tours.tsx — 移除所有 rounded-xl / rounded-lg / rounded-2xl，改為 rounded-none
+- [ ] SearchResults.tsx — 移除所有 rounded-xl / rounded-lg / rounded-2xl，改為 rounded-none
+- [ ] Profile.tsx — 移除所有 rounded-xl / rounded-lg / rounded-2xl，改為 rounded-none
+- [ ] Login.tsx — 移除所有 rounded-xl / rounded-lg / rounded-2xl，改為 rounded-none
+- [ ] CustomTourRequest.tsx — 移除所有 rounded-xl / rounded-lg / rounded-2xl，改為 rounded-none
+- [ ] QuickInquiry.tsx — 移除所有 rounded-xl / rounded-lg / rounded-2xl，改為 rounded-none
+- [ ] BookingDetail.tsx — 移除所有 rounded-xl / rounded-lg / rounded-2xl，改為 rounded-none
+- [ ] PaymentSuccess.tsx — 移除所有 rounded-xl / rounded-lg / rounded-2xl，改為 rounded-none
+- [ ] PaymentFailure.tsx — 移除所有 rounded-xl / rounded-lg / rounded-2xl，改為 rounded-none
+
+
+## Sprint 1 - Phase 2 任務 2.3：全面圓角統一化（2026-03-24 全面版）
+
+- [x] TourDetailPeony.tsx — 修復 3 處 rounded / rounded-md（色塊指示器、售罄標籤、日期輸入框）
+- [x] TourEditDialog.tsx — 修復所有 rounded-2xl / rounded-xl（編輯對話框的區塊容器）
+- [x] ToursTab.tsx — 修復所有 rounded-2xl / rounded-lg（AI 生成進度預覽卡片）
+- [x] TranslationsTab.tsx — 修復所有 rounded-lg（翻譯管理卡片）
+- [x] inline-edit/EditableText.tsx — 修復 rounded hover 效果
+- [x] tour-detail/EditModeToolbar.tsx — 修復 rounded 標籤

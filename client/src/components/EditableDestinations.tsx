@@ -285,7 +285,7 @@ export default function EditableDestinations() {
               <Label>圖片</Label>
               <div className="mt-1 space-y-2">
                 {editForm.image && (
-                  <img src={editForm.image} alt="Preview" className="w-full h-32 object-cover rounded" />
+                  <img src={editForm.image} alt="Preview" className="w-full h-32 object-cover rounded-none" />
                 )}
                 <div className="flex gap-2">
                   <Button
@@ -371,7 +371,7 @@ export default function EditableDestinations() {
               <Label>圖片</Label>
               <div className="mt-1 space-y-2">
                 {editForm.image && (
-                  <img src={editForm.image} alt="Preview" className="w-full h-32 object-cover rounded" />
+                  <img src={editForm.image} alt="Preview" className="w-full h-32 object-cover rounded-none" />
                 )}
                 <div className="flex gap-2">
                   <Button
