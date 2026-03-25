@@ -74,7 +74,7 @@ export function EditableText({
         className={cn(
           className,
           "cursor-pointer relative group transition-all",
-          "hover:bg-black/30 hover:outline hover:outline-2 hover:outline-yellow-400 hover:outline-dashed rounded-none",
+          "hover:bg-black/30 hover:outline hover:outline-2 hover:outline-yellow-400 hover:outline-dashed rounded",
           // 為文字添加背景陰影以確保在任何背景上都可讀
           "[text-shadow:_0_2px_8px_rgba(0,0,0,0.8),_0_1px_3px_rgba(0,0,0,0.9)]"
         )}

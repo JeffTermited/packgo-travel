@@ -83,11 +83,11 @@ export default function Footer() {
               <li className="flex items-start gap-3 mt-2">
                 <div className="flex gap-3">
                   <div className="flex flex-col items-center">
-                    <img src="/images/qrcode-wechat.png" alt="WeChat QR" className="h-20 w-20 bg-white p-1 rounded-none" />
+                    <img src="/images/qrcode-wechat.png" alt="WeChat QR" className="h-20 w-20 bg-white p-1 rounded" />
                     <p className="text-xs text-gray-500 mt-1">WeChat</p>
                   </div>
                   <div className="flex flex-col items-center">
-                    <img src="/images/qrcode-line.png" alt="LINE QR" className="h-20 w-20 bg-white p-1 rounded-none" />
+                    <img src="/images/qrcode-line.png" alt="LINE QR" className="h-20 w-20 bg-white p-1 rounded" />
                     <p className="text-xs text-gray-500 mt-1">LINE</p>
                   </div>
                 </div>

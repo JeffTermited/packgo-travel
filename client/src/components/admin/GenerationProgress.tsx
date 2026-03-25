@@ -291,7 +291,7 @@ export function GenerationProgressComponent({
   const completedCount = displayPhases.filter(p => p.status === 'completed').length;
 
   return (
-    <div className="w-full bg-gray-50 rounded-none border border-gray-200 overflow-hidden">
+    <div className="w-full bg-gray-50 rounded-lg border border-gray-200 overflow-hidden">
       {/* 緊湊的主要進度區 */}
       <div className="p-3">
         {/* 頂部：狀態、進度、時間 */}

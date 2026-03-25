@@ -220,7 +220,7 @@ export default function Login() {
                       id="rememberMe"
                       checked={rememberMe}
                       onChange={(e) => setRememberMe(e.target.checked)}
-                      className="w-4 h-4 rounded-none border-2 border-black text-black focus:ring-2 focus:ring-black cursor-pointer"
+                      className="w-4 h-4 rounded border-2 border-black text-black focus:ring-2 focus:ring-black cursor-pointer"
                     />
                     <Label htmlFor="rememberMe" className="text-black font-medium cursor-pointer">
                       {t('auth.login.rememberMe')}

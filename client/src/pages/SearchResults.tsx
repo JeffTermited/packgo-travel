@@ -450,7 +450,7 @@ export default function SearchResults() {
                             {expandedContinents.has(continent) && (
                               <div className="p-3 bg-white space-y-2">
                                 {destinations.map(({ country, count }) => (
-                                  <label key={country} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded-none">
+                                  <label key={country} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
                                     <Checkbox
                                       checked={selectedDestinations.includes(country)}
                                       onCheckedChange={() => toggleDestination(country)}
