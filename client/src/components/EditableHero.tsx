@@ -262,9 +262,9 @@ export default function EditableHero() {
         )}
 
         {/* Search Console - Lion Travel Style */}
-        <div className="w-full max-w-5xl bg-white  shadow-2xl animate-in slide-in-from-bottom-10 duration-700 delay-300">
+        <div className="w-full max-w-5xl bg-white shadow-2xl animate-in slide-in-from-bottom-10 duration-700 delay-300 rounded-3xl overflow-hidden">
           {/* Tabs */}
-          <div className="flex w-full border-b border-gray-200 bg-gray-50">
+          <div className="flex w-full border-b border-gray-200 bg-gray-50 rounded-t-3xl">
             {searchTabs.map((tab) => (
               <button
                 key={tab.id}
@@ -291,7 +291,7 @@ export default function EditableHero() {
           </div>
 
           {/* Tab Content */}
-          <div className="p-4 bg-white">
+          <div className="p-4 bg-white rounded-b-3xl">
             <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
                 {/* Use flexbox with equal basis for equal widths */}
                 <div className="flex flex-col md:flex-row gap-4 items-end">

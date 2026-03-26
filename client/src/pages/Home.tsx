@@ -91,7 +91,7 @@ function HomeContent() {
           aria-label={t('home.aiAdvisor.title')}
         >
           {/* Speech Bubble - Rounded Design */}
-          <div className="mb-1 mr-4 px-4 py-2 bg-white border border-gray-200 text-black text-sm font-medium shadow-md">
+          <div className="mb-1 mr-4 px-4 py-2 bg-white border border-gray-200 text-black text-sm font-medium shadow-md rounded-xl">
             {t('home.aiAdvisor.bubble')}
           </div>
           {/* Penguin Image - Original Design */}
@@ -107,7 +107,7 @@ function HomeContent() {
       {canEdit && !isEditMode && (
         <button
           onClick={toggleEditMode}
-          className="fixed bottom-8 left-8 bg-black hover:bg-gray-800 text-white px-4 py-3 shadow-2xl flex items-center gap-2 transition-all hover:scale-105 z-50"
+          className="fixed bottom-8 left-8 bg-black hover:bg-gray-800 text-white px-4 py-3 shadow-2xl flex items-center gap-2 transition-all hover:scale-105 z-50 rounded-lg"
           aria-label={t('home.editMode.enter')}
         >
           <Pencil className="h-5 w-5" />
