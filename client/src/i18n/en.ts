@@ -672,6 +672,12 @@ export const en = {
     },
     noResults: 'No tours found matching your criteria',
     adjustFilters: 'Please try adjusting your filters',
+    sortBy: 'Sort By',
+    sortPopular: 'Most Popular',
+    sortPriceAsc: 'Price: Low to High',
+    sortPriceDesc: 'Price: High to Low',
+    sortDaysAsc: 'Duration: Short to Long',
+    sortDaysDesc: 'Duration: Long to Short',
   },
 
   // Tour Detail
@@ -770,6 +776,7 @@ export const en = {
     transportation: 'Transportation',
     multipleDates: 'Multiple Dates Available',
     itineraryHighlights: 'Itinerary Highlights',
+    dailyItineraryDesc: 'Every day is a unique journey experience',
     attractionFeatures: 'Featured Attractions',
     mealPlan: 'Meal Arrangements',
     luxuryHotel: 'Luxury Hotel',
@@ -1545,6 +1552,7 @@ export const en = {
   bookTour: {
     title: 'Book Tour',
     steps: {
+      date: 'Select Date',
       selectDate: 'Select Date',
       travelers: 'Travelers',
       details: 'Details',

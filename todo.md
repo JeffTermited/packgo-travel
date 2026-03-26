@@ -4972,3 +4972,10 @@
 - [x] 優化 TourDetail 每日行程資訊密度（間距）
 - [x] 合併後台行程管理操作按鈕（複製/刪除 → 更多選單）
 - [x] 機票/飯店/機場接送佔位頁面改為正式落地頁
+
+## 新發現 Bug 修復（2026-03-26 下午）
+
+- [ ] 修復 TourDetailPeony.tsx 的 `tourDetail.dailyItineraryDesc` i18n key 未翻譯
+- [ ] 修復 TourDetailPeony.tsx 的 `Tonight's accommodation:` 英文標籤（改為中文或 i18n key）
+- [ ] 修復 TourDetailPeony.tsx 的 `Today's Meals` 英文標籤（改為中文或 i18n key）
+- [ ] 修復「已下架」badge 文字換行問題（whitespace-nowrap）

@@ -673,6 +673,12 @@ export const zhTW = {
     },
     noResults: '沒有找到符合條件的行程',
     adjustFilters: '請嘗試調整篩選條件',
+    sortBy: '排序方式',
+    sortPopular: '熱門優先',
+    sortPriceAsc: '價格由低至高',
+    sortPriceDesc: '價格由高至低',
+    sortDaysAsc: '天數由少至多',
+    sortDaysDesc: '天數由多至少',
   },
 
   // 行程詳情
@@ -771,6 +777,7 @@ export const zhTW = {
     flightRules: '團體航班規定事項',
     multipleDates: '多日期可選',
     itineraryHighlights: '精彩行程',
+    dailyItineraryDesc: '每一天都是獨特的旅程體驗',
     attractionFeatures: '精選景點',
     mealPlan: '餐飲安排',
     luxuryHotel: '豪華酒店',
@@ -1547,6 +1554,7 @@ export const zhTW = {
   bookTour: {
     title: '預訂行程',
     steps: {
+      date: '選擇日期',
       selectDate: '選擇日期',
       travelers: '旅客人數',
       details: '填寫資訊',

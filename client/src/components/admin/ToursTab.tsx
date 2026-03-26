@@ -735,7 +735,7 @@ export default function ToursTab() {
                     <td className="px-5 py-5">
                       <div className="flex flex-col gap-1">
                         <span
-                          className={`inline-flex items-center px-2.5 py-0.5 text-xs font-semibold w-fit ${
+                          className={`inline-flex items-center px-2.5 py-0.5 text-xs font-semibold w-fit whitespace-nowrap ${
                             tour.status === "active"
                               ? "bg-black text-white"
                               : "bg-gray-100 text-gray-500 border border-gray-200"
