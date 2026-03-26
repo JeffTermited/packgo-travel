@@ -4961,3 +4961,14 @@
 - [ ] 移除 zh-TW.ts 和 en.ts 中的 language.es 翻譯 key
 - [ ] 修復硬編碼中文字串（DepartureDatePicker、HotelDetailDialog 等）
 - [ ] 更新 i18n-completeness.test.ts 移除西班牙文測試
+
+## UI/UX 8大修復任務（2026-03-26）
+
+- [x] 修復 BookTour 頁面 i18n key 未翻譯問題
+- [x] 修復 Login 頁面品牌名稱（TRAVEL NOIR → PACK&GO）
+- [x] 修復後台數據分析 & AI 成本分析永遠載入問題（DATE() → DATE_FORMAT()）
+- [x] 修復 ContactUs 直角按鈕 + Hero 背景圖
+- [x] 修復 Login Tab 直角 + 更換左側圖片
+- [x] 優化 TourDetail 每日行程資訊密度（間距）
+- [x] 合併後台行程管理操作按鈕（複製/刪除 → 更多選單）
+- [x] 機票/飯店/機場接送佔位頁面改為正式落地頁

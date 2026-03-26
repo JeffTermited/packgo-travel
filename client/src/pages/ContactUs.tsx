@@ -16,7 +16,7 @@ export default function ContactUs() {
         </p>
         
         <div className="grid md:grid-cols-2 gap-8 mt-8">
-          <div className="border border-gray-200 p-6">
+          <div className="border border-gray-200 rounded-xl p-6">
             <h3 className="text-xl font-bold text-black mb-4">{t('contactUs.contactInfo')}</h3>
             <div className="space-y-3">
               <p><strong>{t('contactUs.address')}：</strong><br />39055 Cedar Blvd #126<br />Newark CA 94560</p>
@@ -25,7 +25,7 @@ export default function ContactUs() {
             </div>
           </div>
           
-          <div className="border border-gray-200 p-6">
+          <div className="border border-gray-200 rounded-xl p-6">
             <h3 className="text-xl font-bold text-black mb-4">{t('contactUs.businessHours')}</h3>
             <div className="space-y-2">
               <p><strong>{t('contactUs.weekdays')}：</strong><br />9:00 AM - 6:00 PM</p>
@@ -35,14 +35,14 @@ export default function ContactUs() {
           </div>
         </div>
         
-        <div className="bg-gray-50 p-6 border border-gray-200 mt-8">
+        <div className="bg-gray-50 p-6 border border-gray-200 rounded-xl mt-8">
           <h3 className="text-xl font-bold text-black mb-4">{t('contactUs.quickInquiry')}</h3>
           <p className="mb-4">
             {t('contactUs.quickInquiryDesc')}
           </p>
           <a 
             href="/inquiry" 
-            className="inline-block bg-black text-white px-6 py-3 hover:bg-gray-800 transition-colors"
+            className="inline-block bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors"
           >
             {t('contactUs.goToForm')}
           </a>

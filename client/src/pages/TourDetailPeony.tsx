@@ -2187,7 +2187,7 @@ export default function TourDetailPeony() {
           <p className="text-lg text-gray-700 text-center mb-16">{t('tourDetail.dailyItineraryDesc') || '每一天都是獨特的旅程體驗'}</p>
 
           {/* Daily Itinerary */}
-          <div className="space-y-16">
+          <div className="space-y-24">
             {(isEditMode ? (editedTour?.itineraryDetailed ? (typeof editedTour.itineraryDetailed === 'string' ? parseJSON(editedTour.itineraryDetailed, []) : editedTour.itineraryDetailed) : []) : itineraryDetailed).length > 0 ? (
               (isEditMode ? (editedTour?.itineraryDetailed ? (typeof editedTour.itineraryDetailed === 'string' ? parseJSON(editedTour.itineraryDetailed, []) : editedTour.itineraryDetailed) : []) : itineraryDetailed).map((day: any, index: number) => (
                 isEditMode ? (

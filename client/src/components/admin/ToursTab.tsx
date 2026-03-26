@@ -24,7 +24,14 @@ import { trpc } from "@/lib/trpc";
 import DeparturesManagement from "./DeparturesManagement";
 import { GenerationProgressComponent } from "./GenerationProgress";
 import { TourEditDialog } from "./TourEditDialog";
-import { Calendar, Copy, Edit, Eye, EyeOff, ExternalLink, FileUp, Loader2, Plus, RefreshCw, Search, Sparkles, Star, Trash2, Upload } from "lucide-react";
+import { Calendar, ChevronDown, Copy, Edit, Eye, EyeOff, ExternalLink, FileUp, Loader2, MoreHorizontal, Plus, RefreshCw, Search, Sparkles, Star, Trash2, Upload } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
@@ -799,27 +806,37 @@ export default function ToursTab() {
                         >
                           <Edit className="h-4 w-4 text-gray-500" />
                         </Button>
-                        {/* 複製 */}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDuplicate(tour.id, tour.title)}
-                          className="h-8 w-8 p-0 hover:bg-gray-100 transition-colors"
-                          title="複製行程"
-                          disabled={duplicateTourMutation.isPending}
-                        >
-                          <Copy className="h-4 w-4 text-gray-500" />
-                        </Button>
-                        {/* 刪除 */}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(tour.id)}
-                          className="h-8 w-8 p-0 hover:bg-red-50 transition-colors"
-                          title="刪除行程"
-                        >
-                          <Trash2 className="h-4 w-4 text-red-400" />
-                        </Button>
+                        {/* 更多操作下拉選單 (複製/刪除) */}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0 hover:bg-gray-100 transition-colors"
+                              title="更多操作"
+                            >
+                              <MoreHorizontal className="h-4 w-4 text-gray-500" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-36">
+                            <DropdownMenuItem
+                              onClick={() => handleDuplicate(tour.id, tour.title)}
+                              disabled={duplicateTourMutation.isPending}
+                              className="cursor-pointer"
+                            >
+                              <Copy className="h-4 w-4 mr-2 text-gray-500" />
+                              複製行程
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              onClick={() => handleDelete(tour.id)}
+                              className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              刪除行程
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </td>
                   </tr>

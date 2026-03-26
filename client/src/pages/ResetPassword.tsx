@@ -79,7 +79,7 @@ export default function ResetPassword() {
         />
         <div className="absolute inset-0 z-20 flex flex-col items-start justify-center px-16 text-white">
           <h1 className="text-5xl font-serif font-bold mb-4 tracking-tight">
-            TRAVEL NOIR
+            PACK&GO
           </h1>
           <p className="text-xl text-gray-300 font-light tracking-wide">
             {t("resetPassword.travelSlogan")}

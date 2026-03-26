@@ -1623,14 +1623,14 @@ export const appRouter = router({
         // Daily booking & revenue trend
         const bookingTrendRaw = await drizzleDb
           .select({
-            date: sqlFn2<string>`DATE(${bookingsTable.createdAt})`,
+            date: sqlFn2<string>`DATE_FORMAT(${bookingsTable.createdAt}, '%Y-%m-%d')`,
             bookings: countFn2(),
             revenue: sqlFn2<number>`COALESCE(SUM(CASE WHEN ${bookingsTable.bookingStatus} IN ('confirmed', 'completed') THEN ${bookingsTable.totalPrice} ELSE 0 END), 0)`,
           })
           .from(bookingsTable)
           .where(gteFn2(bookingsTable.createdAt, since))
-          .groupBy(sqlFn2`DATE(${bookingsTable.createdAt})`)
-          .orderBy(sqlFn2`DATE(${bookingsTable.createdAt})`);
+          .groupBy(sqlFn2`DATE_FORMAT(${bookingsTable.createdAt}, '%Y-%m-%d')`)
+          .orderBy(sqlFn2`DATE_FORMAT(${bookingsTable.createdAt}, '%Y-%m-%d')`);
         // Tour category distribution
         const tourCategoryRaw = await drizzleDb
           .select({ category: toursTable.category, count: countFn2() })
@@ -1695,15 +1695,15 @@ export const appRouter = router({
 
         const dailyCosts = await drizzleDb
           .select({
-            date: sql<string>`DATE(${llmUsageLogs.createdAt})`,
+            date: sql<string>`DATE_FORMAT(${llmUsageLogs.createdAt}, '%Y-%m-%d')`,
             calls: sql<number>`COUNT(*)`,
             tokens: sql<number>`SUM(${llmUsageLogs.totalTokens})`,
             costUsd: sql<string>`SUM(CAST(${llmUsageLogs.estimatedCostUsd} AS DECIMAL(20,6)))`,
           })
           .from(llmUsageLogs)
           .where(gte(llmUsageLogs.createdAt, since))
-          .groupBy(sql`DATE(${llmUsageLogs.createdAt})`)
-          .orderBy(sql`DATE(${llmUsageLogs.createdAt})`);
+          .groupBy(sql`DATE_FORMAT(${llmUsageLogs.createdAt}, '%Y-%m-%d')`)
+          .orderBy(sql`DATE_FORMAT(${llmUsageLogs.createdAt}, '%Y-%m-%d')`);
 
         const agentCosts = await drizzleDb
           .select({
@@ -1877,15 +1877,15 @@ export const appRouter = router({
         // 每日費用趨勢
         const dailyCosts = await drizzleDb
           .select({
-            date: sql<string>`DATE(${llmUsageLogs.createdAt})`,
+            date: sql<string>`DATE_FORMAT(${llmUsageLogs.createdAt}, '%Y-%m-%d')`,
             calls: sql<number>`COUNT(*)`,
             tokens: sql<number>`SUM(${llmUsageLogs.totalTokens})`,
             costUsd: sql<string>`SUM(CAST(${llmUsageLogs.estimatedCostUsd} AS DECIMAL(20,6)))`,
           })
           .from(llmUsageLogs)
           .where(gte(llmUsageLogs.createdAt, since))
-          .groupBy(sql`DATE(${llmUsageLogs.createdAt})`)
-          .orderBy(sql`DATE(${llmUsageLogs.createdAt})`);
+          .groupBy(sql`DATE_FORMAT(${llmUsageLogs.createdAt}, '%Y-%m-%d')`)
+          .orderBy(sql`DATE_FORMAT(${llmUsageLogs.createdAt}, '%Y-%m-%d')`);
 
         // 各 Agent 費用佔比
         const agentCosts = await drizzleDb

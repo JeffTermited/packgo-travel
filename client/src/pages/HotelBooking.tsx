@@ -1,40 +1,226 @@
-import GenericPage from "@/components/GenericPage";
-import SEO from "@/components/SEO";
 import { useLocale } from "@/contexts/LocaleContext";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import { Button } from "@/components/ui/button";
+import { Link } from "wouter";
+import { Hotel, Star, Wifi, Car, Utensils, Dumbbell, Shield, Headphones, ArrowRight, MapPin, CheckCircle } from "lucide-react";
 
 export default function HotelBooking() {
   const { t } = useLocale();
-  
+
+  const features = [
+    { icon: Star, title: "精選優質飯店", desc: "嚴格篩選全球各地優質飯店，從精品民宿到五星豪華酒店，滿足各種需求。" },
+    { icon: Shield, title: "最低價格保證", desc: "提供最具競爭力的飯店價格，若您找到更低價，我們承諾差額退還。" },
+    { icon: Headphones, title: "專人入住協助", desc: "提前確認入住細節，協助特殊需求安排，讓您抵達即享受。" },
+    { icon: CheckCircle, title: "彈性取消政策", desc: "提供多種取消方案選擇，讓您的行程規劃更有彈性。" },
+  ];
+
+  const hotelTypes = [
+    { name: "精品設計旅館", desc: "獨特設計風格，體驗當地文化與藝術", icon: "🏨", tag: "個性首選" },
+    { name: "商務酒店", desc: "完善商務設施，高效舒適的工作環境", icon: "🏢", tag: "商旅必備" },
+    { name: "度假村", desc: "全包式服務，享受無憂無慮的假期", icon: "🌴", tag: "休閒放鬆" },
+    { name: "五星豪華酒店", desc: "頂級服務與設施，尊享奢華體驗", icon: "⭐", tag: "頂級享受" },
+    { name: "溫泉旅館", desc: "日式傳統風情，療癒身心的溫泉體驗", icon: "♨️", tag: "日本特色" },
+    { name: "海景民宿", desc: "絕美海景視野，感受大自然的壯闊", icon: "🌊", tag: "自然風情" },
+  ];
+
+  const amenities = [
+    { icon: Wifi, label: "免費 Wi-Fi" },
+    { icon: Car, label: "停車場" },
+    { icon: Utensils, label: "餐廳" },
+    { icon: Dumbbell, label: "健身房" },
+    { icon: Star, label: "游泳池" },
+    { icon: Shield, label: "24H 保全" },
+  ];
+
+  const destinations = [
+    { city: "東京", country: "日本", hotels: "500+", img: "🗼" },
+    { city: "大阪", country: "日本", hotels: "300+", img: "🏯" },
+    { city: "首爾", country: "韓國", hotels: "400+", img: "🌸" },
+    { city: "曼谷", country: "泰國", hotels: "600+", img: "🛕" },
+    { city: "新加坡", country: "新加坡", hotels: "250+", img: "🦁" },
+    { city: "峇里島", country: "印尼", hotels: "350+", img: "🌺" },
+  ];
+
   return (
-    <GenericPage
-      title={t('hotelBooking.title')}
-      subtitle={t('hotelBooking.subtitle')}
-      ctaText={t('common.search')}
-      ctaLink="/inquiry"
-    >
-      <div className="space-y-6 text-gray-700">
-        <p className="text-lg">
-          {t('hotelBooking.description')}
-        </p>
-        
-        <h2 className="text-2xl font-bold text-black mt-8">{t('hotelBooking.filters.starRating')}</h2>
-        <ul className="list-disc pl-6 space-y-2">
-          <li>⭐⭐⭐ - 3 {t('hotelBooking.filters.starRating')}</li>
-          <li>⭐⭐⭐⭐ - 4 {t('hotelBooking.filters.starRating')}</li>
-          <li>⭐⭐⭐⭐⭐ - 5 {t('hotelBooking.filters.starRating')}</li>
-        </ul>
-        
-        <h2 className="text-2xl font-bold text-black mt-8">{t('hotelBooking.filters.amenities')}</h2>
-        <ul className="list-disc pl-6 space-y-2">
-          <li>{t('hotelBooking.filters.wifi')}</li>
-          <li>{t('hotelBooking.filters.parking')}</li>
-          <li>{t('hotelBooking.filters.pool')}</li>
-          <li>{t('hotelBooking.filters.gym')}</li>
-          <li>{t('hotelBooking.filters.restaurant')}</li>
-          <li>{t('hotelBooking.filters.spa')}</li>
-          <li>{t('hotelBooking.filters.petFriendly')}</li>
-        </ul>
-      </div>
-    </GenericPage>
+    <div className="min-h-screen flex flex-col bg-white">
+      <Header />
+
+      {/* Hero */}
+      <section className="relative bg-black text-white overflow-hidden">
+        <div className="absolute inset-0">
+          <img
+            src="https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=2070&auto=format&fit=crop"
+            alt="Hotel booking"
+            className="w-full h-full object-cover opacity-40"
+          />
+        </div>
+        <div className="relative container py-24 md:py-32">
+          <div className="max-w-2xl">
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-1.5 text-sm mb-6">
+              <Hotel className="h-4 w-4" />
+              <span>飯店預訂服務</span>
+            </div>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+              每一晚都是<br />
+              <span className="text-gray-300">難忘的旅程記憶</span>
+            </h1>
+            <p className="text-xl text-gray-300 mb-8 leading-relaxed">
+              PACK&GO 精選全球優質飯店，從溫馨民宿到頂級豪華酒店，
+              專業顧問為您找到最適合的住宿選擇。
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Link href="/inquiry">
+                <Button className="bg-white text-black hover:bg-gray-100 font-bold px-8 py-3 h-auto rounded-lg text-base">
+                  立即諮詢住宿 <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+              <Link href="/contact-us">
+                <Button variant="outline" className="border-white/50 text-white hover:bg-white/10 font-bold px-8 py-3 h-auto rounded-lg text-base bg-transparent">
+                  聯絡我們
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats */}
+      <section className="bg-gray-900 text-white py-8">
+        <div className="container">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+            {[
+              { num: "5,000+", label: "合作飯店" },
+              { num: "80+", label: "目的地城市" },
+              { num: "3★-5★", label: "星級範圍" },
+              { num: "99%", label: "訂房成功率" },
+            ].map((stat, i) => (
+              <div key={i}>
+                <div className="text-3xl font-bold text-white mb-1">{stat.num}</div>
+                <div className="text-gray-400 text-sm">{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section className="py-20 bg-white">
+        <div className="container">
+          <div className="text-center mb-14">
+            <h2 className="text-3xl md:text-4xl font-bold text-black mb-4">我們的飯店服務優勢</h2>
+            <p className="text-gray-600 text-lg max-w-2xl mx-auto">不只是訂房，更是為您打造完美的住宿體驗</p>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {features.map((feature, i) => (
+              <div key={i} className="group">
+                <div className="w-12 h-12 bg-black rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <feature.icon className="h-6 w-6 text-white" />
+                </div>
+                <h3 className="text-lg font-bold text-black mb-2">{feature.title}</h3>
+                <p className="text-gray-600 text-sm leading-relaxed">{feature.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Hotel Types */}
+      <section className="py-20 bg-gray-50">
+        <div className="container">
+          <div className="text-center mb-14">
+            <h2 className="text-3xl md:text-4xl font-bold text-black mb-4">住宿類型</h2>
+            <p className="text-gray-600 text-lg">多元住宿選擇，滿足不同旅行風格</p>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {hotelTypes.map((type, i) => (
+              <div key={i} className="bg-white rounded-xl p-6 border border-gray-100 hover:border-black hover:shadow-md transition-all flex items-start gap-4">
+                <div className="text-3xl flex-shrink-0">{type.icon}</div>
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="text-base font-bold text-black">{type.name}</h3>
+                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{type.tag}</span>
+                  </div>
+                  <p className="text-gray-600 text-sm leading-relaxed">{type.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Popular Destinations */}
+      <section className="py-20 bg-white">
+        <div className="container">
+          <div className="text-center mb-14">
+            <h2 className="text-3xl md:text-4xl font-bold text-black mb-4">熱門目的地</h2>
+            <p className="text-gray-600 text-lg">精選亞洲熱門城市，提供最豐富的住宿選擇</p>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {destinations.map((dest, i) => (
+              <div key={i} className="flex items-center gap-4 p-5 border border-gray-200 rounded-xl hover:border-black hover:shadow-sm transition-all group cursor-pointer">
+                <div className="text-4xl">{dest.img}</div>
+                <div className="flex-1">
+                  <div className="font-bold text-black">{dest.city}</div>
+                  <div className="flex items-center gap-1 text-sm text-gray-500">
+                    <MapPin className="h-3.5 w-3.5" />
+                    {dest.country}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="font-bold text-black text-sm">{dest.hotels}</div>
+                  <div className="text-xs text-gray-500">間飯店</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Amenities */}
+      <section className="py-20 bg-gray-50">
+        <div className="container">
+          <div className="text-center mb-14">
+            <h2 className="text-3xl md:text-4xl font-bold text-black mb-4">常見設施篩選</h2>
+            <p className="text-gray-600 text-lg">告訴我們您的需求，我們為您找到最合適的飯店</p>
+          </div>
+          <div className="flex flex-wrap justify-center gap-4">
+            {amenities.map((amenity, i) => (
+              <div key={i} className="flex items-center gap-2 bg-white border border-gray-200 rounded-full px-5 py-2.5 text-sm font-medium text-gray-700">
+                <amenity.icon className="h-4 w-4" />
+                {amenity.label}
+              </div>
+            ))}
+          </div>
+          <p className="text-center text-gray-500 text-sm mt-6">
+            還有更多篩選條件，歡迎直接聯絡我們說明您的需求
+          </p>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="py-20 bg-black text-white">
+        <div className="container text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">找到您的完美住所</h2>
+          <p className="text-gray-400 text-lg mb-8 max-w-xl mx-auto">
+            告訴我們您的旅行日期、目的地與預算，我們為您推薦最適合的住宿選擇
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/inquiry">
+              <Button className="bg-white text-black hover:bg-gray-100 font-bold px-10 py-3 h-auto rounded-lg text-base">
+                立即諮詢 <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+            <Link href="/contact-us">
+              <Button variant="outline" className="border-white/30 text-white hover:bg-white/10 font-bold px-10 py-3 h-auto rounded-lg text-base bg-transparent">
+                查看聯絡方式
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <Footer />
+    </div>
   );
 }
