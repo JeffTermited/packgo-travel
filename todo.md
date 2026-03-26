@@ -4943,3 +4943,11 @@
 - [ ] 批次替換所有元件的 rounded-none 為適當圓角類別
 - [ ] 修復 shadcn/ui 元件的圓角覆蓋問題
 - [ ] 驗證全站視覺效果
+
+---
+
+## 三大改進任務（2026-03-26）
+
+- [x] 撰寫完整 PRD（產品需求文件）— docs/PRD.md
+- [x] 建立 CLAUDE.md Context 文件（設計規範、架構決策、禁止事項）
+- [x] 補齊業務邏輯 Vitest 測試（搜尋、支付、i18n、CRUD、詢問）— 36 tests passing
