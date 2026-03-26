@@ -367,7 +367,7 @@ export default function BookingDetail() {
                 )}
 
                 {isFullyPaid && (
-                  <div className="bg-green-50 border-2 border-green-200 rounded-none p-4 text-center">
+                  <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4 text-center">
                     <CheckCircle2 className="h-8 w-8 text-green-600 mx-auto mb-2" />
                     <p className="font-bold text-green-800">{t('bookingDetail.paymentCompleted')}</p>
                     <p className="text-sm text-green-600 mt-1">{t('bookingDetail.thankYou')}</p>

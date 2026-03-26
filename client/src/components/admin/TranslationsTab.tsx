@@ -181,18 +181,18 @@ export default function TranslationsTab() {
 
       {/* 統計卡片 */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="bg-white border border-gray-200 rounded-none p-4">
+        <div className="bg-white border border-gray-200 rounded-lg p-4">
           <div className="text-2xl font-bold text-gray-900">{totalTours}</div>
           <div className="text-sm text-gray-500">{t('translationsTab.totalTours')}</div>
         </div>
-        <div className="bg-white border border-gray-200 rounded-none p-4">
+        <div className="bg-white border border-gray-200 rounded-lg p-4">
           <div className="text-2xl font-bold text-green-600">{translatedEnCount}</div>
           <div className="text-sm text-gray-500">{t('translationsTab.translatedEn')}</div>
           <div className="text-xs text-gray-400 mt-1">
             {totalTours > 0 ? Math.round((translatedEnCount / totalTours) * 100) : 0}% {t('translationsTab.done')}
           </div>
         </div>
-        <div className="bg-white border border-gray-200 rounded-none p-4">
+        <div className="bg-white border border-gray-200 rounded-lg p-4">
           <div className="text-2xl font-bold text-blue-600">{translatedEsCount}</div>
           <div className="text-sm text-gray-500">{t('translationsTab.translatedEs')}</div>
           <div className="text-xs text-gray-400 mt-1">
@@ -219,7 +219,7 @@ export default function TranslationsTab() {
           <span className="ml-2 text-gray-500">{t('translationsTab.loading')}</span>
         </div>
       ) : (
-        <div className="border border-gray-200 rounded-none overflow-hidden">
+        <div className="border border-gray-200 rounded-lg overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow className="bg-gray-50">
@@ -318,7 +318,7 @@ export default function TranslationsTab() {
             <p className="text-gray-600">
               {t('translationsTab.translateAllDesc').replace('{count}', String(totalTours))}
             </p>
-            <div className="bg-amber-50 border border-amber-200 rounded-none p-3 text-sm text-amber-700">
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-700">
               <strong>{t('translationsTab.warningLabel')}</strong>{t('translationsTab.translateAllWarning')}
             </div>
           </div>

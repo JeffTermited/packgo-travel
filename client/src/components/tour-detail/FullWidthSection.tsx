@@ -61,7 +61,7 @@ export const FullWidthSection: React.FC<FullWidthSectionProps> = ({
             <img
               src={mainImage}
               alt={mainImageAlt}
-              className="w-full h-auto object-cover rounded-none shadow-lg"
+              className="w-full h-auto object-cover rounded-lg shadow-lg"
               style={{
                 maxHeight: "400px",
                 objectFit: "cover",
@@ -76,7 +76,7 @@ export const FullWidthSection: React.FC<FullWidthSectionProps> = ({
                     key={index}
                     src={img.url}
                     alt={img.alt}
-                    className="w-20 h-20 lg:w-24 lg:h-24 object-cover rounded-none shadow-xl border-2 border-white"
+                    className="w-20 h-20 lg:w-24 lg:h-24 object-cover rounded-lg shadow-xl border-2 border-white"
                     style={{
                       objectFit: "cover",
                       transform: `translateX(${index * -8}px)`,

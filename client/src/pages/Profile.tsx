@@ -155,14 +155,14 @@ export default function Profile() {
               <Button 
                 onClick={() => setLocation("/")}
                 variant="outline" 
-                className="rounded-none border-2 border-black hover:bg-black hover:text-white px-6"
+                className="rounded-lg border-2 border-black hover:bg-black hover:text-white px-6"
               >
                 {t('common.backToHome')}
               </Button>
               <Button 
                 onClick={handleLogout}
                 variant="outline" 
-                className="rounded-none border-2 border-black hover:bg-black hover:text-white px-6"
+                className="rounded-lg border-2 border-black hover:bg-black hover:text-white px-6"
               >
                 <LogOut className="h-4 w-4 mr-2" />
                 {t('nav.logout')}
@@ -188,7 +188,7 @@ export default function Profile() {
                   <h3 className="text-xl font-bold text-black">{user.name}</h3>
                   <p className="text-sm text-gray-500 mt-1">{user.email}</p>
                   {user.role === 'admin' && (
-                    <div className="mt-3 px-4 py-1 bg-black text-white text-xs font-bold rounded-none">
+                    <div className="mt-3 px-4 py-1 bg-black text-white text-xs font-bold rounded-lg">
                       {t('profile.admin')}
                     </div>
                   )}
@@ -199,7 +199,7 @@ export default function Profile() {
                   {!isEditing ? (
                     <div className="space-y-4">
                       <div className="flex items-center gap-3 text-sm">
-                        <div className="h-10 w-10 rounded-none bg-gray-100 flex items-center justify-center flex-shrink-0">
+                        <div className="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
                           <User className="h-5 w-5 text-gray-600" />
                         </div>
                         <div className="flex-1">
@@ -208,7 +208,7 @@ export default function Profile() {
                         </div>
                       </div>
                       <div className="flex items-center gap-3 text-sm">
-                        <div className="h-10 w-10 rounded-none bg-gray-100 flex items-center justify-center flex-shrink-0">
+                        <div className="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
                           <Calendar className="h-5 w-5 text-gray-600" />
                         </div>
                         <div className="flex-1">
@@ -219,7 +219,7 @@ export default function Profile() {
                         </div>
                       </div>
                       <div className="flex items-center gap-3 text-sm">
-                        <div className="h-10 w-10 rounded-none bg-gray-100 flex items-center justify-center flex-shrink-0">
+                        <div className="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
                           <Award className="h-5 w-5 text-gray-600" />
                         </div>
                         <div className="flex-1">
@@ -231,7 +231,7 @@ export default function Profile() {
                       </div>
                       <Button 
                         onClick={() => setIsEditing(true)}
-                        className="w-full mt-4 rounded-none bg-black hover:bg-gray-800 text-white"
+                        className="w-full mt-4 rounded-lg bg-black hover:bg-gray-800 text-white"
                       >
                         {t('profile.editProfile')}
                       </Button>
@@ -245,7 +245,7 @@ export default function Profile() {
                         <Input
                           id="name"
                           {...register("name")}
-                          className="mt-1 rounded-none border-2 border-gray-300 focus:border-black"
+                          className="mt-1 rounded-lg border-2 border-gray-300 focus:border-black"
                           placeholder={t('auth.register.namePlaceholder')}
                         />
                         {errors.name && (
@@ -259,7 +259,7 @@ export default function Profile() {
                         <Input
                           id="phone"
                           {...register("phone")}
-                          className="mt-1 rounded-none border-2 border-gray-300 focus:border-black"
+                          className="mt-1 rounded-lg border-2 border-gray-300 focus:border-black"
                           placeholder={t('quickInquiry.form.phonePlaceholder')}
                         />
                         {errors.phone && (
@@ -285,7 +285,7 @@ export default function Profile() {
                         <Button 
                           type="submit"
                           disabled={updateProfileMutation.isPending}
-                          className="flex-1 rounded-none bg-black hover:bg-gray-800 text-white"
+                          className="flex-1 rounded-lg bg-black hover:bg-gray-800 text-white"
                         >
                           {updateProfileMutation.isPending ? t('common.saving') : t('common.save')}
                         </Button>
@@ -293,7 +293,7 @@ export default function Profile() {
                           type="button"
                           onClick={handleCancelEdit}
                           variant="outline"
-                          className="flex-1 rounded-none border-2 border-black hover:bg-black hover:text-white"
+                          className="flex-1 rounded-lg border-2 border-black hover:bg-black hover:text-white"
                         >
                           {t('common.cancel')}
                         </Button>
@@ -317,7 +317,7 @@ export default function Profile() {
                       <p className="text-3xl font-bold text-black">{completedTrips}</p>
                       <p className="text-xs text-gray-400 mt-2">{t('profile.trips')}</p>
                     </div>
-                    <div className="h-14 w-14 rounded-none bg-gray-100 flex items-center justify-center">
+                    <div className="h-14 w-14 rounded-lg bg-gray-100 flex items-center justify-center">
                       <MapPin className="h-7 w-7 text-black" />
                     </div>
                   </div>
@@ -332,7 +332,7 @@ export default function Profile() {
                       <p className="text-3xl font-bold text-black">{upcomingTrips}</p>
                       <p className="text-xs text-gray-400 mt-2">{t('profile.tours')}</p>
                     </div>
-                    <div className="h-14 w-14 rounded-none bg-gray-100 flex items-center justify-center">
+                    <div className="h-14 w-14 rounded-lg bg-gray-100 flex items-center justify-center">
                       <Package className="h-7 w-7 text-black" />
                     </div>
                   </div>
@@ -347,7 +347,7 @@ export default function Profile() {
                       <p className="text-3xl font-bold text-black">${totalSpent.toLocaleString()}</p>
                       <p className="text-xs text-gray-400 mt-2">{t('profile.totalAmount')}</p>
                     </div>
-                    <div className="h-14 w-14 rounded-none bg-gray-100 flex items-center justify-center">
+                    <div className="h-14 w-14 rounded-lg bg-gray-100 flex items-center justify-center">
                       <TrendingUp className="h-7 w-7 text-black" />
                     </div>
                   </div>
@@ -367,7 +367,7 @@ export default function Profile() {
                     className="flex items-center justify-between p-4  border border-gray-200 hover:border-black hover:bg-gray-50 transition-all group"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="h-12 w-12 rounded-none bg-gray-100 flex items-center justify-center">
+                      <div className="h-12 w-12 rounded-lg bg-gray-100 flex items-center justify-center">
                         <ShoppingBag className="h-6 w-6 text-black" />
                       </div>
                       <span className="font-medium text-black">{t('profile.myBookings')}</span>
@@ -380,7 +380,7 @@ export default function Profile() {
                     className="flex items-center justify-between p-4  border border-gray-200 hover:border-black hover:bg-gray-50 transition-all group"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="h-12 w-12 rounded-none bg-gray-100 flex items-center justify-center">
+                      <div className="h-12 w-12 rounded-lg bg-gray-100 flex items-center justify-center">
                         <Heart className="h-6 w-6 text-black" />
                       </div>
                       <span className="font-medium text-black">{t('profile.favorites')}</span>
@@ -393,7 +393,7 @@ export default function Profile() {
                     className="flex items-center justify-between p-4  border border-gray-200 hover:border-black hover:bg-gray-50 transition-all group"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="h-12 w-12 rounded-none bg-gray-100 flex items-center justify-center">
+                      <div className="h-12 w-12 rounded-lg bg-gray-100 flex items-center justify-center">
                         <MessageSquare className="h-6 w-6 text-black" />
                       </div>
                       <span className="font-medium text-black">{t('profile.contactSupport')}</span>
@@ -413,7 +413,7 @@ export default function Profile() {
                     <Button 
                       variant="outline" 
                       size="sm"
-                      className="rounded-none border border-gray-300 hover:border-black hover:bg-gray-50"
+                      className="rounded-lg border border-gray-300 hover:border-black hover:bg-gray-50"
                       onClick={() => setLocation("/profile")}
                     >
                       {t('common.viewAll')}
@@ -431,7 +431,7 @@ export default function Profile() {
                         onClick={() => setLocation(`/booking/${booking.id}`)}
                       >
                         <div className="flex items-center gap-4">
-                          <div className="h-12 w-12 rounded-none bg-gray-100 flex items-center justify-center">
+                          <div className="h-12 w-12 rounded-lg bg-gray-100 flex items-center justify-center">
                             <ShoppingBag className="h-6 w-6 text-black" />
                           </div>
                           <div>
@@ -457,13 +457,13 @@ export default function Profile() {
                   </div>
                 ) : (
                   <div className="text-center py-16">
-                    <div className="h-20 w-20 rounded-none bg-gray-100 flex items-center justify-center mx-auto mb-4">
+                    <div className="h-20 w-20 rounded-lg bg-gray-100 flex items-center justify-center mx-auto mb-4">
                       <ShoppingBag className="h-10 w-10 text-gray-400" />
                     </div>
                     <p className="text-gray-600 font-medium mb-2">{t('profile.noBookings')}</p>
                     <p className="text-sm text-gray-500 mb-6">{t('profile.startExploring')}</p>
                     <Button 
-                      className="rounded-none bg-black text-white hover:bg-gray-800 px-8"
+                      className="rounded-lg bg-black text-white hover:bg-gray-800 px-8"
                       onClick={() => setLocation("/")}
                     >
                       {t('profile.browseTours')}
@@ -519,7 +519,7 @@ function FavoritesSection({ setLocation }: { setLocation: (path: string) => void
                 onClick={() => setLocation(`/tours/${tour.id}`)}
               >
                 {/* Tour Image */}
-                <div className="h-20 w-28 rounded-none overflow-hidden bg-gray-100 flex-shrink-0">
+                <div className="h-20 w-28 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                   {tour.mainImage || tour.heroImage || tour.imageUrl ? (
                     <img 
                       src={tour.mainImage || tour.heroImage || tour.imageUrl} 
@@ -559,7 +559,7 @@ function FavoritesSection({ setLocation }: { setLocation: (path: string) => void
                     e.stopPropagation();
                     removeMutation.mutate({ tourId: tour.id });
                   }}
-                  className="p-2 rounded-none hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"
+                  className="p-2 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"
                   title={t('profile.removeFavorite')}
                 >
                   <Heart className="h-5 w-5 fill-red-500 text-red-500" />
@@ -569,13 +569,13 @@ function FavoritesSection({ setLocation }: { setLocation: (path: string) => void
           </div>
         ) : (
           <div className="text-center py-16">
-            <div className="h-20 w-20 rounded-none bg-gray-100 flex items-center justify-center mx-auto mb-4">
+            <div className="h-20 w-20 rounded-lg bg-gray-100 flex items-center justify-center mx-auto mb-4">
               <Heart className="h-10 w-10 text-gray-400" />
             </div>
             <p className="text-gray-600 font-medium mb-2">{t('profile.noFavorites')}</p>
             <p className="text-sm text-gray-500 mb-6">{t('profile.addFavoritesHint')}</p>
             <Button 
-              className="rounded-none bg-black text-white hover:bg-gray-800 px-8"
+              className="rounded-lg bg-black text-white hover:bg-gray-800 px-8"
               onClick={() => setLocation("/")}
             >
               {t('profile.exploreTours')}

@@ -259,7 +259,7 @@ export default function BookTour() {
                 <div key={step.key} className="flex-1 flex items-center">
                   <div className="flex flex-col items-center flex-1">
                     <div
-                      className={`w-12 h-12 rounded-none flex items-center justify-center border-2 ${
+                      className={`w-12 h-12 rounded-lg flex items-center justify-center border-2 ${
                         isActive
                           ? "bg-black text-white border-black"
                           : isCompleted
@@ -317,7 +317,7 @@ export default function BookTour() {
                     return (
                       <div
                         key={departure.id}
-                        className={`border rounded-none p-4 cursor-pointer transition-all ${
+                        className={`border rounded-lg p-4 cursor-pointer transition-all ${
                           selectedDepartureId === departure.id
                             ? "border-black bg-gray-50"
                             : isAvailable
@@ -565,7 +565,7 @@ export default function BookTour() {
                 <h3 className="font-bold text-lg mb-4">{t('bookTour.travelerInfo')}</h3>
                 <div className="space-y-6">
                   {participants.map((participant, index) => (
-                    <div key={index} className="border rounded-none p-4">
+                    <div key={index} className="border rounded-lg p-4">
                       <h4 className="font-medium mb-3">
                         {t('bookTour.traveler')} {index + 1} ({participant.participantType === "adult" ? t('bookTour.adult') : participant.participantType === "child" ? t('bookTour.child') : t('bookTour.infant')})
                       </h4>
@@ -768,7 +768,7 @@ export default function BookTour() {
                 </div>
               </div>
               
-              <div className="bg-yellow-50 border border-yellow-200 rounded-none p-4 text-sm">
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm">
                 <p className="font-medium mb-2">{t('bookTour.paymentInfo')}：</p>
                 <ul className="list-disc list-inside space-y-1 text-gray-700">
                   <li>{t('bookTour.paymentNote1')}</li>

@@ -72,7 +72,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 {keywords.map((keyword, index) => (
                   <span
                     key={index}
-                    className="px-3 py-1 text-sm font-medium rounded-none bg-black/40 text-white backdrop-blur-sm border border-white/30"
+                    className="px-3 py-1 text-sm font-medium rounded-lg bg-black/40 text-white backdrop-blur-sm border border-white/30"
                   >
                     {keyword}
                   </span>

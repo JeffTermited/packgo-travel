@@ -227,7 +227,7 @@ export default function EditableDestinations() {
                       e.stopPropagation();
                       handleEdit(dest as Destination);
                     }}
-                    className="bg-black/70 hover:bg-black text-white p-2 rounded-none transition-colors"
+                    className="bg-black/70 hover:bg-black text-white p-2 rounded-lg transition-colors"
                   >
                     <Pencil className="h-4 w-4" />
                   </button>
@@ -236,7 +236,7 @@ export default function EditableDestinations() {
                       e.stopPropagation();
                       handleDelete(dest.id);
                     }}
-                    className="bg-red-600/70 hover:bg-red-600 text-white p-2 rounded-none transition-colors"
+                    className="bg-red-600/70 hover:bg-red-600 text-white p-2 rounded-lg transition-colors"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -285,7 +285,7 @@ export default function EditableDestinations() {
               <Label>圖片</Label>
               <div className="mt-1 space-y-2">
                 {editForm.image && (
-                  <img src={editForm.image} alt="Preview" className="w-full h-32 object-cover rounded-none" />
+                  <img src={editForm.image} alt="Preview" className="w-full h-32 object-cover rounded-lg" />
                 )}
                 <div className="flex gap-2">
                   <Button
@@ -371,7 +371,7 @@ export default function EditableDestinations() {
               <Label>圖片</Label>
               <div className="mt-1 space-y-2">
                 {editForm.image && (
-                  <img src={editForm.image} alt="Preview" className="w-full h-32 object-cover rounded-none" />
+                  <img src={editForm.image} alt="Preview" className="w-full h-32 object-cover rounded-lg" />
                 )}
                 <div className="flex gap-2">
                   <Button

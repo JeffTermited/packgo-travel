@@ -206,7 +206,7 @@ export const TransportationInfoSection: React.FC<TransportationInfoSectionProps>
               {extra.route.map((station, index) => (
                 <React.Fragment key={index}>
                   <span
-                    className="px-3 py-1 rounded-none text-sm font-medium"
+                    className="px-3 py-1 rounded-lg text-sm font-medium"
                     style={{
                       backgroundColor: colorTheme.accent + "20",
                       color: colorTheme.primary,
@@ -226,10 +226,10 @@ export const TransportationInfoSection: React.FC<TransportationInfoSectionProps>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {/* Outbound */}
           {outbound && (
-            <div className="bg-gray-50 rounded-none p-5 shadow-sm">
+            <div className="bg-gray-50 rounded-lg p-5 shadow-sm">
               <div className="flex items-center gap-2 mb-3">
                 <div
-                  className="flex items-center justify-center w-8 h-8 rounded-none"
+                  className="flex items-center justify-center w-8 h-8 rounded-lg"
                   style={{ backgroundColor: colorTheme.accent + "20" }}
                 >
                   <TransportIcon
@@ -289,10 +289,10 @@ export const TransportationInfoSection: React.FC<TransportationInfoSectionProps>
 
           {/* Inbound */}
           {inbound && (
-            <div className="bg-gray-50 rounded-none p-5 shadow-sm">
+            <div className="bg-gray-50 rounded-lg p-5 shadow-sm">
               <div className="flex items-center gap-2 mb-3">
                 <div
-                  className="flex items-center justify-center w-8 h-8 rounded-none"
+                  className="flex items-center justify-center w-8 h-8 rounded-lg"
                   style={{ backgroundColor: colorTheme.accent + "20" }}
                 >
                   <TransportIcon
@@ -357,7 +357,7 @@ export const TransportationInfoSection: React.FC<TransportationInfoSectionProps>
             {features.map((feature, index) => (
               <span
                 key={index}
-                className="px-4 py-2 rounded-none text-sm font-medium"
+                className="px-4 py-2 rounded-lg text-sm font-medium"
                 style={{
                   backgroundColor: colorTheme.accent + "20",
                   color: colorTheme.primary,

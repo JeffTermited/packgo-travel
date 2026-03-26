@@ -110,7 +110,7 @@ export const FeaturesSection: React.FC<FeaturesSectionProps> = ({
               <div className="absolute inset-0 flex flex-col justify-end p-6">
                 {/* 標籤 */}
                 <div
-                  className="inline-flex self-start px-3 py-1 rounded-none text-sm font-bold text-white mb-3"
+                  className="inline-flex self-start px-3 py-1 rounded-lg text-sm font-bold text-white mb-3"
                   style={{ backgroundColor: colorTheme.accent }}
                 >
                   {feature.label}

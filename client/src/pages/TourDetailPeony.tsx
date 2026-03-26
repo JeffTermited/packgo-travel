@@ -187,7 +187,7 @@ const DeparturePriceCalendar = ({
   }
 
   return (
-    <div className="bg-white rounded-none shadow-lg overflow-hidden mb-8 border border-gray-100">
+    <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-8 border border-gray-100">
       {/* 日曆標題 - 卓面級設計 */}
       <div 
         className="flex items-center justify-between p-6" 
@@ -197,7 +197,7 @@ const DeparturePriceCalendar = ({
       >
         <button 
           onClick={prevMonth}
-          className="p-3 bg-white/20 hover:bg-white/30 rounded-none transition-all duration-200 backdrop-blur-sm"
+          className="p-3 bg-white/20 hover:bg-white/30 rounded-lg transition-all duration-200 backdrop-blur-sm"
         >
           <ChevronUp className="h-5 w-5 rotate-[-90deg] text-white" />
         </button>
@@ -209,7 +209,7 @@ const DeparturePriceCalendar = ({
         </div>
         <button 
           onClick={nextMonth}
-          className="p-3 bg-white/20 hover:bg-white/30 rounded-none transition-all duration-200 backdrop-blur-sm"
+          className="p-3 bg-white/20 hover:bg-white/30 rounded-lg transition-all duration-200 backdrop-blur-sm"
         >
           <ChevronUp className="h-5 w-5 rotate-90 text-white" />
         </button>
@@ -218,7 +218,7 @@ const DeparturePriceCalendar = ({
       {/* 價格圖例 */}
       <div className="flex items-center justify-center gap-6 py-4 bg-gray-50 border-b border-gray-100">
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded-none" style={{ backgroundColor: themeColor.secondary }}></div>
+          <div className="w-4 h-4 rounded-lg" style={{ backgroundColor: themeColor.secondary }}></div>
           <span className="text-sm text-gray-600">{t('tourDetail.available') || '可預訂'}</span>
         </div>
         <div className="flex items-center gap-2">
@@ -286,11 +286,11 @@ const DeparturePriceCalendar = ({
                   {departure && (
                     <div className="mt-auto">
                       {isFull ? (
-                        <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-none">{t('tourDetail.soldOut')}</span>
+                        <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-lg">{t('tourDetail.soldOut')}</span>
                       ) : (
                         <>
                           <div 
-                            className="text-xs font-bold px-2 py-1 rounded-none text-white shadow-sm"
+                            className="text-xs font-bold px-2 py-1 rounded-lg text-white shadow-sm"
                             style={{ backgroundColor: themeColor.secondary }}
                           >
                             ${(departure.adultPrice || basePrice).toLocaleString()}
@@ -545,7 +545,7 @@ const AttractionDetailDialog = ({
         
         {/* 圖片輪播 */}
         {hasImages && (
-          <div className="relative aspect-[16/9] rounded-none overflow-hidden mb-4">
+          <div className="relative aspect-[16/9] rounded-lg overflow-hidden mb-4">
             <img 
               src={images[currentImageIndex]} 
               alt={name}
@@ -555,13 +555,13 @@ const AttractionDetailDialog = ({
               <>
                 <button 
                   onClick={() => setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length)}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-none p-2 transition-colors"
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-lg p-2 transition-colors"
                 >
                   <ChevronLeft className="h-5 w-5" />
                 </button>
                 <button 
                   onClick={() => setCurrentImageIndex((prev) => (prev + 1) % images.length)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-none p-2 transition-colors"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-lg p-2 transition-colors"
                 >
                   <ChevronRight className="h-5 w-5" />
                 </button>
@@ -570,7 +570,7 @@ const AttractionDetailDialog = ({
                     <button
                       key={idx}
                       onClick={() => setCurrentImageIndex(idx)}
-                      className={`w-2 h-2 rounded-none transition-all ${idx === currentImageIndex ? 'bg-white w-4' : 'bg-white/50'}`}
+                      className={`w-2 h-2 rounded-lg transition-all ${idx === currentImageIndex ? 'bg-white w-4' : 'bg-white/50'}`}
                     />
                   ))}
                 </div>
@@ -623,7 +623,7 @@ const AttractionDetailDialog = ({
           {/* 開放時間和門票資訊 */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {detail.openingHours && (
-              <div className="bg-gray-50 rounded-none p-4">
+              <div className="bg-gray-50 rounded-lg p-4">
                 <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
                   <Clock className="h-4 w-4" style={{ color: themeColor.secondary }} />
                   {t('tourDetail.openingHours')}
@@ -632,7 +632,7 @@ const AttractionDetailDialog = ({
               </div>
             )}
             {(detail.ticketPrice || detail.ticketInfo) && (
-              <div className="bg-gray-50 rounded-none p-4">
+              <div className="bg-gray-50 rounded-lg p-4">
                 <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
                   <Ticket className="h-4 w-4" style={{ color: themeColor.secondary }} />
                   {t('tourDetail.ticketInfo')}
@@ -644,7 +644,7 @@ const AttractionDetailDialog = ({
           
           {/* 貼心提示 */}
           {detail.tips && detail.tips.length > 0 && (
-            <div className="bg-amber-50 rounded-none p-4">
+            <div className="bg-amber-50 rounded-lg p-4">
               <h4 className="font-semibold text-amber-800 mb-2 flex items-center gap-2">
                 <AlertCircle className="h-4 w-4" />
                 {t('tourDetail.travelTips')}
@@ -769,7 +769,7 @@ const MealCard = ({
   
   return (
     <div 
-      className={`bg-white border ${config.borderColor} rounded-none overflow-hidden transition-all duration-300 ${config.hoverBg} ${isSpecialMeal ? 'cursor-pointer hover:shadow-md' : ''} flex flex-col h-full`}
+      className={`bg-white border ${config.borderColor} rounded-lg overflow-hidden transition-all duration-300 ${config.hoverBg} ${isSpecialMeal ? 'cursor-pointer hover:shadow-md' : ''} flex flex-col h-full`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleClick}
@@ -789,14 +789,14 @@ const MealCard = ({
               <>
                 <button 
                   onClick={(e) => { e.stopPropagation(); prevImage(); }}
-                  className="absolute left-1 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-none p-1 transition-opacity"
+                  className="absolute left-1 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-lg p-1 transition-opacity"
                   style={{ opacity: isHovered ? 1 : 0 }}
                 >
                   <ChevronLeft className="h-3 w-3" />
                 </button>
                 <button 
                   onClick={(e) => { e.stopPropagation(); nextImage(); }}
-                  className="absolute right-1 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-none p-1 transition-opacity"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-lg p-1 transition-opacity"
                   style={{ opacity: isHovered ? 1 : 0 }}
                 >
                   <ChevronRight className="h-3 w-3" />
@@ -805,7 +805,7 @@ const MealCard = ({
                   {images.map((_, idx) => (
                     <div 
                       key={idx}
-                      className={`w-1.5 h-1.5 rounded-none transition-all ${idx === currentImageIndex ? 'bg-white w-3' : 'bg-white/50'}`}
+                      className={`w-1.5 h-1.5 rounded-lg transition-all ${idx === currentImageIndex ? 'bg-white w-3' : 'bg-white/50'}`}
                     />
                   ))}
                 </div>
@@ -813,7 +813,7 @@ const MealCard = ({
             )}
             {/* 特色餐食標籤 */}
             {isSpecialMeal && (
-              <div className="absolute top-2 right-2 bg-white backdrop-blur-sm rounded-none px-2 py-0.5 shadow-md border border-gray-200">
+              <div className="absolute top-2 right-2 bg-white backdrop-blur-sm rounded-lg px-2 py-0.5 shadow-md border border-gray-200">
                 <span className="text-xs font-medium text-gray-800">{t('tourDetail.specialMeal')}</span>
               </div>
             )}
@@ -821,7 +821,7 @@ const MealCard = ({
         ) : (
           // 無圖片時顯示圖示
           <div className={`w-full h-full ${config.bgColor} flex items-center justify-center`}>
-            <div className={`${config.iconBg} rounded-none p-4`}>
+            <div className={`${config.iconBg} rounded-lg p-4`}>
               <IconComponent className={`h-8 w-8 ${config.textColor}`} />
             </div>
           </div>
@@ -877,7 +877,7 @@ const MealDetailDialog = ({
         
         {/* 圖片輪播 */}
         {hasImages && (
-          <div className="relative aspect-[16/9] rounded-none overflow-hidden mb-4">
+          <div className="relative aspect-[16/9] rounded-lg overflow-hidden mb-4">
             <img 
               src={images[currentImageIndex]} 
               alt={detail.name}
@@ -887,13 +887,13 @@ const MealDetailDialog = ({
               <>
                 <button 
                   onClick={() => setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length)}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-none p-2 transition-colors"
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-lg p-2 transition-colors"
                 >
                   <ChevronLeft className="h-5 w-5" />
                 </button>
                 <button 
                   onClick={() => setCurrentImageIndex((prev) => (prev + 1) % images.length)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-none p-2 transition-colors"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-lg p-2 transition-colors"
                 >
                   <ChevronRight className="h-5 w-5" />
                 </button>
@@ -902,7 +902,7 @@ const MealDetailDialog = ({
                     <button
                       key={idx}
                       onClick={() => setCurrentImageIndex(idx)}
-                      className={`w-2 h-2 rounded-none transition-all ${idx === currentImageIndex ? 'bg-white w-4' : 'bg-white/50'}`}
+                      className={`w-2 h-2 rounded-lg transition-all ${idx === currentImageIndex ? 'bg-white w-4' : 'bg-white/50'}`}
                     />
                   ))}
                 </div>
@@ -1033,11 +1033,11 @@ const DayCard = ({
               {day.activities.slice(0, isExpanded ? undefined : 3).map((activity: any, actIndex: number) => (
                 <div 
                   key={actIndex} 
-                  className="flex items-start gap-3 cursor-pointer group hover:bg-gray-50 rounded-none p-2 -ml-2 transition-colors"
+                  className="flex items-start gap-3 cursor-pointer group hover:bg-gray-50 rounded-lg p-2 -ml-2 transition-colors"
                   onClick={() => onShowAttractionDetail(activity)}
                 >
                   <div 
-                    className="w-3 h-3 rounded-none mt-2 flex-shrink-0 group-hover:scale-125 transition-transform"
+                    className="w-3 h-3 rounded-lg mt-2 flex-shrink-0 group-hover:scale-125 transition-transform"
                     style={{ backgroundColor: themeColor.primary }}
                   />
                   <div className="flex-1">
@@ -1229,7 +1229,7 @@ const HotelCard = ({ hotel, themeColor }: { hotel: any; themeColor: ReturnType<t
         
         {/* 圖片輪播 */}
         {hasImages && (
-          <div className="relative aspect-video overflow-hidden rounded-none mb-6">
+          <div className="relative aspect-video overflow-hidden rounded-lg mb-6">
             <img 
               src={images[currentImageIndex]}
               alt={hotel.imageAlt || hotel.name}
@@ -1242,7 +1242,7 @@ const HotelCard = ({ hotel, themeColor }: { hotel: any; themeColor: ReturnType<t
                     e.stopPropagation();
                     setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
                   }}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-none p-2 transition-colors"
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-lg p-2 transition-colors"
                 >
                   <ChevronLeft className="h-5 w-5" />
                 </button>
@@ -1251,7 +1251,7 @@ const HotelCard = ({ hotel, themeColor }: { hotel: any; themeColor: ReturnType<t
                     e.stopPropagation();
                     setCurrentImageIndex((prev) => (prev + 1) % images.length);
                   }}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-none p-2 transition-colors"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-lg p-2 transition-colors"
                 >
                   <ChevronRight className="h-5 w-5" />
                 </button>
@@ -1263,7 +1263,7 @@ const HotelCard = ({ hotel, themeColor }: { hotel: any; themeColor: ReturnType<t
                         e.stopPropagation();
                         setCurrentImageIndex(idx);
                       }}
-                      className={`w-2 h-2 rounded-none transition-all ${idx === currentImageIndex ? 'bg-white w-4' : 'bg-white/50'}`}
+                      className={`w-2 h-2 rounded-lg transition-all ${idx === currentImageIndex ? 'bg-white w-4' : 'bg-white/50'}`}
                     />
                   ))}
                 </div>
@@ -1331,9 +1331,9 @@ const HotelCard = ({ hotel, themeColor }: { hotel: any; themeColor: ReturnType<t
                 return (
                   <div 
                     key={idx} 
-                    className="flex items-center gap-3 p-3 bg-gray-50 rounded-none"
+                    className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
                   >
-                    <span className="p-2 rounded-none" style={{ backgroundColor: themeColor.light, color: themeColor.secondary }}>
+                    <span className="p-2 rounded-lg" style={{ backgroundColor: themeColor.light, color: themeColor.secondary }}>
                       {facilityInfo?.icon || <Check className="h-4 w-4" />}
                     </span>
                     <span className="font-medium">{facilityInfo?.label || facility}</span>
@@ -1350,9 +1350,9 @@ const HotelCard = ({ hotel, themeColor }: { hotel: any; themeColor: ReturnType<t
           <div className="grid gap-3">
             {detail?.roomTypes?.length ? (
               detail.roomTypes.map((room, idx) => (
-                <div key={idx} className="flex items-center gap-4 p-4 border border-gray-200 rounded-none hover:border-gray-300 transition-colors">
+                <div key={idx} className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
                   {room.image && (
-                    <img src={room.image} alt={room.name} className="w-24 h-16 object-cover rounded-none flex-shrink-0" />
+                    <img src={room.image} alt={room.name} className="w-24 h-16 object-cover rounded-lg flex-shrink-0" />
                   )}
                   <div className="flex-grow">
                     <p className="font-medium">{room.name}</p>
@@ -1367,7 +1367,7 @@ const HotelCard = ({ hotel, themeColor }: { hotel: any; themeColor: ReturnType<t
               ))
             ) : (
               <>
-                <div className="flex items-center justify-between p-4 border border-gray-200 rounded-none hover:border-gray-300 transition-colors">
+                <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
                   <div>
                     <p className="font-medium">{t('tourDetail.standardRoom')}</p>
                     <p className="text-sm text-gray-500">{t('tourDetail.standardRoomDesc')}</p>
@@ -1377,7 +1377,7 @@ const HotelCard = ({ hotel, themeColor }: { hotel: any; themeColor: ReturnType<t
                     <p className="font-bold" style={{ color: themeColor.secondary }}>{t('tourDetail.includedInTour')}</p>
                   </div>
                 </div>
-                <div className="flex items-center justify-between p-4 border border-gray-200 rounded-none hover:border-gray-300 transition-colors">
+                <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
                   <div>
                     <p className="font-medium">{t('tourDetail.upgradeRoom') || '升等豪華房'}</p>
                     <p className="text-sm text-gray-500">{t('tourDetail.upgradeRoomDesc') || '更寬敢空間、景觀陽台、迷你吧檯'}</p>
@@ -1398,10 +1398,10 @@ const HotelCard = ({ hotel, themeColor }: { hotel: any; themeColor: ReturnType<t
             <h4 className="font-semibold text-lg mb-3" style={{ color: themeColor.primary }}>{t('tourDetail.reviews')}</h4>
             <div className="space-y-4">
               {detail.reviews.map((review, idx) => (
-                <div key={idx} className="p-4 bg-gray-50 rounded-none">
+                <div key={idx} className="p-4 bg-gray-50 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-none bg-gray-300 flex items-center justify-center text-white font-medium">
+                      <div className="w-8 h-8 rounded-lg bg-gray-300 flex items-center justify-center text-white font-medium">
                         {review.author.charAt(0)}
                       </div>
                       <span className="font-medium">{review.author}</span>
@@ -1449,7 +1449,7 @@ const HotelCard = ({ hotel, themeColor }: { hotel: any; themeColor: ReturnType<t
         )}
         
         {/* 備註 */}
-        <div className="p-4 bg-gray-50 rounded-none">
+        <div className="p-4 bg-gray-50 rounded-lg">
           <p className="text-sm text-gray-500 flex items-start gap-2">
             <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
             <span>{t('tourDetail.hotelDisclaimer') || '實際入住飯店可能根據當地情況調整為同級飯店，請以最終行程確認書為準。'}</span>
@@ -1768,7 +1768,7 @@ export default function TourDetailPeony() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
-          <div className="w-12 h-12 border-2 border-black border-t-transparent rounded-none animate-spin mx-auto"></div>
+          <div className="w-12 h-12 border-2 border-black border-t-transparent rounded-lg animate-spin mx-auto"></div>
           <p className="mt-6 text-sm tracking-widest uppercase text-gray-500">Loading</p>
         </div>
       </div>
@@ -1785,7 +1785,7 @@ export default function TourDetailPeony() {
             <p className="text-gray-500 mb-8">{t('tourDetail.tourNotFound')}</p>
             <Button 
               onClick={() => navigate("/")} 
-              className="bg-black text-white hover:bg-gray-800 rounded-none px-8 py-3"
+              className="bg-black text-white hover:bg-gray-800 rounded-lg px-8 py-3"
             >
               {t('tourDetail.backToHome')}
             </Button>
@@ -1940,7 +1940,7 @@ export default function TourDetailPeony() {
             {/* Destination Country Badge */}
             {tour.destinationCountry && (
               <div 
-                className="flex items-center gap-2 px-3 py-1 rounded-none text-sm bg-white/95 backdrop-blur-sm shadow-md"
+                className="flex items-center gap-2 px-3 py-1 rounded-lg text-sm bg-white/95 backdrop-blur-sm shadow-md"
                 style={{ color: themeColor.primary }}
               >
                 <Globe className="h-4 w-4" />
@@ -2079,7 +2079,7 @@ export default function TourDetailPeony() {
                 return (
                   <div 
                     key={index} 
-                    className={`group rounded-none border border-gray-100 hover:shadow-lg transition-all duration-300 bg-white hover:-translate-y-1 overflow-hidden ${isEditMode ? 'ring-2 ring-yellow-200' : ''}`}
+                    className={`group rounded-lg border border-gray-100 hover:shadow-lg transition-all duration-300 bg-white hover:-translate-y-1 overflow-hidden ${isEditMode ? 'ring-2 ring-yellow-200' : ''}`}
                   >
                     {/* 圖片區域 - 支援編輯 */}
                     {isEditMode ? (
@@ -2251,7 +2251,7 @@ export default function TourDetailPeony() {
                 {attractions.map((attraction: any, index: number) => (
                   <div key={index} className="flex items-start gap-3 p-4 bg-gray-50">
                     <div 
-                      className="w-2 h-2 rounded-none mt-2 flex-shrink-0"
+                      className="w-2 h-2 rounded-lg mt-2 flex-shrink-0"
                       style={{ backgroundColor: themeColor.primary }}
                     />
                     <div>
@@ -2279,7 +2279,7 @@ export default function TourDetailPeony() {
                 {meals.map((meal: any, index: number) => (
                   <div key={index} className="flex items-start gap-3 p-4 bg-gray-50">
                     <div 
-                      className="w-2 h-2 rounded-none mt-2 flex-shrink-0"
+                      className="w-2 h-2 rounded-lg mt-2 flex-shrink-0"
                       style={{ backgroundColor: themeColor.secondary }}
                     />
                     <span>{typeof meal === 'string' ? meal : meal.name || meal.description}</span>
@@ -2294,9 +2294,9 @@ export default function TourDetailPeony() {
             <div className="grid md:grid-cols-2 gap-8">
               {/* Included */}
               {costExplanation.included && costExplanation.included.length > 0 && (
-                <div className="bg-green-50 rounded-none p-6 border border-green-100">
+                <div className="bg-green-50 rounded-lg p-6 border border-green-100">
                   <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-green-700">
-                    <div className="w-8 h-8 rounded-none bg-green-100 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center">
                       <Check className="h-5 w-5 text-green-600" />
                     </div>
                     {t('tourDetail.includedItems')}
@@ -2314,9 +2314,9 @@ export default function TourDetailPeony() {
 
               {/* Excluded */}
               {costExplanation.excluded && costExplanation.excluded.length > 0 && (
-                <div className="bg-red-50 rounded-none p-6 border border-red-100">
+                <div className="bg-red-50 rounded-lg p-6 border border-red-100">
                   <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-red-700">
-                    <div className="w-8 h-8 rounded-none bg-red-100 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center">
                       <X className="h-5 w-5 text-red-600" />
                     </div>
                     {t('tourDetail.excludedItems')}
@@ -2418,9 +2418,9 @@ export default function TourDetailPeony() {
             <div className="grid md:grid-cols-2 gap-6">
               {/* Preparation */}
               {noticeDetailed.preparation && ensureArray(noticeDetailed.preparation).length > 0 && (
-                <div className="bg-white rounded-none p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-none flex items-center justify-center" style={{ backgroundColor: `${themeColor.secondary}15` }}>
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${themeColor.secondary}15` }}>
                       <Luggage className="h-5 w-5" style={{ color: themeColor.secondary }} />
                     </div>
                     <h3 className="text-lg font-bold">{t('tourDetail.preTrip') || '行前準備'}</h3>
@@ -2438,9 +2438,9 @@ export default function TourDetailPeony() {
 
               {/* Documents */}
               {noticeDetailed.documents && ensureArray(noticeDetailed.documents).length > 0 && (
-                <div className="bg-white rounded-none p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-none flex items-center justify-center" style={{ backgroundColor: `${themeColor.secondary}15` }}>
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${themeColor.secondary}15` }}>
                       <FileText className="h-5 w-5" style={{ color: themeColor.secondary }} />
                     </div>
                     <h3 className="text-lg font-bold">{t('tourDetail.documents') || '證件需求'}</h3>
@@ -2458,9 +2458,9 @@ export default function TourDetailPeony() {
 
               {/* Health */}
               {noticeDetailed.health && ensureArray(noticeDetailed.health).length > 0 && (
-                <div className="bg-white rounded-none p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-none flex items-center justify-center" style={{ backgroundColor: `${themeColor.secondary}15` }}>
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${themeColor.secondary}15` }}>
                       <Heart className="h-5 w-5" style={{ color: themeColor.secondary }} />
                     </div>
                     <h3 className="text-lg font-bold">{t('tourDetail.health') || '健康須知'}</h3>
@@ -2478,9 +2478,9 @@ export default function TourDetailPeony() {
 
               {/* Emergency Contact */}
               {noticeDetailed.emergency && ensureArray(noticeDetailed.emergency).length > 0 && (
-                <div className="bg-white rounded-none p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-none flex items-center justify-center" style={{ backgroundColor: `${themeColor.secondary}15` }}>
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${themeColor.secondary}15` }}>
                       <PhoneCall className="h-5 w-5" style={{ color: themeColor.secondary }} />
                     </div>
                     <h3 className="text-lg font-bold">{t('tourDetail.emergency') || '緊急聯絡'}</h3>
@@ -2498,9 +2498,9 @@ export default function TourDetailPeony() {
 
               {/* Terms */}
               {noticeDetailed.terms && ensureArray(noticeDetailed.terms).length > 0 && (
-                <div className="bg-white rounded-none p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow md:col-span-2">
+                <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow md:col-span-2">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-none flex items-center justify-center" style={{ backgroundColor: `${themeColor.secondary}15` }}>
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${themeColor.secondary}15` }}>
                       <Info className="h-5 w-5" style={{ color: themeColor.secondary }} />
                     </div>
                     <h3 className="text-lg font-bold">{t('tourDetail.terms') || '條款與細則'}</h3>
@@ -2581,7 +2581,7 @@ export default function TourDetailPeony() {
                 type="text"
                 readOnly
                 value={typeof window !== 'undefined' ? window.location.href : ''}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-none text-sm bg-gray-50"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50"
               />
               <Button
                 onClick={() => {
@@ -2603,9 +2603,9 @@ export default function TourDetailPeony() {
                   const url = encodeURIComponent(window.location.href);
                   window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank', 'width=600,height=400');
                 }}
-                className="flex flex-col items-center gap-2 p-3 rounded-none hover:bg-gray-100 transition-colors"
+                className="flex flex-col items-center gap-2 p-3 rounded-lg hover:bg-gray-100 transition-colors"
               >
-                <div className="w-10 h-10 bg-[#1877F2] rounded-none flex items-center justify-center">
+                <div className="w-10 h-10 bg-[#1877F2] rounded-lg flex items-center justify-center">
                   <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                   </svg>
@@ -2620,9 +2620,9 @@ export default function TourDetailPeony() {
                   const text = encodeURIComponent((t('tourDetail.lineShareText') || '推薦這個行程給你：{title}').replace('{title}', displayTitle));
                   window.open(`https://social-plugins.line.me/lineit/share?url=${url}&text=${text}`, '_blank', 'width=600,height=400');
                 }}
-                className="flex flex-col items-center gap-2 p-3 rounded-none hover:bg-gray-100 transition-colors"
+                className="flex flex-col items-center gap-2 p-3 rounded-lg hover:bg-gray-100 transition-colors"
               >
-                <div className="w-10 h-10 bg-[#00B900] rounded-none flex items-center justify-center">
+                <div className="w-10 h-10 bg-[#00B900] rounded-lg flex items-center justify-center">
                   <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/>
                   </svg>
@@ -2637,9 +2637,9 @@ export default function TourDetailPeony() {
                   const text = encodeURIComponent((t('tourDetail.lineShareText') || '推薦這個行程給你：{title}').replace('{title}', displayTitle));
                   window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank', 'width=600,height=400');
                 }}
-                className="flex flex-col items-center gap-2 p-3 rounded-none hover:bg-gray-100 transition-colors"
+                className="flex flex-col items-center gap-2 p-3 rounded-lg hover:bg-gray-100 transition-colors"
               >
-                <div className="w-10 h-10 bg-black rounded-none flex items-center justify-center">
+                <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center">
                   <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
                   </svg>
@@ -2654,9 +2654,9 @@ export default function TourDetailPeony() {
                   const text = encodeURIComponent((t('tourDetail.lineShareText') || '推薦這個行程給你：{title}').replace('{title}', displayTitle) + ' ');
                   window.open(`https://wa.me/?text=${text}${url}`, '_blank', 'width=600,height=400');
                 }}
-                className="flex flex-col items-center gap-2 p-3 rounded-none hover:bg-gray-100 transition-colors"
+                className="flex flex-col items-center gap-2 p-3 rounded-lg hover:bg-gray-100 transition-colors"
               >
-                <div className="w-10 h-10 bg-[#25D366] rounded-none flex items-center justify-center">
+                <div className="w-10 h-10 bg-[#25D366] rounded-lg flex items-center justify-center">
                   <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
                   </svg>

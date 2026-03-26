@@ -113,7 +113,7 @@ export default function CustomTours() {
                 },
               ].map((feature, idx) => (
                 <div key={idx} className="flex gap-6 p-8 bg-gray-50  hover:shadow-lg transition-all">
-                  <div className="flex-shrink-0 w-16 h-16 bg-black text-white rounded-none flex items-center justify-center">
+                  <div className="flex-shrink-0 w-16 h-16 bg-black text-white rounded-lg flex items-center justify-center">
                     {feature.icon}
                   </div>
                   <div>
@@ -143,7 +143,7 @@ export default function CustomTours() {
                     required
                     value={formData.customerName}
                     onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-none focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
                     placeholder={t('quickInquiry.form.namePlaceholder')}
                   />
                 </div>
@@ -154,7 +154,7 @@ export default function CustomTours() {
                     required
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-none focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
                     placeholder={t('quickInquiry.form.emailPlaceholder')}
                   />
                 </div>
@@ -168,7 +168,7 @@ export default function CustomTours() {
                     required
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-none focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
                     placeholder={t('quickInquiry.form.phonePlaceholder')}
                   />
                 </div>
@@ -179,7 +179,7 @@ export default function CustomTours() {
                     required
                     value={formData.destination}
                     onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-none focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
                     placeholder={t('customTours.form.destinationPlaceholder')}
                   />
                 </div>
@@ -193,7 +193,7 @@ export default function CustomTours() {
                     required
                     value={formData.duration}
                     onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-none focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
                     placeholder="7"
                   />
                 </div>
@@ -204,7 +204,7 @@ export default function CustomTours() {
                     required
                     value={formData.travelers}
                     onChange={(e) => setFormData({ ...formData, travelers: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-none focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
                     placeholder="2"
                   />
                 </div>
@@ -214,7 +214,7 @@ export default function CustomTours() {
                     type="text"
                     value={formData.budget}
                     onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-none focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
                     placeholder={t('customTours.form.budgetPerPerson')}
                   />
                 </div>
@@ -226,7 +226,7 @@ export default function CustomTours() {
                   type="date"
                   value={formData.departureDate}
                   onChange={(e) => setFormData({ ...formData, departureDate: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-none focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
                 />
               </div>
 
@@ -244,7 +244,7 @@ export default function CustomTours() {
               <Button
                 type="submit"
                 disabled={createInquiry.isPending}
-                className="w-full h-14 bg-black hover:bg-gray-800 text-white rounded-none text-lg font-bold transition-all"
+                className="w-full h-14 bg-black hover:bg-gray-800 text-white rounded-lg text-lg font-bold transition-all"
               >
                 <MessageCircle className="h-5 w-5 mr-2" />
                 {createInquiry.isPending ? t('customTours.form.submitting') : t('customTours.form.submitRequest')}

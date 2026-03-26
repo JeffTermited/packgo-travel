@@ -93,7 +93,7 @@ export function DepartureAutocomplete({
       </div>
 
       {isOpen && (filteredCities.length > 0 || !value.trim()) && (
-        <div className="absolute z-[9999] w-full mt-2 bg-white border-2 border-gray-300 rounded-none shadow-xl max-h-80 overflow-y-auto" style={{ minHeight: filteredCities.length > 0 || !value.trim() ? 'auto' : '0' }}>
+        <div className="absolute z-[9999] w-full mt-2 bg-white border-2 border-gray-300 rounded-lg shadow-xl max-h-80 overflow-y-auto" style={{ minHeight: filteredCities.length > 0 || !value.trim() ? 'auto' : '0' }}>
           {(value.trim() ? filteredCities : taiwanCities).map((city, index) => (
             <button
               key={index}

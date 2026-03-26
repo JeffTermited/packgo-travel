@@ -312,7 +312,7 @@ export function TourEditDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden rounded-none flex flex-col">
+      <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden rounded-lg flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Edit className="h-5 w-5 text-purple-600" />
@@ -336,7 +336,7 @@ export function TourEditDialog({
           <div className="flex-1 overflow-y-auto py-4">
             {/* 基本資訊 Tab */}
             <TabsContent value="basic" className="mt-0 space-y-6">
-              <div className="bg-purple-50 rounded-none p-6 space-y-4">
+              <div className="bg-purple-50 rounded-lg p-6 space-y-4">
                 <h3 className="font-semibold text-purple-900 mb-4">{t('tourEditDialog.basicInfo')}</h3>
                 
                 <div className="grid grid-cols-2 gap-4">
@@ -433,7 +433,7 @@ export function TourEditDialog({
                 </div>
               </div>
 
-              <div className="bg-blue-50 rounded-none p-6 space-y-4">
+              <div className="bg-blue-50 rounded-lg p-6 space-y-4">
                 <h3 className="font-semibold text-blue-900 mb-4">{t('tourEditDialog.locationInfo')}</h3>
                 
                 <div className="grid grid-cols-2 gap-4">
@@ -487,7 +487,7 @@ export function TourEditDialog({
                 </div>
               </div>
 
-              <div className="bg-amber-50 rounded-none p-6 space-y-4">
+              <div className="bg-amber-50 rounded-lg p-6 space-y-4">
                 <h3 className="font-semibold text-amber-900 mb-4">{t('tourEditDialog.heroImageSection')}</h3>
                 
                 <div className="space-y-4">
@@ -505,7 +505,7 @@ export function TourEditDialog({
                   </div>
 
                   {editedData.heroImage && (
-                    <div className="relative rounded-none overflow-hidden">
+                    <div className="relative rounded-lg overflow-hidden">
                       <img 
                         src={editedData.heroImage} 
                         alt="Hero Preview" 
@@ -546,7 +546,7 @@ export function TourEditDialog({
               </div>
 
               {editedData.itineraryDetailed?.map((day: any, dayIndex: number) => (
-                <div key={dayIndex} className="bg-green-50 rounded-none p-6 space-y-4">
+                <div key={dayIndex} className="bg-green-50 rounded-lg p-6 space-y-4">
                   <div className="flex items-center justify-between">
                     <h4 className="font-semibold text-green-900">{t('tourEditDialog.dayLabel').replace('{day}', String(day.day))}</h4>
                     <Button
@@ -626,7 +626,7 @@ export function TourEditDialog({
                     </div>
 
                     {day.activities?.map((activity: any, activityIndex: number) => (
-                      <div key={activityIndex} className="bg-white rounded-none p-4 space-y-3 border border-green-200">
+                      <div key={activityIndex} className="bg-white rounded-lg p-4 space-y-3 border border-green-200">
                         <div className="flex items-center justify-between">
                           <Label className="text-xs font-medium text-gray-600">{t('tourEditDialog.activityLabel').replace('{n}', String(activityIndex + 1))}</Label>
                           <Button
@@ -707,7 +707,7 @@ export function TourEditDialog({
 
             {/* 費用說明 Tab */}
             <TabsContent value="cost" className="mt-0 space-y-6">
-              <div className="bg-orange-50 rounded-none p-6 space-y-4">
+              <div className="bg-orange-50 rounded-lg p-6 space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold text-orange-900">{t('tourEditDialog.costIncluded')}</h3>
                   <Button
@@ -742,7 +742,7 @@ export function TourEditDialog({
                 ))}
               </div>
 
-              <div className="bg-red-50 rounded-none p-6 space-y-4">
+              <div className="bg-red-50 rounded-lg p-6 space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold text-red-900">{t('tourEditDialog.costExcluded')}</h3>
                   <Button
@@ -777,7 +777,7 @@ export function TourEditDialog({
                 ))}
               </div>
 
-              <div className="bg-yellow-50 rounded-none p-6 space-y-4">
+              <div className="bg-yellow-50 rounded-lg p-6 space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold text-yellow-900">{t('tourEditDialog.additionalCosts')}</h3>
                   <Button
@@ -812,7 +812,7 @@ export function TourEditDialog({
                 ))}
               </div>
 
-              <div className="bg-gray-50 rounded-none p-6 space-y-4">
+              <div className="bg-gray-50 rounded-lg p-6 space-y-4">
                 <h3 className="font-semibold text-gray-900">{t('tourEditDialog.notes')}</h3>
                 <Textarea
                   value={editedData.costExplanation?.notes || ""}
@@ -828,7 +828,7 @@ export function TourEditDialog({
 
             {/* 注意事項 Tab */}
             <TabsContent value="notice" className="mt-0 space-y-6">
-              <div className="bg-blue-50 rounded-none p-6 space-y-4">
+              <div className="bg-blue-50 rounded-lg p-6 space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold text-blue-900">{t('tourEditDialog.preparation')}</h3>
                   <Button
@@ -863,7 +863,7 @@ export function TourEditDialog({
                 ))}
               </div>
 
-              <div className="bg-purple-50 rounded-none p-6 space-y-4">
+              <div className="bg-purple-50 rounded-lg p-6 space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold text-purple-900">{t('tourEditDialog.culturalNotes')}</h3>
                   <Button
@@ -898,7 +898,7 @@ export function TourEditDialog({
                 ))}
               </div>
 
-              <div className="bg-green-50 rounded-none p-6 space-y-4">
+              <div className="bg-green-50 rounded-lg p-6 space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold text-green-900">{t('tourEditDialog.healthSafety')}</h3>
                   <Button
@@ -933,7 +933,7 @@ export function TourEditDialog({
                 ))}
               </div>
 
-              <div className="bg-red-50 rounded-none p-6 space-y-4">
+              <div className="bg-red-50 rounded-lg p-6 space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold text-red-900">{t('tourEditDialog.emergency')}</h3>
                   <Button
@@ -971,7 +971,7 @@ export function TourEditDialog({
 
             {/* 交通資訊 Tab */}
             <TabsContent value="transport" className="mt-0 space-y-6">
-              <div className="bg-sky-50 rounded-none p-6 space-y-6">
+              <div className="bg-sky-50 rounded-lg p-6 space-y-6">
                 <h3 className="font-semibold text-sky-900 mb-4">{t('tourEditDialog.transportSettings')}</h3>
                 
                 <div className="grid grid-cols-2 gap-6">
@@ -1038,7 +1038,7 @@ export function TourEditDialog({
 
                 {/* 火車詳細資訊 */}
                 {editedData.flights?.type === 'TRAIN' && (
-                  <div className="bg-white rounded-none p-4 space-y-4 border border-sky-200">
+                  <div className="bg-white rounded-lg p-4 space-y-4 border border-sky-200">
                     <h4 className="font-medium text-sky-800">{t('tourEditDialog.trainDetails')}</h4>
                     
                     <div className="grid grid-cols-2 gap-4">
@@ -1114,7 +1114,7 @@ export function TourEditDialog({
 
                 {/* 郵輪詳細資訊 */}
                 {editedData.flights?.type === 'CRUISE' && (
-                  <div className="bg-white rounded-none p-4 space-y-4 border border-sky-200">
+                  <div className="bg-white rounded-lg p-4 space-y-4 border border-sky-200">
                     <h4 className="font-medium text-sky-800">{t('tourEditDialog.cruiseDetails')}</h4>
                     
                     <div className="grid grid-cols-2 gap-4">
@@ -1176,7 +1176,7 @@ export function TourEditDialog({
 
                 {/* 飛機詳細資訊 */}
                 {editedData.flights?.type === 'FLIGHT' && (
-                  <div className="bg-white rounded-none p-4 space-y-4 border border-sky-200">
+                  <div className="bg-white rounded-lg p-4 space-y-4 border border-sky-200">
                     <h4 className="font-medium text-sky-800">{t('tourEditDialog.flightDetails')}</h4>
                     
                     <div className="grid grid-cols-2 gap-4">
@@ -1487,7 +1487,7 @@ export function TourEditDialog({
               </div>
 
               {/* Hero 圖片設定 */}
-              <div className="bg-amber-50 rounded-none p-6 space-y-4">
+              <div className="bg-amber-50 rounded-lg p-6 space-y-4">
                 <h3 className="font-semibold text-amber-900">{t('tourEditDialog.heroImage')}</h3>
                 
                 <div className="space-y-4">
@@ -1505,7 +1505,7 @@ export function TourEditDialog({
                   </div>
 
                   {editedData.heroImage && (
-                    <div className="relative rounded-none overflow-hidden">
+                    <div className="relative rounded-lg overflow-hidden">
                       <img 
                         src={editedData.heroImage} 
                         alt="Hero Preview" 

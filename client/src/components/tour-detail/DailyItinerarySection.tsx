@@ -118,7 +118,7 @@ export const DailyItinerarySection: React.FC<DailyItinerarySectionProps> = ({
                 >
                   {/* Day Badge */}
                   <div
-                    className="flex-shrink-0 w-16 h-16 rounded-none flex flex-col items-center justify-center text-white font-bold shadow-md"
+                    className="flex-shrink-0 w-16 h-16 rounded-lg flex flex-col items-center justify-center text-white font-bold shadow-md"
                     style={{ backgroundColor: colorTheme.accent }}
                   >
                     <span className="text-xs uppercase tracking-wide">Day</span>
@@ -187,13 +187,13 @@ export const DailyItinerarySection: React.FC<DailyItinerarySectionProps> = ({
                             }}
                             isEditable={isEditMode}
                             aspectRatio="16/9"
-                            className="w-full rounded-none shadow-md"
+                            className="w-full rounded-lg shadow-md"
                           />
                         ) : day.heroImage ? (
                           <img
                             src={day.heroImage}
                             alt={`Day ${day.day} - ${day.title}`}
-                            className="w-full aspect-[16/9] object-cover rounded-none shadow-md"
+                            className="w-full aspect-[16/9] object-cover rounded-lg shadow-md"
                           />
                         ) : null}
                       </div>
@@ -205,7 +205,7 @@ export const DailyItinerarySection: React.FC<DailyItinerarySectionProps> = ({
                         <div
                           key={actIndex}
                           className={cn(
-                            "bg-white rounded-none p-5 shadow-sm",
+                            "bg-white rounded-lg p-5 shadow-sm",
                             "flex flex-col lg:flex-row gap-4",
                             actIndex % 2 === 1 && "lg:flex-row-reverse" // Zigzag layout
                           )}
@@ -226,13 +226,13 @@ export const DailyItinerarySection: React.FC<DailyItinerarySectionProps> = ({
                                   }}
                                   isEditable={isEditMode}
                                   aspectRatio="4/3"
-                                  className="w-full rounded-none"
+                                  className="w-full rounded-lg"
                                 />
                               ) : activity.image ? (
                                 <img
                                   src={activity.image}
                                   alt={activity.imageAlt || activity.title}
-                                  className="w-full aspect-[4/3] object-cover rounded-none"
+                                  className="w-full aspect-[4/3] object-cover rounded-lg"
                                 />
                               ) : null}
                             </div>
@@ -243,7 +243,7 @@ export const DailyItinerarySection: React.FC<DailyItinerarySectionProps> = ({
                             {/* Time Badge */}
                             <div className="flex items-center gap-2 mb-3">
                               <div
-                                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-none text-sm font-medium"
+                                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-sm font-medium"
                                 style={{
                                   backgroundColor: colorTheme.accent + "15",
                                   color: colorTheme.accent,
@@ -320,7 +320,7 @@ export const DailyItinerarySection: React.FC<DailyItinerarySectionProps> = ({
                     {/* Meals & Accommodation Row */}
                     <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
                       {/* Meals Card */}
-                      <div className="bg-white rounded-none p-5 shadow-sm">
+                      <div className="bg-white rounded-lg p-5 shadow-sm">
                         <div className="flex items-center gap-2 mb-4">
                           <Utensils className="h-5 w-5" style={{ color: ensureReadableOnWhite(colorTheme.accent) }} />
                           <h5 className="font-bold text-lg" style={{ color: ensureReadableOnWhite(colorTheme.primary) }}>
@@ -360,7 +360,7 @@ export const DailyItinerarySection: React.FC<DailyItinerarySectionProps> = ({
 
                       {/* Accommodation Card */}
                       {day.accommodation && (
-                        <div className="bg-white rounded-none p-5 shadow-sm">
+                        <div className="bg-white rounded-lg p-5 shadow-sm">
                           <div className="flex items-center gap-2 mb-4">
                             <Hotel className="h-5 w-5" style={{ color: ensureReadableOnWhite(colorTheme.accent) }} />
                             <h5 className="font-bold text-lg" style={{ color: ensureReadableOnWhite(colorTheme.primary) }}>
@@ -384,13 +384,13 @@ export const DailyItinerarySection: React.FC<DailyItinerarySectionProps> = ({
                                     }}
                                     isEditable={isEditMode}
                                     aspectRatio="1/1"
-                                    className="w-full h-full rounded-none"
+                                    className="w-full h-full rounded-lg"
                                   />
                                 ) : day.accommodationImage ? (
                                   <img
                                     src={day.accommodationImage}
                                     alt={day.accommodation}
-                                    className="w-full h-full object-cover rounded-none"
+                                    className="w-full h-full object-cover rounded-lg"
                                   />
                                 ) : null}
                               </div>

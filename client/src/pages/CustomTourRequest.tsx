@@ -63,7 +63,7 @@ export default function CustomTourRequest() {
             </p>
             <div className="flex gap-4 justify-center">
               <Link href="/">
-                <Button className="rounded-none">
+                <Button className="rounded-lg">
                   <Home className="h-4 w-4 mr-2" />
                   {t("customTourRequest.backHome")}
                 </Button>
@@ -71,7 +71,7 @@ export default function CustomTourRequest() {
               <Button
                 variant="outline"
                 onClick={() => setIsSubmitted(false)}
-                className="rounded-none"
+                className="rounded-lg"
               >
                 {t("customTourRequest.continuePlanning")}
               </Button>
@@ -94,7 +94,7 @@ export default function CustomTourRequest() {
             <p className="text-gray-600">{t("customTourRequest.pageSubtitle")}</p>
           </div>
           <Link href="/">
-            <Button variant="outline" className="rounded-none">
+            <Button variant="outline" className="rounded-lg">
               <Home className="h-4 w-4 mr-2" />
               {t("customTourRequest.backHome")}
             </Button>
@@ -116,7 +116,7 @@ export default function CustomTourRequest() {
                     id="customerName"
                     {...register("customerName")}
                     placeholder={t("customTourRequest.namePlaceholder")}
-                    className="rounded-none mt-2"
+                    className="rounded-lg mt-2"
                   />
                   {errors.customerName && (
                     <p className="text-red-500 text-sm mt-1">{errors.customerName.message}</p>
@@ -129,7 +129,7 @@ export default function CustomTourRequest() {
                     id="customerPhone"
                     {...register("customerPhone")}
                     placeholder={t("customTourRequest.phonePlaceholder")}
-                    className="rounded-none mt-2"
+                    className="rounded-lg mt-2"
                   />
                   {errors.customerPhone && (
                     <p className="text-red-500 text-sm mt-1">{errors.customerPhone.message}</p>
@@ -143,7 +143,7 @@ export default function CustomTourRequest() {
                     type="email"
                     {...register("customerEmail")}
                     placeholder="example@email.com"
-                    className="rounded-none mt-2"
+                    className="rounded-lg mt-2"
                   />
                   {errors.customerEmail && (
                     <p className="text-red-500 text-sm mt-1">{errors.customerEmail.message}</p>
@@ -164,7 +164,7 @@ export default function CustomTourRequest() {
                     id="destination"
                     {...register("destination")}
                     placeholder={t("customTourRequest.destinationPlaceholder")}
-                    className="rounded-none mt-2"
+                    className="rounded-lg mt-2"
                   />
                   {errors.destination && (
                     <p className="text-red-500 text-sm mt-1">{errors.destination.message}</p>
@@ -178,7 +178,7 @@ export default function CustomTourRequest() {
                     type="number"
                     {...register("numberOfDays", { valueAsNumber: true })}
                     placeholder={t("customTourRequest.numberOfDaysPlaceholder")}
-                    className="rounded-none mt-2"
+                    className="rounded-lg mt-2"
                   />
                   {errors.numberOfDays && (
                     <p className="text-red-500 text-sm mt-1">{errors.numberOfDays.message}</p>
@@ -192,7 +192,7 @@ export default function CustomTourRequest() {
                     type="number"
                     {...register("numberOfPeople", { valueAsNumber: true })}
                     placeholder={t("customTourRequest.numberOfPeoplePlaceholder")}
-                    className="rounded-none mt-2"
+                    className="rounded-lg mt-2"
                   />
                   {errors.numberOfPeople && (
                     <p className="text-red-500 text-sm mt-1">{errors.numberOfPeople.message}</p>
@@ -206,7 +206,7 @@ export default function CustomTourRequest() {
                     type="number"
                     {...register("budget", { valueAsNumber: true })}
                     placeholder={t("customTourRequest.budgetPlaceholder")}
-                    className="rounded-none mt-2"
+                    className="rounded-lg mt-2"
                   />
                   {errors.budget && (
                     <p className="text-red-500 text-sm mt-1">{errors.budget.message}</p>
@@ -223,7 +223,7 @@ export default function CustomTourRequest() {
                         <PopoverTrigger asChild>
                           <Button
                             variant="outline"
-                            className="w-full rounded-none mt-2 justify-start text-left font-normal"
+                            className="w-full rounded-lg mt-2 justify-start text-left font-normal"
                           >
                             <CalendarIcon className="mr-2 h-4 w-4" />
                             {field.value ? (
@@ -267,7 +267,7 @@ export default function CustomTourRequest() {
                     id="subject"
                     {...register("subject")}
                     placeholder={t("customTourRequest.subjectPlaceholder")}
-                    className="rounded-none mt-2"
+                    className="rounded-lg mt-2"
                   />
                   {errors.subject && (
                     <p className="text-red-500 text-sm mt-1">{errors.subject.message}</p>
@@ -294,7 +294,7 @@ export default function CustomTourRequest() {
             <Button
               type="submit"
               disabled={createInquiry.isPending}
-              className="w-full rounded-none h-12 text-lg"
+              className="w-full rounded-lg h-12 text-lg"
             >
               <Plane className="h-5 w-5 mr-2" />
               {createInquiry.isPending

@@ -74,7 +74,7 @@ export function EditableText({
         className={cn(
           className,
           "cursor-pointer relative group transition-all",
-          "hover:bg-black/30 hover:outline hover:outline-2 hover:outline-yellow-400 hover:outline-dashed rounded-none",
+          "hover:bg-black/30 hover:outline hover:outline-2 hover:outline-yellow-400 hover:outline-dashed rounded-lg",
           // 為文字添加背景陰影以確保在任何背景上都可讀
           "[text-shadow:_0_2px_8px_rgba(0,0,0,0.8),_0_1px_3px_rgba(0,0,0,0.9)]"
         )}
@@ -88,7 +88,7 @@ export function EditableText({
 
   // 編輯模式且激活：顯示輸入框
   return (
-    <div className="inline-flex items-center gap-2 bg-white/95 rounded-none p-2 border-2 border-yellow-400 shadow-xl backdrop-blur-sm">
+    <div className="inline-flex items-center gap-2 bg-white/95 rounded-lg p-2 border-2 border-yellow-400 shadow-xl backdrop-blur-sm">
       {multiline ? (
         <textarea
           ref={inputRef as React.RefObject<HTMLTextAreaElement>}

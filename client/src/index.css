@@ -79,7 +79,7 @@
   --input: oklch(0.9 0 0); /* Light Gray */
   --ring: oklch(0 0 0); /* Black focus ring */
   
-  --radius: 0rem; /* Square corners as per design */
+  --radius: 0.5rem; /* Rounded corners */
   
   --chart-1: oklch(0 0 0); /* Black */
   --chart-2: oklch(0.25 0 0); /* Dark Gray */

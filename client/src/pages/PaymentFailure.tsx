@@ -26,7 +26,7 @@ export default function PaymentFailure() {
       <div className="container max-w-3xl">
         {/* Error Icon */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-red-100 rounded-none mb-4">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-red-100 rounded-lg mb-4">
             <XCircle className="w-12 h-12 text-red-600" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('payment.failure.title')}</h1>
@@ -37,7 +37,7 @@ export default function PaymentFailure() {
         <Card className="p-8 mb-6">
           <h2 className="text-xl font-bold text-gray-900 mb-4">{t('payment.failure.whatHappened')}</h2>
           <div className="space-y-4">
-            <div className="bg-red-50 border border-red-200 rounded-none p-4">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
               <p className="text-sm text-red-900">
                 {t('payment.failure.reasons.intro')}
               </p>
@@ -51,7 +51,7 @@ export default function PaymentFailure() {
             </div>
 
             {bookingId && (
-              <div className="bg-blue-50 border border-blue-200 rounded-none p-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <p className="text-sm text-blue-900">
                   <strong>{t('booking.bookingNumber')}：</strong>#{bookingId}
                 </p>

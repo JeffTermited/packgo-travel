@@ -104,7 +104,7 @@ export default function AnalyticsTab() {
               </button>
             ))}
           </div>
-          <Button variant="outline" size="sm" className="rounded-none" onClick={() => refetch()}>
+          <Button variant="outline" size="sm" className="rounded-lg" onClick={() => refetch()}>
             <RefreshCw className="h-4 w-4" />
           </Button>
         </div>
@@ -200,7 +200,7 @@ export default function AnalyticsTab() {
                 {categoryPieData.map((item: any, i: number) => (
                   <div key={i} className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-none" style={{ backgroundColor: CATEGORY_COLORS[i % CATEGORY_COLORS.length] }} />
+                      <div className="w-3 h-3 rounded-lg" style={{ backgroundColor: CATEGORY_COLORS[i % CATEGORY_COLORS.length] }} />
                       <span className="text-gray-700">{item.name}</span>
                     </div>
                     <span className="font-semibold text-gray-900">{item.value}</span>
@@ -232,7 +232,7 @@ export default function AnalyticsTab() {
                 {inquiryPieData.map((item: any, i: number) => (
                   <div key={i} className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-none" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
+                      <div className="w-3 h-3 rounded-lg" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
                       <span className="text-gray-700">{item.name}</span>
                     </div>
                     <span className="font-semibold text-gray-900">{item.value}</span>

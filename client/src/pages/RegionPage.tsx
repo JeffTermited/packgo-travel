@@ -295,7 +295,7 @@ export default function RegionPage() {
                         <p className="text-gray-200 text-sm">{country.count} {t('countryPage.tours')}</p>
                       </div>
                       <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <div className="bg-white/90 rounded-none p-2">
+                        <div className="bg-white/90 rounded-lg p-2">
                           <ArrowRight className="h-4 w-4 text-gray-900" />
                         </div>
                       </div>

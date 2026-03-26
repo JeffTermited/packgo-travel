@@ -51,7 +51,7 @@ export default function PaymentSuccess() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-none h-12 w-12 border-b-2 border-black"></div>
+        <div className="animate-spin rounded-lg h-12 w-12 border-b-2 border-black"></div>
       </div>
     );
   }
@@ -61,7 +61,7 @@ export default function PaymentSuccess() {
       <div className="container max-w-3xl">
         {/* Success Icon */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-none mb-4">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-lg mb-4">
             <CheckCircle className="w-12 h-12 text-green-600" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('payment.success.title')}</h1>
@@ -129,7 +129,7 @@ export default function PaymentSuccess() {
               </div>
             </div>
 
-            <div className="bg-blue-50 border border-blue-200 rounded-none p-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <p className="text-sm text-blue-900">
                 <strong>{t('common.note')}：</strong>
                 {t('payment.success.description')} <strong>{booking.customerEmail}</strong>

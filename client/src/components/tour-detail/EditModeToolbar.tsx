@@ -44,7 +44,7 @@ export const EditModeToolbar: React.FC<EditModeToolbarProps> = ({ colorTheme }) 
         </div>
         <div className="flex items-center gap-3">
           {hasUnsavedChanges && (
-            <div className="flex items-center gap-2 text-sm bg-yellow-500 px-3 py-1 rounded-none">
+            <div className="flex items-center gap-2 text-sm bg-yellow-500 px-3 py-1 rounded-lg">
               <AlertCircle className="h-4 w-4" />
               {t('tourDetail.sections.unsavedChanges')}
             </div>
@@ -76,7 +76,7 @@ export const EditModeButton: React.FC<EditModeToolbarProps> = ({ colorTheme }) =
   return (
     <Button
       onClick={toggleEditMode}
-      className="fixed bottom-24 right-6 z-50 rounded-none w-14 h-14 shadow-lg hover:shadow-xl transition-all"
+      className="fixed bottom-24 right-6 z-50 rounded-lg w-14 h-14 shadow-lg hover:shadow-xl transition-all"
       style={{
         backgroundColor: colorTheme?.accent || "#E63946",
       }}

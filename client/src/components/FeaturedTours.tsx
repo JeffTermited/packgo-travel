@@ -55,7 +55,7 @@ export default function FeaturedTours() {
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
                     <div className="absolute top-4 left-4">
-                      <Badge className="bg-black text-white hover:bg-black px-4 py-1 text-xs font-bold tracking-wider shadow-lg rounded-none">
+                      <Badge className="bg-black text-white hover:bg-black px-4 py-1 text-xs font-bold tracking-wider shadow-lg rounded-lg">
                         {t('featuredTours.title')}
                       </Badge>
                     </div>
@@ -79,7 +79,7 @@ export default function FeaturedTours() {
                   <CardHeader className="pb-2">
                     <div className="flex justify-between items-start">
                       <div>
-                        <Badge variant="outline" className="mb-2 text-black border-black rounded-none">
+                        <Badge variant="outline" className="mb-2 text-black border-black rounded-lg">
                           {tour.category === 'group' && t('nav.groupTours')}
                           {tour.category === 'custom' && t('nav.customTours')}
                           {tour.category === 'theme' && t('common.features')}
@@ -105,7 +105,7 @@ export default function FeaturedTours() {
                       <span className="text-xs text-gray-400 ml-1">{t('common.startingFrom')}</span>
                     </div>
                     <Link href={`/tours/${tour.id}`}>
-                      <Button className="bg-black hover:bg-gray-800 text-white px-8 shadow-md transition-transform active:scale-95 rounded-none">
+                      <Button className="bg-black hover:bg-gray-800 text-white px-8 shadow-md transition-transform active:scale-95 rounded-lg">
                         {t('common.viewMore')}
                       </Button>
                     </Link>
@@ -119,7 +119,7 @@ export default function FeaturedTours() {
               <Link href="/tours">
                 <Button 
                   variant="outline" 
-                  className="border-2 border-black  text-black hover:bg-black hover:text-white px-12 py-6 text-lg font-bold transition-all rounded-none"
+                  className="border-2 border-black  text-black hover:bg-black hover:text-white px-12 py-6 text-lg font-bold transition-all rounded-lg"
                 >
                   {t('featuredTours.viewAll')}
                 </Button>

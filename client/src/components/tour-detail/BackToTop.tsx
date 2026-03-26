@@ -46,7 +46,7 @@ export const BackToTop: React.FC<BackToTopProps> = ({ colorTheme }) => {
       {isVisible && (
         <button
           onClick={scrollToTop}
-          className="fixed bottom-8 right-8 z-50 p-4 rounded-none shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
+          className="fixed bottom-8 right-8 z-50 p-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
           style={{
             backgroundColor: colorTheme.accent,
             color: "white",

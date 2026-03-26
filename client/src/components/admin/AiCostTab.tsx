@@ -107,7 +107,7 @@ export default function AiCostTab() {
               </button>
             ))}
           </div>
-          <Button variant="outline" size="sm" className="rounded-none" onClick={() => refetch()}>
+          <Button variant="outline" size="sm" className="rounded-lg" onClick={() => refetch()}>
             <RefreshCw className="h-4 w-4" />
           </Button>
         </div>
@@ -268,7 +268,7 @@ export default function AiCostTab() {
                       {log.agentName.replace('Agent', '').replace('agent', '')}
                     </td>
                     <td className="px-4 py-2">
-                      <Badge variant="outline" className="rounded-none text-xs font-normal">
+                      <Badge variant="outline" className="rounded-lg text-xs font-normal">
                         {log.taskType ?? '-'}
                       </Badge>
                     </td>
@@ -280,7 +280,7 @@ export default function AiCostTab() {
                     </td>
                     <td className="px-4 py-2 text-center">
                       {log.wasFromCache ? (
-                        <Badge className="rounded-none bg-green-100 text-green-700 text-xs">快取</Badge>
+                        <Badge className="rounded-lg bg-green-100 text-green-700 text-xs">快取</Badge>
                       ) : (
                         <span className="text-gray-300">—</span>
                       )}

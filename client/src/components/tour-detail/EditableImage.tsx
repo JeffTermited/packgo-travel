@@ -134,7 +134,7 @@ export const EditableImage: React.FC<EditableImageProps> = ({
   // 非編輯模式
   if (!isEditable) {
     return (
-      <div className={cn("relative overflow-hidden rounded-none", aspectRatioClass, className)}>
+      <div className={cn("relative overflow-hidden rounded-lg", aspectRatioClass, className)}>
         {src ? (
           <img src={src} alt={alt} className="w-full h-full object-cover" />
         ) : (
@@ -151,7 +151,7 @@ export const EditableImage: React.FC<EditableImageProps> = ({
     <>
       <div
         className={cn(
-          "relative overflow-hidden rounded-none cursor-pointer group",
+          "relative overflow-hidden rounded-lg cursor-pointer group",
           aspectRatioClass,
           className
         )}
@@ -197,7 +197,7 @@ export const EditableImage: React.FC<EditableImageProps> = ({
             <div
               ref={dropZoneRef}
               className={cn(
-                "relative border-2 border-dashed rounded-none transition-all duration-200",
+                "relative border-2 border-dashed rounded-lg transition-all duration-200",
                 isDragging 
                   ? "border-primary bg-primary/10" 
                   : "border-gray-300 hover:border-gray-400",
@@ -210,7 +210,7 @@ export const EditableImage: React.FC<EditableImageProps> = ({
               onClick={() => !isUploading && fileInputRef.current?.click()}
             >
               {/* 預覽圖片 */}
-              <div className="aspect-video bg-gray-50 rounded-none overflow-hidden">
+              <div className="aspect-video bg-gray-50 rounded-lg overflow-hidden">
                 {displaySrc ? (
                   <img
                     src={displaySrc}
@@ -227,7 +227,7 @@ export const EditableImage: React.FC<EditableImageProps> = ({
 
               {/* 拖放覆蓋層 */}
               {(isDragging || isUploading) && (
-                <div className="absolute inset-0 bg-white/90 flex flex-col items-center justify-center rounded-none">
+                <div className="absolute inset-0 bg-white/90 flex flex-col items-center justify-center rounded-lg">
                   {isUploading ? (
                     <>
                       <Loader2 className="h-12 w-12 text-primary animate-spin mb-3" />

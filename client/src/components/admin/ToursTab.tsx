@@ -987,7 +987,7 @@ export default function ToursTab() {
               <div className="space-y-2">
                 <Label>{t('toursTab.selectPdfFile')}</Label>
                 <div 
-                  className={`border-2 border-dashed rounded-none p-6 text-center transition-colors ${
+                  className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
                     pdfFile 
                       ? "border-purple-300 bg-purple-50" 
                       : "border-gray-300 hover:border-purple-300 hover:bg-purple-50/50"
@@ -1142,7 +1142,7 @@ export default function ToursTab() {
             <div className="grid gap-6 py-4">
               {/* Hero Image Preview */}
               {generatedTourData.heroImage && (
-                <div className="relative rounded-none overflow-hidden">
+                <div className="relative rounded-lg overflow-hidden">
                   <img 
                     src={generatedTourData.heroImage} 
                     alt="Hero" 
@@ -1157,7 +1157,7 @@ export default function ToursTab() {
               )}
 
               {/* Basic Info */}
-              <div className="bg-purple-50 rounded-none p-4">
+              <div className="bg-purple-50 rounded-lg p-4">
                 <h3 className="font-semibold text-purple-900 mb-3">{t('toursTab.previewBasicInfo')}</h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
@@ -1184,7 +1184,7 @@ export default function ToursTab() {
               </div>
 
               {/* Location Info */}
-              <div className="bg-blue-50 rounded-none p-4">
+              <div className="bg-blue-50 rounded-lg p-4">
                 <h3 className="font-semibold text-blue-900 mb-3">{t('toursTab.previewLocation')}</h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
@@ -1208,7 +1208,7 @@ export default function ToursTab() {
 
               {/* Itinerary Preview */}
               {generatedTourData.itineraryDetailed && (
-                <div className="bg-amber-50 rounded-none p-4">
+                <div className="bg-amber-50 rounded-lg p-4">
                   <h3 className="font-semibold text-amber-900 mb-3">{t('toursTab.previewItinerary')}</h3>
                   <div className="space-y-2 text-sm max-h-40 overflow-y-auto">
                     {(() => {
@@ -1240,7 +1240,7 @@ export default function ToursTab() {
 
               {/* Cost Explanation Preview */}
               {generatedTourData.costExplanation && (
-                <div className="bg-green-50 rounded-none p-4">
+                <div className="bg-green-50 rounded-lg p-4">
                   <h3 className="font-semibold text-green-900 mb-3">{t('toursTab.previewCost')}</h3>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     {(() => {
@@ -1267,7 +1267,7 @@ export default function ToursTab() {
               )}
 
               {/* Description */}
-              <div className="bg-gray-50 rounded-none p-4">
+              <div className="bg-gray-50 rounded-lg p-4">
                 <h3 className="font-semibold text-gray-900 mb-3">{t('toursTab.previewDescription')}</h3>
                 <p className="text-sm text-gray-700 whitespace-pre-wrap line-clamp-4">{generatedTourData.description}</p>
               </div>
@@ -1292,7 +1292,7 @@ export default function ToursTab() {
               {generatedTourData.executionReport && (
                 <details className="text-xs text-gray-400">
                   <summary className="cursor-pointer hover:text-gray-600">{t('toursTab.viewReport')}</summary>
-                  <pre className="mt-2 p-2 bg-gray-100 rounded-none overflow-x-auto whitespace-pre-wrap">
+                  <pre className="mt-2 p-2 bg-gray-100 rounded-lg overflow-x-auto whitespace-pre-wrap">
                     {generatedTourData.executionReport}
                   </pre>
                 </details>
@@ -1518,7 +1518,7 @@ function TourForm({
               }
               placeholder={t('toursTab.formDescriptionPlaceholder')}
               rows={3}
-              className="rounded-none"
+              className="rounded-lg"
             />
           </div>
 

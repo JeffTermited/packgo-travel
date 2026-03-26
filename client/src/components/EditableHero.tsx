@@ -184,7 +184,7 @@ export default function EditableHero() {
         {isEditMode && canEdit && isEditing && (
           <button
             onClick={() => setShowImageDialog(true)}
-            className="absolute top-4 right-4 z-20 bg-black/70 hover:bg-black text-white px-4 py-2 rounded-none flex items-center gap-2 transition-colors"
+            className="absolute top-4 right-4 z-20 bg-black/70 hover:bg-black text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
           >
             <ImageIcon className="h-4 w-4" />
             {t('hero.edit.changeBackground')}
@@ -302,7 +302,7 @@ export default function EditableHero() {
                       value={departure}
                       onChange={setDeparture}
                       placeholder={t('hero.search.departurePlaceholder')}
-                      className="w-full [[&_input]:rounded-full_input]:rounded-none [&_input]:bg-gray-50 [&_input]:border-gray-200 [&_input]:focus:ring-primary [&_input]:focus:border-primary [&_input]:h-12 [&_input]:w-full"
+                      className="w-full [[&_input]:rounded-full_input]:rounded-lg [&_input]:bg-gray-50 [&_input]:border-gray-200 [&_input]:focus:ring-primary [&_input]:focus:border-primary [&_input]:h-12 [&_input]:w-full"
                     />
                   </div>
 
@@ -314,7 +314,7 @@ export default function EditableHero() {
                       onChange={setDestination}
                       onSelect={handleSearch}
                       placeholder={t('hero.search.destinationPlaceholder')}
-                      className="w-full [[&_input]:rounded-full_input]:rounded-none [&_input]:bg-gray-50 [&_input]:border-gray-200 [&_input]:focus:ring-primary [&_input]:focus:border-primary [&_input]:h-12 [&_input]:w-full"
+                      className="w-full [[&_input]:rounded-full_input]:rounded-lg [&_input]:bg-gray-50 [&_input]:border-gray-200 [&_input]:focus:ring-primary [&_input]:focus:border-primary [&_input]:h-12 [&_input]:w-full"
                     />
                   </div>
 
@@ -381,7 +381,7 @@ export default function EditableHero() {
           </DialogHeader>
           <div className="space-y-4">
             <div 
-              className="border-2 border-dashed border-gray-300 rounded-none p-8 text-center cursor-pointer hover:border-primary transition-colors"
+              className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-primary transition-colors"
               onClick={() => fileInputRef.current?.click()}
             >
               {isUploading ? (
