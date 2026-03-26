@@ -1613,58 +1613,46 @@ export const appRouter = router({
     getAnalytics: adminProcedure
       .input(z.object({ days: z.number().min(7).max(180).default(30) }))
       .query(async ({ input }) => {
-        const { tours: toursTable, bookings: bookingsTable, inquiries: inquiriesTable } = await import('../drizzle/schema');
-        const { sql: sqlFn2, count: countFn2, gte: gteFn2, desc: descFn2, inArray: inArrayFn } = await import('drizzle-orm');
+        const { sql: sqlFn2, inArray: inArrayFn } = await import('drizzle-orm');
+        const { tours: toursTable } = await import('../drizzle/schema');
         const drizzleDb = await db.getDb();
         if (!drizzleDb) return { bookingTrend: [], tourCategoryDist: [], inquiryStatusDist: [], topTours: [] };
         const since = new Date();
         since.setDate(since.getDate() - input.days);
         since.setHours(0, 0, 0, 0);
-        // Daily booking & revenue trend
-        const bookingTrendRaw = await drizzleDb
-          .select({
-            date: sqlFn2<string>`DATE_FORMAT(${bookingsTable.createdAt}, '%Y-%m-%d')`,
-            bookings: countFn2(),
-            revenue: sqlFn2<number>`COALESCE(SUM(CASE WHEN ${bookingsTable.bookingStatus} IN ('confirmed', 'completed') THEN ${bookingsTable.totalPrice} ELSE 0 END), 0)`,
-          })
-          .from(bookingsTable)
-          .where(gteFn2(bookingsTable.createdAt, since))
-          .groupBy(sqlFn2`DATE_FORMAT(${bookingsTable.createdAt}, '%Y-%m-%d')`)
-          .orderBy(sqlFn2`DATE_FORMAT(${bookingsTable.createdAt}, '%Y-%m-%d')`);
-        // Tour category distribution
-        const tourCategoryRaw = await drizzleDb
-          .select({ category: toursTable.category, count: countFn2() })
-          .from(toursTable)
-          .groupBy(toursTable.category);
-        // Inquiry status distribution
-        const inquiryStatusRaw = await drizzleDb
-          .select({ status: inquiriesTable.status, count: countFn2() })
-          .from(inquiriesTable)
-          .groupBy(inquiriesTable.status);
-        // Top tours by booking count
-        const topToursRaw = await drizzleDb
-          .select({
-            tourId: bookingsTable.tourId,
-            bookingCount: countFn2(),
-            revenue: sqlFn2<number>`COALESCE(SUM(${bookingsTable.totalPrice}), 0)`,
-          })
-          .from(bookingsTable)
-          .groupBy(bookingsTable.tourId)
-          .orderBy(descFn2(countFn2()))
-          .limit(10);
+        // Use ISO string to avoid TiDB drizzle Date serialization bug (drizzle converts Date to invalid format)
+        const sinceStr = since.toISOString().replace('T', ' ').replace(/\.\d+Z$/, '');
+        // Use drizzle execute() with raw sql() to bypass parameter type coercion
+        const bookingTrendRaw = await drizzleDb.execute(
+          sqlFn2`SELECT DATE_FORMAT(createdAt, '%Y-%m-%d') as date, COUNT(*) as bookings, COALESCE(SUM(CASE WHEN bookingStatus IN ('confirmed', 'completed') THEN totalPrice ELSE 0 END), 0) as revenue FROM bookings WHERE createdAt >= ${sinceStr} GROUP BY DATE_FORMAT(createdAt, '%Y-%m-%d') ORDER BY DATE_FORMAT(createdAt, '%Y-%m-%d')`
+        ) as any;
+        const tourCategoryRaw = await drizzleDb.execute(
+          sqlFn2`SELECT category, COUNT(*) as count FROM tours GROUP BY category`
+        ) as any;
+        const inquiryStatusRaw = await drizzleDb.execute(
+          sqlFn2`SELECT status, COUNT(*) as count FROM inquiries GROUP BY status`
+        ) as any;
+        const topToursRaw = await drizzleDb.execute(
+          sqlFn2`SELECT tourId, COUNT(*) as bookingCount, COALESCE(SUM(totalPrice), 0) as revenue FROM bookings GROUP BY tourId ORDER BY COUNT(*) DESC LIMIT 10`
+        ) as any;
+        // drizzle execute() returns [rows, fields] for mysql2
+        const bookingTrendRows: any[] = Array.isArray(bookingTrendRaw[0]) ? bookingTrendRaw[0] : bookingTrendRaw;
+        const tourCategoryRows: any[] = Array.isArray(tourCategoryRaw[0]) ? tourCategoryRaw[0] : tourCategoryRaw;
+        const inquiryStatusRows: any[] = Array.isArray(inquiryStatusRaw[0]) ? inquiryStatusRaw[0] : inquiryStatusRaw;
+        const topToursRows: any[] = Array.isArray(topToursRaw[0]) ? topToursRaw[0] : topToursRaw;
         let topTourTitles: Record<number, string> = {};
-        if (topToursRaw.length > 0) {
-          const topTourIds = topToursRaw.map((t: any) => t.tourId);
+        if (topToursRows.length > 0) {
+          const topTourIds = topToursRows.map((t: any) => Number(t.tourId));
           const tourRows = await drizzleDb.select({ id: toursTable.id, title: toursTable.title }).from(toursTable).where(inArrayFn(toursTable.id, topTourIds));
           topTourTitles = Object.fromEntries(tourRows.map((t: any) => [t.id, t.title]));
         }
         const categoryLabels: Record<string, string> = { group: '團體旅遊', custom: '客製旅遊', package: '包團旅遊', cruise: '郵輪旅遊', theme: '主題旅遊' };
         const statusLabels: Record<string, string> = { new: '新諮詢', in_progress: '處理中', replied: '已回覆', resolved: '已解決', closed: '已關閉' };
         return {
-          bookingTrend: bookingTrendRaw.map((r: any) => ({ date: r.date?.slice(5) ?? '', bookings: Number(r.bookings), revenue: Number(r.revenue) })),
-          tourCategoryDist: tourCategoryRaw.map((r: any) => ({ name: categoryLabels[r.category] ?? r.category, value: Number(r.count) })),
-          inquiryStatusDist: inquiryStatusRaw.map((r: any) => ({ name: statusLabels[r.status] ?? r.status, value: Number(r.count) })),
-          topTours: topToursRaw.map((r: any) => ({ tourId: r.tourId, title: topTourTitles[r.tourId] ?? `行程 #${r.tourId}`, bookingCount: Number(r.bookingCount), revenue: Number(r.revenue) })),
+          bookingTrend: bookingTrendRows.map((r: any) => ({ date: String(r.date ?? '').slice(5), bookings: Number(r.bookings), revenue: Number(r.revenue) })),
+          tourCategoryDist: tourCategoryRows.map((r: any) => ({ name: categoryLabels[r.category] ?? r.category, value: Number(r.count) })),
+          inquiryStatusDist: inquiryStatusRows.map((r: any) => ({ name: statusLabels[r.status] ?? r.status, value: Number(r.count) })),
+          topTours: topToursRows.map((r: any) => ({ tourId: Number(r.tourId), title: topTourTitles[Number(r.tourId)] ?? `行程 #${r.tourId}`, bookingCount: Number(r.bookingCount), revenue: Number(r.revenue) })),
         };
       }),
 

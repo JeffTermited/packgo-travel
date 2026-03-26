@@ -4974,8 +4974,14 @@
 - [x] 機票/飯店/機場接送佔位頁面改為正式落地頁
 
 ## 新發現 Bug 修復（2026-03-26 下午）
+- [x] 修復 TourDetailPeony.tsx 的 `tourDetail.dailyItineraryDesc` i18n key 未翻譯
+- [x] 修復 TourDetailPeony.tsx 的 `Tonight's accommodation:` 英文標籤（改為中文或 i18n key）
+- [x] 修復 TourDetailPeony.tsx 的 `Today's Meals` 英文標籤（改為中文或 i18n key）
+- [x] 修復「已下架」 badge 文字換行問題（whitespace-nowrap）
 
-- [ ] 修復 TourDetailPeony.tsx 的 `tourDetail.dailyItineraryDesc` i18n key 未翻譯
-- [ ] 修復 TourDetailPeony.tsx 的 `Tonight's accommodation:` 英文標籤（改為中文或 i18n key）
-- [ ] 修復 TourDetailPeony.tsx 的 `Today's Meals` 英文標籤（改為中文或 i18n key）
-- [ ] 修復「已下架」badge 文字換行問題（whitespace-nowrap）
+## 後台 + 首頁修復任務（2026-03-26 下午）
+
+- [x] A1-A2: 修復後台數據分析「行程分類分佈」、「詢問狀態分佈」、「熱門行程排行」無資料（drizzle Date 序列化 bug）
+- [x] A3-A4: 修復後台預訂管理「客戶」、「出發日期」、「金額」欄位全顯示「—」（JOIN tours + departures）
+- [x] A5+B6: 重建代辦簽證頁面（加入簽證類型卡片、辦理流程、費用說明）
+- [x] B1: 設定首頁精選行程資料（在資料庫設定 featured=1）

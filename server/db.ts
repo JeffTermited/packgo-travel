@@ -568,7 +568,7 @@ export async function getUserBookings(userId: number) {
 }
 
 /**
- * Get all bookings with optional filtering
+ * Get all bookings with optional filtering, joined with tours and departures
  */
 export async function getAllBookings(filters?: {
   userId?: number;
@@ -581,15 +581,32 @@ export async function getAllBookings(filters?: {
     return [];
   }
 
-  let query = db.select().from(bookings);
-  
-  // Apply userId filter if provided
-  if (filters?.userId) {
-    query = query.where(eq(bookings.userId, filters.userId)) as any;
-  }
-  
-  const result = await query;
-  return result;
+  // Use raw SQL to JOIN bookings with tours and departures for full info
+  const { sql } = await import('drizzle-orm');
+  const result = await db.execute(sql`
+    SELECT
+      b.*,
+      t.title AS tourTitle,
+      d.departureDate AS departureDate
+    FROM bookings b
+    LEFT JOIN tours t ON b.tourId = t.id
+    LEFT JOIN tourDepartures d ON b.departureId = d.id
+    ${filters?.userId ? sql`WHERE b.userId = ${filters.userId}` : sql``}
+    ORDER BY b.createdAt DESC
+  `);
+
+  // Normalize field names to match what the frontend expects
+  const rows = Array.isArray(result) ? (result[0] as unknown as any[]) : ((result as any).rows ?? []);
+  return rows.map((row: any) => ({
+    ...row,
+    // Alias fields to match frontend expectations
+    contactName: row.customerName,
+    contactEmail: row.customerEmail,
+    totalAmount: row.totalPrice,
+    totalPax: (row.numberOfAdults ?? 0) + (row.numberOfChildrenWithBed ?? 0) + (row.numberOfChildrenNoBed ?? 0) + (row.numberOfInfants ?? 0),
+    tourTitle: row.tourTitle ?? null,
+    departureDate: row.departureDate ?? null,
+  }));
 }
 
 /**
