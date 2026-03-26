@@ -325,7 +325,7 @@ export default function EditableHero() {
                       value={dateRange}
                       onChange={setDateRange}
                       placeholder={t('hero.search.selectDate')}
-                      className="h-12 rounded-full w-full"
+                      className="h-12 rounded-lg w-full"
                     />
                   </div>
 
@@ -333,7 +333,7 @@ export default function EditableHero() {
                   <div className="w-full md:w-32 flex-shrink-0">
                     <Button 
                       onClick={handleSearch}
-                      className="w-full h-12 bg-black hover:bg-gray-900 text-white rounded-full font-bold shadow-md transition-all hover:shadow-lg"
+                      className="w-full h-12 bg-black hover:bg-gray-900 text-white rounded-lg font-bold shadow-md transition-all hover:shadow-lg"
                     >
                       {t('hero.search.searchButton')}
                     </Button>
