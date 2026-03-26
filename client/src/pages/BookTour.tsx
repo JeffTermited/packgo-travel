@@ -87,7 +87,6 @@ export default function BookTour() {
   const getLocaleString = () => {
     switch (language) {
       case 'en': return 'en-US';
-      case 'es': return 'es-ES';
       default: return 'zh-TW';
     }
   };

@@ -23,7 +23,6 @@ export default function Hero() {
   const hotKeywordsMap: Record<string, string[]> = {
     'zh-TW': ['北海道', '東京', '大阪', '歐洲', '土耳其', '郵輪', '滑雪'],
     'en': ['Hokkaido', 'Tokyo', 'Osaka', 'Europe', 'Turkey', 'Cruise', 'Skiing'],
-    'es': ['Hokkaido', 'Tokio', 'Osaka', 'Europa', 'Turquía', 'Crucero', 'Esquí'],
   };
   const hotKeywords = hotKeywordsMap[language] || hotKeywordsMap['en'];
 

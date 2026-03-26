@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLocale } from "@/contexts/LocaleContext";
 
 interface DepartureAutocompleteProps {
   value: string;
@@ -11,14 +12,14 @@ interface DepartureAutocompleteProps {
 }
 
 const taiwanCities = [
-  { name: "台北", keywords: ["台北", "taipei", "臺北", "北部"] },
-  { name: "桃園", keywords: ["桃園", "taoyuan", "機場"] },
-  { name: "新竹", keywords: ["新竹", "hsinchu"] },
-  { name: "台中", keywords: ["台中", "taichung", "臺中", "中部"] },
-  { name: "台南", keywords: ["台南", "tainan", "臺南", "南部"] },
-  { name: "高雄", keywords: ["高雄", "kaohsiung", "南部"] },
-  { name: "花蓮", keywords: ["花蓮", "hualien", "東部"] },
-  { name: "台東", keywords: ["台東", "taitung", "臺東", "東部"] },
+  { zh: "台北", en: "Taipei", keywords: ["台北", "taipei", "臺北", "北部"] },
+  { zh: "桃園", en: "Taoyuan", keywords: ["桃園", "taoyuan", "機場", "airport"] },
+  { zh: "新竹", en: "Hsinchu", keywords: ["新竹", "hsinchu"] },
+  { zh: "台中", en: "Taichung", keywords: ["台中", "taichung", "臺中", "中部"] },
+  { zh: "台南", en: "Tainan", keywords: ["台南", "tainan", "臺南", "南部"] },
+  { zh: "高雄", en: "Kaohsiung", keywords: ["高雄", "kaohsiung", "南部"] },
+  { zh: "花蓮", en: "Hualien", keywords: ["花蓮", "hualien", "東部"] },
+  { zh: "台東", en: "Taitung", keywords: ["台東", "taitung", "臺東", "東部"] },
 ];
 
 export function DepartureAutocomplete({
@@ -31,17 +32,22 @@ export function DepartureAutocomplete({
   const [isOpen, setIsOpen] = useState(false);
   const [filteredCities, setFilteredCities] = useState<typeof taiwanCities>([]);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { language } = useLocale();
+
+  const getCityName = (city: typeof taiwanCities[0]) =>
+    language === "en" ? city.en : city.zh;
 
   useEffect(() => {
     if (value.trim()) {
       const searchLower = value.toLowerCase();
       const filtered = taiwanCities.filter((city) =>
-        city.keywords.some((keyword) => keyword.toLowerCase().includes(searchLower))
+        city.keywords.some((keyword) => keyword.toLowerCase().includes(searchLower)) ||
+        city.en.toLowerCase().includes(searchLower) ||
+        city.zh.includes(value)
       );
       setFilteredCities(filtered);
       setIsOpen(filtered.length > 0);
     } else {
-      // Show all cities when input is empty but focused
       setFilteredCities([]);
       setIsOpen(false);
     }
@@ -58,10 +64,10 @@ export function DepartureAutocomplete({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleSelect = (city: string) => {
-    onChange(city);
+  const handleSelect = (city: typeof taiwanCities[0]) => {
+    onChange(getCityName(city));
     setIsOpen(false);
-    onSelect?.(city);
+    onSelect?.(getCityName(city));
   };
 
   const handleFocus = () => {
@@ -70,7 +76,6 @@ export function DepartureAutocomplete({
         setIsOpen(true);
       }
     } else {
-      // Show all cities when focused with empty input
       setFilteredCities(taiwanCities);
       setIsOpen(true);
     }
@@ -93,15 +98,15 @@ export function DepartureAutocomplete({
       </div>
 
       {isOpen && (filteredCities.length > 0 || !value.trim()) && (
-        <div className="absolute z-[9999] w-full mt-2 bg-white border-2 border-gray-300 rounded-lg shadow-xl max-h-80 overflow-y-auto" style={{ minHeight: filteredCities.length > 0 || !value.trim() ? 'auto' : '0' }}>
+        <div className="absolute z-[9999] w-full mt-2 bg-white border-2 border-gray-300 rounded-lg shadow-xl max-h-80 overflow-y-auto">
           {(value.trim() ? filteredCities : taiwanCities).map((city, index) => (
             <button
               key={index}
-              onClick={() => handleSelect(city.name)}
+              onClick={() => handleSelect(city)}
               className="w-full px-4 py-3 text-left hover:bg-gray-100 transition-colors flex items-center gap-3 border-b border-gray-100 last:border-b-0"
             >
               <MapPin className="h-4 w-4 text-gray-400" />
-              <span className="text-gray-900">{city.name}</span>
+              <span className="text-gray-900">{getCityName(city)}</span>
             </button>
           ))}
         </div>

@@ -4951,3 +4951,13 @@
 - [x] 撰寫完整 PRD（產品需求文件）— docs/PRD.md
 - [x] 建立 CLAUDE.md Context 文件（設計規範、架構決策、禁止事項）
 - [x] 補齊業務邏輯 Vitest 測試（搜尋、支付、i18n、CRUD、詢問）— 36 tests passing
+
+## 語言精簡：僅保留中文 + 英文（2026-03-26）
+
+- [ ] 移除 es.ts 西班牙文語言檔案
+- [ ] 更新 i18n/index.ts 移除 es 匯入和設定
+- [ ] 更新 LocaleContext.tsx：Language type 移除 'es'，languageNames 移除 Español
+- [ ] 更新 LocaleSwitcher.tsx：語言選單移除西班牙文選項
+- [ ] 移除 zh-TW.ts 和 en.ts 中的 language.es 翻譯 key
+- [ ] 修復硬編碼中文字串（DepartureDatePicker、HotelDetailDialog 等）
+- [ ] 更新 i18n-completeness.test.ts 移除西班牙文測試

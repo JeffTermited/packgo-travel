@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLocale } from "@/contexts/LocaleContext";
 
 interface DestinationAutocompleteProps {
   value: string;
@@ -11,16 +12,16 @@ interface DestinationAutocompleteProps {
 }
 
 const popularDestinations = [
-  { name: "日本", keywords: ["日本", "japan", "東京", "大阪", "京都", "北海道", "沖繩"] },
-  { name: "韓國", keywords: ["韓國", "korea", "首爾", "釜山", "濟州島"] },
-  { name: "泰國", keywords: ["泰國", "thailand", "曼谷", "清邁", "普吉島"] },
-  { name: "新加坡", keywords: ["新加坡", "singapore"] },
-  { name: "馬來西亞", keywords: ["馬來西亞", "malaysia", "吉隆坡", "檳城"] },
-  { name: "越南", keywords: ["越南", "vietnam", "河內", "胡志明市", "峴港"] },
-  { name: "歐洲", keywords: ["歐洲", "europe", "法國", "義大利", "西班牙", "英國", "德國"] },
-  { name: "美國", keywords: ["美國", "usa", "america", "紐約", "洛杉磯", "舊金山"] },
-  { name: "澳洲", keywords: ["澳洲", "australia", "雪梨", "墨爾本"] },
-  { name: "紐西蘭", keywords: ["紐西蘭", "new zealand", "奧克蘭", "基督城"] },
+  { zh: "日本", en: "Japan", keywords: ["日本", "japan", "東京", "大阪", "京都", "北海道", "沖繩", "tokyo", "osaka", "kyoto", "hokkaido", "okinawa"] },
+  { zh: "韓國", en: "Korea", keywords: ["韓國", "korea", "首爾", "釜山", "濟州島", "seoul", "busan", "jeju"] },
+  { zh: "泰國", en: "Thailand", keywords: ["泰國", "thailand", "曼谷", "清邁", "普吉島", "bangkok", "chiang mai", "phuket"] },
+  { zh: "新加坡", en: "Singapore", keywords: ["新加坡", "singapore"] },
+  { zh: "馬來西亞", en: "Malaysia", keywords: ["馬來西亞", "malaysia", "吉隆坡", "檳城", "kuala lumpur", "penang"] },
+  { zh: "越南", en: "Vietnam", keywords: ["越南", "vietnam", "河內", "胡志明市", "峴港", "hanoi", "ho chi minh", "da nang"] },
+  { zh: "歐洲", en: "Europe", keywords: ["歐洲", "europe", "法國", "義大利", "西班牙", "英國", "德國", "france", "italy", "spain", "uk", "germany"] },
+  { zh: "美國", en: "USA", keywords: ["美國", "usa", "america", "紐約", "洛杉磯", "舊金山", "new york", "los angeles", "san francisco"] },
+  { zh: "澳洲", en: "Australia", keywords: ["澳洲", "australia", "雪梨", "墨爾本", "sydney", "melbourne"] },
+  { zh: "紐西蘭", en: "New Zealand", keywords: ["紐西蘭", "new zealand", "奧克蘭", "基督城", "auckland", "christchurch"] },
 ];
 
 export function DestinationAutocomplete({
@@ -33,12 +34,18 @@ export function DestinationAutocomplete({
   const [isOpen, setIsOpen] = useState(false);
   const [filteredDestinations, setFilteredDestinations] = useState<typeof popularDestinations>([]);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { language } = useLocale();
+
+  const getDestName = (dest: typeof popularDestinations[0]) =>
+    language === "en" ? dest.en : dest.zh;
 
   useEffect(() => {
     if (value.trim()) {
       const searchLower = value.toLowerCase();
       const filtered = popularDestinations.filter((dest) =>
-        dest.keywords.some((keyword) => keyword.toLowerCase().includes(searchLower))
+        dest.keywords.some((keyword) => keyword.toLowerCase().includes(searchLower)) ||
+        dest.en.toLowerCase().includes(searchLower) ||
+        dest.zh.includes(value)
       );
       setFilteredDestinations(filtered);
       setIsOpen(filtered.length > 0);
@@ -59,10 +66,10 @@ export function DestinationAutocomplete({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleSelect = (destination: string) => {
-    onChange(destination);
+  const handleSelect = (dest: typeof popularDestinations[0]) => {
+    onChange(getDestName(dest));
     setIsOpen(false);
-    onSelect?.(destination);
+    onSelect?.(getDestName(dest));
   };
 
   return (
@@ -90,11 +97,11 @@ export function DestinationAutocomplete({
           {filteredDestinations.map((dest, index) => (
             <button
               key={index}
-              onClick={() => handleSelect(dest.name)}
+              onClick={() => handleSelect(dest)}
               className="w-full px-4 py-3 text-left hover:bg-gray-100 transition-colors flex items-center gap-3 border-b border-gray-100 last:border-b-0"
             >
               <MapPin className="h-4 w-4 text-gray-400" />
-              <span className="text-gray-900">{dest.name}</span>
+              <span className="text-gray-900">{getDestName(dest)}</span>
             </button>
           ))}
         </div>

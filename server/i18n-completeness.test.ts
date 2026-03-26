@@ -5,11 +5,11 @@
  * 避免 Vitest 在 server 端測試中無法解析 client 路徑的問題。
  *
  * 測試目標：
- * - 三個語言檔案（zh-TW、en、es）都能成功解析
+ * - 兩個語言檔案（zh-TW、en）都能成功解析
  * - key 數量一致（無遺漏翻譯）
- * - 英文/西班牙文版本不含硬編碼中文字元
+ * - 英文版本不含硬編碼中文字元
  * - 所有 value 不為空字串
- * - 關鍵 UI key 在三個語言中都存在
+ * - 關鍵 UI key 在兩個語言中都存在
  */
 
 import { describe, it, expect, beforeAll } from "vitest";
@@ -45,22 +45,18 @@ const baseDir = resolve(process.cwd(), "client/src/i18n");
 
 let zhTWStrings: Record<string, string>;
 let enStrings: Record<string, string>;
-let esStrings: Record<string, string>;
 
 describe("多語言 i18n 完整性 (locales)", () => {
   beforeAll(() => {
     zhTWStrings = extractStringsFromTsFile(resolve(baseDir, "zh-TW.ts"));
     enStrings = extractStringsFromTsFile(resolve(baseDir, "en.ts"));
-    esStrings = extractStringsFromTsFile(resolve(baseDir, "es.ts"));
   });
 
-  it("三個語言檔案應都能成功解析", () => {
+  it("兩個語言檔案應都能成功解析", () => {
     expect(zhTWStrings).toBeDefined();
     expect(enStrings).toBeDefined();
-    expect(esStrings).toBeDefined();
     expect(typeof zhTWStrings).toBe("object");
     expect(typeof enStrings).toBe("object");
-    expect(typeof esStrings).toBe("object");
   });
 
   it("繁中語言檔案應有 key 數量 > 100（確保內容完整）", () => {
@@ -76,14 +72,6 @@ describe("多語言 i18n 完整性 (locales)", () => {
     expect(diff).toBeLessThanOrEqual(tolerance);
   });
 
-  it("西班牙文語言檔案的 key 數量應與繁中相差不超過 10%", () => {
-    const zhCount = Object.keys(zhTWStrings).length;
-    const esCount = Object.keys(esStrings).length;
-    const diff = Math.abs(zhCount - esCount);
-    const tolerance = Math.floor(zhCount * 0.1);
-    expect(diff).toBeLessThanOrEqual(tolerance);
-  });
-
   it("英文語言檔案的 value 不應包含大量繁中字元（確保翻譯完整）", () => {
     const chineseRegex = /[\u4e00-\u9fff]/;
     const chineseInEn = Object.entries(enStrings).filter(
@@ -91,14 +79,6 @@ describe("多語言 i18n 完整性 (locales)", () => {
     );
     // 允許少量例外（如品牌名稱、地名），但不應超過 10 個
     expect(chineseInEn.length).toBeLessThanOrEqual(10);
-  });
-
-  it("西班牙文語言檔案的 value 不應包含大量繁中字元", () => {
-    const chineseRegex = /[\u4e00-\u9fff]/;
-    const chineseInEs = Object.entries(esStrings).filter(
-      ([, v]) => chineseRegex.test(v)
-    );
-    expect(chineseInEs.length).toBeLessThanOrEqual(10);
   });
 
   it("繁中語言檔案的所有 value 不應為空字串", () => {
@@ -110,13 +90,6 @@ describe("多語言 i18n 完整性 (locales)", () => {
 
   it("英文語言檔案的所有 value 不應為空字串", () => {
     const emptyValues = Object.entries(enStrings).filter(
-      ([, v]) => v.trim() === ""
-    );
-    expect(emptyValues.length).toBe(0);
-  });
-
-  it("西班牙文語言檔案的所有 value 不應為空字串", () => {
-    const emptyValues = Object.entries(esStrings).filter(
       ([, v]) => v.trim() === ""
     );
     expect(emptyValues.length).toBe(0);
@@ -146,19 +119,15 @@ describe("多語言 i18n 完整性 (locales)", () => {
     expect(lineCount).toBeGreaterThan(100);
   });
 
-  it("三個語言檔案的行數應相差不超過 20%", () => {
+  it("兩個語言檔案的行數應相差不超過 20%", () => {
     const zhContent = readFileSync(resolve(baseDir, "zh-TW.ts"), "utf-8");
     const enContent = readFileSync(resolve(baseDir, "en.ts"), "utf-8");
-    const esContent = readFileSync(resolve(baseDir, "es.ts"), "utf-8");
 
     const zhLines = zhContent.split("\n").length;
     const enLines = enContent.split("\n").length;
-    const esLines = esContent.split("\n").length;
 
     const enDiff = Math.abs(zhLines - enLines) / zhLines;
-    const esDiff = Math.abs(zhLines - esLines) / zhLines;
 
     expect(enDiff).toBeLessThan(0.2);
-    expect(esDiff).toBeLessThan(0.2);
   });
 });

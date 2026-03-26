@@ -1,13 +1,11 @@
 import { zhTW } from './zh-TW';
 import { en } from './en';
-import { es } from './es';
 import type { Language } from '@/contexts/LocaleContext';
 
-// 翻譯資源
+// 翻譯資源（僅支援繁體中文和英文）
 export const translations = {
   'zh-TW': zhTW,
   'en': en,
-  'es': es,
 } as const;
 
 export type TranslationKeys = typeof zhTW;
@@ -57,4 +55,4 @@ export function translate(
   return text;
 }
 
-export { zhTW, en, es };
+export { zhTW, en };

@@ -177,7 +177,7 @@ export default function TourPrintView() {
               <p className="font-medium text-gray-700">{t('tourPrint.phone')}</p>
               <p>Email：info@packgo.travel</p>
               <p>{t('tourPrint.tourCode')}{tour.productCode || `T${tour.id}`}</p>
-              <p>{t('tourPrint.printDate')}{new Date().toLocaleDateString(language === 'en' ? 'en-US' : language === 'es' ? 'es-ES' : 'zh-TW')}</p>
+              <p>{t('tourPrint.printDate')}{new Date().toLocaleDateString(language === 'en' ? 'en-US' : 'zh-TW')}</p>
             </div>
           </div>
           

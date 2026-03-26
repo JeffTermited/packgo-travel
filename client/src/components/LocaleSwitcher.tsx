@@ -16,7 +16,6 @@ export function LanguageSwitcher() {
   const languages: { code: Language; name: string }[] = [
     { code: 'zh-TW', name: t('language.zhTW') },
     { code: 'en', name: t('language.en') },
-    { code: 'es', name: t('language.es') },
   ];
 
   return (

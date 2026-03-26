@@ -25,7 +25,6 @@ import { useLocale } from "@/contexts/LocaleContext";
 // 語言顯示名稱
 const LANGUAGE_LABELS: Record<string, string> = {
   en: "English (EN)",
-  es: "Español (ES)",
   ja: "日本語 (JA)",
   ko: "한국어 (KO)",
 };
@@ -50,9 +49,7 @@ type TourWithTranslationStatus = {
   title: string;
   status: string;
   hasEn: boolean;
-  hasEs: boolean;
   enFieldCount: number;
-  esFieldCount: number;
 };
 
 export default function TranslationsTab() {
@@ -104,7 +101,7 @@ export default function TranslationsTab() {
     setIsTranslatingAll(true);
     try {
       await translateAllMutation.mutateAsync({
-        targetLanguages: ["en", "es"],
+        targetLanguages: ["en"],
       });
     } finally {
       setIsTranslatingAll(false);
@@ -117,7 +114,7 @@ export default function TranslationsTab() {
     try {
       await translateTourMutation.mutateAsync({
         tourId: selectedTour.id,
-        targetLanguages: ["en", "es"],
+        targetLanguages: ["en"],
       });
     } finally {
       setIsTranslatingSingle(false);
@@ -125,16 +122,14 @@ export default function TranslationsTab() {
   };
 
   // 建立行程翻譯狀態映射
-  const translationSummaryMap: Record<number, { hasEn: boolean; hasEs: boolean; enCount: number; esCount: number; totalFields: number }> =
+  const translationSummaryMap: Record<number, { hasEn: boolean; enCount: number; totalFields: number }> =
     allTranslations
       ? Object.fromEntries(
           allTranslations.map((item: any) => [
             item.tourId,
             {
               hasEn: item.hasEn,
-              hasEs: item.hasEs,
               enCount: item.enFieldCount ?? 0,
-              esCount: item.esFieldCount ?? 0,
               totalFields: item.totalFields ?? 0,
             },
           ])
@@ -150,7 +145,6 @@ export default function TranslationsTab() {
 
   const totalTours = tourList.length;
   const translatedEnCount = Object.values(translationSummaryMap).filter((v) => v.hasEn).length;
-  const translatedEsCount = Object.values(translationSummaryMap).filter((v) => v.hasEs).length;
 
   const isLoading = toursLoading || translationsLoading;
 
@@ -180,7 +174,7 @@ export default function TranslationsTab() {
       </div>
 
       {/* 統計卡片 */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 gap-4">
         <div className="bg-white border border-gray-200 rounded-lg p-4">
           <div className="text-2xl font-bold text-gray-900">{totalTours}</div>
           <div className="text-sm text-gray-500">{t('translationsTab.totalTours')}</div>
@@ -190,13 +184,6 @@ export default function TranslationsTab() {
           <div className="text-sm text-gray-500">{t('translationsTab.translatedEn')}</div>
           <div className="text-xs text-gray-400 mt-1">
             {totalTours > 0 ? Math.round((translatedEnCount / totalTours) * 100) : 0}% {t('translationsTab.done')}
-          </div>
-        </div>
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <div className="text-2xl font-bold text-blue-600">{translatedEsCount}</div>
-          <div className="text-sm text-gray-500">{t('translationsTab.translatedEs')}</div>
-          <div className="text-xs text-gray-400 mt-1">
-            {totalTours > 0 ? Math.round((translatedEsCount / totalTours) * 100) : 0}% {t('translationsTab.done')}
           </div>
         </div>
       </div>
@@ -227,7 +214,6 @@ export default function TranslationsTab() {
                 <TableHead>{t('translationsTab.colTourName')}</TableHead>
                 <TableHead className="w-24 text-center">{t('translationsTab.colStatus')}</TableHead>
                 <TableHead className="w-32 text-center">{t('translationsTab.colEnglish')}</TableHead>
-                <TableHead className="w-36 text-center">{t('translationsTab.colSpanish')}</TableHead>
                 <TableHead className="w-28 text-center">{t('translationsTab.colActions')}</TableHead>
               </TableRow>
             </TableHeader>
@@ -242,9 +228,7 @@ export default function TranslationsTab() {
                 filteredTours.map((tour: any) => {
                   const translationStatus = translationSummaryMap[tour.id];
                   const hasEn = translationStatus?.hasEn ?? false;
-                  const hasEs = translationStatus?.hasEs ?? false;
                   const enCount = translationStatus?.enCount ?? 0;
-                  const esCount = translationStatus?.esCount ?? 0;
                   const totalFields = translationStatus?.totalFields ?? Object.keys(FIELD_LABELS).length;
 
                   return (
@@ -273,16 +257,6 @@ export default function TranslationsTab() {
                         )}
                       </TableCell>
                       <TableCell className="text-center">
-                        {hasEs ? (
-                          <div className="flex flex-col items-center gap-1">
-                            <CheckCircle className="h-4 w-4 text-green-500" />
-                            <span className="text-xs text-gray-400">{esCount}/{totalFields} {t('translationsTab.fields')}</span>
-                          </div>
-                        ) : (
-                          <XCircle className="h-4 w-4 text-gray-300 mx-auto" />
-                        )}
-                      </TableCell>
-                      <TableCell className="text-center">
                         <Button
                           variant="outline"
                           size="sm"
@@ -293,7 +267,7 @@ export default function TranslationsTab() {
                           className="text-xs"
                         >
                           <RefreshCw className="h-3 w-3 mr-1" />
-                          {hasEn && hasEs ? t('translationsTab.retranslate') : t('translationsTab.translate')}
+                          {hasEn ? t('translationsTab.retranslate') : t('translationsTab.translate')}
                         </Button>
                       </TableCell>
                     </TableRow>

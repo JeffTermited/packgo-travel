@@ -2,8 +2,8 @@ import React, { createContext, useContext, useState, useCallback, useMemo, useEf
 import { translate } from '@/i18n';
 import { trpc } from '@/lib/trpc';
 
-// 支援的語言
-export type Language = 'zh-TW' | 'en' | 'es';
+// 支援的語言（繁體中文和英文）
+export type Language = 'zh-TW' | 'en';
 
 // 支援的幣值
 export type Currency = 'TWD' | 'USD';
@@ -12,7 +12,6 @@ export type Currency = 'TWD' | 'USD';
 export const languageNames: Record<Language, string> = {
   'zh-TW': '繁體中文',
   'en': 'English',
-  'es': 'Español',
 };
 
 // 幣值顯示名稱和符號
@@ -62,7 +61,7 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('packgo-language');
-      if (saved && ['zh-TW', 'en', 'es'].includes(saved)) {
+      if (saved && ['zh-TW', 'en'].includes(saved)) {
         setLanguageState(saved as Language);
       }
     }
