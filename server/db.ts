@@ -991,6 +991,7 @@ export async function unsubscribeNewsletter(email: string): Promise<void> {
 // Search tours with filters
 export async function searchTours(filters: {
   destination?: string;
+  category?: string;
   minDays?: number;
   maxDays?: number;
   minPrice?: number;
@@ -1010,6 +1011,10 @@ export async function searchTours(filters: {
 
   // Build filter conditions
   const conditions = [eq(tours.status, "active")];
+
+  if (filters.category && filters.category !== 'all') {
+    conditions.push(eq(tours.category, filters.category as 'group' | 'custom' | 'package' | 'cruise' | 'theme'));
+  }
 
   if (filters.destination) {
     // 使用模糊匹配，支援在 destination, destinationCountry, destinationCity 中搜尋

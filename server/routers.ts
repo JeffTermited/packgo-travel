@@ -461,6 +461,7 @@ export const appRouter = router({
       .input(
         z.object({
           destination: z.string().optional(),
+          category: z.string().optional(),
           minDays: z.number().optional(),
           maxDays: z.number().optional(),
           minPrice: z.number().optional(),
@@ -661,6 +662,10 @@ export const appRouter = router({
         }
         const { id, ...updates } = input;
         const tour = await db.updateTour(id, updates);
+        // 非同步觸發翻譯（不阻塞更新流程）
+        translateTour(id, ['en', 'es'], 'zh-TW', ctx.user.id)
+          .then((r) => console.log(`[AutoTranslate] Tour ${id} re-translated to:`, r.translatedLanguages))
+          .catch((e) => console.warn(`[AutoTranslate] Tour ${id} translation error:`, e));
         return tour;
       }),
     // Partial update for inline editing (admin only)
@@ -695,6 +700,15 @@ export const appRouter = router({
         
         const updates: Record<string, any> = { [field]: value };
         const tour = await db.updateTour(id, updates);
+        
+        // 非同步觸發翻譯（只有內容欄位變更時才重新翻譯）
+        const contentFields = ['title', 'description', 'heroSubtitle', 'keyFeatures', 'highlights', 'includes', 'excludes', 'itineraryDetailed', 'costExplanation', 'noticeDetailed'];
+        if (contentFields.includes(field)) {
+          const userId = (tour as any).createdBy ?? 1;
+          translateTour(id, ['en', 'es'], 'zh-TW', userId)
+            .then((r) => console.log(`[AutoTranslate] Tour ${id} field '${field}' re-translated to:`, r.translatedLanguages))
+            .catch((e) => console.warn(`[AutoTranslate] Tour ${id} field '${field}' translation error:`, e));
+        }
         
         return tour;
       }),

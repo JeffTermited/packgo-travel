@@ -4985,3 +4985,18 @@
 - [x] A3-A4: 修復後台預訂管理「客戶」、「出發日期」、「金額」欄位全顯示「—」（JOIN tours + departures）
 - [x] A5+B6: 重建代辦簽證頁面（加入簽證類型卡片、辦理流程、費用說明）
 - [x] B1: 設定首頁精選行程資料（在資料庫設定 featured=1）
+
+## 英文版全站審查與修復（2026-03-26）
+
+- [ ] 掃描首頁英文版
+- [ ] 掃描 Tours 列表頁英文版
+- [ ] 掃描 TourDetail 頁面英文版（標題/描述/Tab 重複問題）
+- [ ] 掃描 BookTour 頁面英文版
+- [ ] 掃描 CustomTours 頁面英文版
+- [ ] 掃描 VisaServices 頁面英文版
+- [ ] 掃描 GroupPackages 頁面英文版
+- [ ] 掃描 FlightBooking/HotelBooking/AirportTransfer 英文版
+- [ ] 掃描 ContactUs 頁面英文版
+- [ ] 掃描 AboutUs 頁面英文版
+- [ ] 掃描 Login 頁面英文版
+- [ ] 修復所有發現的 i18n 問題
