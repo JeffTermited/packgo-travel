@@ -124,7 +124,7 @@ export default function InquiriesTab() {
       </div>
 
       {/* Inquiries Table */}
-      <div className="bg-white border border-gray-200 overflow-hidden">
+      <div className="bg-white border border-gray-200 overflow-hidden rounded-xl">
         {isLoading ? (
           <div className="p-12 text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-400 mx-auto mb-3"></div>

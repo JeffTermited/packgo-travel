@@ -198,14 +198,14 @@ export default function EditableDestinations() {
             <div 
               key={dest.id} 
               onClick={() => handleDestinationClick(dest.region || '')}
-              className={`group relative aspect-[4/3] overflow-hidden shadow-md hover:shadow-xl transition-all duration-500  ${
+              className={`group relative aspect-[4/3] overflow-hidden rounded-xl shadow-md hover:shadow-xl transition-all duration-500 ${
                 isEditMode ? 'cursor-default' : 'cursor-pointer'
               }`}
             >
               <img 
                 src={dest.image || '/images/placeholder.jpg'} 
                 alt={dest.name} 
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 rounded-xl"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
               

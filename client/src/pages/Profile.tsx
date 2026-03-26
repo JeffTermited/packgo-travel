@@ -524,7 +524,7 @@ function FavoritesSection({ setLocation }: { setLocation: (path: string) => void
                     <img 
                       src={tour.mainImage || tour.heroImage || tour.imageUrl} 
                       alt={tour.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform rounded-xl"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">

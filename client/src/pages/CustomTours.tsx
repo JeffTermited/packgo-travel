@@ -64,7 +64,7 @@ export default function CustomTours() {
           <img
             src="/images/custom-tours-hero.jpg"
             alt={t('customTours.title')}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover rounded-xl"
             onError={(e) => {
               e.currentTarget.src = "/images/hero-sakura.jpg";
             }}

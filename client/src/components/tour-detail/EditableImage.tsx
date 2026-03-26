@@ -136,7 +136,7 @@ export const EditableImage: React.FC<EditableImageProps> = ({
     return (
       <div className={cn("relative overflow-hidden rounded-lg", aspectRatioClass, className)}>
         {src ? (
-          <img src={src} alt={alt} className="w-full h-full object-cover" />
+          <img src={src} alt={alt} className="w-full h-full object-cover rounded-lg" />
         ) : (
           <div className="w-full h-full bg-gray-200 flex items-center justify-center">
             <span className="text-gray-400">{placeholder}</span>
@@ -159,7 +159,7 @@ export const EditableImage: React.FC<EditableImageProps> = ({
       >
         {/* 圖片 */}
         {displaySrc ? (
-          <img src={displaySrc} alt={alt} className="w-full h-full object-cover" />
+          <img src={displaySrc} alt={alt} className="w-full h-full object-cover rounded-lg" />
         ) : (
           <div className="w-full h-full bg-gray-200 flex items-center justify-center">
             <span className="text-gray-400">{placeholder}</span>
@@ -215,7 +215,7 @@ export const EditableImage: React.FC<EditableImageProps> = ({
                   <img
                     src={displaySrc}
                     alt="預覽"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover rounded-lg"
                   />
                 ) : (
                   <div className="flex flex-col items-center justify-center h-full text-gray-400 py-12">

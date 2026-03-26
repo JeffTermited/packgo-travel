@@ -38,7 +38,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   return (
     <section className="relative w-full">
       {/* Hero Image - Full Width */}
-      <div className="relative w-full aspect-[21/9] lg:aspect-[21/7] overflow-hidden">
+      <div className="relative w-full aspect-[21/9] lg:aspect-[21/7] overflow-hidden rounded-xl">
         {isEditMode && onImageUpload ? (
           <EditableImage
             src={heroImage}

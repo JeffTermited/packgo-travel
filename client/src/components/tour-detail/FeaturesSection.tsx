@@ -69,13 +69,13 @@ export const FeaturesSection: React.FC<FeaturesSectionProps> = ({
             <div
               key={index}
               className={`
-                relative group overflow-hidden  shadow-lg
+                relative group overflow-hidden rounded-xl shadow-lg
                 ${index === 0 ? 'lg:col-span-2 lg:row-span-2' : ''}
               `}
             >
               {/* 圖片 */}
               <div className={`
-                relative w-full overflow-hidden
+                relative w-full overflow-hidden rounded-xl
                 ${index === 0 ? 'aspect-[16/9] lg:aspect-[4/3]' : 'aspect-[4/3]'}
               `}>
                 {isEditMode && onImageUpload ? (
@@ -98,7 +98,7 @@ export const FeaturesSection: React.FC<FeaturesSectionProps> = ({
                   <img
                     src={feature.image}
                     alt={feature.imageAlt}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 rounded-xl"
                   />
                 )}
                 

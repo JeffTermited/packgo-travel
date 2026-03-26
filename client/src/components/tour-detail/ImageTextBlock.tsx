@@ -75,7 +75,7 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
           {/* 圖片區塊 */}
           <div className="w-full lg:w-3/5 relative">
             {/* 主圖 */}
-            <div className="relative  overflow-hidden shadow-xl">
+            <div className="relative overflow-hidden rounded-xl shadow-xl">
               {isEditMode && onImageUpload ? (
                 <EditableImage
                   src={mainImage}
@@ -93,7 +93,7 @@ export const ImageTextBlock: React.FC<ImageTextBlockProps> = ({
                 <img
                   src={mainImage}
                   alt={mainImageAlt}
-                  className="w-full aspect-[4/3] object-cover"
+                  className="w-full aspect-[4/3] object-cover rounded-xl"
                 />
               )}
             </div>

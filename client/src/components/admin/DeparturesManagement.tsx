@@ -322,7 +322,7 @@ export default function DeparturesManagement({ tourId, tourTitle }: DeparturesMa
       </div>
 
       {/* Departures List */}
-      <div className="border border-gray-200 overflow-hidden">
+      <div className="border border-gray-200 overflow-hidden rounded-xl">
         <table className="w-full">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
@@ -354,7 +354,7 @@ export default function DeparturesManagement({ tourId, tourTitle }: DeparturesMa
                       <div className="flex items-center gap-2">
                         <Users className="h-3.5 w-3.5 text-gray-400" />
                         <span className="text-sm text-gray-700">{departure.bookedSlots}/{departure.totalSlots}</span>
-                        <div className="w-16 h-1.5 bg-gray-200 overflow-hidden">
+                        <div className="w-16 h-1.5 bg-gray-200 overflow-hidden rounded-full">
                           <div
                             className={`h-full ${occupancyPct >= 90 ? "bg-red-500" : occupancyPct >= 70 ? "bg-amber-500" : "bg-green-500"}`}
                             style={{ width: `${occupancyPct}%` }}

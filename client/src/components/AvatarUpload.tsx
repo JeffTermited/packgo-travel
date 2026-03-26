@@ -125,7 +125,7 @@ export default function AvatarUpload({ currentAvatar, onUploadComplete, onDelete
       <div className="relative group">
         <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg bg-gray-200">
           {currentAvatar ? (
-            <img src={currentAvatar} alt="Avatar" className="w-full h-full object-cover" />
+            <img src={currentAvatar} alt="Avatar" className="w-full h-full object-cover rounded-full" />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-black text-white text-3xl font-bold">
               <Upload className="h-8 w-8 text-white" />

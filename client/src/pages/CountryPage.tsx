@@ -247,11 +247,11 @@ export default function CountryPage() {
                       className="group cursor-pointer bg-white border border-gray-100 rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300"
                     >
                       {/* 圖片 */}
-                      <div className="relative aspect-[16/10] overflow-hidden">
+                      <div className="relative aspect-[16/10] overflow-hidden rounded-xl">
                         <img
                           src={tour.imageUrl || "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800"}
                           alt={tour.title}
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 rounded-xl"
                         />
                         <button
                           onClick={(e) => toggleFavorite(e, tour.id)}

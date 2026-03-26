@@ -673,16 +673,16 @@ export default function SearchResults() {
                     return (
                       <Card 
                         key={tour.id} 
-                        className="group border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer overflow-hidden bg-white"
+                        className="group border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer overflow-hidden bg-white rounded-xl"
                         onClick={() => setLocation(`/tours/${tour.id}`)}
                       >
                         {/* 圖片區域 */}
-                        <div className="relative aspect-[4/3] bg-gray-100">
+                        <div className="relative aspect-[4/3] bg-gray-100 rounded-t-xl overflow-hidden">
                           {tour.mainImage || tour.heroImage || tour.imageUrl ? (
                             <img 
                               src={tour.mainImage || tour.heroImage || tour.imageUrl} 
                               alt={tour.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 rounded-xl"
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-gray-300">

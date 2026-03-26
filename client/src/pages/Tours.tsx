@@ -44,12 +44,12 @@ function TourCard({ tour, language, t, formatPrice }: {
   return (
     <Link href={`/tours/${tour.id}`}>
       <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group border border-gray-200">
-        <div className="relative aspect-[4/3] overflow-hidden">
+        <div className="relative aspect-[4/3] overflow-hidden rounded-t-xl">
           {tour.imageUrl || tour.heroImage ? (
             <img
               src={tour.imageUrl || tour.heroImage}
               alt={displayTitle}
-              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300 rounded-xl"
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">

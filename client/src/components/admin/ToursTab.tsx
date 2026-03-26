@@ -640,7 +640,7 @@ export default function ToursTab() {
       </div>
 
       {/* Tours Table */}
-      <div className="bg-white border border-gray-200 overflow-hidden">
+      <div className="bg-white border border-gray-200 overflow-hidden rounded-xl">
         {toursLoading ? (
           <div className="p-8 text-center">
             <Loader2 className="h-8 w-8 animate-spin mx-auto text-gray-400" />
@@ -1146,7 +1146,7 @@ export default function ToursTab() {
                   <img 
                     src={generatedTourData.heroImage} 
                     alt="Hero" 
-                    className="w-full h-48 object-cover"
+                    className="w-full h-48 object-cover rounded-lg"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                   <div className="absolute bottom-4 left-4 right-4 text-white">

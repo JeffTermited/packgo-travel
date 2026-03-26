@@ -38,12 +38,12 @@ export default function SimilarTours({ tourId, title = "您可能也喜歡" }: S
               className="bg-white border border-gray-200 cursor-pointer group hover:shadow-md transition-all duration-200"
             >
               {/* Image */}
-              <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
+              <div className="relative aspect-[4/3] overflow-hidden rounded-t-xl bg-gray-100">
                 {tour.heroImage ? (
                   <img
                     src={tour.heroImage}
                     alt={tour.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 rounded-xl"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-gray-200">

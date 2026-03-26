@@ -549,7 +549,7 @@ const AttractionDetailDialog = ({
             <img 
               src={images[currentImageIndex]} 
               alt={name}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover rounded-lg"
             />
             {images.length > 1 && (
               <>
@@ -775,13 +775,13 @@ const MealCard = ({
       onClick={handleClick}
     >
       {/* 圖片區域 - 固定高度 */}
-      <div className="relative h-32 overflow-hidden bg-gray-100">
+      <div className="relative h-32 overflow-hidden rounded-lg bg-gray-100">
         {hasImages ? (
           <>
             <img 
               src={images[currentImageIndex]} 
               alt={name}
-              className="w-full h-full object-cover transition-transform duration-500"
+              className="w-full h-full object-cover transition-transform duration-500 rounded-xl"
               style={{ transform: isHovered ? 'scale(1.05)' : 'scale(1)' }}
             />
             {/* 滑動指示器 */}
@@ -881,7 +881,7 @@ const MealDetailDialog = ({
             <img 
               src={images[currentImageIndex]} 
               alt={detail.name}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover rounded-lg"
             />
             {images.length > 1 && (
               <>
@@ -1007,11 +1007,11 @@ const DayCard = ({
       {/* Content Container */}
       <div className={`flex flex-col ${isEven ? 'md:flex-row' : 'md:flex-row-reverse'} gap-0 bg-white`}>
         {/* Image Side */}
-        <div className="md:w-1/2 aspect-[4/3] md:aspect-auto overflow-hidden img-hover-zoom">
+        <div className="md:w-1/2 aspect-[4/3] md:aspect-auto overflow-hidden rounded-xl img-hover-zoom">
           <img 
             src={dayImage}
             alt={day.title || `Day ${index + 1}`}
-            className="w-full h-full object-cover transition-transform duration-700"
+              className="w-full h-full object-cover transition-transform duration-700 rounded-xl"
           />
         </div>
         
@@ -1233,7 +1233,7 @@ const HotelCard = ({ hotel, themeColor }: { hotel: any; themeColor: ReturnType<t
             <img 
               src={images[currentImageIndex]}
               alt={hotel.imageAlt || hotel.name}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover rounded-lg"
             />
             {images.length > 1 && (
               <>
@@ -1462,15 +1462,15 @@ const HotelCard = ({ hotel, themeColor }: { hotel: any; themeColor: ReturnType<t
   return (
     <>
     <div 
-      className="bg-white overflow-hidden shadow-lg hover:shadow-lg transition-all duration-300 group cursor-pointer card-hover-scale"
+      className="bg-white overflow-hidden rounded-xl shadow-lg hover:shadow-lg transition-all duration-300 group cursor-pointer card-hover-scale"
       onClick={() => setIsDialogOpen(true)}
     >
       {/* 圖片區域 */}
-      <div className="relative aspect-[16/10] overflow-hidden">
+      <div className="relative aspect-[16/10] overflow-hidden rounded-xl">
         <img 
           src={hotel.image || "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800"}
           alt={hotel.imageAlt || hotel.name}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 rounded-xl"
         />
         {/* 星級標籤 */}
         {starRating > 0 && (
@@ -2093,11 +2093,11 @@ export default function TourDetailPeony() {
                         imagePath={`keyFeatures.${index}.image`}
                       />
                     ) : featureImage ? (
-                      <div className="relative h-40 overflow-hidden">
+                      <div className="relative h-40 overflow-hidden rounded-lg">
                         <img 
                           src={featureImage} 
                           alt={featureTitle}
-                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110 rounded-xl"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
                       </div>

@@ -109,7 +109,7 @@ export const DailyItinerarySection: React.FC<DailyItinerarySectionProps> = ({
             return (
               <div
                 key={day.day}
-                className="bg-gray-50  overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+                className="bg-gray-50 overflow-hidden rounded-xl shadow-sm hover:shadow-md transition-shadow"
               >
                 {/* Day Header - 可點擊展開/收合 */}
                 <button

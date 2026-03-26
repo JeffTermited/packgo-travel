@@ -48,11 +48,11 @@ export default function FeaturedTours() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {featuredTours.map((tour) => (
                 <Card key={tour.id} className="group overflow-hidden border-2 border-black   shadow-lg hover:shadow-lg transition-all duration-300">
-                  <div className="relative aspect-[4/3] overflow-hidden">
+                  <div className="relative aspect-[4/3] overflow-hidden rounded-t-xl">
                     <img 
                       src={tour.imageUrl || '/images/tour-placeholder.jpg'} 
                       alt={tour.title} 
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 rounded-xl"
                     />
                     <div className="absolute top-4 left-4">
                       <Badge className="bg-black text-white hover:bg-black px-4 py-1 text-xs font-bold tracking-wider shadow-lg rounded-lg">

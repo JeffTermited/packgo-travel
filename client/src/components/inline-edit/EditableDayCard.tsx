@@ -204,7 +204,7 @@ export function EditableDayCard({
       {/* Content Container */}
       <div className={`flex flex-col ${isEven ? 'md:flex-row' : 'md:flex-row-reverse'} gap-0 bg-white`}>
         {/* Image Side */}
-        <div className="md:w-1/2 aspect-[4/3] md:aspect-auto overflow-hidden">
+        <div className="md:w-1/2 aspect-[4/3] md:aspect-auto overflow-hidden rounded-xl">
           {isEditMode ? (
             <EditableImage
               src={dayImage}
@@ -220,7 +220,7 @@ export function EditableDayCard({
             <img 
               src={dayImage}
               alt={day.title || `Day ${index + 1}`}
-              className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+              className="w-full h-full object-cover transition-transform duration-700 hover:scale-105 rounded-xl"
             />
           )}
         </div>

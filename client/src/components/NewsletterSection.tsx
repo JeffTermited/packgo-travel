@@ -44,7 +44,7 @@ export default function NewsletterSection() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder={t('newsletter.placeholder')} 
-                className="w-full h-12 pl-12 pr-4 bg-white/10 border border-white/20 text-white placeholder:text-gray-500 focus:outline-none focus:border-white focus:ring-1 focus:ring-white transition-all"
+                className="w-full h-12 pl-12 pr-4 bg-white/10 border border-white/20 text-white placeholder:text-gray-500 focus:outline-none focus:border-white focus:ring-1 focus:ring-white transition-all rounded-l-lg"
                 disabled={subscribe.isPending}
               />
             </div>

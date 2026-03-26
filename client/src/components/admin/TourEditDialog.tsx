@@ -509,7 +509,7 @@ export function TourEditDialog({
                       <img 
                         src={editedData.heroImage} 
                         alt="Hero Preview" 
-                        className="w-full h-48 object-cover"
+                        className="w-full h-48 object-cover rounded-lg"
                       />
                     </div>
                   )}
@@ -1375,11 +1375,11 @@ export function TourEditDialog({
                           <span className="ml-2 text-sm text-gray-500">上傳中...</span>
                         </div>
                       ) : image.url ? (
-                        <div className="relative overflow-hidden group">
+                        <div className="relative overflow-hidden rounded-lg group">
                           <img 
                             src={image.url} 
                             alt={image.alt || t('tourEditDialog.tourPhotoAlt')} 
-                            className="w-full h-32 object-cover"
+                            className="w-full h-32 object-cover rounded-lg"
                           />
                           {/* 替換圖片按鈕 */}
                           <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -1509,7 +1509,7 @@ export function TourEditDialog({
                       <img 
                         src={editedData.heroImage} 
                         alt="Hero Preview" 
-                        className="w-full h-48 object-cover"
+                        className="w-full h-48 object-cover rounded-lg"
                       />
                     </div>
                   )}

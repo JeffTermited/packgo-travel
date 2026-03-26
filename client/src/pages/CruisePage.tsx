@@ -186,11 +186,11 @@ export default function CruisePage() {
                     <Link key={tour.id} href={`/tours/${tour.id}`}>
                       <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group cursor-pointer h-full flex flex-col">
                         {/* 圖片 */}
-                        <div className="relative h-48 overflow-hidden">
+                        <div className="relative h-48 overflow-hidden rounded-t-xl">
                           <img
                             src={tour.imageUrl || cruiseImages.default}
                             alt={tour.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 rounded-xl"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                           
