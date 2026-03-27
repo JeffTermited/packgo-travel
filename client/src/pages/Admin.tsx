@@ -55,17 +55,33 @@ export default function Admin() {
     setLocation("/");
   };
 
-  const navItems: { id: AdminTab; icon: React.ElementType; label: string; badge?: number }[] = [
-    { id: "dashboard", icon: LayoutDashboard, label: t('admin.dashboard') },
-    { id: "tours", icon: Plane, label: t('admin.tours'), badge: statsData?.activeTours },
-    { id: "bookings", icon: ShoppingCart, label: t('admin.bookings') },
-    { id: "inquiries", icon: MessageSquare, label: t('admin.inquiries'), badge: statsData?.pendingInquiries },
-    { id: "reviews", icon: Star, label: t('admin.reviews') },
-    { id: "skills", icon: Brain, label: t('admin.skills') },
-    { id: "translations", icon: Languages, label: t('admin.translations') },
-    { id: "analytics", icon: TrendingUp, label: t('admin.analytics') },
-    { id: "ai-cost", icon: BarChart2, label: 'AI 成本分析' },
+  // 導航分組結構
+  const navGroups: {
+    label: string;
+    items: { id: AdminTab; icon: React.ElementType; label: string; badge?: number }[];
+  }[] = [
+    {
+      label: '日常管理',
+      items: [
+        { id: 'dashboard', icon: LayoutDashboard, label: '總覽儀表板' },
+        { id: 'tours', icon: Plane, label: '行程管理', badge: statsData?.activeTours },
+        { id: 'bookings', icon: ShoppingCart, label: '訂單管理' },
+        { id: 'inquiries', icon: MessageSquare, label: '客戶詢問', badge: statsData?.pendingInquiries },
+        { id: 'reviews', icon: Star, label: '客戶評價' },
+      ],
+    },
+    {
+      label: '進階功能',
+      items: [
+        { id: 'analytics', icon: TrendingUp, label: '流量分析' },
+        { id: 'translations', icon: Languages, label: '多語言翻譯' },
+        { id: 'ai-cost', icon: BarChart2, label: 'AI 使用記錄' },
+        { id: 'skills', icon: Brain, label: 'AI 功能設定' },
+      ],
+    },
   ];
+
+  const navItems = navGroups.flatMap(g => g.items);
 
   const currentNavItem = navItems.find(item => item.id === activeTab);
 
@@ -128,42 +144,49 @@ export default function Admin() {
           </div>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  setActiveTab(item.id);
-                  setSidebarOpen(false);
-                }}
-                className={`
-                  w-full flex items-center justify-between px-3 py-3 rounded-lg text-sm font-medium
-                  transition-all duration-150 group
-                  ${isActive
-                    ? "bg-black text-white"
-                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-                  }
-                `}
-              >
-                <div className="flex items-center gap-3">
-                  <Icon className={`h-5 w-5 flex-shrink-0 ${isActive ? "text-white" : "text-gray-400 group-hover:text-gray-600"}`} />
-                  <span>{item.label}</span>
-                </div>
-                {item.badge !== undefined && item.badge > 0 && (
-                  <span className={`
-                    text-xs font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center
-                    ${isActive ? "bg-white text-black" : "bg-gray-200 text-gray-700"}
-                  `}>
-                    {item.badge}
-                  </span>
-                )}
-              </button>
-            );
-          })}
+        {/* Navigation - 分組導航 */}
+        <nav className="flex-1 px-3 py-4 overflow-y-auto space-y-4">
+          {navGroups.map((group) => (
+            <div key={group.label}>
+              <p className="px-3 mb-1 text-[10px] font-bold text-gray-400 uppercase tracking-widest">{group.label}</p>
+              <div className="space-y-0.5">
+                {group.items.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = activeTab === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => {
+                        setActiveTab(item.id);
+                        setSidebarOpen(false);
+                      }}
+                      className={`
+                        w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium
+                        transition-all duration-150 group
+                        ${isActive
+                          ? "bg-black text-white"
+                          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                        }
+                      `}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Icon className={`h-4 w-4 flex-shrink-0 ${isActive ? "text-white" : "text-gray-400 group-hover:text-gray-600"}`} />
+                        <span>{item.label}</span>
+                      </div>
+                      {item.badge !== undefined && item.badge > 0 && (
+                        <span className={`
+                          text-xs font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center
+                          ${isActive ? "bg-white text-black" : "bg-gray-200 text-gray-700"}
+                        `}>
+                          {item.badge}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
 
         {/* Sidebar Footer */}

@@ -2737,7 +2737,7 @@ export const zhTW = {
     saveSuccess: '行程已成功更新',
     saveError: '更新失敗：{message}',
     // 補充缺失的 key
-    promotionText: '促销文字',
+    promotionText: '促銷文字',
     locationInfo: '地點資訊',
     departureCity: '出發國家/城市',
     departureAirport: '出發機場',

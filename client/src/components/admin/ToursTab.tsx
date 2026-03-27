@@ -752,38 +752,39 @@ export default function ToursTab() {
                     </td>
                     <td className="px-5 py-5">
                       <div className="flex items-center justify-end gap-1">
-                        {/* 上下架 */}
+                        {/* 上下架 - 含文字 */}
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => toggleStatusMutation.mutate({ id: tour.id })}
                           disabled={toggleStatusMutation.isPending}
-                          className="h-8 w-8 p-0 hover:bg-gray-100 transition-colors"
+                          className="h-8 px-2 hover:bg-gray-100 transition-colors flex items-center gap-1 text-xs"
                           title={tour.status === "active" ? "下架" : "上架"}
                         >
                           {tour.status === "active" ? (
-                            <EyeOff className="h-4 w-4 text-gray-500" />
+                            <><EyeOff className="h-3.5 w-3.5 text-gray-500" /><span className="text-gray-600">下架</span></>
                           ) : (
-                            <Eye className="h-4 w-4 text-gray-500" />
+                            <><Eye className="h-3.5 w-3.5 text-green-600" /><span className="text-green-600">上架</span></>
                           )}
                         </Button>
-                        {/* 精選 */}
+                        {/* 精選 - 含文字 */}
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => toggleFeaturedMutation.mutate({ id: tour.id })}
-                          className={`h-8 w-8 p-0 transition-colors ${
+                          className={`h-8 px-2 transition-colors flex items-center gap-1 text-xs ${
                             tour.featured === 1
-                              ? "text-gray-800 hover:bg-gray-100"
-                              : "text-gray-300 hover:bg-gray-100"
+                              ? "text-amber-600 hover:bg-amber-50"
+                              : "text-gray-400 hover:bg-gray-100"
                           }`}
                           title={tour.featured === 1 ? "取消精選" : "設為精選"}
                           disabled={toggleFeaturedMutation.isPending}
                         >
-                          <Star className={`h-4 w-4 ${tour.featured === 1 ? "fill-current" : ""}`} />
+                          <Star className={`h-3.5 w-3.5 ${tour.featured === 1 ? "fill-current" : ""}`} />
+                          <span>精選</span>
                         </Button>
                         <div className="w-px h-5 bg-gray-200 mx-0.5"></div>
-                        {/* 出發日期 */}
+                        {/* 出發日期 - 含文字 */}
                         <Button
                           variant="ghost"
                           size="sm"
@@ -791,20 +792,22 @@ export default function ToursTab() {
                             setSelectedTourForDepartures({id: tour.id, title: tour.title});
                             setIsDeparturesDialogOpen(true);
                           }}
-                          className="h-8 w-8 p-0 hover:bg-gray-100 transition-colors"
+                          className="h-8 px-2 hover:bg-gray-100 transition-colors flex items-center gap-1 text-xs text-gray-600"
                           title="管理出發日期"
                         >
-                          <Calendar className="h-4 w-4 text-gray-500" />
+                          <Calendar className="h-3.5 w-3.5 text-gray-500" />
+                          <span>日期</span>
                         </Button>
-                        {/* 編輯 */}
+                        {/* 編輯 - 含文字 */}
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleEdit(tour.id)}
-                          className="h-8 w-8 p-0 hover:bg-gray-100 transition-colors"
+                          className="h-8 px-2 hover:bg-blue-50 transition-colors flex items-center gap-1 text-xs text-blue-600"
                           title="編輯行程"
                         >
-                          <Edit className="h-4 w-4 text-gray-500" />
+                          <Edit className="h-3.5 w-3.5" />
+                          <span>編輯</span>
                         </Button>
                         {/* 更多操作下拉選單 (複製/刪除) */}
                         <DropdownMenu>
@@ -812,10 +815,11 @@ export default function ToursTab() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-8 w-8 p-0 hover:bg-gray-100 transition-colors"
+                              className="h-8 px-2 hover:bg-gray-100 transition-colors flex items-center gap-1 text-xs text-gray-600"
                               title="更多操作"
                             >
-                              <MoreHorizontal className="h-4 w-4 text-gray-500" />
+                              <MoreHorizontal className="h-3.5 w-3.5 text-gray-500" />
+                              <span>更多</span>
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-36">
