@@ -1574,11 +1574,15 @@ export default function TourDetailPeony() {
   const [showShareDialog, setShowShareDialog] = useState(false);
 
   // 更新行程 mutation
+  const utils = trpc.useUtils();
   const updateTourMutation = trpc.tours.update.useMutation({
     onSuccess: () => {
       toast.success(t('tourDetail.tourUpdated'));
+      utils.tours.getById.invalidate({ id: tourId! });
       refetch();
       setHasChanges(false);
+      setIsEditMode(false);
+      setEditedTour(null);
     },
     onError: (error) => {
       toast.error(`${t('tourDetail.updateFailed')}${error.message}`);

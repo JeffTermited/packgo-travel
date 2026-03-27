@@ -25,7 +25,7 @@ export function EditModeToggle({
   return (
     <div
       className={cn(
-        "fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-white rounded-lg shadow-lg border border-gray-200 p-2",
+        "fixed bottom-24 right-6 z-[60] flex items-center gap-2 bg-white rounded-lg shadow-lg border border-gray-200 p-2",
         className
       )}
     >

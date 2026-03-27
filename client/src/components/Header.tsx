@@ -29,7 +29,7 @@ export default function Header() {
     {
       labelKey: "nav.tours",
       children: [
-        { labelKey: "nav.groupTours", href: "/tours?category=group", descKey: "nav.groupToursDesc" },
+        { labelKey: "nav.groupTours", href: "/tours?category=package", descKey: "nav.groupToursDesc" },
         { labelKey: "nav.themeTours", href: "/tours?category=theme", descKey: "nav.themeToursDesc" },
         { labelKey: "nav.customTours", href: "/tours?category=custom", descKey: "nav.customToursDesc" },
         { labelKey: "nav.cruiseTours", href: "/tours?category=cruise", descKey: "nav.cruiseToursDesc" },
