@@ -143,11 +143,16 @@ export default function Admin() {
         </div>
 
         {/* Navigation - 分組導航 */}
-        <nav className="flex-1 px-3 py-4 overflow-y-auto space-y-4">
-          {navGroups.map((group) => (
-            <div key={group.label}>
-              <p className="px-3 mb-1 text-[10px] font-bold text-gray-400 uppercase tracking-widest">{group.label}</p>
-              <div className="space-y-0.5">
+        <nav className="flex-1 py-3 overflow-y-auto">
+          {navGroups.map((group, groupIdx) => (
+            <div key={group.label} className={groupIdx > 0 ? "mt-4 pt-4 border-t border-gray-100" : ""}>
+              {/* Group label */}
+              <div className="px-6 pb-1.5">
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em]">
+                  {group.label}
+                </span>
+              </div>
+              <div>
                 {group.items.map((item) => {
                   const Icon = item.icon;
                   const isActive = activeTab === item.id;
@@ -159,22 +164,35 @@ export default function Admin() {
                         setSidebarOpen(false);
                       }}
                       className={`
-                        w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium
-                        transition-all duration-150 group
+                        w-full flex items-center justify-between px-6 py-2.5 text-sm
+                        transition-colors duration-100 group relative
                         ${isActive
-                          ? "bg-black text-white"
-                          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                          ? "text-gray-900 font-semibold bg-gray-50"
+                          : "text-gray-500 font-normal hover:text-gray-900 hover:bg-gray-50/60"
                         }
                       `}
                     >
+                      {/* Active left border */}
+                      <span
+                        className={`absolute left-0 top-1 bottom-1 w-[2.5px] transition-all duration-100
+                          ${isActive ? "bg-gray-900" : "bg-transparent"}
+                        `}
+                      />
                       <div className="flex items-center gap-3">
-                        <Icon className={`h-4 w-4 flex-shrink-0 ${isActive ? "text-white" : "text-gray-400 group-hover:text-gray-600"}`} />
-                        <span>{item.label}</span>
+                        <Icon
+                          className={`h-[15px] w-[15px] flex-shrink-0 transition-colors
+                            ${isActive ? "text-gray-900" : "text-gray-400 group-hover:text-gray-600"}
+                          `}
+                        />
+                        <span className="tracking-tight">{item.label}</span>
                       </div>
                       {item.badge !== undefined && item.badge > 0 && (
                         <span className={`
-                          text-xs font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center
-                          ${isActive ? "bg-white text-black" : "bg-gray-200 text-gray-700"}
+                          text-[11px] font-semibold px-1.5 py-px min-w-[20px] text-center
+                          ${isActive
+                            ? "bg-gray-900 text-white"
+                            : "bg-gray-100 text-gray-500 group-hover:bg-gray-200"
+                          }
                         `}>
                           {item.badge}
                         </span>
@@ -188,20 +206,20 @@ export default function Admin() {
         </nav>
 
         {/* Sidebar Footer */}
-        <div className="px-3 py-4 border-t border-gray-100 space-y-1">
+        <div className="py-3 border-t border-gray-100">
           <button
             onClick={() => setLocation("/")}
-            className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-all"
+            className="w-full flex items-center gap-3 px-6 py-2.5 text-sm font-normal text-gray-500 hover:text-gray-900 hover:bg-gray-50/60 transition-colors"
           >
-            <Home className="h-5 w-5 text-gray-400" />
-            <span>{t('admin.backToHome')}</span>
+            <Home className="h-[15px] w-[15px] text-gray-400" />
+            <span className="tracking-tight">{t('admin.backToHome')}</span>
           </button>
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-red-50 hover:text-red-700 transition-all"
+            className="w-full flex items-center gap-3 px-6 py-2.5 text-sm font-normal text-gray-500 hover:text-red-600 hover:bg-red-50/60 transition-colors"
           >
-            <LogOut className="h-5 w-5 text-gray-400" />
-            <span>{t('admin.logout')}</span>
+            <LogOut className="h-[15px] w-[15px] text-gray-400" />
+            <span className="tracking-tight">{t('admin.logout')}</span>
           </button>
         </div>
       </aside>
