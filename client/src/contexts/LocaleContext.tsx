@@ -48,7 +48,7 @@ interface LocaleContextType {
   rateDisclaimer: string;
   
   // 翻譯函數
-  t: (key: string, params?: Record<string, string | number>) => string;
+  t: (key: string, params?: Record<string, string | number>) => string | string[];
 }
 
 const LocaleContext = createContext<LocaleContextType | undefined>(undefined);
@@ -156,7 +156,7 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
   }, [ratesData, getRate]);
 
   // 翻譯函數
-  const t = useCallback((key: string, params?: Record<string, string | number>): string => {
+  const t = useCallback((key: string, params?: Record<string, string | number>): string | string[] => {
     return translate(key, language, params);
   }, [language]);
 
