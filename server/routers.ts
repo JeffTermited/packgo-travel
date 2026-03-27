@@ -1971,9 +1971,84 @@ export const appRouter = router({
           })),
         };
       }),
-  }),
 
-  // Homepage content management
+    // Get today's activity logs per agent (for RPG daily report)
+    getAgentDailyLogs: adminProcedure
+      .query(async () => {
+        const { llmUsageLogs } = await import('../drizzle/schema');
+        const { gte, sql, desc } = await import('drizzle-orm');
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'DB not available' });
+
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+
+        // Today's stats per agent
+        const todayStats = await drizzleDb
+          .select({
+            agentName: llmUsageLogs.agentName,
+            calls: sql<number>`COUNT(*)`,
+            totalTokens: sql<number>`SUM(${llmUsageLogs.totalTokens})`,
+            avgMs: sql<number>`AVG(${llmUsageLogs.processingTimeMs})`,
+            lastActive: sql<string>`MAX(${llmUsageLogs.createdAt})`,
+          })
+          .from(llmUsageLogs)
+          .where(gte(llmUsageLogs.createdAt, todayStart))
+          .groupBy(llmUsageLogs.agentName)
+          .orderBy(desc(sql`COUNT(*)`));
+
+        // Recent activity logs today
+        const recentActivity = await drizzleDb
+          .select({
+            agentName: llmUsageLogs.agentName,
+            taskType: llmUsageLogs.taskType,
+            taskId: llmUsageLogs.taskId,
+            totalTokens: llmUsageLogs.totalTokens,
+            processingTimeMs: llmUsageLogs.processingTimeMs,
+            wasFromCache: llmUsageLogs.wasFromCache,
+            createdAt: llmUsageLogs.createdAt,
+          })
+          .from(llmUsageLogs)
+          .where(gte(llmUsageLogs.createdAt, todayStart))
+          .orderBy(desc(llmUsageLogs.createdAt))
+          .limit(200);
+
+        // All-time stats per agent for level calculation
+        const allTimeStats = await drizzleDb
+          .select({
+            agentName: llmUsageLogs.agentName,
+            totalCalls: sql<number>`COUNT(*)`,
+            totalTokens: sql<number>`SUM(${llmUsageLogs.totalTokens})`,
+          })
+          .from(llmUsageLogs)
+          .groupBy(llmUsageLogs.agentName);
+
+        return {
+          todayStats: todayStats.map(s => ({
+            agentName: s.agentName,
+            calls: Number(s.calls),
+            totalTokens: Number(s.totalTokens),
+            avgMs: Math.round(Number(s.avgMs ?? 0)),
+            lastActive: s.lastActive,
+          })),
+          recentActivity: recentActivity.map(a => ({
+            agentName: a.agentName,
+            taskType: a.taskType ?? 'unknown',
+            taskId: a.taskId,
+            totalTokens: a.totalTokens,
+            processingTimeMs: a.processingTimeMs,
+            wasFromCache: a.wasFromCache,
+            createdAt: a.createdAt,
+          })),
+          allTimeStats: allTimeStats.map(s => ({
+            agentName: s.agentName,
+            totalCalls: Number(s.totalCalls),
+            totalTokens: Number(s.totalTokens),
+          })),
+        };
+      }),
+  }),
+  // Homepage content managementt
   homepage: router({
     // Get homepage content by section key
     getContent: publicProcedure
