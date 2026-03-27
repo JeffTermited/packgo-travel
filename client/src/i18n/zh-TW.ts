@@ -10,7 +10,10 @@ export const zhTW = {
     contactUs: '聯絡我們',
     learnMore: '了解更多',
     back: '返回',
+    backTo: '返回',
     backToHome: '返回首頁',
+    clearFilters: '清除篩選',
+    unknown: '未知',
     next: '下一步',
     previous: '上一步',
     submit: '提交',
@@ -185,6 +188,14 @@ export const zhTW = {
     middleEast: '中東地區',
     africa: '非洲地區',
     oceania: '大洋洲',
+    regions: {
+      africa: '非洲',
+      americas: '美洲',
+      asia: '亞洲',
+      europe: '歐洲',
+      middleEast: '中東',
+      oceania: '大洋洲',
+    },
     cruises: '郵輪之旅',
     viewTours: '查看行程',
     // 國家名稱
@@ -265,6 +276,7 @@ export const zhTW = {
 
   // 幣值
   currency: {
+    label: '貨幣',
     twd: '新台幣',
     usd: '美金',
     note: '※ 轉換價格僅供參考',
@@ -272,6 +284,7 @@ export const zhTW = {
 
   // 語言
   language: {
+    label: '語言',
     zhTW: '繁體中文',
     en: 'English',
     es: 'Español',
@@ -642,6 +655,27 @@ export const zhTW = {
       tryAgain: '重新付款',
       contactSupport: '聯絡客服',
       backToHome: '返回首頁',
+      bookingSaved: '您的預訂資訊已保存，付款完成後即可確認。',
+      cancelled: '付款已取消',
+      expired: '付款連結已過期，請重新預訂',
+      retryPayment: '重試付款',
+      selectAgain: '重新選擇',
+      whatHappened: '發生了什麼？',
+      reasons: {
+        intro: '付款失敗可能的原因：',
+        bankDeclined: '銀行拒絕交易',
+        cardError: '信用卡資訊錯誤',
+        insufficientFunds: '餘額不足',
+        networkError: '網路連線問題',
+        userCancelled: '使用者取消付款',
+      },
+      tips: {
+        title: '建議您：',
+        checkCard: '確認信用卡資訊是否正確',
+        checkLimit: '確認信用卡額度是否充足',
+        checkOverseas: '確認信用卡是否開通海外刷卡功能',
+        stableNetwork: '使用穩定的網路環境重試',
+      },
     },
   },
 
@@ -675,7 +709,18 @@ export const zhTW = {
       durationDesc: '天數由多到少',
       newest: '最新上架',
       popular: '熱門行程',
+      budget: '超值優惠',
+      premium: '精緻行程',
+      classic: '經典行程',
+      deepTravel: '深度旅遊',
+      shortTrip: '輕旅行',
+      foodTour: '美食之旅',
+      photoTour: '攝影旅遊',
+      rail: '鐵道之旅',
+      bus: '巴士旅遊',
     },
+    perPerson: '每人',
+    priceFrom: '起',
     card: {
       days: '天',
       nights: '夜',
@@ -698,6 +743,19 @@ export const zhTW = {
   tourDetail: {
     overview: '行程概覽',
     highlights: '行程亮點',
+    attractionIntro: '景點介紹',
+    available: '可預訂',
+    documents: '旅遊文件',
+    health: '健康注意事項',
+    hotelDesc: '住宿說明',
+    hotelDisclaimer: '※ 住宿以實際安排為準，圖片僅供參考',
+    noDeparture: '目前無可出發日期',
+    perNightExtra: '每晚加收',
+    selectedDeparture: '已選擇出發日期',
+    suggestedVisit: '建議參觀',
+    terms: '條款與細則',
+    upgradeRoom: '升等住宿',
+    upgradeRoomDesc: '升等至更高等級住宿',
     itinerary: '每日行程',
     day: '第 {day} 天',
     included: '費用包含',
@@ -1573,11 +1631,13 @@ export const zhTW = {
     },
   },
 
-  // 預訂行程
+  // 預訂行程流程
   bookTour: {
     title: '預訂行程',
-    steps: {
-      date: '選擇日期',
+    balance: '尾款',
+    deposit: '訂金',
+    totalAmount: '總金額',
+    steps: {     date: '選擇日期',
       selectDate: '選擇日期',
       travelers: '旅客人數',
       details: '填寫資訊',
@@ -1797,6 +1857,7 @@ export const zhTW = {
   // 郵輪頁面
   cruise: {
     title: '郵輪之旅',
+    comingSoon: '即將推出，敬請期待',
     subtitle: '探索世界最美麗的海域，享受豪華郵輪上的頂級服務與精彩活動',
     home: '首頁',
     searchPlaceholder: '搜尋郵輪行程...',

@@ -10,7 +10,10 @@ export const en = {
     contactUs: 'Contact Us',
     learnMore: 'Learn More',
     back: 'Back',
+    backTo: 'Back to',
     backToHome: 'Back to Home',
+    clearFilters: 'Clear Filters',
+    unknown: 'Unknown',
     next: 'Next',
     previous: 'Previous',
     submit: 'Submit',
@@ -185,6 +188,14 @@ export const en = {
     middleEast: 'Middle East',
     africa: 'Africa',
     oceania: 'Oceania',
+    regions: {
+      africa: 'Africa',
+      americas: 'Americas',
+      asia: 'Asia',
+      europe: 'Europe',
+      middleEast: 'Middle East',
+      oceania: 'Oceania',
+    },
     cruises: 'Cruises',
     viewTours: 'View Tours',
     // Country names
@@ -264,6 +275,7 @@ export const en = {
 
   // Currency
   currency: {
+    label: 'Currency',
     twd: 'TWD',
     usd: 'USD',
     note: '※ Converted prices are for reference only',
@@ -271,6 +283,7 @@ export const en = {
 
   // Language
   language: {
+    label: 'Language',
     zhTW: '繁體中文',
     en: 'English',
     es: 'Español',
@@ -641,12 +654,35 @@ export const en = {
       tryAgain: 'Try Again',
       contactSupport: 'Contact Support',
       backToHome: 'Back to Home',
+      bookingSaved: 'Your booking information has been saved. It will be confirmed once payment is completed.',
+      cancelled: 'Payment Cancelled',
+      expired: 'Payment link has expired, please book again',
+      retryPayment: 'Retry Payment',
+      selectAgain: 'Select Again',
+      whatHappened: 'What happened?',
+      reasons: {
+        intro: 'Possible reasons for payment failure:',
+        bankDeclined: 'Bank declined the transaction',
+        cardError: 'Credit card information error',
+        insufficientFunds: 'Insufficient funds',
+        networkError: 'Network connection issue',
+        userCancelled: 'User cancelled payment',
+      },
+      tips: {
+        title: 'We suggest:',
+        checkCard: 'Verify your credit card information is correct',
+        checkLimit: 'Check if your credit limit is sufficient',
+        checkOverseas: 'Ensure international transactions are enabled on your card',
+        stableNetwork: 'Use a stable network connection and try again',
+      },
     },
   },
 
   // Tours List
   tours: {
     title: 'Explore Tours',
+    perPerson: 'Per Person',
+    priceFrom: 'From',
     subtitle: 'Discover amazing journeys around the world',
     searchPlaceholder: 'Search tours or destinations...',
     selectCountry: 'Select Country',
@@ -674,6 +710,15 @@ export const en = {
       durationDesc: 'Duration: Long to Short',
       newest: 'Newest',
       popular: 'Popular',
+      budget: 'Budget Deal',
+      premium: 'Premium Tour',
+      classic: 'Classic Tour',
+      deepTravel: 'Deep Travel',
+      shortTrip: 'Short Trip',
+      foodTour: 'Food Tour',
+      photoTour: 'Photo Tour',
+      rail: 'Rail Journey',
+      bus: 'Bus Tour',
     },
     card: {
       days: 'Days',
@@ -697,6 +742,27 @@ export const en = {
   tourDetail: {
     overview: 'Overview',
     highlights: 'Highlights',
+    attractionIntro: 'Attraction Introduction',
+    available: 'Available',
+    documents: 'Travel Documents',
+    health: 'Health & Safety',
+    hotelDesc: 'Hotel Description',
+    hotelDisclaimer: '※ Actual accommodation may vary; images are for reference only',
+    noDeparture: 'No departure dates available',
+    perNightExtra: 'Per Night Extra',
+    selectedDeparture: 'Selected Departure',
+    suggestedVisit: 'Suggested Visit',
+    terms: 'Terms & Conditions',
+    upgradeRoom: 'Room Upgrade',
+    upgradeRoomDesc: 'Upgrade to a higher category room',
+    loading: 'Loading tour...',
+    itineraryComingSoon: 'Detailed itinerary coming soon',
+    highlightsDesc: 'Carefully curated tour highlights',
+    selectDepartureDate: 'Select your preferred departure date',
+    contactAdvisor: 'For more information, contact our travel advisor',
+    noticesDesc: 'Please read the following information before departure',
+    pricePerPerson: 'Price Per Person (incl. tax)',
+    contactForDeparture: 'Please contact us for available departure dates',
     itinerary: 'Daily Itinerary',
     day: 'Day {day}',
     included: 'What\'s Included',
@@ -1107,8 +1173,9 @@ export const en = {
     },
   },
 
-  // Cruises
-  cruises: {
+   // Cruise
+  cruise: {
+    comingSoon: 'Coming soon, stay tuned',
     title: 'Cruises',
     subtitle: 'Luxury Ocean Vacations',
     description: 'Experience world-class cruise travel and enjoy ultimate luxury at sea.',
@@ -1566,6 +1633,9 @@ export const en = {
   // Book Tour
   bookTour: {
     title: 'Book Tour',
+    balance: 'Balance',
+    deposit: 'Deposit',
+    totalAmount: 'Total Amount',
     steps: {
       date: 'Select Date',
       selectDate: 'Select Date',

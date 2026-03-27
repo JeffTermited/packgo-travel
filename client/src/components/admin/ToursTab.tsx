@@ -174,6 +174,26 @@ export default function ToursTab() {
     },
   });
 
+  // 快速修改分類 mutation
+  const patchFieldMutation = trpc.tours.patchField.useMutation({
+    onSuccess: () => {
+      utils.tours.list.invalidate();
+      toast.success('分類已更新');
+    },
+    onError: (error) => {
+      toast.error(`更新失敗：${error.message}`);
+    },
+  });
+
+  // 分類標籤顯示
+  const CATEGORY_LABELS: Record<string, { label: string; color: string }> = {
+    group:   { label: '團體旅遊', color: 'bg-blue-100 text-blue-700' },
+    custom:  { label: '客製旅遊', color: 'bg-purple-100 text-purple-700' },
+    package: { label: '包團旅遊', color: 'bg-green-100 text-green-700' },
+    cruise:  { label: '郵輪旅遊', color: 'bg-cyan-100 text-cyan-700' },
+    theme:   { label: '主題旅遊', color: 'bg-orange-100 text-orange-700' },
+  };
+
   // 複製行程 mutation
   const duplicateTourMutation = trpc.tours.duplicate.useMutation({
     onSuccess: (newTour) => {
@@ -664,6 +684,7 @@ export default function ToursTab() {
                   </th>
                   <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">行程名稱</th>
                   <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">目的地</th>
+                  <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">分類</th>
                   <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">天數</th>
                   <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">售價</th>
                   <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">狀態</th>
@@ -725,6 +746,23 @@ export default function ToursTab() {
                       {tour.destinationCity && (
                         <div className="text-xs text-gray-400 mt-0.5">{tour.destinationCity}</div>
                       )}
+                    </td>
+                    <td className="px-5 py-5">
+                      <Select
+                        value={tour.category}
+                        onValueChange={(val) => patchFieldMutation.mutate({ id: tour.id, field: 'category', value: val })}
+                      >
+                        <SelectTrigger className={`h-7 text-xs border-0 px-2 py-0 w-[90px] font-medium rounded-full ${CATEGORY_LABELS[tour.category]?.color || 'bg-gray-100 text-gray-600'}`}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="group">團體旅遊</SelectItem>
+                          <SelectItem value="custom">客製旅遊</SelectItem>
+                          <SelectItem value="package">包團旅遊</SelectItem>
+                          <SelectItem value="cruise">郵輪旅遊</SelectItem>
+                          <SelectItem value="theme">主題旅遊</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </td>
                     <td className="px-5 py-5 text-sm font-medium text-gray-700">{tour.duration} 天</td>
                     <td className="px-5 py-5 text-sm font-semibold text-gray-900">

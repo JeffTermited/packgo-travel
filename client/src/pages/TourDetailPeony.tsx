@@ -1624,24 +1624,34 @@ export default function TourDetailPeony() {
     if (!editedTour || !hasChanges) return;
     setIsSaving(true);
     try {
+      const toJsonStr = (val: any) =>
+        typeof val === 'string' ? val : val != null ? JSON.stringify(val) : undefined;
+
       await updateTourMutation.mutateAsync({
         id: editedTour.id,
+        // 基本欄位
         title: editedTour.title,
         description: editedTour.description,
         heroSubtitle: editedTour.heroSubtitle,
         heroImage: editedTour.heroImage,
-        itineraryDetailed: typeof editedTour.itineraryDetailed === 'string' 
-          ? editedTour.itineraryDetailed 
-          : JSON.stringify(editedTour.itineraryDetailed),
-        keyFeatures: typeof editedTour.keyFeatures === 'string' 
-          ? editedTour.keyFeatures 
-          : JSON.stringify(editedTour.keyFeatures),
-        hotels: typeof editedTour.hotels === 'string' 
-          ? editedTour.hotels 
-          : JSON.stringify(editedTour.hotels),
-        meals: typeof editedTour.meals === 'string' 
-          ? editedTour.meals 
-          : JSON.stringify(editedTour.meals),
+        price: editedTour.price,
+        duration: editedTour.duration,
+        departureCity: editedTour.departureCity,
+        promotionText: editedTour.promotionText,
+        notes: editedTour.notes,
+        // JSON 內容欄位
+        itineraryDetailed: toJsonStr(editedTour.itineraryDetailed),
+        keyFeatures: toJsonStr(editedTour.keyFeatures),
+        hotels: toJsonStr(editedTour.hotels),
+        meals: toJsonStr(editedTour.meals),
+        flights: toJsonStr(editedTour.flights),
+        highlights: toJsonStr(editedTour.highlights),
+        includes: toJsonStr(editedTour.includes),
+        excludes: toJsonStr(editedTour.excludes),
+        // 費用說明與注意事項（新增可編輯欄位）
+        costExplanation: toJsonStr(editedTour.costExplanation),
+        noticeDetailed: toJsonStr(editedTour.noticeDetailed),
+        attractions: toJsonStr(editedTour.attractions),
       });
     } finally {
       setIsSaving(false);
