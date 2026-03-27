@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
-import { translate } from '@/i18n';
+import { translate, translateArray } from '@/i18n';
 import { trpc } from '@/lib/trpc';
 
 // 支援的語言（繁體中文和英文）
@@ -48,7 +48,9 @@ interface LocaleContextType {
   rateDisclaimer: string;
   
   // 翻譯函數
-  t: (key: string, params?: Record<string, string | number>) => string | string[];
+  t: (key: string, params?: Record<string, string | number>) => string;
+  // 翻譯函數（回傳陣列）
+  tArray: (key: string) => string[];
 }
 
 const LocaleContext = createContext<LocaleContextType | undefined>(undefined);
@@ -156,8 +158,13 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
   }, [ratesData, getRate]);
 
   // 翻譯函數
-  const t = useCallback((key: string, params?: Record<string, string | number>): string | string[] => {
+  const t = useCallback((key: string, params?: Record<string, string | number>): string => {
     return translate(key, language, params);
+  }, [language]);
+
+  // 翻譯函數（回傳陣列）
+  const tArray = useCallback((key: string): string[] => {
+    return translateArray(key, language);
   }, [language]);
 
   const value = useMemo<LocaleContextType>(() => ({
@@ -174,7 +181,8 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
     isLoadingRate,
     rateDisclaimer: ratesData?.disclaimer || '匯率僅供參考，實際價格以屆時人員提供的報價為準',
     t,
-  }), [language, setLanguage, currency, setCurrency, convertPrice, formatPrice, exchangeRate, isLoadingRate, ratesData, t]);
+    tArray,
+  }), [language, setLanguage, currency, setCurrency, convertPrice, formatPrice, exchangeRate, isLoadingRate, ratesData, t, tArray]);
 
   return (
     <LocaleContext.Provider value={value}>

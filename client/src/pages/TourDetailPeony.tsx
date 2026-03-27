@@ -103,7 +103,7 @@ const DeparturePriceCalendar = ({
   themeColor: ReturnType<typeof getThemeColorByDestination>;
   onSelectDeparture: (departureId: number) => void;
 }) => {
-  const { t } = useLocale();
+  const { t, tArray } = useLocale();
   const { data: departures, isLoading } = trpc.departures.list.useQuery({ tourId });
   const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [selectedDeparture, setSelectedDeparture] = useState<number | null>(null);
@@ -159,7 +159,7 @@ const DeparturePriceCalendar = ({
     setSelectedMonth(new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1, 1));
   };
 
-  const weekDays = (t('tourDetail.weekdays') as unknown as string[]) || ['日', '一', '二', '三', '四', '五', '六'];
+  const weekDays = tArray('tourDetail.weekdays').length > 0 ? tArray('tourDetail.weekdays') : ['日', '一', '二', '三', '四', '五', '六'];
 
   if (isLoading) {
     return (
