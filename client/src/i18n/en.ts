@@ -108,6 +108,18 @@ export const en = {
     memberLogin: 'Member Login',
     tours: 'Tours',
     searchResults: 'Search Results',
+    services: 'Services',
+    allTours: 'All Tours',
+    allToursDesc: 'Browse all available tours',
+    themeTours: 'Theme Tours',
+    themeToursDesc: 'Hot air balloon, autumn foliage, food theme tours',
+    groupToursDesc: 'Small group, dedicated guide, all-inclusive',
+    customToursDesc: 'Customized itinerary tailored to your needs',
+    cruiseToursDesc: 'Mediterranean, Caribbean luxury cruise tours',
+    flightBookingDesc: 'International flight booking & fare inquiry',
+    airportTransferDesc: 'Airport pickup & private car service',
+    hotelBookingDesc: 'Global hotel booking & special deals',
+    visaServicesDesc: 'Visa application & consultation for all countries',
   },
 
   // Hero Section

@@ -29,6 +29,11 @@ import {
   Globe,
   SlidersHorizontal,
   X,
+  Star,
+  Plane,
+  Hotel,
+  Utensils,
+  MessageCircle,
 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -73,15 +78,34 @@ function TourCard({
     return translations?.title || tour.title;
   }, [language, translations, tour.title]);
 
+  // Determine included items from tour data
+  const includedTags = useMemo(() => {
+    const tags: { icon: typeof Plane; labelZh: string; labelEn: string }[] = [];
+    const inc = tour.included || "";
+    if (inc.includes("機票") || inc.includes("flight") || inc.toLowerCase().includes("air")) {
+      tags.push({ icon: Plane, labelZh: "含機票", labelEn: "Flights" });
+    }
+    if (inc.includes("飯店") || inc.includes("hotel") || inc.includes("住宿") || inc.toLowerCase().includes("hotel")) {
+      tags.push({ icon: Hotel, labelZh: "含住宿", labelEn: "Hotels" });
+    }
+    if (inc.includes("餐") || inc.includes("meal") || inc.includes("food") || inc.toLowerCase().includes("meal")) {
+      tags.push({ icon: Utensils, labelZh: "含餐食", labelEn: "Meals" });
+    }
+    // Show max 2 tags to keep card clean
+    return tags.slice(0, 2);
+  }, [tour.included]);
+
+  const isEn = language === "en";
+
   return (
-    <Link href={`/tours/${tour.id}`}>
-      <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group border border-gray-200">
-        <div className="relative aspect-[4/3] overflow-hidden rounded-t-xl">
+    <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 group border border-gray-200 flex flex-col">
+      <Link href={`/tours/${tour.id}`} className="block">
+        <div className="relative aspect-[4/3] overflow-hidden">
           {tour.imageUrl || tour.heroImage ? (
             <img
               src={tour.imageUrl || tour.heroImage}
               alt={displayTitle}
-              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300 rounded-xl"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               onError={(e) => {
                 e.currentTarget.src = '';
                 e.currentTarget.style.display = 'none';
@@ -101,41 +125,82 @@ function TourCard({
             </div>
           )}
           {tour.status === "inactive" && (
-            <Badge className="absolute top-4 right-4 bg-red-500 text-white rounded-lg">
+            <Badge className="absolute top-4 right-4 bg-red-500 text-white">
               {t("tours.inactive")}
             </Badge>
           )}
+          {/* Duration badge overlay */}
+          <div className="absolute bottom-3 left-3 bg-black/70 text-white text-xs font-bold px-2 py-1">
+            {tour.duration}{isEn ? " Days" : " 天"} {tour.nights}{isEn ? " Nights" : " 夜"}
+          </div>
         </div>
-        <div className="p-6">
-          <h3 className="text-xl font-bold mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+      </Link>
+
+      <div className="p-5 flex flex-col flex-grow">
+        {/* Rating Row */}
+        <div className="flex items-center gap-1 mb-2">
+          {[1,2,3,4,5].map(i => (
+            <Star key={i} className={`h-3.5 w-3.5 ${i <= 5 ? 'fill-black text-black' : 'text-gray-300'}`} />
+          ))}
+          <span className="text-xs text-gray-500 ml-1">(5.0)</span>
+        </div>
+
+        {/* Title */}
+        <Link href={`/tours/${tour.id}`}>
+          <h3 className="text-base font-bold mb-2 line-clamp-2 group-hover:text-primary transition-colors leading-snug cursor-pointer">
             {displayTitle}
           </h3>
-          <div className="flex items-center text-gray-600 mb-3">
-            <MapPin className="h-4 w-4 mr-1" />
-            <span className="text-sm">
-              {tour.destinationCountry} {tour.destinationCity}
-            </span>
+        </Link>
+
+        {/* Location */}
+        <div className="flex items-center text-gray-500 mb-3">
+          <MapPin className="h-3.5 w-3.5 mr-1 flex-shrink-0" />
+          <span className="text-xs">
+            {tour.destinationCountry}{tour.destinationCity ? ` · ${tour.destinationCity}` : ""}
+          </span>
+        </div>
+
+        {/* Included Tags */}
+        {includedTags.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mb-3">
+            {includedTags.map((tag, i) => {
+              const Icon = tag.icon;
+              return (
+                <span key={i} className="inline-flex items-center gap-1 text-xs bg-gray-100 text-gray-600 px-2 py-0.5 border border-gray-200">
+                  <Icon className="h-3 w-3" />
+                  {isEn ? tag.labelEn : tag.labelZh}
+                </span>
+              );
+            })}
           </div>
-          <div className="flex items-center text-gray-600 mb-4">
-            <Calendar className="h-4 w-4 mr-1" />
-            <span className="text-sm">
-              {tour.duration} {t("tours.days")} {tour.nights} {t("tours.nights")}
+        )}
+
+        {/* Spacer */}
+        <div className="flex-grow" />
+
+        {/* Price + Dual CTA */}
+        <div className="pt-3 border-t border-gray-100">
+          <div className="mb-3">
+            <span className="text-xl font-bold text-black">
+              {formatPrice(tour.price || 0, (tour.priceCurrency || "TWD") as "TWD" | "USD")}
             </span>
+            <span className="text-xs text-gray-400 ml-1">{t("tours.startingFrom")}</span>
           </div>
-          <div className="flex items-center justify-between pt-4 border-t">
-            <div>
-              <span className="text-2xl font-bold text-primary">
-                {formatPrice(tour.price || 0, (tour.priceCurrency || "TWD") as "TWD" | "USD")}
-              </span>
-              <span className="text-sm text-gray-500 ml-1">{t("tours.startingFrom")}</span>
-            </div>
-            <Button className="rounded-lg bg-black text-white hover:bg-gray-800">
-              {t("tours.viewDetails")}
-            </Button>
+          <div className="flex gap-2">
+            <Link href={`/tours/${tour.id}`} className="flex-1">
+              <Button className="w-full bg-black text-white hover:bg-gray-800 text-xs py-2 h-9">
+                {isEn ? "View Details" : "查看詳情"}
+              </Button>
+            </Link>
+            <Link href={`/contact-us?tour=${encodeURIComponent(displayTitle)}`}>
+              <Button variant="outline" className="border-gray-300 hover:border-black text-xs py-2 h-9 px-3">
+                <MessageCircle className="h-3.5 w-3.5" />
+              </Button>
+            </Link>
           </div>
         </div>
-      </Card>
-    </Link>
+      </div>
+    </Card>
   );
 }
 

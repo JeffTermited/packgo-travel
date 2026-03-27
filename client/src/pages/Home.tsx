@@ -6,6 +6,9 @@ import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import EditableHero from "@/components/EditableHero";
 import NewsletterSection from "@/components/NewsletterSection";
+import WhyChooseUs from "@/components/WhyChooseUs";
+import TestimonialsCarousel from "@/components/TestimonialsCarousel";
+import HomeFAQ from "@/components/HomeFAQ";
 import { Button } from "@/components/ui/button";
 import { MessageCircle, Pencil, X } from "lucide-react";
 import { useState } from "react";
@@ -48,6 +51,12 @@ function HomeContent() {
         <EditableDestinations />
         <FeaturedTours />
         
+        {/* Why Choose Us Section */}
+        <WhyChooseUs />
+        {/* Testimonials Carousel */}
+        <TestimonialsCarousel />
+        {/* FAQ Section */}
+        <HomeFAQ />
         {/* Newsletter Section */}
         <NewsletterSection />
 
