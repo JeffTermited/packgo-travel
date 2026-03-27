@@ -1,8 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { Calendar, MapPin, Search, Sparkles, Plane, Hotel, Ticket, Users, Lock } from "lucide-react";
+import { Search, Plane, Hotel, Users, Lock } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
-import AIAdvisor from "./AIAdvisor";
 import { DateRangePicker } from "@/components/DateRangePicker";
 import { DateRange } from "react-day-picker";
 import { DestinationAutocomplete } from "@/components/DestinationAutocomplete";
@@ -46,9 +45,14 @@ export default function Hero() {
     toast.info(t('common.comingSoon'));
   };
 
+  const tabs = [
+    { id: "group", labelKey: "hero.search.tabs.groupTours", icon: <Users className="h-4 w-4" />, locked: false },
+    { id: "flight", labelKey: "hero.search.tabs.flights", icon: <Plane className="h-4 w-4" />, locked: true },
+    { id: "hotel", labelKey: "hero.search.tabs.hotels", icon: <Hotel className="h-4 w-4" />, locked: true },
+  ];
 
   return (
-    <section className="relative w-full h-[600px] md:h-[700px] flex items-center justify-center overflow-hidden">
+    <section className="relative w-full h-[600px] md:h-[700px] flex items-center justify-center">
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
         <img 
@@ -56,127 +60,148 @@ export default function Hero() {
           alt="Cherry Blossoms Travel" 
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-black/20" />
+        <div className="absolute inset-0 bg-black/30" />
       </div>
 
       {/* Content */}
       <div className="container relative z-10 flex flex-col items-center pt-10">
         {/* Hero Text */}
-        <div className="text-center mb-8 animate-in fade-in zoom-in duration-1000">
-          <h2 className="text-white text-xl md:text-2xl font-serif mb-2 tracking-widest text-shadow">
+        <div className="text-center mb-10 animate-in fade-in zoom-in duration-1000">
+          <h2 className="text-white text-xl md:text-2xl font-serif mb-2 tracking-widest" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.5)' }}>
             {t('hero.subtitle')}
           </h2>
-          <h1 className="text-white text-4xl md:text-6xl font-bold font-serif tracking-tight text-shadow-lg">
+          <h1 className="text-white text-4xl md:text-6xl font-bold font-serif tracking-tight" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.6)' }}>
             {t('hero.title')}
           </h1>
         </div>
 
-        {/* Search Console - Lion Travel Style */}
-        <div className="w-full max-w-5xl bg-white rounded-3xl shadow-2xl animate-in slide-in-from-bottom-10 duration-700 delay-300 overflow-hidden">
-          {/* Tabs */}
-          <div className="flex w-full border-b border-gray-200 bg-gray-50 rounded-t-3xl">
-            {[
-              { id: "group", labelKey: "hero.search.tabs.groupTours", icon: <Users className="h-4 w-4" />, locked: false },
-              { id: "flight", labelKey: "hero.search.tabs.flights", icon: <Plane className="h-4 w-4" />, locked: true },
-              { id: "hotel", labelKey: "hero.search.tabs.hotels", icon: <Hotel className="h-4 w-4" />, locked: true },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => {
-                  if (tab.locked) {
-                    handleLockedTabClick();
-                  } else {
-                    setActiveTab(tab.id);
-                  }
-                }}
-                className={`flex-1 py-4 px-2 text-base font-medium transition-all relative flex items-center justify-center gap-2 ${
-                  tab.locked 
-                    ? "text-gray-400 cursor-not-allowed bg-gray-100" 
-                    : activeTab === tab.id 
-                      ? "text-primary bg-white border-t-2 border-t-primary" 
-                      : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
-                }`}
-              >
-                {tab.icon}
-                {t(tab.labelKey)}
-                {tab.locked && <Lock className="h-3 w-3 ml-1" />}
-              </button>
-            ))}
+        {/* Search Console — Sharp Geometric Black & White */}
+        <div className="w-full max-w-5xl bg-white border-2 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] animate-in slide-in-from-bottom-10 duration-700 delay-300">
+          
+          {/* Tab Bar */}
+          <div className="flex w-full border-b-2 border-black">
+            {tabs.map((tab) => {
+              const isActive = !tab.locked && activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => {
+                    if (tab.locked) {
+                      handleLockedTabClick();
+                    } else {
+                      setActiveTab(tab.id);
+                    }
+                  }}
+                  className={`
+                    flex-1 py-4 px-4 text-sm font-bold tracking-wide transition-all
+                    flex items-center justify-center gap-2 relative
+                    border-r-2 border-black last:border-r-0
+                    ${tab.locked
+                      ? "text-gray-400 bg-gray-50 cursor-not-allowed"
+                      : isActive
+                        ? "text-white bg-black"
+                        : "text-black bg-white hover:bg-gray-100"
+                    }
+                  `}
+                >
+                  {tab.icon}
+                  <span className="uppercase tracking-wider text-xs">{t(tab.labelKey)}</span>
+                  {tab.locked && <Lock className="h-3 w-3 opacity-50" />}
+                </button>
+              );
+            })}
           </div>
 
-          {/* Tab Content */}
-          <div className="p-4 bg-white rounded-b-3xl">
-            <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                {/* Use flexbox with equal basis for equal widths */}
-                <div className="flex flex-col md:flex-row gap-4 items-end">
-                  {/* Departure Location - Changed to Autocomplete */}
-                  <div className="w-full" style={{ flex: '1 1 0', minWidth: 0 }}>
-                    <label className="block text-sm font-semibold text-gray-800 mb-2">{t('hero.search.departure')}</label>
-                    <DepartureAutocomplete 
-                      value={departure}
-                      onChange={setDeparture}
-                      placeholder={t('hero.search.departurePlaceholder')}
-                      className="w-full [&_input]:rounded-lg [&_input]:bg-gray-50 [&_input]:border-gray-200 [&_input]:focus:ring-primary [&_input]:focus:border-primary [&_input]:h-12 [&_input]:w-full"
-                    />
-                  </div>
-
-                  {/* Keyword Input */}
-                  <div className="w-full" style={{ flex: '1 1 0', minWidth: 0 }}>
-                    <label className="block text-sm font-semibold text-gray-800 mb-2">{t('hero.search.keyword')}</label>
-                    <DestinationAutocomplete 
-                      value={destination}
-                      onChange={setDestination}
-                      onSelect={handleSearch}
-                      placeholder={t('hero.search.destinationPlaceholder')}
-                      className="w-full [&_input]:rounded-lg [&_input]:bg-gray-50 [&_input]:border-gray-200 [&_input]:focus:ring-primary [&_input]:focus:border-primary [&_input]:h-12 [&_input]:w-full"
-                    />
-                  </div>
-
-                  {/* Date Range Picker */}
-                  <div className="w-full" style={{ flex: '1 1 0', minWidth: 0 }}>
-                    <label className="block text-sm font-semibold text-gray-800 mb-2">{t('hero.search.departureDate')}</label>
-                    <DateRangePicker 
-                      value={dateRange}
-                      onChange={setDateRange}
-                      placeholder={t('hero.search.selectDate')}
-                      className="h-12 rounded-lg w-full"
-                    />
-                  </div>
-
-                  {/* Search Button */}
-                  <div className="w-full md:w-32 flex-shrink-0">
-                    <Button 
-                      onClick={handleSearch}
-                      className="w-full h-12 bg-black hover:bg-gray-900 text-white rounded-lg font-bold shadow-md transition-all hover:shadow-lg"
-                    >
-                      {t('hero.search.searchButton')}
-                    </Button>
-                  </div>
+          {/* Search Fields */}
+          <div className="p-6 md:p-8 bg-white">
+            <div className="flex flex-col md:flex-row gap-0 items-stretch">
+              
+              {/* Departure Location */}
+              <div className="flex-1 border-2 border-black border-r-0 last:border-r-2 md:last:border-r-0">
+                <div className="px-4 pt-4 pb-1">
+                  <label className="block text-xs font-black uppercase tracking-widest text-black mb-2">
+                    {t('hero.search.departure')}
+                  </label>
                 </div>
+                <div className="px-3 pb-3">
+                  <DepartureAutocomplete 
+                    value={departure}
+                    onChange={setDeparture}
+                    placeholder={t('hero.search.departurePlaceholder')}
+                    className="w-full [&_input]:rounded-none [&_input]:border-0 [&_input]:border-b-2 [&_input]:border-black [&_input]:bg-transparent [&_input]:focus:ring-0 [&_input]:focus:outline-none [&_input]:h-10 [&_input]:w-full [&_input]:text-sm [&_input]:font-medium [&_input]:px-0 [&_input]:placeholder:text-gray-400"
+                  />
+                </div>
+              </div>
 
+              {/* Keyword / Destination */}
+              <div className="flex-1 border-2 border-black border-r-0 last:border-r-2 md:last:border-r-0">
+                <div className="px-4 pt-4 pb-1">
+                  <label className="block text-xs font-black uppercase tracking-widest text-black mb-2">
+                    {t('hero.search.keyword')}
+                  </label>
+                </div>
+                <div className="px-3 pb-3">
+                  <DestinationAutocomplete 
+                    value={destination}
+                    onChange={setDestination}
+                    onSelect={handleSearch}
+                    placeholder={t('hero.search.destinationPlaceholder')}
+                    className="w-full [&_input]:rounded-none [&_input]:border-0 [&_input]:border-b-2 [&_input]:border-black [&_input]:bg-transparent [&_input]:focus:ring-0 [&_input]:focus:outline-none [&_input]:h-10 [&_input]:w-full [&_input]:text-sm [&_input]:font-medium [&_input]:px-0 [&_input]:placeholder:text-gray-400"
+                  />
+                </div>
+              </div>
 
-                {/* Hot Keywords - Only show for group tours */}
-                {activeTab === "group" && (
-                  <div className="flex items-center gap-2 text-sm text-gray-500 mt-2 pt-2 border-t border-gray-100">
-                    <span className="font-medium text-primary">{t('hero.search.hotKeywords')}：</span>
-                    <div className="flex flex-wrap gap-2">
-                      {hotKeywords.map((keyword: string) => (
-                        <button 
-                          key={keyword} 
-                          onClick={() => handleKeywordClick(keyword)}
-                          className="hover:text-primary hover:underline transition-colors"
-                        >
-                          {keyword}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
+              {/* Date Range */}
+              <div className="flex-1 border-2 border-black border-r-0 last:border-r-2 md:last:border-r-0">
+                <div className="px-4 pt-4 pb-1">
+                  <label className="block text-xs font-black uppercase tracking-widest text-black mb-2">
+                    {t('hero.search.departureDate')}
+                  </label>
+                </div>
+                <div className="px-3 pb-3">
+                  <DateRangePicker 
+                    value={dateRange}
+                    onChange={setDateRange}
+                    placeholder={t('hero.search.selectDate')}
+                    className="h-10 rounded-none border-0 border-b-2 border-black bg-transparent w-full [&_button]:rounded-none [&_button]:border-0 [&_button]:border-b-2 [&_button]:border-black [&_button]:bg-transparent [&_button]:h-10 [&_button]:px-0 [&_button]:text-sm [&_button]:font-medium [&_button]:text-gray-700 [&_button]:placeholder:text-gray-400"
+                  />
+                </div>
+              </div>
+
+              {/* Search Button */}
+              <div className="flex-shrink-0 border-2 border-black flex items-stretch">
+                <Button 
+                  onClick={handleSearch}
+                  className="h-full min-h-[88px] w-20 md:w-24 bg-black hover:bg-gray-900 text-white rounded-none font-black flex flex-col items-center justify-center gap-1 border-0"
+                >
+                  <Search className="h-5 w-5 text-white" />
+                  <span className="text-xs uppercase tracking-widest">{t('hero.search.searchButton')}</span>
+                </Button>
+              </div>
             </div>
+
+            {/* Hot Keywords */}
+            {activeTab === "group" && (
+              <div className="flex items-center gap-3 mt-6 pt-5 border-t-2 border-black">
+                <span className="text-xs font-black uppercase tracking-widest text-black whitespace-nowrap">
+                  {t('hero.search.hotKeywords')}
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {hotKeywords.map((keyword: string) => (
+                    <button 
+                      key={keyword} 
+                      onClick={() => handleKeywordClick(keyword)}
+                      className="text-xs font-semibold text-black border border-black px-3 py-1 hover:bg-black hover:text-white transition-colors tracking-wide"
+                    >
+                      {keyword}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
     </section>
   );
 }
-
