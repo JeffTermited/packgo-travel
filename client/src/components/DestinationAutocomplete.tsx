@@ -88,17 +88,17 @@ export function DestinationAutocomplete({
             }
           }}
           placeholder={placeholder}
-          className="w-full h-12 pl-12 pr-4 border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-gray-400 hover:border-gray-400 transition-all rounded-lg"
+          className="w-full h-12 pl-12 pr-4 border-2 border-black bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none transition-all rounded-none"
         />
       </div>
 
       {isOpen && filteredDestinations.length > 0 && (
-        <div className="absolute z-50 w-full mt-2 bg-white border-2 border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+        <div className="absolute z-[9999] w-full mt-1 bg-white border-2 border-black shadow-none max-h-60 overflow-y-auto">
           {filteredDestinations.map((dest, index) => (
             <button
               key={index}
               onClick={() => handleSelect(dest)}
-              className="w-full px-4 py-3 text-left hover:bg-gray-100 transition-colors flex items-center gap-3 border-b border-gray-100 last:border-b-0"
+              className="w-full px-4 py-3 text-left hover:bg-black hover:text-white transition-colors flex items-center gap-3 border-b border-gray-200 last:border-b-0"
             >
               <MapPin className="h-4 w-4 text-gray-400" />
               <span className="text-gray-900">{getDestName(dest)}</span>
