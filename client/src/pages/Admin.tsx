@@ -28,12 +28,11 @@ import ToursTab from "@/components/admin/ToursTab";
 import BookingsTab from "@/components/admin/BookingsTab";
 import InquiriesTab from "@/components/admin/InquiriesTab";
 import ReviewsTab from "@/components/admin/ReviewsTab";
-import SkillsTab from "@/components/admin/SkillsTab";
 import TranslationsTab from "@/components/admin/TranslationsTab";
-import AiCostTab from "@/components/admin/AiCostTab";
+import AiHubTab from "@/components/admin/AiHubTab";
 import AnalyticsTab from "@/components/admin/AnalyticsTab";
 
-type AdminTab = "dashboard" | "tours" | "bookings" | "inquiries" | "reviews" | "skills" | "translations" | "ai-cost" | "analytics";
+type AdminTab = "dashboard" | "tours" | "bookings" | "inquiries" | "reviews" | "translations" | "ai-hub" | "analytics";
 
 export default function Admin() {
   const { user, loading, isAuthenticated, logout } = useAuth();
@@ -76,8 +75,7 @@ export default function Admin() {
       items: [
         { id: 'analytics', icon: TrendingUp, label: '流量分析' },
         { id: 'translations', icon: Languages, label: '多語言翻譯' },
-        { id: 'ai-cost', icon: BarChart2, label: 'AI 使用記錄' },
-        { id: 'skills', icon: Brain, label: 'AI 功能設定' },
+        { id: 'ai-hub', icon: Brain, label: 'AI 中心' },
       ],
     },
   ];
@@ -253,10 +251,9 @@ export default function Admin() {
           {activeTab === "bookings" && <BookingsTab />}
           {activeTab === "inquiries" && <InquiriesTab />}
           {activeTab === "reviews" && <ReviewsTab />}
-          {activeTab === "skills" && <SkillsTab />}
           {activeTab === "translations" && <TranslationsTab />}
           {activeTab === "analytics" && <AnalyticsTab />}
-          {activeTab === "ai-cost" && <AiCostTab />}
+          {activeTab === "ai-hub" && <AiHubTab />}
         </main>
       </div>
     </div>
