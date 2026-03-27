@@ -2,7 +2,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { trpc } from "@/lib/trpc";
-import { Clock, MapPin, Star, Loader2 } from "lucide-react";
+import { Clock, MapPin, Star } from "lucide-react";
+import { LoadingPage } from "@/components/ui/spinner";
 import { Link } from "wouter";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { useLocale } from "@/contexts/LocaleContext";
@@ -25,11 +26,7 @@ export default function FeaturedTours() {
           <p className="text-gray-600 mt-4">{t('featuredTours.subtitle')}</p>
         </div>
 
-        {isLoading && (
-          <div className="flex justify-center items-center py-20">
-            <Loader2 className="h-8 w-8 animate-spin text-black" />
-          </div>
-        )}
+        {isLoading && <LoadingPage />}
 
         {error && (
           <div className="text-center py-20">

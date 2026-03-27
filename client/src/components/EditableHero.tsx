@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { Calendar, MapPin, Search, Sparkles, Plane, Hotel, Ticket, Users, Lock, Pencil, X, Check, Upload, ImageIcon } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
@@ -386,7 +387,7 @@ export default function EditableHero() {
             >
               {isUploading ? (
                 <div className="flex flex-col items-center gap-2">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                  <Spinner size="lg" />
                   <p className="text-sm text-gray-500">{t('hero.edit.uploading')}</p>
                 </div>
               ) : (

@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
 import { Eye, Download, ShoppingCart, ChevronDown, Check, Clock, CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { LoadingRow } from "@/components/ui/spinner";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
@@ -96,10 +97,7 @@ export default function BookingsTab() {
       {/* Bookings Table */}
       <div className="bg-white border border-gray-200 overflow-hidden rounded-xl">
         {isLoading ? (
-          <div className="p-12 text-center">
-            <Loader2 className="h-8 w-8 animate-spin text-gray-400 mx-auto mb-3" />
-            <p className="text-sm text-gray-500">載入中...</p>
-          </div>
+          <LoadingRow />
         ) : bookings.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full">

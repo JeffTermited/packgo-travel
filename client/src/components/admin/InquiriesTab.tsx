@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { trpc } from "@/lib/trpc";
 import { Eye, MessageSquare, Phone, Mail, Clock } from "lucide-react";
+import { LoadingRow } from "@/components/ui/spinner";
 import { useState } from "react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -126,10 +127,7 @@ export default function InquiriesTab() {
       {/* Inquiries Table */}
       <div className="bg-white border border-gray-200 overflow-hidden rounded-xl">
         {isLoading ? (
-          <div className="p-12 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-400 mx-auto mb-3"></div>
-            <p className="text-sm text-gray-500">載入中...</p>
-          </div>
+          <LoadingRow />
         ) : filteredInquiries && filteredInquiries.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full">

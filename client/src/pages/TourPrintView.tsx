@@ -9,6 +9,7 @@
  */
 
 import React, { useEffect, useState, useRef } from "react";
+import { LoadingPage } from "@/components/ui/spinner";
 import { useRoute, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -101,10 +102,7 @@ export default function TourPrintView() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">{t('tourPrint.loading')}</p>
-        </div>
+        <LoadingPage text={t('tourPrint.loading')} />
       </div>
     );
   }

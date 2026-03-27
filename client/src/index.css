@@ -704,3 +704,47 @@
   animation-play-state: paused;
   transform: scale(1.05);
 }
+
+
+/* ========================================
+   PACK&GO Loading Animation - Square Dot Pulse
+   方形點依序閃爍，符合黑白極簡設計語言
+   ======================================== */
+@keyframes packgo-dot-pulse {
+  0%, 80%, 100% {
+    transform: scale(0.6);
+    opacity: 0.25;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes packgo-bar-slide {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(0%); }
+  100% { transform: translateX(100%); }
+}
+
+.packgo-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background-color: currentColor;
+  animation: packgo-dot-pulse 1.4s ease-in-out infinite;
+}
+
+.packgo-dot:nth-child(1) { animation-delay: 0s; }
+.packgo-dot:nth-child(2) { animation-delay: 0.2s; }
+.packgo-dot:nth-child(3) { animation-delay: 0.4s; }
+
+.packgo-dot-sm {
+  width: 5px;
+  height: 5px;
+}
+
+.packgo-dot-lg {
+  width: 12px;
+  height: 12px;
+}

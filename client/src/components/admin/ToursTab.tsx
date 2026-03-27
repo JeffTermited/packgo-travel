@@ -25,6 +25,7 @@ import DeparturesManagement from "./DeparturesManagement";
 import { GenerationProgressComponent } from "./GenerationProgress";
 import { TourEditDialog } from "./TourEditDialog";
 import { Calendar, ChevronDown, Copy, Edit, Eye, EyeOff, ExternalLink, FileUp, Loader2, MoreHorizontal, Plus, RefreshCw, Search, Sparkles, Star, Trash2, Upload } from "lucide-react";
+import { LoadingRow } from "@/components/ui/spinner";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -649,10 +650,7 @@ export default function ToursTab() {
       {/* Tours Table */}
       <div className="bg-white border border-gray-200 overflow-hidden rounded-xl">
         {toursLoading ? (
-          <div className="p-8 text-center">
-            <Loader2 className="h-8 w-8 animate-spin mx-auto text-gray-400" />
-            <p className="text-gray-500 mt-2">{t('toursTab.loading')}</p>
-          </div>
+          <LoadingRow text={t('toursTab.loading')} />
         ) : filteredTours && filteredTours.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full">
