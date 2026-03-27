@@ -1871,3 +1871,34 @@ export async function resubscribeNewsletter(email: string): Promise<void> {
     .set({ status: "active", unsubscribedAt: null })
     .where(eq(newsletterSubscribers.email, email));
 }
+
+// Get distinct departure cities from active tours (for search autocomplete)
+export async function getDepartureCities(): Promise<{ city: string; country: string; count: number }[]> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const activeTours = await db
+    .select({
+      departureCity: tours.departureCity,
+      departureCountry: tours.departureCountry,
+    })
+    .from(tours)
+    .where(eq(tours.status, "active"));
+
+  // Count occurrences per city
+  const cityMap = new Map<string, { city: string; country: string; count: number }>();
+  for (const tour of activeTours) {
+    const city = (tour.departureCity || "").trim();
+    const country = (tour.departureCountry || "").trim();
+    // Skip empty, "NULL" string, or whitespace-only values
+    if (!city || city.toUpperCase() === "NULL") continue;
+    const key = `${city}|${country}`;
+    if (cityMap.has(key)) {
+      cityMap.get(key)!.count++;
+    } else {
+      cityMap.set(key, { city, country, count: 1 });
+    }
+  }
+
+  return Array.from(cityMap.values()).sort((a, b) => b.count - a.count);
+}

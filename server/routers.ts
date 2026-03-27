@@ -456,6 +456,11 @@ export const appRouter = router({
       return await db.getFilterOptions();
     }),
 
+    // Get distinct departure cities from active tours (for search autocomplete)
+    getDepartureCities: publicProcedure.query(async () => {
+      return await db.getDepartureCities();
+    }),
+
     // Search tours with filters (public)
     search: publicProcedure
       .input(

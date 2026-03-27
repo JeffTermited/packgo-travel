@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useLocale } from "@/contexts/LocaleContext";
+import { trpc } from "@/lib/trpc";
 
 interface DepartureAutocompleteProps {
   value: string;
@@ -11,17 +11,6 @@ interface DepartureAutocompleteProps {
   className?: string;
 }
 
-const taiwanCities = [
-  { zh: "台北", en: "Taipei", keywords: ["台北", "taipei", "臺北", "北部"] },
-  { zh: "桃園", en: "Taoyuan", keywords: ["桃園", "taoyuan", "機場", "airport"] },
-  { zh: "新竹", en: "Hsinchu", keywords: ["新竹", "hsinchu"] },
-  { zh: "台中", en: "Taichung", keywords: ["台中", "taichung", "臺中", "中部"] },
-  { zh: "台南", en: "Tainan", keywords: ["台南", "tainan", "臺南", "南部"] },
-  { zh: "高雄", en: "Kaohsiung", keywords: ["高雄", "kaohsiung", "南部"] },
-  { zh: "花蓮", en: "Hualien", keywords: ["花蓮", "hualien", "東部"] },
-  { zh: "台東", en: "Taitung", keywords: ["台東", "taitung", "臺東", "東部"] },
-];
-
 export function DepartureAutocomplete({
   value,
   onChange,
@@ -30,56 +19,82 @@ export function DepartureAutocomplete({
   className,
 }: DepartureAutocompleteProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [filteredCities, setFilteredCities] = useState<typeof taiwanCities>([]);
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
   const containerRef = useRef<HTMLDivElement>(null);
-  const { language } = useLocale();
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const getCityName = (city: typeof taiwanCities[0]) =>
-    language === "en" ? city.en : city.zh;
+  // Fetch departure cities from DB — only cities with active tours
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const toursRouter = (trpc as any).tours;
+  const { data: departureCities = [], isLoading } = toursRouter.getDepartureCities.useQuery(undefined, {
+    staleTime: 5 * 60 * 1000,
+  });
 
+  type DepartureCity = { city: string; country: string; count: number };
+
+  // Filter cities based on input value
+  const filteredCities: DepartureCity[] = (departureCities as DepartureCity[]).filter((c: DepartureCity) =>
+    !value.trim() ||
+    c.city.toLowerCase().includes(value.toLowerCase()) ||
+    c.country.toLowerCase().includes(value.toLowerCase())
+  );
+
+  // Calculate fixed-position dropdown coordinates to escape overflow:hidden parents
+  const updateDropdownPosition = useCallback(() => {
+    if (!inputRef.current) return;
+    const rect = inputRef.current.getBoundingClientRect();
+    setDropdownStyle({
+      position: "fixed",
+      top: rect.bottom + 2,
+      left: rect.left,
+      width: rect.width,
+      zIndex: 99999,
+    });
+  }, []);
+
+  // Recalculate position on scroll/resize while open
   useEffect(() => {
-    if (value.trim()) {
-      const searchLower = value.toLowerCase();
-      const filtered = taiwanCities.filter((city) =>
-        city.keywords.some((keyword) => keyword.toLowerCase().includes(searchLower)) ||
-        city.en.toLowerCase().includes(searchLower) ||
-        city.zh.includes(value)
-      );
-      setFilteredCities(filtered);
-      setIsOpen(filtered.length > 0);
-    } else {
-      setFilteredCities([]);
-      setIsOpen(false);
-    }
-  }, [value]);
+    if (!isOpen) return;
+    updateDropdownPosition();
+    window.addEventListener("scroll", updateDropdownPosition, true);
+    window.addEventListener("resize", updateDropdownPosition);
+    return () => {
+      window.removeEventListener("scroll", updateDropdownPosition, true);
+      window.removeEventListener("resize", updateDropdownPosition);
+    };
+  }, [isOpen, updateDropdownPosition]);
 
+  // Close on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleSelect = (city: typeof taiwanCities[0]) => {
-    onChange(getCityName(city));
+  const handleSelect = (city: { city: string; country: string; count: number }) => {
+    onChange(city.city);
     setIsOpen(false);
-    onSelect?.(getCityName(city));
+    onSelect?.(city.city);
   };
 
   const handleFocus = () => {
-    if (value.trim()) {
-      if (filteredCities.length > 0) {
-        setIsOpen(true);
-      }
-    } else {
-      setFilteredCities(taiwanCities);
+    updateDropdownPosition();
+    setIsOpen(true);
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onChange(e.target.value);
+    if (!isOpen) {
+      updateDropdownPosition();
       setIsOpen(true);
     }
   };
+
+  const showDropdown = isOpen && (filteredCities.length > 0 || isLoading);
 
   return (
     <div ref={containerRef} className={cn("relative", className)}>
@@ -88,27 +103,46 @@ export function DepartureAutocomplete({
           <MapPin className="h-5 w-5" />
         </div>
         <input
+          ref={inputRef}
           type="text"
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={handleChange}
           onFocus={handleFocus}
           placeholder={placeholder}
           className="w-full h-12 pl-12 pr-4 border-2 border-black bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none transition-all rounded-none"
         />
       </div>
 
-      {isOpen && (filteredCities.length > 0 || !value.trim()) && (
-        <div className="absolute z-[9999] w-full mt-1 bg-white border-2 border-black shadow-none max-h-80 overflow-y-auto">
-          {(value.trim() ? filteredCities : taiwanCities).map((city, index) => (
-            <button
-              key={index}
-              onClick={() => handleSelect(city)}
-              className="w-full px-4 py-3 text-left hover:bg-black hover:text-white transition-colors flex items-center gap-3 border-b border-gray-200 last:border-b-0"
-            >
-              <MapPin className="h-4 w-4 text-gray-400 group-hover:text-white" />
-              <span className="text-gray-900">{getCityName(city)}</span>
-            </button>
-          ))}
+      {/* Fixed-position dropdown — fully escapes overflow:hidden parents */}
+      {showDropdown && (
+        <div
+          style={dropdownStyle}
+          className="bg-white border-2 border-black max-h-72 overflow-y-auto"
+        >
+          {isLoading ? (
+            <div className="px-4 py-3 text-sm text-gray-400">載入中...</div>
+          ) : filteredCities.length === 0 ? (
+            <div className="px-4 py-3 text-sm text-gray-400">找不到符合的出發地</div>
+          ) : (
+            filteredCities.map((city, index) => (
+              <button
+                key={index}
+                onMouseDown={(e) => {
+                  e.preventDefault(); // prevent blur before click fires
+                  handleSelect(city);
+                }}
+                className="w-full px-4 py-3 text-left hover:bg-black hover:text-white transition-colors flex items-center justify-between gap-3 border-b border-gray-100 last:border-b-0 group/item"
+              >
+                <div className="flex items-center gap-3">
+                  <MapPin className="h-4 w-4 text-gray-400 group-hover/item:text-white shrink-0" />
+                  <span className="text-gray-900 group-hover/item:text-white font-medium">{city.city}</span>
+                </div>
+                <span className="text-xs text-gray-400 group-hover/item:text-gray-300">
+                  {city.count} 個行程
+                </span>
+              </button>
+            ))
+          )}
         </div>
       )}
     </div>
