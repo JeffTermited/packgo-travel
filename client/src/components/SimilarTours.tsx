@@ -34,7 +34,7 @@ export default function SimilarTours({ tourId, title = "您可能也喜歡" }: S
           {(similarTours as any[]).map((tour: any) => (
             <div
               key={tour.id}
-              onClick={() => navigate(`/tour/${tour.id}`)}
+              onClick={() => navigate(`/tours/${tour.id}`)}
               className="bg-white border border-gray-200 cursor-pointer group hover:shadow-md transition-all duration-200"
             >
               {/* Image */}
@@ -44,10 +44,20 @@ export default function SimilarTours({ tourId, title = "您可能也喜歡" }: S
                     src={tour.heroImage}
                     alt={tour.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 rounded-xl"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      const parent = e.currentTarget.parentElement;
+                      if (parent && !parent.querySelector('.img-fallback')) {
+                        const div = document.createElement('div');
+                        div.className = 'img-fallback w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200';
+                        div.innerHTML = '<span style="color:#9ca3af;font-size:12px">旅遊圖片</span>';
+                        parent.appendChild(div);
+                      }
+                    }}
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gray-200">
-                    <span className="text-gray-400 text-sm">無圖片</span>
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
+                    <span className="text-gray-400 text-sm">旅遊圖片</span>
                   </div>
                 )}
                 {tour.featured === 1 && (

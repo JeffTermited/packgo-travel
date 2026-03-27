@@ -8,12 +8,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Calendar, Users, CreditCard, CheckCircle } from "lucide-react";
+import { Loader2, Calendar, Users, CreditCard, CheckCircle, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { useLocale } from "@/contexts/LocaleContext";
 import { trackBeginCheckout } from "@/lib/analytics";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 type BookingStep = "date" | "travelers" | "details" | "confirm";
 
@@ -236,8 +238,18 @@ export default function BookTour() {
   }
   
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      <Header />
+      <main className="flex-1 py-12">
       <div className="container max-w-4xl">
+        {/* Back Button */}
+        <button
+          onClick={() => navigate(`/tours/${tourId}`)}
+          className="flex items-center gap-2 text-gray-600 hover:text-black transition-colors mb-6 text-sm font-medium"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          返回行程詳情
+        </button>
         {/* Progress Steps */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
@@ -795,6 +807,8 @@ export default function BookTour() {
           </Card>
         )}
       </div>
+      </main>
+      <Footer />
     </div>
   );
 }

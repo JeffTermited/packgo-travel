@@ -50,9 +50,19 @@ export default function FeaturedTours() {
                 <Card key={tour.id} className="group overflow-hidden border-2 border-black   shadow-lg hover:shadow-lg transition-all duration-300">
                   <div className="relative aspect-[4/3] overflow-hidden rounded-t-xl">
                     <img 
-                      src={tour.imageUrl || '/images/tour-placeholder.jpg'} 
+                      src={tour.imageUrl || tour.heroImage || ''} 
                       alt={tour.title} 
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 rounded-xl"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        const parent = e.currentTarget.parentElement;
+                        if (parent && !parent.querySelector('.img-fallback')) {
+                          const div = document.createElement('div');
+                          div.className = 'img-fallback absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-900';
+                          div.innerHTML = '<span style="color:#9ca3af;font-size:14px">旅遊圖片</span>';
+                          parent.appendChild(div);
+                        }
+                      }}
                     />
                     <div className="absolute top-4 left-4">
                       <Badge className="bg-black text-white hover:bg-black px-4 py-1 text-xs font-bold tracking-wider shadow-lg rounded-lg">

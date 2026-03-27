@@ -1,6 +1,6 @@
 import { useState } from "react";
 import SEO from "@/components/SEO";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { trpc } from "@/lib/trpc";
 import { quickInquirySchema } from "@/lib/validationSchemas";
@@ -8,12 +8,34 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { MessageSquare, Home, CheckCircle } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { MessageSquare, CheckCircle, Phone, Mail, Clock } from "lucide-react";
 import { Link } from "wouter";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import { useLocale } from "@/contexts/LocaleContext";
 import type { z } from "zod";
 
 type QuickInquiryForm = z.infer<typeof quickInquirySchema>;
+
+const SUBJECT_OPTIONS = [
+  { value: "一般詢問", label: "一般詢問" },
+  { value: "行程預訂", label: "行程預訂" },
+  { value: "客製旅遊", label: "客製旅遊" },
+  { value: "簽證服務", label: "簽證服務" },
+  { value: "機票預購", label: "機票預購" },
+  { value: "機場接送", label: "機場接送" },
+  { value: "飯店預訂", label: "飯店預訂" },
+  { value: "包團旅遊", label: "包團旅遊" },
+  { value: "郵輪旅遊", label: "郵輪旅遊" },
+  { value: "其他問題", label: "其他問題" },
+];
 
 export default function QuickInquiry() {
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -22,6 +44,7 @@ export default function QuickInquiry() {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
     reset,
   } = useForm<QuickInquiryForm>({
@@ -32,7 +55,6 @@ export default function QuickInquiry() {
     onSuccess: () => {
       setIsSubmitted(true);
       reset();
-      setTimeout(() => setIsSubmitted(false), 5000);
     },
     onError: (error) => {
       alert(`${t('common.error')}：${error.message}`);
@@ -45,155 +67,234 @@ export default function QuickInquiry() {
 
   if (isSubmitted) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12">
-      <SEO title="快速諮詢" description="快速填寫諮詢表單，PACK&GO 旅遊顧問將在最短時間內回覆您的旅遊需求。" url="/inquiry" />
-        <div className="container max-w-2xl">
-          <div className="bg-white  shadow-lg p-12 text-center">
-            <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-6" />
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <SEO title="快速諮詢" description="快速填寫諮詢表單，PACK&GO 旅遊顧問將在最短時間內回覆您的旅遊需求。" url="/inquiry" />
+        <Header />
+        <main className="flex-1 flex items-center justify-center py-16 px-4">
+          <div className="bg-white shadow-lg p-12 text-center max-w-lg w-full rounded-xl">
+            <CheckCircle className="h-20 w-20 text-green-500 mx-auto mb-6" />
             <h2 className="text-3xl font-serif font-bold text-gray-900 mb-4">
               {t('quickInquiry.success.title')}
             </h2>
-            <p className="text-gray-600 mb-8">
+            <p className="text-gray-600 mb-8 text-lg leading-relaxed">
               {t('quickInquiry.success.description')}
             </p>
-            <div className="flex gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/">
-                <Button className="rounded-lg">
-                  <Home className="h-4 w-4 mr-2" />
+                <Button size="lg" className="w-full sm:w-auto rounded-lg text-base px-8">
                   {t('common.backToHome')}
                 </Button>
               </Link>
               <Button
+                size="lg"
                 variant="outline"
                 onClick={() => setIsSubmitted(false)}
-                className="rounded-lg"
+                className="w-full sm:w-auto rounded-lg text-base px-8"
               >
-                {t('common.submit')}
+                再次諮詢
               </Button>
             </div>
           </div>
-        </div>
+        </main>
+        <Footer />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="container max-w-3xl">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-4xl font-serif font-bold text-gray-900 mb-2">{t('quickInquiry.title')}</h1>
-            <p className="text-gray-600">{t('quickInquiry.subtitle')}</p>
-          </div>
-          <Link href="/">
-            <Button variant="outline" className="rounded-lg">
-              <Home className="h-4 w-4 mr-2" />
-              {t('common.backToHome')}
-            </Button>
-          </Link>
-        </div>
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      <SEO title="快速諮詢" description="快速填寫諮詢表單，PACK&GO 旅遊顧問將在最短時間內回覆您的旅遊需求。" url="/inquiry" />
+      <Header />
 
-        {/* Form */}
-        <form onSubmit={handleSubmit(onSubmit)} className="bg-white  shadow-lg p-8">
-          <div className="space-y-6">
-            {/* Customer Name */}
-            <div>
-              <Label htmlFor="customerName">{t('quickInquiry.form.name')} *</Label>
-              <Input
-                id="customerName"
-                {...register("customerName")}
-                placeholder={t('quickInquiry.form.namePlaceholder')}
-                className="rounded-lg mt-2"
-              />
-              {errors.customerName && (
-                <p className="text-red-500 text-sm mt-1">{errors.customerName.message}</p>
-              )}
-            </div>
-
-            {/* Customer Email */}
-            <div>
-              <Label htmlFor="customerEmail">{t('quickInquiry.form.email')} *</Label>
-              <Input
-                id="customerEmail"
-                type="email"
-                {...register("customerEmail")}
-                placeholder={t('quickInquiry.form.emailPlaceholder')}
-                className="rounded-lg mt-2"
-              />
-              {errors.customerEmail && (
-                <p className="text-red-500 text-sm mt-1">{errors.customerEmail.message}</p>
-              )}
-            </div>
-
-            {/* Customer Phone */}
-            <div>
-              <Label htmlFor="customerPhone">{t('quickInquiry.form.phone')}</Label>
-              <Input
-                id="customerPhone"
-                {...register("customerPhone")}
-                placeholder={t('quickInquiry.form.phonePlaceholder')}
-                className="rounded-lg mt-2"
-              />
-              {errors.customerPhone && (
-                <p className="text-red-500 text-sm mt-1">{errors.customerPhone.message}</p>
-              )}
-            </div>
-
-            {/* Subject */}
-            <div>
-              <Label htmlFor="subject">{t('quickInquiry.form.subject')} *</Label>
-              <Input
-                id="subject"
-                {...register("subject")}
-                placeholder={t('quickInquiry.form.subjectPlaceholder')}
-                className="rounded-lg mt-2"
-              />
-              {errors.subject && (
-                <p className="text-red-500 text-sm mt-1">{errors.subject.message}</p>
-              )}
-            </div>
-
-            {/* Message */}
-            <div>
-              <Label htmlFor="message">{t('quickInquiry.form.message')} *</Label>
-              <Textarea
-                id="message"
-                {...register("message")}
-                placeholder={t('quickInquiry.form.messagePlaceholder')}
-                rows={6}
-                className=" mt-2"
-              />
-              {errors.message && (
-                <p className="text-red-500 text-sm mt-1">{errors.message.message}</p>
-              )}
-            </div>
-
-            {/* Submit Button */}
-            <Button
-              type="submit"
-              disabled={createInquiry.isPending}
-              className="w-full rounded-lg h-12 text-lg"
-            >
-              <MessageSquare className="h-5 w-5 mr-2" />
-              {createInquiry.isPending ? t('quickInquiry.form.submitting') : t('quickInquiry.form.submitButton')}
-            </Button>
-          </div>
-        </form>
-
-        {/* Info Box */}
-        <div className="mt-8 bg-blue-50  p-6">
-          <h3 className="font-semibold text-gray-900 mb-3">{t('contactUs.businessHours')}</h3>
-          <p className="text-gray-700 text-sm">
-            {t('contactUs.weekdays')}：09:00 - 18:00<br />
-            {t('contactUs.saturday')}：09:00 - 17:00<br />
-            {t('contactUs.sunday')}：{t('contactUs.closed')}
-          </p>
-          <p className="text-gray-600 text-sm mt-4">
-            {t('quickInquiry.success.description')}
+      {/* Page Hero */}
+      <div className="bg-black text-white py-12 px-4">
+        <div className="container max-w-4xl text-center">
+          <h1 className="text-4xl md:text-5xl font-serif font-bold mb-3">
+            {t('quickInquiry.title') || '快速諮詢'}
+          </h1>
+          <p className="text-gray-300 text-lg">
+            {t('quickInquiry.subtitle') || '填寫表單，我們將在24小時內回覆您'}
           </p>
         </div>
       </div>
+
+      <main className="flex-1 py-12 px-4">
+        <div className="container max-w-5xl">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            {/* Left: Contact Info */}
+            <div className="lg:col-span-1 space-y-6">
+              <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                <h3 className="text-lg font-bold text-gray-900 mb-5">聯絡資訊</h3>
+                <div className="space-y-5">
+                  <div className="flex items-start gap-4">
+                    <div className="bg-black rounded-lg p-2.5 shrink-0">
+                      <Phone className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 mb-0.5">電話</p>
+                      <a href="tel:+15106342307" className="text-base font-semibold text-gray-900 hover:text-primary transition-colors">
+                        +1 (510) 634-2307
+                      </a>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-4">
+                    <div className="bg-black rounded-lg p-2.5 shrink-0">
+                      <Mail className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 mb-0.5">電子郵件</p>
+                      <a href="mailto:Jeffhsieh09@gmail.com" className="text-base font-semibold text-gray-900 hover:text-primary transition-colors break-all">
+                        Jeffhsieh09@gmail.com
+                      </a>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-4">
+                    <div className="bg-black rounded-lg p-2.5 shrink-0">
+                      <Clock className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 mb-1">服務時間</p>
+                      <p className="text-sm text-gray-700 leading-relaxed">
+                        {t('contactUs.weekdays')}：09:00 - 18:00<br />
+                        {t('contactUs.saturday')}：09:00 - 17:00<br />
+                        {t('contactUs.sunday')}：{t('contactUs.closed')}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
+                <p className="text-amber-800 text-sm font-medium mb-1">📋 填寫提示</p>
+                <p className="text-amber-700 text-sm leading-relaxed">
+                  請盡量填寫完整的聯絡資訊，方便我們的顧問快速回覆您的需求。
+                </p>
+              </div>
+            </div>
+
+            {/* Right: Form */}
+            <div className="lg:col-span-2">
+              <div className="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">填寫諮詢表單</h2>
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+
+                  {/* Name + Phone Row */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div>
+                      <Label htmlFor="customerName" className="text-base font-medium text-gray-700 mb-2 block">
+                        {t('quickInquiry.form.name')} <span className="text-red-500">*</span>
+                      </Label>
+                      <Input
+                        id="customerName"
+                        {...register("customerName")}
+                        placeholder={t('quickInquiry.form.namePlaceholder')}
+                        className="h-12 text-base rounded-lg"
+                      />
+                      {errors.customerName && (
+                        <p className="text-red-500 text-sm mt-1.5">{errors.customerName.message}</p>
+                      )}
+                    </div>
+                    <div>
+                      <Label htmlFor="customerPhone" className="text-base font-medium text-gray-700 mb-2 block">
+                        {t('quickInquiry.form.phone')}
+                      </Label>
+                      <Input
+                        id="customerPhone"
+                        {...register("customerPhone")}
+                        placeholder={t('quickInquiry.form.phonePlaceholder')}
+                        className="h-12 text-base rounded-lg"
+                      />
+                      {errors.customerPhone && (
+                        <p className="text-red-500 text-sm mt-1.5">{errors.customerPhone.message}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Email */}
+                  <div>
+                    <Label htmlFor="customerEmail" className="text-base font-medium text-gray-700 mb-2 block">
+                      {t('quickInquiry.form.email')} <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="customerEmail"
+                      type="email"
+                      {...register("customerEmail")}
+                      placeholder={t('quickInquiry.form.emailPlaceholder')}
+                      className="h-12 text-base rounded-lg"
+                    />
+                    {errors.customerEmail && (
+                      <p className="text-red-500 text-sm mt-1.5">{errors.customerEmail.message}</p>
+                    )}
+                  </div>
+
+                  {/* Subject Dropdown */}
+                  <div>
+                    <Label htmlFor="subject" className="text-base font-medium text-gray-700 mb-2 block">
+                      諮詢主題 <span className="text-red-500">*</span>
+                    </Label>
+                    <Controller
+                      name="subject"
+                      control={control}
+                      render={({ field }) => (
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <SelectTrigger className="h-12 text-base rounded-lg">
+                            <SelectValue placeholder="請選擇諮詢主題" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {SUBJECT_OPTIONS.map((opt) => (
+                              <SelectItem key={opt.value} value={opt.value} className="text-base py-3">
+                                {opt.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    {errors.subject && (
+                      <p className="text-red-500 text-sm mt-1.5">{errors.subject.message}</p>
+                    )}
+                  </div>
+
+                  {/* Message */}
+                  <div>
+                    <Label htmlFor="message" className="text-base font-medium text-gray-700 mb-2 block">
+                      {t('quickInquiry.form.message')} <span className="text-red-500">*</span>
+                    </Label>
+                    <Textarea
+                      id="message"
+                      {...register("message")}
+                      placeholder={t('quickInquiry.form.messagePlaceholder')}
+                      rows={5}
+                      className="text-base rounded-lg resize-none"
+                    />
+                    {errors.message && (
+                      <p className="text-red-500 text-sm mt-1.5">{errors.message.message}</p>
+                    )}
+                  </div>
+
+                  {/* Submit Button */}
+                  <Button
+                    type="submit"
+                    disabled={createInquiry.isPending}
+                    size="lg"
+                    className="w-full h-14 text-lg font-bold rounded-lg"
+                  >
+                    <MessageSquare className="h-5 w-5 mr-2" />
+                    {createInquiry.isPending ? '送出中...' : '送出諮詢'}
+                  </Button>
+
+                  <p className="text-center text-sm text-gray-400">
+                    送出後，我們將在 24 小時內以電子郵件回覆您
+                  </p>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <Footer />
     </div>
   );
 }

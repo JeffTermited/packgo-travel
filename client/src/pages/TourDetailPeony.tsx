@@ -469,7 +469,7 @@ const NavTabs = ({
         <button
           key={item.id}
           onClick={() => onTabClick(item.id)}
-          className={`px-6 py-4 text-sm font-medium transition-all border-b-2 -mb-[2px] ${
+          className={`px-4 md:px-6 py-4 text-base font-semibold transition-all border-b-2 -mb-[2px] ${
             activeTab === item.id
               ? "border-current text-black"
               : "border-transparent text-gray-500 hover:text-gray-700"
@@ -1868,7 +1868,7 @@ export default function TourDetailPeony() {
           <div className="flex items-center gap-2 text-sm text-gray-700">
             <button onClick={() => navigate("/")} className="hover:text-black transition-colors">{t('nav.home')}</button>
             <span>&gt;</span>
-            <button onClick={() => navigate("/search")} className="hover:text-black transition-colors">{t('nav.searchResults')}</button>
+            <button onClick={() => navigate("/tours")} className="hover:text-black transition-colors">{t('nav.allTours') || '所有行程'}</button>
             <span>&gt;</span>
             <span className="text-black">{displayTitle}</span>
           </div>
@@ -2393,13 +2393,13 @@ export default function TourDetailPeony() {
           <div className="mt-12 text-center text-gray-700">
             <p className="mb-4">{t('tourDetail.contactAdvisor') || '如需更多資訊，歡迎聯繫我們的旅遊顧問'}</p>
             <div className="flex flex-wrap justify-center gap-6">
-              <a href="tel:+1234567890" className="flex items-center gap-2 hover:text-black transition-colors">
+              <a href="tel:+15106342307" className="flex items-center gap-2 hover:text-black transition-colors">
                 <Phone className="h-4 w-4" />
-                <span>+1 (234) 567-890</span>
+                <span>+1 (510) 634-2307</span>
               </a>
-              <a href="mailto:info@packgo.com" className="flex items-center gap-2 hover:text-black transition-colors">
+              <a href="mailto:Jeffhsieh09@gmail.com" className="flex items-center gap-2 hover:text-black transition-colors">
                 <Mail className="h-4 w-4" />
-                <span>info@packgo.com</span>
+                <span>Jeffhsieh09@gmail.com</span>
               </a>
             </div>
           </div>
@@ -2528,27 +2528,40 @@ export default function TourDetailPeony() {
       {/* Similar Tours Recommendation */}
       {tour?.id && <SimilarTours tourId={tour.id} />}
 
-      {/* Fixed Bottom CTA (Mobile) */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 md:hidden z-50">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <p className="text-xs text-gray-700">{t('tourDetail.pricePerPersonFrom') || '每人售價起'}</p>
-            <p className="text-xl font-bold" style={{ color: themeColor.primary }}>
-              NT$ {tour.price ? tour.price.toLocaleString() : t('tourDetail.inquirePrice')}
-            </p>
+      {/* Fixed Bottom CTA (所有裝置) */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-gray-200 shadow-2xl z-50">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-4">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-xs text-gray-500">{t('tourDetail.pricePerPersonFrom') || '每人售價起'}</p>
+              <p className="text-xl md:text-2xl font-bold" style={{ color: themeColor.primary }}>
+                NT$ {tour.price ? tour.price.toLocaleString() : t('tourDetail.inquirePrice')}
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <Button 
+                variant="outline"
+                onClick={() => navigate("/contact-us")}
+                className="hidden md:flex px-5 py-3 font-medium border-2"
+                style={{ borderColor: themeColor.primary, color: themeColor.primary }}
+              >
+                <Phone className="h-4 w-4 mr-2" />
+                {t('tourDetail.contactUs') || '聯絡詢問'}
+              </Button>
+              <Button 
+                onClick={() => navigate(`/book/${tour.id}`)}
+                className="px-6 md:px-10 py-3 text-white font-bold text-base md:text-lg"
+                style={{ backgroundColor: themeColor.primary }}
+              >
+                {t('tourDetail.bookNowBtn') || '立即預訂'}
+              </Button>
+            </div>
           </div>
-          <Button 
-            onClick={() => navigate(`/book/${tour.id}`)}
-            className="px-6 py-3 text-white font-medium"
-            style={{ backgroundColor: themeColor.primary }}
-          >
-            {t('tourDetail.bookNowBtn')}
-          </Button>
         </div>
       </div>
 
-      {/* Add padding for fixed bottom CTA on mobile */}
-      <div className="h-20 md:hidden" />
+      {/* Add padding for fixed bottom CTA */}
+      <div className="h-20" />
 
       {/* 餐廠詳情彈窗 */}
       <MealDetailDialog

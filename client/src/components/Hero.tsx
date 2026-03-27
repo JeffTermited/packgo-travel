@@ -111,7 +111,7 @@ export default function Hero() {
                 <div className="flex flex-col md:flex-row gap-4 items-end">
                   {/* Departure Location - Changed to Autocomplete */}
                   <div className="w-full" style={{ flex: '1 1 0', minWidth: 0 }}>
-                    <label className="block text-xs font-medium text-gray-700 mb-1.5">{t('hero.search.departure')}</label>
+                    <label className="block text-sm font-semibold text-gray-800 mb-2">{t('hero.search.departure')}</label>
                     <DepartureAutocomplete 
                       value={departure}
                       onChange={setDeparture}
@@ -122,7 +122,7 @@ export default function Hero() {
 
                   {/* Keyword Input */}
                   <div className="w-full" style={{ flex: '1 1 0', minWidth: 0 }}>
-                    <label className="block text-xs font-medium text-gray-700 mb-1.5">{t('hero.search.keyword')}</label>
+                    <label className="block text-sm font-semibold text-gray-800 mb-2">{t('hero.search.keyword')}</label>
                     <DestinationAutocomplete 
                       value={destination}
                       onChange={setDestination}
@@ -134,7 +134,7 @@ export default function Hero() {
 
                   {/* Date Range Picker */}
                   <div className="w-full" style={{ flex: '1 1 0', minWidth: 0 }}>
-                    <label className="block text-xs font-medium text-gray-700 mb-1.5">{t('hero.search.departureDate')}</label>
+                    <label className="block text-sm font-semibold text-gray-800 mb-2">{t('hero.search.departureDate')}</label>
                     <DateRangePicker 
                       value={dateRange}
                       onChange={setDateRange}
