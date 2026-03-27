@@ -1,27 +1,27 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
-import { Brain, BarChart2, FileText } from "lucide-react";
+import { Brain, BarChart2, FileText, Users } from "lucide-react";
 import AiCostTab from "./AiCostTab";
-import SkillsTab from "./SkillsTab";
 import AiSessionReport from "./AiSessionReport";
+import AiTeamRoster from "./AiTeamRoster";
 
-type HubTab = "report" | "skills" | "session";
+type HubTab = "team" | "report" | "session";
 
 const tabs: { id: HubTab; icon: any; label: string; desc: string }[] = [
-  { id: "report",  icon: BarChart2, label: "使用報告",   desc: "Token 用量、費用與 Agent 統計" },
-  { id: "skills",  icon: Brain,     label: "技能管理",   desc: "管理 AI 識別技能與關鍵字規則" },
-  { id: "session", icon: FileText,  label: "使用摘要",   desc: "每次 AI 任務完成後的自動小報告" },
+  { id: "team",    icon: Users,     label: "AI 員工團隊", desc: "管理 AI 虛擬員工與工作狀態" },
+  { id: "report",  icon: BarChart2, label: "使用報告",    desc: "Token 用量、費用與 Agent 統計" },
+  { id: "session", icon: FileText,  label: "任務摘要",    desc: "每次 AI 任務完成後的自動小報告" },
 ];
 
 export default function AiHubTab() {
-  const [activeTab, setActiveTab] = useState<HubTab>("report");
+  const [activeTab, setActiveTab] = useState<HubTab>("team");
 
   return (
     <div className="space-y-0">
       {/* Page Header */}
       <div className="mb-6">
         <h2 className="text-xl font-bold text-gray-900">AI 中心</h2>
-        <p className="text-sm text-gray-500 mt-0.5">統一管理 AI 使用狀況、技能設定與任務摘要報告</p>
+        <p className="text-sm text-gray-500 mt-0.5">統一管理 AI 員工團隊、使用狀況與任務摘要報告</p>
       </div>
 
       {/* Tab Bar */}
@@ -55,8 +55,8 @@ export default function AiHubTab() {
 
       {/* Tab Content */}
       <div>
+        {activeTab === "team"    && <AiTeamRoster />}
         {activeTab === "report"  && <AiCostTab />}
-        {activeTab === "skills"  && <SkillsTab />}
         {activeTab === "session" && <AiSessionReport />}
       </div>
     </div>
