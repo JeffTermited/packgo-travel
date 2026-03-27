@@ -145,48 +145,38 @@ export default function Header() {
         </nav>
 
         {/* Right Side */}
-        <div className="hidden md:flex items-center gap-4">
+        <div className="hidden md:flex items-center gap-2">
           <LocaleSwitcher />
-
-          <div className="h-8 w-px bg-gray-200" />
 
           {/* Admin Panel Link */}
           {isAuthenticated && user?.role === "admin" && (
-            <>
-              <Link
-                href="/admin"
-                className="flex items-center gap-1.5 text-sm font-medium text-gray-700 hover:text-black transition-colors whitespace-nowrap"
-              >
-                <Shield className="h-4 w-4" />
-                <span>{t("nav.adminPanel")}</span>
-              </Link>
-              <div className="h-8 w-px bg-gray-200" />
-            </>
+            <Link
+              href="/admin"
+              className="flex items-center gap-1.5 h-8 px-2.5 text-sm font-medium text-gray-700 hover:text-black hover:bg-gray-100 rounded-md transition-colors whitespace-nowrap"
+            >
+              <Shield className="h-3.5 w-3.5" />
+              <span>{t("nav.adminPanel")}</span>
+            </Link>
           )}
 
-          {/* Member Area */}
-          <div className="flex flex-col items-end">
-            <span className="text-[10px] text-gray-400 tracking-wider leading-none mb-0.5">
-              {t("nav.memberArea")}
-            </span>
-            {isAuthenticated && user ? (
-              <Link
-                href="/profile"
-                className="flex items-center gap-1.5 text-sm font-semibold text-black hover:text-gray-600 transition-colors whitespace-nowrap"
-              >
-                <User className="h-3.5 w-3.5" />
-                <span>{user.name || user.email}</span>
-              </Link>
-            ) : (
-              <Link
-                href="/login"
-                className="flex items-center gap-1.5 text-sm font-semibold text-black hover:text-gray-600 transition-colors whitespace-nowrap"
-              >
-                <User className="h-3.5 w-3.5" />
-                <span>{t("nav.loginRegister")}</span>
-              </Link>
-            )}
-          </div>
+          {/* User */}
+          {isAuthenticated && user ? (
+            <Link
+              href="/profile"
+              className="flex items-center gap-1.5 h-8 px-2.5 text-sm font-semibold text-black hover:bg-gray-100 rounded-md transition-colors whitespace-nowrap"
+            >
+              <User className="h-3.5 w-3.5" />
+              <span>{user.name || user.email}</span>
+            </Link>
+          ) : (
+            <Link
+              href="/login"
+              className="flex items-center gap-1.5 h-8 px-2.5 text-sm font-semibold text-black hover:bg-gray-100 rounded-md transition-colors whitespace-nowrap"
+            >
+              <User className="h-3.5 w-3.5" />
+              <span>{t("nav.loginRegister")}</span>
+            </Link>
+          )}
         </div>
 
         {/* Mobile Menu Button */}

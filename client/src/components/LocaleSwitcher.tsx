@@ -96,13 +96,68 @@ export function CurrencySwitcher() {
   );
 }
 
-// 組合組件 - 同時顯示語言和幣值切換
+// 組合組件 - 合併語言和幣值為單一緊湊下拉選單
 export function LocaleSwitcher() {
+  const { language, setLanguage, languageName, currency, setCurrency, t } = useLocale();
+
+  const languages: { code: Language; name: string }[] = [
+    { code: 'zh-TW', name: t('language.zhTW') },
+    { code: 'en', name: t('language.en') },
+  ];
+
+  const currencies: { code: Currency; name: string; symbol: string }[] = [
+    { code: 'TWD', name: 'TWD', symbol: 'NT$' },
+    { code: 'USD', name: 'USD', symbol: '$' },
+  ];
+
   return (
-    <div className="flex items-center">
-      <LanguageSwitcher />
-      <CurrencySwitcher />
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 px-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-black gap-1.5"
+        >
+          <Globe className="h-3.5 w-3.5" />
+          <span>{languageName}</span>
+          <span className="text-gray-300">|</span>
+          <span>{currency}</span>
+          <ChevronDown className="h-3 w-3 opacity-40" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-44 bg-white border border-gray-200 shadow-lg p-1">
+        <div className="px-2 py-1 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{t('language.label') || '語言'}</div>
+        {languages.map((lang) => (
+          <DropdownMenuItem
+            key={lang.code}
+            onClick={() => setLanguage(lang.code)}
+            className={`cursor-pointer text-sm rounded-md ${
+              language === lang.code
+                ? 'bg-black text-white'
+                : 'hover:bg-gray-100'
+            }`}
+          >
+            {lang.name}
+          </DropdownMenuItem>
+        ))}
+        <DropdownMenuSeparator className="bg-gray-100 my-1" />
+        <div className="px-2 py-1 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{t('currency.label') || '幣別'}</div>
+        {currencies.map((curr) => (
+          <DropdownMenuItem
+            key={curr.code}
+            onClick={() => setCurrency(curr.code)}
+            className={`cursor-pointer text-sm rounded-md ${
+              currency === curr.code
+                ? 'bg-black text-white'
+                : 'hover:bg-gray-100'
+            }`}
+          >
+            <span className="font-mono mr-2 text-xs w-6">{curr.symbol}</span>
+            {curr.name}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
