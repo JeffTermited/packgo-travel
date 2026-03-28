@@ -5172,3 +5172,14 @@
 - [x] AI 行程生成 skillLibrary 加入繁體中文輸出要求
 - [x] 新增 Task History 頁面（/admin/task-history）
 - [x] Admin 後台新增「AI 任務記錄」分頁入口
+
+## 2026-03-28 引導式選項（Suggested Replies）
+
+- [ ] AITravelAdvisorDialog：開場引導按鈕 + AI 回覆後動態顯示下一步選項
+- [ ] 首頁 Hero：熱門目的地快速標籤點擊搜尋
+- [ ] QuickInquiry：旅遊類型選擇按鈕
+- [ ] 行程詳情頁 Book Now：人數快速選擇按鈕
+- [ ] ContactUs：詢問類型快速選擇
+- [ ] FlightBooking：艙等快選按鈕
+- [ ] HotelBooking：房型快選按鈕
+- [ ] CustomTourRequest：旅遊風格快選按鈕

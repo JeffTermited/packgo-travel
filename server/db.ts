@@ -1,7 +1,6 @@
 import { eq, and, gte, lte, desc, inArray, like, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const mysql2 = require("mysql2");
+import mysql2 from "mysql2";
 import { 
   InsertUser, users, 
   tours, InsertTour, Tour,

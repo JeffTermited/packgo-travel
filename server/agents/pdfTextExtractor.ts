@@ -7,6 +7,7 @@
  */
 import { execSync } from "child_process";
 import * as fs from "fs/promises";
+import * as fsSync from "fs";
 import * as os from "os";
 import * as path from "path";
 import * as https from "https";
@@ -29,7 +30,7 @@ async function downloadPdf(url: string): Promise<string> {
 
   return new Promise((resolve, reject) => {
     const protocol = url.startsWith("https") ? https : http;
-    const file = require("fs").createWriteStream(tmpFile);
+    const file = fsSync.createWriteStream(tmpFile);
 
     protocol
       .get(url, (response) => {
