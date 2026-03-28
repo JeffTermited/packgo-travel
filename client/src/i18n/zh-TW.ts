@@ -696,6 +696,7 @@ export const zhTW = {
     nights: '夜',
     startingFrom: '起',
     viewDetails: '查看詳情',
+    similar: '您可能也喜歡',
     filters: {
       destination: '目的地',
       duration: '行程天數',

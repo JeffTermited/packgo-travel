@@ -697,6 +697,7 @@ export const en = {
     nights: 'Nights',
     startingFrom: 'from',
     viewDetails: 'View Details',
+    similar: 'You May Also Like',
     filters: {
       destination: 'Destination',
       duration: 'Duration',
