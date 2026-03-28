@@ -5133,3 +5133,12 @@
 - [ ] 擴充編輯模式：費用說明（costIncluded/costExcluded）、注意事項（notice）可在詳情頁直接編輯
 - [ ] 擴充 server tours.update 程序：支援更新費用說明和注意事項欄位
 - [ ] 後台新增行程分類管理介面：批次或單筆修改行程 category
+
+## AI 員工辦公室升級（2026-03-28）
+- [ ] 新增 agentActivityLogs 資料表（記錄任務開始/結束/狀態）
+- [ ] 新增後端 API：getAgentOfficeStatus（即時狀態 + 今日工作日誌）
+- [ ] 在 claudeAgent/masterAgent 中整合 activity log 記錄
+- [ ] 重新設計 AiTeamRoster.tsx 為辦公室看板 UI（辦公桌 + 員工狀態）
+- [ ] 新增 Agent 工作日誌 feed（即時活動串流）
+- [ ] 新增任務彙報面板（每個 Agent 的工作報告）
+- [ ] 修復任務摘要按 Agent 分組顯示

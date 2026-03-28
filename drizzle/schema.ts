@@ -1153,3 +1153,33 @@ export const llmUsageLogs = mysqlTable("llmUsageLogs", {
 
 export type LlmUsageLog = typeof llmUsageLogs.$inferSelect;
 export type InsertLlmUsageLog = typeof llmUsageLogs.$inferInsert;
+
+/**
+ * Agent Activity Logs table - 記錄每個 Agent 的任務開始/完成/失敗事件
+ * 用於 AI 辦公室看板顯示即時狀態和工作日誌
+ */
+export const agentActivityLogs = mysqlTable("agentActivityLogs", {
+  id: int("id").autoincrement().primaryKey(),
+  // Agent 識別
+  agentName: varchar("agentName", { length: 100 }).notNull(),   // 例如 "MasterAgent"
+  agentKey: varchar("agentKey", { length: 100 }),               // 例如 "master"（對應前端卡牌）
+  // 任務資訊
+  taskType: varchar("taskType", { length: 100 }),               // 例如 "tour_generation"
+  taskId: varchar("taskId", { length: 100 }),                   // 關聯的任務 ID
+  taskTitle: varchar("taskTitle", { length: 500 }),             // 任務摘要（例如「生成日本東京 5 日行程」）
+  // 狀態
+  status: mysqlEnum("status", ["started", "completed", "failed", "idle"]).notNull().default("started"),
+  // 執行結果
+  resultSummary: text("resultSummary"),                         // 完成後的工作摘要（給 Jeff 看的）
+  errorMessage: varchar("errorMessage", { length: 1000 }),      // 失敗時的錯誤訊息
+  // 效能
+  processingTimeMs: int("processingTimeMs"),
+  // 使用者關聯
+  userId: int("userId"),
+  // 時間戳記
+  startedAt: timestamp("startedAt").defaultNow().notNull(),
+  completedAt: timestamp("completedAt"),
+});
+
+export type AgentActivityLog = typeof agentActivityLogs.$inferSelect;
+export type InsertAgentActivityLog = typeof agentActivityLogs.$inferInsert;

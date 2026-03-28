@@ -1866,6 +1866,79 @@ export const appRouter = router({
           })),
         };
       }),
+
+    // AI 辦公室：取得所有 Agent 的即時狀態和今日工作日誌
+    getAgentOfficeStatus: adminProcedure
+      .query(async () => {
+        const { agentActivityLogs, llmUsageLogs } = await import('../drizzle/schema');
+        const { gte, desc, sql, eq } = await import('drizzle-orm');
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'DB not available' });
+
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+
+        // 今日活動日誌（最近 100 筆）
+        const todayActivities = await drizzleDb
+          .select()
+          .from(agentActivityLogs)
+          .where(gte(agentActivityLogs.startedAt, todayStart))
+          .orderBy(desc(agentActivityLogs.startedAt))
+          .limit(100);
+
+        // 每個 Agent 的今日統計（從 llmUsageLogs）
+        const agentTodayStats = await drizzleDb
+          .select({
+            agentName: llmUsageLogs.agentName,
+            calls: sql<number>`COUNT(*)`,
+            totalTokens: sql<number>`SUM(${llmUsageLogs.totalTokens})`,
+            lastActive: sql<string>`MAX(${llmUsageLogs.createdAt})`,
+          })
+          .from(llmUsageLogs)
+          .where(gte(llmUsageLogs.createdAt, todayStart))
+          .groupBy(llmUsageLogs.agentName);
+
+        // 最近 10 筆正在執行中的任務（started 且超過 5 分鐘的就視為已完成）
+        const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+        const activeTasks = await drizzleDb
+          .select()
+          .from(agentActivityLogs)
+          .where(gte(agentActivityLogs.startedAt, fiveMinutesAgo))
+          .orderBy(desc(agentActivityLogs.startedAt))
+          .limit(10);
+
+        return {
+          todayActivities: todayActivities.map(a => ({
+            id: a.id,
+            agentName: a.agentName,
+            agentKey: a.agentKey,
+            taskType: a.taskType,
+            taskId: a.taskId,
+            taskTitle: a.taskTitle,
+            status: a.status,
+            resultSummary: a.resultSummary,
+            errorMessage: a.errorMessage,
+            processingTimeMs: a.processingTimeMs,
+            startedAt: a.startedAt,
+            completedAt: a.completedAt,
+          })),
+          agentTodayStats: agentTodayStats.map(s => ({
+            agentName: s.agentName,
+            calls: Number(s.calls),
+            totalTokens: Number(s.totalTokens),
+            lastActive: s.lastActive,
+          })),
+          activeTasks: activeTasks.map(a => ({
+            id: a.id,
+            agentName: a.agentName,
+            agentKey: a.agentKey,
+            taskType: a.taskType,
+            taskTitle: a.taskTitle,
+            status: a.status,
+            startedAt: a.startedAt,
+          })),
+        };
+      }),
   }),
 
   // Image Library router

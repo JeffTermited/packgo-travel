@@ -41,6 +41,7 @@ import generationCache from "../cache/generation-cache";
 import { generateSmartTags, mergeWithExistingTags } from "../utils/tagGenerator";
 import { TourType } from "./itineraryUnifiedAgent";
 import { applyLearnedSkills } from "./learningAgent";
+import { logAgentStart, logAgentComplete } from "../agentActivityService";
 
 export interface MasterAgentResult {
   success: boolean;
@@ -198,6 +199,16 @@ export class MasterAgent {
     if (taskId) {
       progressTracker.createTask(taskId);
     }
+
+    // 記錄 MasterAgent 開始執行
+    const activityId = await logAgentStart({
+      agentName: 'MasterAgent',
+      agentKey: 'master',
+      taskType: 'tour_generation',
+      taskId: taskId,
+      taskTitle: `生成行程：${isPdf ? 'PDF 檔案' : url.slice(0, 80)}`,
+      userId,
+    });
     
     try {
       // ========================================================================
@@ -817,6 +828,18 @@ export class MasterAgent {
         progressTracker.completeTask(taskId);
       }
       
+      // 記錄 MasterAgent 完成
+      if (activityId) {
+        const processingTimeMs = Date.now() - startTime;
+        const title = finalData.title || finalData.poeticTitle || '未命名行程';
+        const dest = finalData.destinationCity || finalData.destinationCountry || '';
+        await logAgentComplete(activityId, {
+          status: 'completed',
+          processingTimeMs,
+          resultSummary: `已完成行程生成：「${title}${dest ? ` · ${dest}` : ''}」，耗時 ${(processingTimeMs / 1000).toFixed(0)} 秒`,
+        });
+      }
+
       return {
         success: true,
         data: finalData,
@@ -832,6 +855,15 @@ export class MasterAgent {
       // Mark task as failed in progress tracker
       if (taskId) {
         progressTracker.failTask(taskId, error instanceof Error ? error.message : "Unknown error");
+      }
+
+      // 記錄 MasterAgent 失敗
+      if (activityId) {
+        await logAgentComplete(activityId, {
+          status: 'failed',
+          processingTimeMs: Date.now() - startTime,
+          errorMessage: error instanceof Error ? error.message.slice(0, 500) : String(error).slice(0, 500),
+        });
       }
       
       return {
