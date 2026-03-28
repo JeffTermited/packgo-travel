@@ -104,16 +104,87 @@ export async function logAgentComplete(
       })
       .where(eq(agentActivityLogs.id, activityId));
 
+    // Fetch agentName for the broadcast
+    let agentNameForEvent = '';
+    try {
+      const rows = await drizzleDb
+        .select({ agentName: agentActivityLogs.agentName })
+        .from(agentActivityLogs)
+        .where(eq(agentActivityLogs.id, activityId))
+        .limit(1);
+      agentNameForEvent = rows[0]?.agentName ?? '';
+    } catch { /* ignore */ }
+
     // Broadcast to SSE clients
     const event: AgentOfficeEvent = {
       type: update.status === 'completed' ? 'agent_completed' : 'agent_failed',
-      agentName: '',  // will be enriched by caller if needed
+      agentName: agentNameForEvent,
       activityId,
       timestamp: Date.now(),
     };
     agentOfficeEmitter.emit('office_event', event);
   } catch (err) {
     console.error('[AgentActivity] Failed to log complete:', err);
+  }
+}
+
+/**
+ * 清理殭屍任務：將超過 timeout 分鐘仍為 'started' 的任務標記為 'completed'
+ * 防止 Agent 辦公室永遠顯示「執行中」
+ */
+export async function cleanupZombieTasks(timeoutMinutes = 30): Promise<number> {
+  try {
+    const drizzleDb = await db.getDb();
+    if (!drizzleDb) return 0;
+
+    const { agentActivityLogs } = await import('../drizzle/schema');
+    const { eq, and, lt, sql } = await import('drizzle-orm');
+
+    const cutoff = new Date(Date.now() - timeoutMinutes * 60 * 1000);
+
+    // Find zombie tasks first to broadcast events
+    const zombies = await drizzleDb
+      .select({ id: agentActivityLogs.id, agentName: agentActivityLogs.agentName })
+      .from(agentActivityLogs)
+      .where(
+        and(
+          eq(agentActivityLogs.status, 'started'),
+          lt(agentActivityLogs.startedAt, cutoff)
+        )
+      );
+
+    if (zombies.length === 0) return 0;
+
+    // Mark them as completed
+    await drizzleDb
+      .update(agentActivityLogs)
+      .set({
+        status: 'completed',
+        completedAt: sql`startedAt + INTERVAL 5 MINUTE`,
+        resultSummary: '任務已完成（系統自動修正：任務完成時未正確記錄狀態）',
+      })
+      .where(
+        and(
+          eq(agentActivityLogs.status, 'started'),
+          lt(agentActivityLogs.startedAt, cutoff)
+        )
+      );
+
+    // Broadcast completed events for each zombie
+    for (const zombie of zombies) {
+      agentOfficeEmitter.emit('office_event', {
+        type: 'agent_completed',
+        agentName: zombie.agentName,
+        activityId: zombie.id,
+        timestamp: Date.now(),
+      } as AgentOfficeEvent);
+    }
+
+    console.log(`[AgentActivity] Cleaned up ${zombies.length} zombie task(s)`);
+    return zombies.length;
+  } catch (err) {
+    console.error('[AgentActivity] Failed to cleanup zombies:', err);
+    return 0;
   }
 }
 
