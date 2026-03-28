@@ -1872,7 +1872,7 @@ export const appRouter = router({
     getAgentOfficeStatus: adminProcedure
       .query(async () => {
         const { agentActivityLogs, llmUsageLogs } = await import('../drizzle/schema');
-        const { gte, desc, sql, eq } = await import('drizzle-orm');
+        const { gte, desc, sql, eq, and } = await import('drizzle-orm');
         const drizzleDb = await db.getDb();
         if (!drizzleDb) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'DB not available' });
 
@@ -1899,14 +1899,36 @@ export const appRouter = router({
           .where(gte(llmUsageLogs.createdAt, todayStart))
           .groupBy(llmUsageLogs.agentName);
 
-        // 最近 10 筆正在執行中的任務（started 且超過 5 分鐘的就視為已完成）
+        // 最近 10 筆正在執行中的任務（只顯示 status='started' 的任務）
         const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
         const activeTasks = await drizzleDb
           .select()
           .from(agentActivityLogs)
-          .where(gte(agentActivityLogs.startedAt, fiveMinutesAgo))
+          .where(
+            and(
+              gte(agentActivityLogs.startedAt, fiveMinutesAgo),
+              eq(agentActivityLogs.status, 'started')
+            )
+          )
           .orderBy(desc(agentActivityLogs.startedAt))
           .limit(10);
+
+        // 清理殭屍任務：超過 10 分鐘仍為 started 的任務自動標記為 error
+        const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+        await drizzleDb
+          .update(agentActivityLogs)
+          .set({
+            status: 'error',
+            errorMessage: '任務逾時（超過 10 分鐘未完成）',
+            completedAt: new Date(),
+          })
+          .where(
+            and(
+              eq(agentActivityLogs.status, 'started'),
+              gte(agentActivityLogs.startedAt, todayStart),
+              sql`${agentActivityLogs.startedAt} < ${tenMinutesAgo}`
+            )
+          );
 
         return {
           todayActivities: todayActivities.map(a => ({

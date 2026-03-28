@@ -88,7 +88,7 @@ export function EditableText({
 
   // 編輯模式且激活：顯示輸入框
   return (
-    <div className="inline-flex items-center gap-2 bg-white/95 rounded-lg p-2 border-2 border-yellow-400 shadow-xl backdrop-blur-sm">
+    <div className="flex items-center gap-2 bg-white/95 rounded-lg p-2 border-2 border-yellow-400 shadow-xl backdrop-blur-sm w-full max-w-2xl">
       {multiline ? (
         <textarea
           ref={inputRef as React.RefObject<HTMLTextAreaElement>}
@@ -113,7 +113,7 @@ export function EditableText({
           onBlur={handleSave}
           maxLength={maxLength}
           className={cn(
-            "bg-transparent border-none outline-none min-w-[100px]",
+            "bg-transparent border-none outline-none min-w-[100px] w-full",
             inputClassName
           )}
           placeholder={placeholder}

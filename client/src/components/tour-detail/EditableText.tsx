@@ -89,7 +89,7 @@ export const EditableText: React.FC<EditableTextProps> = ({
     return (
       <div
         className={cn(
-          "relative inline-flex items-center gap-2 group",
+          "relative flex items-center gap-2 group max-w-full",
           isEditable && "cursor-pointer hover:ring-2 hover:ring-yellow-400 hover:ring-offset-2 rounded-lg px-2 py-1 transition-all duration-200"
         )}
         onMouseEnter={() => setShowEditIcon(true)}
@@ -113,7 +113,7 @@ export const EditableText: React.FC<EditableTextProps> = ({
 
   // 編輯模式
   return (
-    <div className="relative inline-flex items-center gap-2 w-full">
+    <div className="relative flex items-center gap-2 w-full max-w-full">
       {multiline ? (
         <textarea
           ref={inputRef as React.RefObject<HTMLTextAreaElement>}

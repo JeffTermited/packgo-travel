@@ -485,14 +485,27 @@ export default function AiOffice() {
   // Sync active tasks from API data into live statuses
   useEffect(() => {
     if (!data) return;
+    const activeAgentNames = new Set<string>();
     const updates: Record<string, 'idle' | 'working' | 'failed'> = {};
     (data.activeTasks ?? []).forEach((t: any) => {
-      if (t.status === 'started') updates[t.agentName] = 'working';
-      else if (t.status === 'failed') updates[t.agentName] = 'failed';
+      if (t.status === 'started') {
+        updates[t.agentName] = 'working';
+        activeAgentNames.add(t.agentName);
+      } else if (t.status === 'failed') {
+        updates[t.agentName] = 'failed';
+        activeAgentNames.add(t.agentName);
+      }
     });
-    if (Object.keys(updates).length > 0) {
-      setLiveStatuses(prev => ({ ...prev, ...updates }));
-    }
+    // Reset agents that were previously 'working' but are no longer in activeTasks
+    setLiveStatuses(prev => {
+      const next = { ...prev };
+      for (const [agentName, status] of Object.entries(next)) {
+        if (status === 'working' && !activeAgentNames.has(agentName)) {
+          next[agentName] = 'idle';
+        }
+      }
+      return { ...next, ...updates };
+    });
   }, [data]);
 
   // 把 todayActivities 按 agentName 分組（最新的在前）

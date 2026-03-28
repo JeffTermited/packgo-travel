@@ -165,7 +165,7 @@ export default function QuickInquiry() {
                     </div>
                     <div>
                       <p className="text-sm text-gray-500 mb-0.5">電子郵件</p>
-                      <a href="mailto:Jeffhsieh09@gmail.com" className="text-base font-semibold text-gray-900 hover:text-primary transition-colors break-all">
+                      <a href="mailto:Jeffhsieh09@gmail.com" className="text-base font-semibold text-gray-900 hover:text-primary transition-colors break-words">
                         Jeffhsieh09@gmail.com
                       </a>
                     </div>

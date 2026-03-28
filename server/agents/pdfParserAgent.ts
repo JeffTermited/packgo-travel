@@ -88,7 +88,7 @@ function buildAnalysisPrompt(textContent?: string): string {
     ? `以下是從 PDF 提取的文字內容，請根據此文字內容進行分析：\n\n<pdf_text>\n${textContent}\n</pdf_text>\n\n`
     : "";
 
-  return `${contextNote}你是一位專業的旅遊行程分析師。請仔細分析這份旅遊行程 PDF 文件，並提取所有相關資訊。`;
+  return `${contextNote}你是一位專業的旅遊行程分析師。請仔細分析這份旅遊行程 PDF 文件，並提取所有相關資訊。所有輸出必須使用繁體中文，包括標題、行程亮點、描述、景點名稱等。英文景點名請翻譯為繁體中文。`;
 }
 
 /**
@@ -96,7 +96,7 @@ function buildAnalysisPrompt(textContent?: string): string {
  */
 async function analyzePdfWithText(extractedText: string): Promise<any> {
   const truncatedText = truncateForLLM(extractedText, 80000);
-  const prompt = `你是一位專業的旅遊行程分析師。以下是從 PDF 提取的文字內容，請根據此文字內容提取所有相關資訊。
+  const prompt = `你是一位專業的旅遊行程分析師。以下是從 PDF 提取的文字內容，請根據此文字內容提取所有相關資訊。所有輸出必須使用繁體中文，英文景點名請翻譯為繁體中文。
 
 <pdf_text>
 ${truncatedText}
@@ -141,7 +141,7 @@ ${truncatedText}
  */
 function buildJsonSchema(): string {
   return `
-請以 JSON 格式回傳以下資訊（只回傳 JSON，不要有其他文字）：
+請以 JSON 格式回傳以下資訊（只回傳 JSON，不要有其他文字，所有內容必須為繁體中文）：
 {
   "title": "行程標題",
   "subtitle": "行程副標題",
@@ -184,7 +184,7 @@ function buildJsonSchema(): string {
  */
 async function analyzePdfWithLLM(pdfUrl: string): Promise<any> {
   const jsonSchema = buildJsonSchema();
-  const analysisPrompt = `你是一位專業的旅遊行程分析師。請仔細分析這份旅遊行程 PDF 文件，並提取所有相關資訊。
+  const analysisPrompt = `你是一位專業的旅遊行程分析師。請仔細分析這份旅遊行程 PDF 文件，並提取所有相關資訊。所有輸出必須使用繁體中文，英文景點名請翻譯為繁體中文。
 ## 特別注意（雄獅旅遊 PDF 格式）：
 - 價格通常在頁面右上角或標題下方，格式如：NT$ 18,000、$24,000 等
 - 每日行程通常以「DAY 1」、「第一天」、「第1天」開頭

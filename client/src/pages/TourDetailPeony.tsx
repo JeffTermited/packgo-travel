@@ -2103,7 +2103,7 @@ export default function TourDetailPeony() {
                     {/* 圖片區域 - 支援編輯 */}
                     {isEditMode ? (
                       <EditableImage
-                        src={featureImage || `https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=400&h=300&fit=crop&q=80&sig=${index}`}
+                        src={featureImage || ''}
                         alt={featureTitle}
                         onSave={(newSrc) => handleFeatureUpdate('image', newSrc)}
                         isEditing={isEditMode}
@@ -2112,11 +2112,11 @@ export default function TourDetailPeony() {
                         imagePath={`keyFeatures.${index}.image`}
                       />
                     ) : featureImage ? (
-                      <div className="relative h-40 overflow-hidden rounded-lg">
+                      <div className="relative h-40 overflow-hidden">
                         <img 
                           src={featureImage} 
                           alt={featureTitle}
-                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110 rounded-xl"
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
                       </div>
@@ -2129,14 +2129,14 @@ export default function TourDetailPeony() {
                       </div>
                     )}
                     {/* 文字區域 - 支援編輯 */}
-                    <div className="p-5">
+                    <div className="p-5 flex flex-col">
                       {isEditMode ? (
                         <>
                           <EditableText
                             value={featureTitle}
                             onSave={(newValue) => handleFeatureUpdate('title', newValue)}
                             isEditing={isEditMode}
-                            className="font-bold text-lg text-gray-800 mb-2 leading-tight block"
+                            className="font-bold text-base text-gray-800 mb-2 leading-snug block min-h-[3rem]"
                             placeholder={t('tourDetail.editFeatureTitlePlaceholder')}
                             as="h3"
                           />
@@ -2144,7 +2144,7 @@ export default function TourDetailPeony() {
                             value={featureDescription}
                             onSave={(newValue) => handleFeatureUpdate('description', newValue)}
                             isEditing={isEditMode}
-                            className="text-base text-gray-700 leading-relaxed line-clamp-2 block"
+                            className="text-sm text-gray-600 leading-relaxed line-clamp-2 block"
                             placeholder={t('tourDetail.editFeatureDescPlaceholder')}
                             multiline
                             as="p"
@@ -2152,11 +2152,11 @@ export default function TourDetailPeony() {
                         </>
                       ) : (
                         <>
-                          <h3 className="font-bold text-lg text-gray-800 mb-2 leading-tight">
+                          <h3 className="font-bold text-base text-gray-800 mb-2 leading-snug min-h-[3rem]">
                             {featureTitle}
                           </h3>
                           {featureDescription && (
-                            <p className="text-base text-gray-700 leading-relaxed line-clamp-2">{featureDescription}</p>
+                            <p className="text-sm text-gray-600 leading-relaxed line-clamp-2">{featureDescription}</p>
                           )}
                         </>
                       )}

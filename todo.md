@@ -5183,3 +5183,33 @@
 - [ ] FlightBooking：艙等快選按鈕
 - [ ] HotelBooking：房型快選按鈕
 - [ ] CustomTourRequest：旅遊風格快選按鈕
+
+
+---
+
+## Phase 40: 五項問題修復（2026-03-28）
+
+### 40.1 P1: 圖片上傳路由缺失
+- [x] 新增 /api/upload/image 通用圖片上傳路由
+- [x] 新增 /api/upload/tour-image 路由
+- [x] 在 server/_core/index.ts 註冊新路由
+
+### 40.2 P1: AI 永久載入狀態
+- [x] 修復 routers.ts activeTasks 查詢加入 status='started' 篩選
+- [x] 修復 AiOffice.tsx 狀態同步邏輯（重設為 idle）
+- [x] 新增殭屍任務定期清理
+
+### 40.3 P2: 編輯模式文字框截斷
+- [x] 修復 EditableText.tsx inline-flex 容器（tour-detail + inline-edit 兩個版本）
+- [x] 修復 EditableHero.tsx 副標題輸入框寬度
+
+### 40.4 P2: 排版問題
+- [x] 修復 ContactUs.tsx email break-all（同時修復 QuickInquiry）
+- [x] 修復特色卡片高度不一致（加入 min-h-[72px]）
+- [x] 修復特色卡片重複佔位圖（改用純圖示 fallback）
+
+### 40.5 P3: 翻譯問題
+- [x] 在 contentAnalyzerAgent 加入繁體中文強制輸出
+- [x] 在 pdfParserAgent 加入繁體中文強制輸出
+- [x] 在 itineraryAgent 加入繁體中文強制輸出
+- [x] 修復特色卡片佔位圖多樣化

@@ -14,6 +14,7 @@ import { tourImageUploadRouter } from "../tourImageUpload";
 import { pdfUploadRouter } from "../pdfUpload";
 import { progressRouter } from "../progressRouter";
 import { aiChatStreamRouter } from "../aiChatStreamRouter";
+import { generalImageUploadRouter } from "../generalImageUpload";
 import { initializeGoogleAuth } from "../googleAuth";
 import "../worker"; // Initialize BullMQ worker
 
@@ -66,6 +67,9 @@ async function startServer() {
   
   // Tour image upload API
   app.use("/api", tourImageUploadRouter);
+
+  // General image upload API (hero, destinations, etc.)
+  app.use("/api", generalImageUploadRouter);
   
   // PDF upload API
   app.use("/api", pdfUploadRouter);

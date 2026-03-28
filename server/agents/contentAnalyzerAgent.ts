@@ -187,6 +187,10 @@ export class ContentAnalyzerAgent {
     // 簡化的系統提示
     const systemPrompt = `你是資深旅遊雜誌主編，專門撰寫有吸引力的旅遊文案。
 
+重要規則：
+- 所有輸出必須使用繁體中文，即使輸入資料是英文或其他語言，也必須翻譯為繁體中文。
+- 地名、景點名稱可保留原文並加上中文譯名（例：科托爾灣 Kotor Bay）
+
 風格要求：
 1. 使用精煉的形容詞（雅奢、秘境、極致）
 2. 加入動詞增加動感（尋蹤、漫遊、探索）
@@ -195,7 +199,7 @@ export class ContentAnalyzerAgent {
 
 禁用詞彙：靈魂、洗滯、光影、呵喃、心靈、深度對話、完美融合`;
 
-    const userPrompt = `請根據以下資訊生成旅遊文案：
+    const userPrompt = `請根據以下資訊生成旅遊文案（所有內容必須為繁體中文）：
 
 目的地：${destinationCity}, ${destinationCountry}
 天數：${days}天${nights}夜
@@ -205,12 +209,12 @@ export class ContentAnalyzerAgent {
 飯店等級：${hotelGrade}
 特色體驗：${specialExperiences.join("、")}
 
-請生成：
+請生成（全部用繁體中文）：
 1. poeticTitle: 詩意化標題（15-25字）
 2. title: 行銷標題（20-30字）
 3. description: 行程介紹（100-120字）
 4. heroSubtitle: Hero副標題（30-40字）
-5. highlights: 6-10個行程亮點（每個10-30字）`;
+5. highlights: 6-10個行程亮點（每個10-30字，必須為繁體中文，英文景點名請翻譯）`;
 
     try {
       const response = await this.claudeAgent.sendStructuredMessage<{

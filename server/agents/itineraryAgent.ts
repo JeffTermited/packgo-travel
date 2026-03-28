@@ -240,6 +240,7 @@ ${existingDataContext}
 5. 最後一天通常是自由活動和返程
 6. 每個活動描述控制在 50-80 字
 7. 所有內容必須基於提供的資料，不能編造不存在的景點或活動
+8. 所有輸出必須使用繁體中文，英文景點名請翻譯為繁體中文
 
 請直接返回結構化的每日行程。`;
 
@@ -258,7 +259,8 @@ ${STRICT_DATA_FIDELITY_RULES}
 重要提醒（Sonnet 專用）：
 - Do not output any conversational filler（不要輸出閒聊填充詞）
 - 直接返回結構化數據，不要解釋或說明
-- 所有景點和活動必須基於提供的資料`;
+- 所有景點和活動必須基於提供的資料
+- 所有輸出必須使用繁體中文，英文景點名請翻譯為繁體中文`;
 
     try {
       const claudeAgent = getSonnetAgent();
