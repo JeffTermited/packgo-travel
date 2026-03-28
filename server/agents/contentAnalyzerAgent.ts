@@ -89,6 +89,7 @@ export class ContentAnalyzerAgent {
     this.jsonSchema = extractJsonSchema('ContentAnalyzerAgent');
     // Phase 2 優化：使用 Haiku 加速處理
     this.claudeAgent = getHaikuAgent();
+    this.claudeAgent.setContext('ContentAnalyzerAgent', 'content_analysis');
     console.log('[ContentAnalyzerAgent] SKILL loaded:', this.skillInstructions.length, 'chars');
     console.log('[ContentAnalyzerAgent] Using Claude 3 Haiku for fast content generation');
   }

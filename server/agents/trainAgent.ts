@@ -152,6 +152,8 @@ ${this.taiwanTourTypes}
 
       // Call Claude with structured output
       const claudeAgent = getHaikuAgent();
+
+      claudeAgent.setContext('TrainAgent', 'train_search');
       const response = await claudeAgent.sendStructuredMessage<TrainAgentResult['data']>(
         prompt,
         trainSchema,

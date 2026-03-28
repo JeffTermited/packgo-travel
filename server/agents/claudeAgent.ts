@@ -231,6 +231,15 @@ export class ClaudeAgent {
   }
 
   /**
+   * Set agent context for usage logging (call before LLM operations)
+   */
+  setContext(agentName: string, taskType?: string): this {
+    this.agentName = agentName;
+    this.taskType = taskType;
+    return this;
+  }
+
+  /**
    * Switch to a different model
    */
   setModel(model: ClaudeModel): void {

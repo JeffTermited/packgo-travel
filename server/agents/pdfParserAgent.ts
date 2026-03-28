@@ -7,6 +7,7 @@
  */
 
 import { invokeLLM } from "../_core/llm";
+import { logLlmUsage } from "../llmUsageService";
 import { storagePut } from "../storage";
 import { randomBytes } from "crypto";
 import * as fs from "fs/promises";
@@ -115,6 +116,16 @@ ${truncatedText}
       ],
       response_format: { type: "json_object" },
     });
+    // 記錄 LLM 用量
+    if (response.usage) {
+      logLlmUsage({
+        agentName: 'PdfParserAgent',
+        taskType: 'pdf_parsing',
+        model: response.model || 'gemini-2.5-flash',
+        inputTokens: response.usage.prompt_tokens,
+        outputTokens: response.usage.completion_tokens,
+      }).catch(() => { /* silent */ });
+    }
     const rawContent = response.choices[0]?.message?.content || "{}";
     const content = typeof rawContent === "string" ? rawContent : JSON.stringify(rawContent);
     console.log("[PdfParserAgent] Text-based LLM analysis completed");
@@ -204,6 +215,16 @@ ${jsonSchema}`;
       ],
       response_format: { type: "json_object" },
     });
+    // 記錄 LLM 用量
+    if (response.usage) {
+      logLlmUsage({
+        agentName: 'PdfParserAgent',
+        taskType: 'pdf_parsing',
+        model: response.model || 'gemini-2.5-flash',
+        inputTokens: response.usage.prompt_tokens,
+        outputTokens: response.usage.completion_tokens,
+      }).catch(() => { /* silent */ });
+    }
     const rawContent = response.choices[0]?.message?.content || "{}";
     const content = typeof rawContent === "string" ? rawContent : JSON.stringify(rawContent);
     console.log("[PdfParserAgent] Direct PDF LLM analysis completed");

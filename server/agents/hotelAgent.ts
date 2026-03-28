@@ -95,6 +95,8 @@ ${JSON.stringify(accommodationData, null, 2)}
 
       // Call Claude with structured output
       const claudeAgent = getHaikuAgent();
+
+      claudeAgent.setContext('HotelAgent', 'hotel_search');
       const response = await claudeAgent.sendStructuredMessage<{ hotels: any[] }>(
         prompt,
         hotelSchema,

@@ -9,6 +9,7 @@
  */
 
 import { invokeLLM } from "../_core/llm";
+import { logLlmUsage } from "../llmUsageService";
 import { getDb } from "../db";
 import { agentSkills, skillApplicationLogs } from "../../drizzle/schema";
 import { eq, and, sql } from "drizzle-orm";
@@ -263,6 +264,16 @@ ${content}
         }
       });
       
+      // 記錄 LLM 用量
+      if (response.usage) {
+        logLlmUsage({
+          agentName: 'SkillLearnerAgent',
+          taskType: 'skill_learning',
+          model: response.model || 'gemini-2.5-flash',
+          inputTokens: response.usage.prompt_tokens,
+          outputTokens: response.usage.completion_tokens,
+        }).catch(() => { /* silent */ });
+      }
       const messageContent = response.choices[0].message.content;
       const result = JSON.parse(typeof messageContent === 'string' ? messageContent : JSON.stringify(messageContent) || "{}");
       return result;

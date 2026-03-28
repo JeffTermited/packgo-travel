@@ -473,6 +473,8 @@ ${JSON.stringify(batch, null, 2)}
     try {
       // Phase 2 優化：使用 Haiku 加速處理
       const claudeAgent = getHaikuAgent();
+
+      claudeAgent.setContext('ItineraryPolishAgent', 'tour_generation');
       const response = await claudeAgent.sendStructuredMessage<{ itineraries: PolishedItinerary[] }>(
         userPrompt,
         polishedSchema,

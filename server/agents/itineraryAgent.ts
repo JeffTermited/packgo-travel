@@ -262,6 +262,8 @@ ${STRICT_DATA_FIDELITY_RULES}
 
     try {
       const claudeAgent = getSonnetAgent();
+
+      claudeAgent.setContext('ItineraryAgent', 'tour_generation');
       
       const result = await claudeAgent.sendStructuredMessage<ItinerariesSchemaOutput>(
         prompt,

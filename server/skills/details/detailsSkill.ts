@@ -380,6 +380,7 @@ ${JSON.stringify(dailyItinerary.slice(0, 8).map((d: any) => ({ day: d.day, title
 
     try {
       const claudeAgent = getHaikuAgent();
+      claudeAgent.setContext('DetailsSkill', 'tour_generation');
       const response = await claudeAgent.sendStructuredMessage<{
         meals: MealData[];
         hotels: HotelData[];
@@ -549,6 +550,7 @@ ${JSON.stringify(mealData.length > 0 ? mealData : dailyItinerary, null, 2)}
 
     try {
       const claudeAgent = getHaikuAgent();
+      claudeAgent.setContext('DetailsSkill', 'tour_generation');
       const response = await claudeAgent.sendStructuredMessage<{ meals: MealData[] }>(
         prompt,
         MEAL_SCHEMA,
@@ -629,6 +631,7 @@ ${JSON.stringify(accommodationData, null, 2)}
 
     try {
       const claudeAgent = getHaikuAgent();
+      claudeAgent.setContext('DetailsSkill', 'tour_generation');
       const response = await claudeAgent.sendStructuredMessage<{ hotels: HotelData[] }>(
         prompt,
         HOTEL_SCHEMA,
@@ -682,6 +685,7 @@ ${JSON.stringify({ ...pricingData, days, destinationCountry, destinationCity }, 
 
     try {
       const claudeAgent = getHaikuAgent();
+      claudeAgent.setContext('DetailsSkill', 'tour_generation');
       const response = await claudeAgent.sendStructuredMessage<CostData>(
         prompt,
         COST_SCHEMA,
@@ -731,6 +735,7 @@ ${JSON.stringify(locationData, null, 2)}
 
     try {
       const claudeAgent = getHaikuAgent();
+      claudeAgent.setContext('DetailsSkill', 'tour_generation');
       const response = await claudeAgent.sendStructuredMessage<NoticeData>(
         prompt,
         NOTICE_SCHEMA,

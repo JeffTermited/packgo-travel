@@ -118,6 +118,8 @@ ${JSON.stringify(rawData.flight, null, 2)}
 
       // Call Claude with structured output
       const claudeAgent = getHaikuAgent();
+
+      claudeAgent.setContext('FlightAgent', 'flight_search');
       const response = await claudeAgent.sendStructuredMessage<FlightAgentResult['data']>(
         prompt,
         flightSchema,

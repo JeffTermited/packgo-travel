@@ -179,6 +179,8 @@ ${STRICT_DATA_FIDELITY_RULES}`;
 
     try {
       const claudeAgent = getHaikuAgent();
+
+      claudeAgent.setContext('NoticeAgent', 'notice_generation');
       
       const result = await claudeAgent.sendStructuredMessage<NoticeSchemaOutput>(
         prompt,

@@ -191,6 +191,7 @@ ${STRICT_DATA_FIDELITY_RULES}`;
 
     try {
       const claudeAgent = getHaikuAgent();
+      claudeAgent.setContext('CostAgent', 'cost_analysis');
       
       const result = await claudeAgent.sendStructuredMessage<CostSchemaOutput>(
         prompt,

@@ -10,7 +10,6 @@ import {
   MessageSquare,
   Star,
   Brain,
-  Languages,
   ChevronRight,
   Menu,
   X,
@@ -32,7 +31,7 @@ import TranslationsTab from "@/components/admin/TranslationsTab";
 import AiHubTab from "@/components/admin/AiHubTab";
 import AnalyticsTab from "@/components/admin/AnalyticsTab";
 
-type AdminTab = "dashboard" | "tours" | "bookings" | "inquiries" | "reviews" | "translations" | "ai-hub" | "analytics";
+type AdminTab = "dashboard" | "tours" | "bookings" | "inquiries" | "reviews" | "ai-hub" | "analytics";
 
 export default function Admin() {
   const { user, loading, isAuthenticated, logout } = useAuth();
@@ -74,7 +73,6 @@ export default function Admin() {
       label: '進階功能',
       items: [
         { id: 'analytics', icon: TrendingUp, label: '流量分析' },
-        { id: 'translations', icon: Languages, label: '多語言翻譯' },
         { id: 'ai-hub', icon: Brain, label: 'AI 中心' },
       ],
     },
@@ -251,7 +249,6 @@ export default function Admin() {
           {activeTab === "bookings" && <BookingsTab />}
           {activeTab === "inquiries" && <InquiriesTab />}
           {activeTab === "reviews" && <ReviewsTab />}
-          {activeTab === "translations" && <TranslationsTab />}
           {activeTab === "analytics" && <AnalyticsTab />}
           {activeTab === "ai-hub" && <AiHubTab />}
         </main>

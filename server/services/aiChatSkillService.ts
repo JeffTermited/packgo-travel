@@ -105,6 +105,9 @@ export async function intelligentSkillMatch(
   if (skills.length === 0) return [];
   
   const agent = getHaikuAgent();
+
+  
+  agent.setContext('AiChatAgent', 'ai_chat');
   
   // Prepare skill descriptions for Claude
   const skillDescriptions = skills.map(s => ({
@@ -182,6 +185,8 @@ export async function generateSkillEnhancedResponse(
   matchedSkills: SkillMatch[]
 ): Promise<string> {
   const agent = getHaikuAgent();
+
+  agent.setContext('AiChatAgent', 'ai_chat');
   
   // Build skill context for Claude
   let skillContext = "";

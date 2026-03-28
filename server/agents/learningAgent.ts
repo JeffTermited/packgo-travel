@@ -1,4 +1,5 @@
 import { invokeLLM } from "../_core/llm";
+import { logLlmUsage } from "../llmUsageService";
 import * as skillDb from "../skillDb";
 import { InsertAgentSkill } from "../../drizzle/schema";
 
@@ -163,6 +164,17 @@ ${pdfContent.substring(0, 15000)}
         }
       }
     });
+
+    // 記錄 LLM 用量
+    if (response.usage) {
+      logLlmUsage({
+        agentName: 'LearningAgent',
+        taskType: 'skill_learning',
+        model: response.model || 'gemini-2.5-flash',
+        inputTokens: response.usage.prompt_tokens,
+        outputTokens: response.usage.completion_tokens,
+      }).catch(() => { /* silent */ });
+    }
 
     // 2. 解析 LLM 回應
     let extractedSkills: ExtractedSkill[] = [];

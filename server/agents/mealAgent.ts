@@ -102,6 +102,8 @@ ${JSON.stringify(rawData.meals, null, 2)}
 
       // Call Claude with structured output
       const claudeAgent = getHaikuAgent();
+
+      claudeAgent.setContext('MealAgent', 'meal_planning');
       const response = await claudeAgent.sendStructuredMessage<{ meals: any[] }>(
         prompt,
         mealSchema,

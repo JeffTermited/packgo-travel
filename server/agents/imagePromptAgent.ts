@@ -131,6 +131,8 @@ Example format:
     for (let attempt = 1; attempt <= 2; attempt++) {
       try {
         const claudeAgent = getHaikuAgent();
+
+        claudeAgent.setContext('ImagePromptAgent', 'image_generation');
         const response = await claudeAgent.sendMessage(userPrompt, {
           systemPrompt: PHOTOGRAPHER_SKILL,
           maxTokens: 512,
@@ -195,6 +197,8 @@ Requirements:
       // Single attempt (no retry for highlights to save time)
       try {
         const claudeAgent = getHaikuAgent();
+
+        claudeAgent.setContext('ImagePromptAgent', 'image_generation');
         const response = await claudeAgent.sendMessage(userPrompt, {
           systemPrompt: PHOTOGRAPHER_SKILL,
           maxTokens: 512,
@@ -251,6 +255,8 @@ Requirements:
 
       try {
         const claudeAgent = getHaikuAgent();
+
+        claudeAgent.setContext('ImagePromptAgent', 'image_generation');
         const response = await claudeAgent.sendMessage(optimizationPrompt, {
           maxTokens: 512,
           temperature: 0.7,

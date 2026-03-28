@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   RefreshCw, CheckCircle2, AlertCircle, Clock,
-  Zap, DollarSign, ChevronDown, ChevronRight, FileText
+  Zap, DollarSign, ChevronDown, ChevronRight, FileText, Bot
 } from "lucide-react";
 
 // Task type label mapping
@@ -16,76 +16,115 @@ const TASK_LABELS: Record<string, string> = {
   translation:      "翻譯",
   image_analysis:   "圖片分析",
   data_extraction:  "資料擷取",
+  cost_analysis:    "費用分析",
+  itinerary:        "行程規劃",
+  content_analysis: "內容分析",
 };
 
+// Agent name display mapping (strip "Agent" suffix and map to friendly names)
+const AGENT_DISPLAY: Record<string, string> = {
+  "ClaudeAgent":             "通用 AI",
+  "MasterAgent":             "主控 Agent",
+  "ItineraryAgent":          "行程規劃 Agent",
+  "ItineraryUnifiedAgent":   "行程統合 Agent",
+  "CostAgent":               "費用分析 Agent",
+  "ContentAnalyzerAgent":    "內容分析 Agent",
+  "TranslationAgent":        "翻譯 Agent",
+  "TranslateAgent":          "翻譯 Agent",
+};
+
+function agentDisplayName(name: string | null): string {
+  if (!name) return "未知 Agent";
+  return AGENT_DISPLAY[name] ?? name.replace(/Agent$/i, " Agent");
+}
+
 function taskLabel(type: string | null) {
-  if (!type) return "其他";
+  if (!type) return null;
   return TASK_LABELS[type] ?? type;
 }
 
-function StatusBadge({ success }: { success: boolean }) {
-  return success ? (
-    <span className="inline-flex items-center gap-1 text-xs text-green-700 bg-green-50 border border-green-200 px-2 py-0.5">
-      <CheckCircle2 className="h-3 w-3" /> 成功
-    </span>
-  ) : (
-    <span className="inline-flex items-center gap-1 text-xs text-red-700 bg-red-50 border border-red-200 px-2 py-0.5">
-      <AlertCircle className="h-3 w-3" /> 失敗
-    </span>
-  );
+// Agent avatar color based on name
+function agentColor(name: string | null): string {
+  const colors = [
+    "bg-blue-100 text-blue-700",
+    "bg-purple-100 text-purple-700",
+    "bg-green-100 text-green-700",
+    "bg-orange-100 text-orange-700",
+    "bg-pink-100 text-pink-700",
+    "bg-cyan-100 text-cyan-700",
+  ];
+  if (!name) return colors[0];
+  const idx = name.charCodeAt(0) % colors.length;
+  return colors[idx];
 }
 
-function SessionCard({ session }: { session: any }) {
+function AgentCard({ group }: { group: any }) {
   const [expanded, setExpanded] = useState(false);
 
-  const totalCost = session.logs?.reduce(
+  const totalCost = group.logs?.reduce(
     (sum: number, l: any) => sum + parseFloat(l.estimatedCostUsd ?? "0"), 0
   ) ?? 0;
-  const totalTokens = session.logs?.reduce(
+  const totalTokens = group.logs?.reduce(
     (sum: number, l: any) => sum + (l.inputTokens ?? 0) + (l.outputTokens ?? 0), 0
   ) ?? 0;
-  const totalMs = session.logs?.reduce(
+  const totalMs = group.logs?.reduce(
     (sum: number, l: any) => sum + (l.processingTimeMs ?? 0), 0
   ) ?? 0;
 
-  const agentNames = Array.from(new Set((session.logs ?? []).map((l: any) =>
-    l.agentName?.replace(/Agent$/i, "") ?? "Unknown"
-  )));
+  // Get unique task types for this agent
+  const taskTypes = Array.from(new Set(
+    (group.logs ?? []).map((l: any) => l.taskType).filter(Boolean)
+  )) as string[];
+
+  // Most recent log time
+  const latestTime = group.logs?.reduce((latest: number, l: any) => {
+    const t = new Date(l.createdAt).getTime();
+    return t > latest ? t : latest;
+  }, 0) ?? 0;
+
+  const displayName = agentDisplayName(group.agentName);
+  const colorClass = agentColor(group.agentName);
+  const initials = displayName.slice(0, 2);
 
   return (
     <div className="border border-gray-200 bg-white">
       {/* Card Header */}
       <button
-        className="w-full flex items-start gap-4 px-5 py-4 text-left hover:bg-gray-50 transition-colors"
+        className="w-full flex items-center gap-4 px-5 py-4 text-left hover:bg-gray-50 transition-colors"
         onClick={() => setExpanded(v => !v)}
       >
-        <div className="mt-0.5">
+        <div className="shrink-0">
           {expanded
             ? <ChevronDown className="h-4 w-4 text-gray-400" />
             : <ChevronRight className="h-4 w-4 text-gray-400" />
           }
         </div>
 
-        {/* Task type + time */}
+        {/* Agent avatar */}
+        <div className={`shrink-0 w-9 h-9 flex items-center justify-center text-xs font-bold ${colorClass}`}>
+          {initials}
+        </div>
+
+        {/* Agent name + task types */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-semibold text-gray-900 text-sm">
-              {taskLabel(session.taskType)}
+              {displayName}
             </span>
             <Badge variant="outline" className="text-xs font-normal rounded-none border-gray-300">
-              {session.logs?.length ?? 0} 次呼叫
+              {group.logs?.length ?? 0} 次呼叫
             </Badge>
-            {agentNames.slice(0, 3).map((name: any, i: number) => (
-              <span key={i} className="text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5">
-                {name}
+            {taskTypes.slice(0, 3).map((type: string, i: number) => (
+              <span key={i} className="text-xs text-blue-600 bg-blue-50 px-1.5 py-0.5 border border-blue-100">
+                {taskLabel(type) ?? type}
               </span>
             ))}
           </div>
-          <div className="text-xs text-gray-400 mt-1">
-            {new Date(session.startedAt).toLocaleString("zh-TW", {
+          <div className="text-xs text-gray-400 mt-0.5">
+            最後活動：{latestTime ? new Date(latestTime).toLocaleString("zh-TW", {
               month: "2-digit", day: "2-digit",
-              hour: "2-digit", minute: "2-digit", second: "2-digit"
-            })}
+              hour: "2-digit", minute: "2-digit"
+            }) : "—"}
           </div>
         </div>
 
@@ -109,20 +148,22 @@ function SessionCard({ session }: { session: any }) {
       {/* Expanded: per-call log rows */}
       {expanded && (
         <div className="border-t border-gray-100">
-          {/* Summary report banner */}
+          {/* Summary banner */}
           <div className="px-5 py-3 bg-gray-50 border-b border-gray-100">
             <div className="flex items-center gap-2 mb-2">
               <FileText className="h-4 w-4 text-gray-500" />
-              <span className="text-xs font-semibold text-gray-700 uppercase tracking-wide">任務摘要報告</span>
+              <span className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Agent 使用摘要</span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
               <div>
-                <div className="text-gray-400">任務類型</div>
-                <div className="font-medium text-gray-800">{taskLabel(session.taskType)}</div>
+                <div className="text-gray-400">Agent 名稱</div>
+                <div className="font-medium text-gray-800">{displayName}</div>
               </div>
               <div>
-                <div className="text-gray-400">參與 Agent</div>
-                <div className="font-medium text-gray-800">{agentNames.join("、") || "—"}</div>
+                <div className="text-gray-400">執行任務類型</div>
+                <div className="font-medium text-gray-800">
+                  {taskTypes.length > 0 ? taskTypes.map(t => taskLabel(t) ?? t).join("、") : "—"}
+                </div>
               </div>
               <div>
                 <div className="text-gray-400">總 Token 消耗</div>
@@ -138,28 +179,32 @@ function SessionCard({ session }: { session: any }) {
               </div>
               <div>
                 <div className="text-gray-400">呼叫次數</div>
-                <div className="font-medium text-gray-800">{session.logs?.length ?? 0} 次</div>
+                <div className="font-medium text-gray-800">{group.logs?.length ?? 0} 次</div>
               </div>
               <div>
                 <div className="text-gray-400">快取命中</div>
                 <div className="font-medium text-gray-800">
-                  {session.logs?.filter((l: any) => l.wasFromCache).length ?? 0} 次
+                  {group.logs?.filter((l: any) => l.wasFromCache).length ?? 0} 次
                 </div>
               </div>
               <div>
-                <div className="text-gray-400">開始時間</div>
+                <div className="text-gray-400">成功率</div>
                 <div className="font-medium text-gray-800">
-                  {new Date(session.startedAt).toLocaleTimeString("zh-TW")}
+                  {group.logs?.length
+                    ? `${Math.round((group.logs.filter((l: any) => l.success !== false).length / group.logs.length) * 100)}%`
+                    : "—"
+                  }
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Per-call detail rows */}
+          {/* Per-call detail rows - sorted newest first */}
           <table className="w-full text-xs">
             <thead>
               <tr className="border-b border-gray-100 bg-white">
-                <th className="text-left px-5 py-2 text-gray-400 font-medium uppercase tracking-wide">Agent</th>
+                <th className="text-left px-5 py-2 text-gray-400 font-medium uppercase tracking-wide">時間</th>
+                <th className="text-left px-3 py-2 text-gray-400 font-medium uppercase tracking-wide">任務類型</th>
                 <th className="text-left px-3 py-2 text-gray-400 font-medium uppercase tracking-wide">模型</th>
                 <th className="text-right px-3 py-2 text-gray-400 font-medium uppercase tracking-wide">Input</th>
                 <th className="text-right px-3 py-2 text-gray-400 font-medium uppercase tracking-wide">Output</th>
@@ -169,10 +214,18 @@ function SessionCard({ session }: { session: any }) {
               </tr>
             </thead>
             <tbody>
-              {session.logs?.map((log: any, i: number) => (
+              {[...(group.logs ?? [])].sort(
+                (a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+              ).map((log: any, i: number) => (
                 <tr key={i} className="border-b border-gray-50 hover:bg-gray-50">
-                  <td className="px-5 py-2 text-gray-700">
-                    {log.agentName?.replace(/Agent$/i, "") ?? "—"}
+                  <td className="px-5 py-2 text-gray-500">
+                    {new Date(log.createdAt).toLocaleString("zh-TW", {
+                      month: "2-digit", day: "2-digit",
+                      hour: "2-digit", minute: "2-digit"
+                    })}
+                  </td>
+                  <td className="px-3 py-2 text-gray-600">
+                    {taskLabel(log.taskType) ?? <span className="text-gray-300">—</span>}
                   </td>
                   <td className="px-3 py-2 text-gray-500">
                     {log.model?.split("-").slice(-2).join("-") ?? "—"}
@@ -212,35 +265,26 @@ export default function AiSessionReport() {
     staleTime: 1000 * 60 * 5,
   });
 
-  // Group logs by taskType + approximate session (within 5 min window)
-  const sessions = (() => {
+  // Group logs by Agent name, sorted by most recent activity
+  const agentGroups = (() => {
     if (!data?.recentLogs?.length) return [];
-    const sorted = [...data.recentLogs].sort(
-      (a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-    );
-    const groups: any[] = [];
-    let current: any = null;
-
-    for (const log of sorted) {
-      const logTime = new Date(log.createdAt).getTime();
-      if (
-        !current ||
-        current.taskType !== log.taskType ||
-        logTime - current.lastTime > 5 * 60 * 1000
-      ) {
-        current = {
-          taskType: log.taskType,
-          startedAt: log.createdAt,
-          lastTime: logTime,
-          logs: [log],
-        };
-        groups.push(current);
-      } else {
-        current.logs.push(log);
-        current.lastTime = logTime;
+    const agentMap = new Map<string, any>();
+    for (const log of data.recentLogs) {
+      const agentKey = (log as any).agentName ?? "unknown";
+      if (!agentMap.has(agentKey)) {
+        agentMap.set(agentKey, {
+          agentName: agentKey,
+          logs: [],
+          lastTime: 0,
+        });
       }
+      const group = agentMap.get(agentKey)!;
+      group.logs.push(log);
+      const logTime = new Date((log as any).createdAt).getTime();
+      if (logTime > group.lastTime) group.lastTime = logTime;
     }
-    return groups.reverse(); // newest first
+    // Sort by most recent activity
+    return Array.from(agentMap.values()).sort((a, b) => b.lastTime - a.lastTime);
   })();
 
   return (
@@ -250,7 +294,7 @@ export default function AiSessionReport() {
         <div>
           <h3 className="text-base font-bold text-gray-900">AI 任務使用摘要</h3>
           <p className="text-xs text-gray-500 mt-0.5">
-            每次 AI 任務完成後自動產生報告，點擊展開查看詳細呼叫記錄
+            依 Agent 分組顯示，點擊展開查看詳細呼叫記錄
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -273,22 +317,22 @@ export default function AiSessionReport() {
         </div>
       </div>
 
-      {/* Session list */}
+      {/* Agent group list */}
       {isLoading ? (
         <div className="flex items-center justify-center py-16 text-gray-400 text-sm gap-2">
           <RefreshCw className="h-4 w-4 animate-spin" />
           載入中...
         </div>
-      ) : sessions.length === 0 ? (
+      ) : agentGroups.length === 0 ? (
         <div className="border border-dashed border-gray-200 py-16 text-center">
-          <FileText className="h-8 w-8 text-gray-300 mx-auto mb-3" />
+          <Bot className="h-8 w-8 text-gray-300 mx-auto mb-3" />
           <p className="text-sm text-gray-400">近 {days} 天無 AI 任務記錄</p>
           <p className="text-xs text-gray-300 mt-1">每次使用 AI 功能後，報告將自動出現在這裡</p>
         </div>
       ) : (
         <div className="space-y-2">
-          {sessions.map((session, i) => (
-            <SessionCard key={i} session={session} />
+          {agentGroups.map((group, i) => (
+            <AgentCard key={i} group={group} />
           ))}
         </div>
       )}

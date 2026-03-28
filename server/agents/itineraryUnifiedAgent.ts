@@ -471,6 +471,8 @@ ${JSON.stringify(extractedItineraries, null, 2)}
 
     try {
       const claudeAgent = getHaikuAgent();
+
+      claudeAgent.setContext('ItineraryUnifiedAgent', 'tour_generation');
       const response = await claudeAgent.sendStructuredMessage<{ itineraries: PolishedItinerary[] }>(
         userPrompt,
         UNIFIED_ITINERARY_SCHEMA,

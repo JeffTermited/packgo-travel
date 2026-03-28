@@ -81,6 +81,7 @@ ${skillContext}
     ];
 
     const agent = getHaikuAgent();
+    agent.setContext('AIChatAgent', 'customer_service');
 
     // Stream the response
     for await (const chunk of agent.streamConversation(messages, {

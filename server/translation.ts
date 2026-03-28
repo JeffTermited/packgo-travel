@@ -1,4 +1,5 @@
 import { invokeLLM } from "./_core/llm";
+import { logLlmUsage } from "./llmUsageService";
 import { getDb } from "./db";
 import { translations, translationJobs } from "../drizzle/schema";
 import { eq, and, desc } from "drizzle-orm";
@@ -127,6 +128,16 @@ Guidelines:
       ],
     });
 
+    // 記錄 LLM 用量
+    if (response.usage) {
+      logLlmUsage({
+        agentName: 'TranslationAgent',
+        taskType: 'translation',
+        model: response.model || 'gemini-2.5-flash',
+        inputTokens: response.usage.prompt_tokens,
+        outputTokens: response.usage.completion_tokens,
+      }).catch(() => { /* silent */ });
+    }
     const content = response.choices[0]?.message?.content;
     const translatedText = typeof content === 'string' ? content.trim() : text;
     
