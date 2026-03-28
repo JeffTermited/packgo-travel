@@ -306,12 +306,8 @@ export default function DeparturesManagement({ tourId, tourTitle }: DeparturesMa
 
   return (
     <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-sm font-semibold text-gray-900">{t('departuresTab.title')}</h3>
-          <p className="text-xs text-gray-500 mt-0.5">{tourTitle}</p>
-        </div>
+      {/* Header - title shown in parent Dialog, only show action button */}
+      <div className="flex items-center justify-end">
         <Button
           onClick={() => { resetForm(); setIsCreateDialogOpen(true); }}
           className="bg-black text-white hover:bg-gray-800 h-8 text-xs px-3"

@@ -653,6 +653,7 @@ export const appRouter = router({
           costExplanation: z.string().optional(),
           noticeDetailed: z.string().optional(),
           poeticContent: z.string().optional(),
+          poeticTitle: z.string().optional(),
           colorTheme: z.string().optional(),
           galleryImages: z.string().optional(),
         })
@@ -692,7 +693,7 @@ export const appRouter = router({
           'destinationCountry', 'destinationCity', 'price', 'priceCurrency', 'duration',
           'keyFeatures', 'attractions', 'hotels', 'meals', 'flights',
           'itineraryDetailed', 'costExplanation', 'noticeDetailed',
-          'poeticContent', 'colorTheme', 'galleryImages', 'imageUrl',
+          'poeticContent', 'poeticTitle', 'colorTheme', 'galleryImages', 'imageUrl',
           'highlights', 'includes', 'excludes', 'startDate', 'endDate'
         ];
         

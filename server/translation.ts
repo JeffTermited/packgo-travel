@@ -106,12 +106,39 @@ export async function translateText(
     return cached;
   }
 
+  // 偵測是否為 JSON 格式（陣列或物件）
+  const trimmed = text.trim();
+  const isJsonContent = (trimmed.startsWith('[') || trimmed.startsWith('{'));
+  let parsedJson: any = null;
+  if (isJsonContent) {
+    try {
+      parsedJson = JSON.parse(trimmed);
+    } catch {
+      // 不是有效 JSON，當作普通文字處理
+    }
+  }
+
   try {
-    const response = await invokeLLM({
-      messages: [
-        {
-          role: "system",
-          content: `You are a professional translator specializing in travel and tourism content. 
+    let systemPrompt: string;
+    let userContent: string;
+
+    if (parsedJson !== null) {
+      // JSON 模式：要求 AI 保留結構，只翻譯文字值
+      systemPrompt = `You are a professional translator specializing in travel and tourism content.
+Your task is to translate text values inside a JSON structure from ${languageFullNames[sourceLanguage]} to ${languageFullNames[targetLanguage]}.
+
+CRITICAL RULES:
+- Return ONLY valid JSON with the EXACT same structure as the input
+- Translate ONLY string values that contain natural language text
+- DO NOT translate: JSON keys, numeric values, null, boolean, URLs, image paths, color codes, IDs
+- DO NOT translate: single characters, short codes (e.g. "STAY", "EXPLORE"), style keywords
+- Preserve all non-text fields (id, image, imageAlt, keywordStyle, labelColor, labelPosition, etc.) UNCHANGED
+- For arrays of strings, translate each string element
+- Output ONLY the JSON, no explanation, no markdown code blocks`;
+      userContent = trimmed;
+    } else {
+      // 普通文字模式
+      systemPrompt = `You are a professional translator specializing in travel and tourism content. 
 Your task is to translate text from ${languageFullNames[sourceLanguage]} to ${languageFullNames[targetLanguage]}.
 
 Guidelines:
@@ -120,11 +147,19 @@ Guidelines:
 - Keep proper nouns (place names, brand names) appropriately translated or transliterated
 - For travel-related terms, use industry-standard terminology
 - Preserve any formatting (line breaks, punctuation)
-- Only output the translated text, nothing else`
+- Only output the translated text, nothing else`;
+      userContent = text;
+    }
+
+    const response = await invokeLLM({
+      messages: [
+        {
+          role: "system",
+          content: systemPrompt
         },
         {
           role: "user",
-          content: text
+          content: userContent
         }
       ],
     });
@@ -140,7 +175,20 @@ Guidelines:
       }).catch(() => { /* silent */ });
     }
     const content = response.choices[0]?.message?.content;
-    const translatedText = typeof content === 'string' ? content.trim() : text;
+    let translatedText = typeof content === 'string' ? content.trim() : text;
+    
+    // 如果輸入是 JSON，驗證輸出也是有效 JSON
+    if (parsedJson !== null) {
+      // 移除 AI 可能加的 markdown code block 標記
+      translatedText = translatedText.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim();
+      try {
+        JSON.parse(translatedText); // 驗證 JSON 有效性
+      } catch {
+        // AI 輸出不是有效 JSON，回退到原始値
+        console.warn('[Translation Agent] JSON translation output invalid, falling back to original');
+        return text;
+      }
+    }
     
     // 儲存到快取（Redis 持久化 + 記憶體）
     await setCachedTranslation(cacheKey, translatedText);

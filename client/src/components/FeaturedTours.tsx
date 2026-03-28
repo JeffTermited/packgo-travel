@@ -7,13 +7,29 @@ import { LoadingPage } from "@/components/ui/spinner";
 import { Link } from "wouter";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { useLocale } from "@/contexts/LocaleContext";
+import { useMemo } from "react";
 
 export default function FeaturedTours() {
   const { data: tours, isLoading, error } = trpc.tours.list.useQuery();
-  const { t, formatPrice } = useLocale();
+  const { t, formatPrice, language } = useLocale();
 
   // Filter to show only featured and active tours, limit to 4
   const featuredTours = tours?.filter(tour => tour.featured === 1 && tour.status === 'active').slice(0, 4) || [];
+
+  // Batch fetch translations for non-Chinese languages
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const tourIds = useMemo(() => featuredTours.map(tour => tour.id), [featuredTours.length, featuredTours.map(tour => tour.id).join(',')]);
+  const { data: batchTranslations } = trpc.translation.getBatchTourTranslations.useQuery(
+    { tourIds, targetLanguage: language as 'zh-TW' | 'en' | 'es' | 'ja' | 'ko' },
+    { enabled: language !== 'zh-TW' && tourIds.length > 0 }
+  );
+
+  // Helper to get translated field for a specific tour
+  const getTranslatedField = (tourId: number, field: string, fallback: string) => {
+    if (language === 'zh-TW' || !batchTranslations) return fallback;
+    const tourTranslations = (batchTranslations as Record<number, Record<string, string>>)[tourId];
+    return tourTranslations?.[field] || fallback;
+  };
 
   return (
     <section id="featured-tours" className="py-20 bg-white">
@@ -46,21 +62,27 @@ export default function FeaturedTours() {
               {featuredTours.map((tour) => (
                 <Card key={tour.id} className="group overflow-hidden border-2 border-black   shadow-lg hover:shadow-lg transition-all duration-300">
                   <div className="relative aspect-[4/3] overflow-hidden rounded-t-xl">
-                    <img 
-                      src={tour.imageUrl || tour.heroImage || ''} 
-                      alt={tour.title} 
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 rounded-xl"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                        const parent = e.currentTarget.parentElement;
-                        if (parent && !parent.querySelector('.img-fallback')) {
-                          const div = document.createElement('div');
-                          div.className = 'img-fallback absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-900';
-                          div.innerHTML = '<span style="color:#9ca3af;font-size:14px">旅遊圖片</span>';
-                          parent.appendChild(div);
-                        }
-                      }}
-                    />
+                    {(tour.imageUrl || tour.heroImage) ? (
+                      <img 
+                        src={tour.imageUrl || tour.heroImage} 
+                        alt={getTranslatedField(tour.id, 'title', tour.title)} 
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 rounded-xl"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          const parent = e.currentTarget.parentElement;
+                          if (parent && !parent.querySelector('.img-fallback')) {
+                            const div = document.createElement('div');
+                            div.className = 'img-fallback absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-900';
+                            div.innerHTML = '<span style="color:#9ca3af;font-size:14px">旅遊圖片</span>';
+                            parent.appendChild(div);
+                          }
+                        }}
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-900">
+                        <span style={{color:'#9ca3af',fontSize:'14px'}}>旅遊圖片</span>
+                      </div>
+                    )}
                     <div className="absolute top-4 left-4">
                       <Badge className="bg-black text-white hover:bg-black px-4 py-1 text-xs font-bold tracking-wider shadow-lg rounded-lg">
                         {t('featuredTours.title')}
@@ -92,7 +114,7 @@ export default function FeaturedTours() {
                           {tour.category === 'theme' && t('common.features')}
                         </Badge>
                         <h3 className="text-2xl font-bold text-black group-hover:text-gray-700 transition-colors">
-                          {tour.title}
+                          {getTranslatedField(tour.id, 'title', tour.title)}
                         </h3>
                         <p className="text-gray-600 text-sm font-medium">{tour.destination}</p>
                       </div>
@@ -101,7 +123,7 @@ export default function FeaturedTours() {
 
                   <CardContent>
                     <p className="text-gray-600 text-sm line-clamp-3">
-                      {tour.description}
+                      {getTranslatedField(tour.id, 'description', tour.description || '')}
                     </p>
                   </CardContent>
 

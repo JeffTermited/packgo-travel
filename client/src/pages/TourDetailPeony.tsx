@@ -1631,6 +1631,7 @@ export default function TourDetailPeony() {
         id: editedTour.id,
         // 基本欄位
         title: editedTour.title,
+        poeticTitle: editedTour.poeticTitle,
         description: editedTour.description,
         heroSubtitle: editedTour.heroSubtitle,
         heroImage: editedTour.heroImage,
