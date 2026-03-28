@@ -35,24 +35,39 @@ const SUBJECT_OPTIONS = [
   { value: "其他問題", label: "其他問題" },
 ];
 
+const QUICK_SUBJECTS = [
+  { value: "行程預訂", emoji: "🗺️" },
+  { value: "客製旅遊", emoji: "✨" },
+  { value: "機票預購", emoji: "✈️" },
+  { value: "飯店預訂", emoji: "🏨" },
+  { value: "簽證服務", emoji: "📋" },
+  { value: "郵輪旅遊", emoji: "🚢" },
+];
+
 export default function ContactUs() {
   const { t } = useLocale();
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [quickSubject, setQuickSubject] = useState("");
 
   const {
     register,
     handleSubmit,
     control,
+    setValue,
+    watch,
     formState: { errors },
     reset,
   } = useForm<QuickInquiryForm>({
     resolver: zodResolver(quickInquirySchema),
   });
 
+  const watchedSubject = watch("subject");
+
   const createInquiry = trpc.inquiries.create.useMutation({
     onSuccess: () => {
       setIsSubmitted(true);
       reset();
+      setQuickSubject("");
     },
     onError: (error) => {
       alert(`送出失敗：${error.message}`);
@@ -61,6 +76,11 @@ export default function ContactUs() {
 
   const onSubmit = (data: QuickInquiryForm) => {
     createInquiry.mutate(data);
+  };
+
+  const handleQuickSubject = (value: string) => {
+    setQuickSubject(value);
+    setValue("subject", value, { shouldValidate: true });
   };
 
   return (
@@ -194,17 +214,42 @@ export default function ContactUs() {
                   )}
                 </div>
 
+                {/* Subject with Quick-pick chips */}
                 <div>
                   <Label className="text-sm font-medium text-gray-700 mb-1.5 block">
                     諮詢主題 <span className="text-red-500">*</span>
                   </Label>
+                  {/* Quick-pick chips */}
+                  <div className="flex flex-wrap gap-2 mb-2.5">
+                    {QUICK_SUBJECTS.map((s) => (
+                      <button
+                        key={s.value}
+                        type="button"
+                        onClick={() => handleQuickSubject(s.value)}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium transition-all ${
+                          (watchedSubject || quickSubject) === s.value
+                            ? "border-black bg-black text-white"
+                            : "border-gray-300 text-gray-600 hover:border-black hover:text-black bg-white"
+                        }`}
+                      >
+                        <span>{s.emoji}</span>
+                        <span>{s.value}</span>
+                      </button>
+                    ))}
+                  </div>
                   <Controller
                     name="subject"
                     control={control}
                     render={({ field }) => (
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select
+                        onValueChange={(v) => {
+                          field.onChange(v);
+                          setQuickSubject(v);
+                        }}
+                        value={field.value || quickSubject}
+                      >
                         <SelectTrigger className="h-11 rounded-lg">
-                          <SelectValue placeholder="請選擇諮詢主題" />
+                          <SelectValue placeholder="或從下拉選單選擇..." />
                         </SelectTrigger>
                         <SelectContent>
                           {SUBJECT_OPTIONS.map((opt) => (

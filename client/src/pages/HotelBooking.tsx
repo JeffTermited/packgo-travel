@@ -1,12 +1,21 @@
+import { useState } from "react";
 import { useLocale } from "@/contexts/LocaleContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { Hotel, Star, Wifi, Car, Utensils, Dumbbell, Shield, Headphones, ArrowRight, MapPin, CheckCircle, Building2, Palmtree, Waves, Sparkles, Flame } from "lucide-react";
+import { Hotel, Star, Wifi, Car, Utensils, Dumbbell, Shield, Headphones, ArrowRight, MapPin, CheckCircle, Building2, Palmtree, Waves, Flame } from "lucide-react";
+import AITravelAdvisorDialog from "@/components/AITravelAdvisorDialog";
 
 export default function HotelBooking() {
   const { t } = useLocale();
+  const [advisorOpen, setAdvisorOpen] = useState(false);
+  const [advisorInitialMsg, setAdvisorInitialMsg] = useState("");
+
+  const openAdvisor = (msg: string) => {
+    setAdvisorInitialMsg(msg);
+    setAdvisorOpen(true);
+  };
 
   const features = [
     { icon: Star, title: "精選優質飯店", desc: "嚴格篩選全球各地優質飯店，從精品民宿到五星豪華酒店，滿足各種需求。" },
@@ -125,7 +134,7 @@ export default function HotelBooking() {
         </div>
       </section>
 
-      {/* Hotel Types */}
+      {/* Hotel Types — clickable to open AI advisor */}
       <section className="py-20 bg-gray-50">
         <div className="container">
           <div className="text-center mb-14">
@@ -134,24 +143,30 @@ export default function HotelBooking() {
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {hotelTypes.map((type, i) => (
-              <div key={i} className="bg-white rounded-xl p-6 border border-gray-100 hover:border-black hover:shadow-md transition-all flex items-start gap-4">
+              <button
+                key={i}
+                type="button"
+                onClick={() => openAdvisor(`我對「${type.name}」有興趣，${type.desc}，請問有哪些推薦的選擇和大概的價位？`)}
+                className="bg-white rounded-xl p-6 border border-gray-100 hover:border-black hover:shadow-md transition-all flex items-start gap-4 text-left w-full"
+              >
                 <div className="w-10 h-10 flex-shrink-0 bg-gray-100 rounded-lg flex items-center justify-center">
                   <type.Icon className="h-5 w-5 text-black" />
                 </div>
-                <div>
+                <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
                     <h3 className="text-base font-bold text-black">{type.name}</h3>
                     <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{type.tag}</span>
                   </div>
-                  <p className="text-gray-600 text-sm leading-relaxed">{type.desc}</p>
+                  <p className="text-gray-600 text-sm leading-relaxed mb-3">{type.desc}</p>
+                  <span className="text-xs text-black font-medium underline underline-offset-2">點擊諮詢此類型 →</span>
                 </div>
-              </div>
+              </button>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Popular Destinations */}
+      {/* Popular Destinations — clickable to open AI advisor */}
       <section className="py-20 bg-white">
         <div className="container">
           <div className="text-center mb-14">
@@ -160,7 +175,12 @@ export default function HotelBooking() {
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {destinations.map((dest, i) => (
-              <div key={i} className="flex items-center gap-4 p-5 border border-gray-200 rounded-xl hover:border-black hover:shadow-sm transition-all group cursor-pointer">
+              <button
+                key={i}
+                type="button"
+                onClick={() => openAdvisor(`我想在${dest.country}${dest.city}找住宿，請問有哪些推薦的飯店？大概的價位範圍是多少？`)}
+                className="flex items-center gap-4 p-5 border border-gray-200 rounded-xl hover:border-black hover:shadow-sm transition-all group text-left w-full"
+              >
                 <div className="w-12 h-12 flex-shrink-0 bg-gray-100 rounded-lg flex items-center justify-center">
                   <MapPin className="h-6 w-6 text-black" />
                 </div>
@@ -175,13 +195,13 @@ export default function HotelBooking() {
                   <div className="font-bold text-black text-sm">{dest.hotels}</div>
                   <div className="text-xs text-gray-500">間飯店</div>
                 </div>
-              </div>
+              </button>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Amenities */}
+      {/* Amenities — clickable chips to open AI advisor */}
       <section className="py-20 bg-gray-50">
         <div className="container">
           <div className="text-center mb-14">
@@ -190,14 +210,19 @@ export default function HotelBooking() {
           </div>
           <div className="flex flex-wrap justify-center gap-4">
             {amenities.map((amenity, i) => (
-              <div key={i} className="flex items-center gap-2 bg-white border border-gray-200 rounded-full px-5 py-2.5 text-sm font-medium text-gray-700">
+              <button
+                key={i}
+                type="button"
+                onClick={() => openAdvisor(`我在找有「${amenity.label}」設施的飯店，請問有哪些推薦的選擇？`)}
+                className="flex items-center gap-2 bg-white border border-gray-200 rounded-full px-5 py-2.5 text-sm font-medium text-gray-700 hover:border-black hover:text-black transition-all"
+              >
                 <amenity.icon className="h-4 w-4" />
                 {amenity.label}
-              </div>
+              </button>
             ))}
           </div>
           <p className="text-center text-gray-500 text-sm mt-6">
-            還有更多篩選條件，歡迎直接聯絡我們說明您的需求
+            點擊設施標籤，AI 顧問將為您推薦符合需求的飯店
           </p>
         </div>
       </section>
@@ -223,6 +248,13 @@ export default function HotelBooking() {
           </div>
         </div>
       </section>
+
+      {/* AI Travel Advisor Dialog */}
+      <AITravelAdvisorDialog
+        open={advisorOpen}
+        onOpenChange={setAdvisorOpen}
+        initialMessage={advisorInitialMsg}
+      />
 
       <Footer />
     </div>

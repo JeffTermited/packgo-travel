@@ -19,6 +19,34 @@ import { useLocale } from "@/contexts/LocaleContext";
 
 type CustomTourForm = z.infer<typeof customTourSchema>;
 
+// Quick-pick destinations
+const QUICK_DESTINATIONS = [
+  { label: "🇯🇵 日本", value: "日本" },
+  { label: "🇰🇷 韓國", value: "韓國" },
+  { label: "🇹🇭 泰國", value: "泰國" },
+  { label: "🇸🇬 新加坡", value: "新加坡" },
+  { label: "🇪🇺 歐洲", value: "歐洲" },
+  { label: "🇺🇸 美國", value: "美國" },
+];
+
+// Quick-pick durations
+const QUICK_DURATIONS = [
+  { label: "3 天", value: 3 },
+  { label: "5 天", value: 5 },
+  { label: "7 天", value: 7 },
+  { label: "10 天", value: 10 },
+  { label: "14 天", value: 14 },
+];
+
+// Quick-pick group sizes
+const QUICK_PEOPLE = [
+  { label: "1 人", value: 1 },
+  { label: "2 人", value: 2 },
+  { label: "4 人", value: 4 },
+  { label: "6 人", value: 6 },
+  { label: "10+ 人", value: 10 },
+];
+
 export default function CustomTourRequest() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const { t } = useLocale();
@@ -27,11 +55,17 @@ export default function CustomTourRequest() {
     register,
     handleSubmit,
     control,
+    setValue,
+    watch,
     formState: { errors },
     reset,
   } = useForm<CustomTourForm>({
     resolver: zodResolver(customTourSchema),
   });
+
+  const watchedDestination = watch("destination");
+  const watchedDays = watch("numberOfDays");
+  const watchedPeople = watch("numberOfPeople");
 
   const createInquiry = trpc.inquiries.create.useMutation({
     onSuccess: () => {
@@ -158,41 +192,96 @@ export default function CustomTourRequest() {
                 {t("customTourRequest.travelSection")}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                {/* Destination with quick chips */}
                 <div>
                   <Label htmlFor="destination">{t("customTourRequest.destinationRequired")}</Label>
+                  {/* Quick destination chips */}
+                  <div className="flex flex-wrap gap-2 mt-2 mb-2">
+                    {QUICK_DESTINATIONS.map((d) => (
+                      <button
+                        key={d.value}
+                        type="button"
+                        onClick={() => setValue("destination", d.value, { shouldValidate: true })}
+                        className={`px-3 py-1 rounded-full border text-xs font-medium transition-all ${
+                          watchedDestination === d.value
+                            ? "border-black bg-black text-white"
+                            : "border-gray-300 text-gray-600 hover:border-black hover:text-black bg-white"
+                        }`}
+                      >
+                        {d.label}
+                      </button>
+                    ))}
+                  </div>
                   <Input
                     id="destination"
                     {...register("destination")}
                     placeholder={t("customTourRequest.destinationPlaceholder")}
-                    className="rounded-lg mt-2"
+                    className="rounded-lg"
                   />
                   {errors.destination && (
                     <p className="text-red-500 text-sm mt-1">{errors.destination.message}</p>
                   )}
                 </div>
 
+                {/* Number of days with quick chips */}
                 <div>
                   <Label htmlFor="numberOfDays">{t("customTourRequest.numberOfDays")}</Label>
+                  {/* Quick duration chips */}
+                  <div className="flex flex-wrap gap-2 mt-2 mb-2">
+                    {QUICK_DURATIONS.map((d) => (
+                      <button
+                        key={d.value}
+                        type="button"
+                        onClick={() => setValue("numberOfDays", d.value, { shouldValidate: true })}
+                        className={`px-3 py-1 rounded-full border text-xs font-medium transition-all ${
+                          watchedDays === d.value
+                            ? "border-black bg-black text-white"
+                            : "border-gray-300 text-gray-600 hover:border-black hover:text-black bg-white"
+                        }`}
+                      >
+                        {d.label}
+                      </button>
+                    ))}
+                  </div>
                   <Input
                     id="numberOfDays"
                     type="number"
                     {...register("numberOfDays", { valueAsNumber: true })}
                     placeholder={t("customTourRequest.numberOfDaysPlaceholder")}
-                    className="rounded-lg mt-2"
+                    className="rounded-lg"
                   />
                   {errors.numberOfDays && (
                     <p className="text-red-500 text-sm mt-1">{errors.numberOfDays.message}</p>
                   )}
                 </div>
 
+                {/* Number of people with quick chips */}
                 <div>
                   <Label htmlFor="numberOfPeople">{t("customTourRequest.numberOfPeople")}</Label>
+                  {/* Quick group size chips */}
+                  <div className="flex flex-wrap gap-2 mt-2 mb-2">
+                    {QUICK_PEOPLE.map((p) => (
+                      <button
+                        key={p.value}
+                        type="button"
+                        onClick={() => setValue("numberOfPeople", p.value, { shouldValidate: true })}
+                        className={`px-3 py-1 rounded-full border text-xs font-medium transition-all ${
+                          watchedPeople === p.value
+                            ? "border-black bg-black text-white"
+                            : "border-gray-300 text-gray-600 hover:border-black hover:text-black bg-white"
+                        }`}
+                      >
+                        {p.label}
+                      </button>
+                    ))}
+                  </div>
                   <Input
                     id="numberOfPeople"
                     type="number"
                     {...register("numberOfPeople", { valueAsNumber: true })}
                     placeholder={t("customTourRequest.numberOfPeoplePlaceholder")}
-                    className="rounded-lg mt-2"
+                    className="rounded-lg"
                   />
                   {errors.numberOfPeople && (
                     <p className="text-red-500 text-sm mt-1">{errors.numberOfPeople.message}</p>

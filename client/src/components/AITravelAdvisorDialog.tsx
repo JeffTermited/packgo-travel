@@ -3,7 +3,10 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/compone
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Send, Loader2, User, ThumbsUp, ThumbsDown, Sparkles, X, Minimize2 } from "lucide-react";
+import {
+  Send, Loader2, User, ThumbsUp, ThumbsDown, Sparkles, X, Minimize2,
+  MapPin, Globe, FileText, Plane, ChevronRight
+} from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { Streamdown } from "streamdown";
 import { useLocale } from "@/contexts/LocaleContext";
@@ -25,14 +28,71 @@ interface Message {
   triggeredSkills?: Array<{ skillId: number; skillName: string; confidence: number }>;
   usageLogIds?: number[];
   feedbackGiven?: "positive" | "negative" | null;
+  suggestedReplies?: string[];
 }
 
 interface AITravelAdvisorDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  initialMessage?: string;
 }
 
-export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAdvisorDialogProps) {
+// 開場引導建議按鈕
+const OPENING_SUGGESTIONS = [
+  { icon: MapPin, label: "我想規劃旅遊行程" },
+  { icon: Globe, label: "推薦熱門旅遊目的地" },
+  { icon: FileText, label: "查詢簽證相關資訊" },
+  { icon: Plane, label: "機票與飯店諮詢" },
+];
+
+// 根據 AI 回應內容推斷後續建議
+function inferSuggestedReplies(content: string): string[] {
+  const lower = content.toLowerCase();
+
+  // 目的地相關
+  if (lower.includes("日本") || lower.includes("japan")) {
+    return ["東京有哪些必去景點？", "大阪美食推薦", "日本幾月去最好？", "日本簽證怎麼辦？"];
+  }
+  if (lower.includes("歐洲") || lower.includes("europe")) {
+    return ["歐洲幾國遊行程推薦", "歐洲申根簽證說明", "歐洲旅遊預算大概多少？", "歐洲最佳旅遊季節"];
+  }
+  if (lower.includes("東南亞") || lower.includes("泰國") || lower.includes("thailand")) {
+    return ["泰國曼谷行程規劃", "東南亞幾天最適合？", "東南亞簽證需要嗎？", "東南亞親子旅遊推薦"];
+  }
+  if (lower.includes("美國") || lower.includes("美洲") || lower.includes("usa")) {
+    return ["美國東西岸行程比較", "美國簽證申請流程", "美國自由行還是跟團好？", "美國旅遊預算規劃"];
+  }
+
+  // 行程規劃相關
+  if (lower.includes("行程") || lower.includes("規劃") || lower.includes("itinerary")) {
+    return ["幾天的行程比較適合？", "推薦適合家庭的行程", "蜜月旅遊行程建議", "背包客行程規劃"];
+  }
+
+  // 簽證相關
+  if (lower.includes("簽證") || lower.includes("visa")) {
+    return ["簽證需要多久辦理？", "免簽國家有哪些？", "電子簽證怎麼申請？", "簽證被拒怎麼辦？"];
+  }
+
+  // 機票相關
+  if (lower.includes("機票") || lower.includes("flight") || lower.includes("航班")) {
+    return ["如何找到便宜機票？", "商務艙值得升等嗎？", "機票多早訂比較好？", "行李限重規定說明"];
+  }
+
+  // 飯店相關
+  if (lower.includes("飯店") || lower.includes("hotel") || lower.includes("住宿")) {
+    return ["飯店怎麼選比較好？", "市區還是郊區住宿？", "親子飯店推薦", "飯店早鳥優惠說明"];
+  }
+
+  // 預算相關
+  if (lower.includes("預算") || lower.includes("費用") || lower.includes("price") || lower.includes("cost")) {
+    return ["如何降低旅遊費用？", "旅遊保險需要買嗎？", "刷卡還是帶現金好？", "旅遊預算怎麼分配？"];
+  }
+
+  // 通用後續建議
+  return ["還有其他問題想了解", "幫我推薦適合的行程", "查詢出發日期與費用", "聯絡旅遊顧問諮詢"];
+}
+
+export default function AITravelAdvisorDialog({ open, onOpenChange, initialMessage }: AITravelAdvisorDialogProps) {
   const { t } = useLocale();
   const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
   const [messages, setMessages] = useState<Message[]>([
@@ -113,6 +173,18 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
               } else if (eventType === "done") {
                 updatePenguinExpression("happy");
                 setTimeout(() => updatePenguinExpression("default"), 3000);
+                // Add context-aware suggested replies to the last assistant message
+                setMessages((prev) => {
+                  const updated = [...prev];
+                  const last = updated[updated.length - 1];
+                  if (last?.role === "assistant" && last.content) {
+                    updated[updated.length - 1] = {
+                      ...last,
+                      suggestedReplies: inferSuggestedReplies(last.content),
+                    };
+                  }
+                  return updated;
+                });
               } else if (eventType === "error") {
                 throw new Error(data.message);
               }
@@ -159,7 +231,15 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
     if (open) {
       updatePenguinExpression("waving");
       setTimeout(() => updatePenguinExpression("default"), 2000);
+      // Auto-send initialMessage if provided
+      if (initialMessage) {
+        const greetingMsg = { role: "assistant" as const, content: t('aiAdvisor.greeting') };
+        const userMsg = { role: "user" as const, content: initialMessage };
+        setMessages([greetingMsg, userMsg]);
+        sendStreamMessage(initialMessage, [greetingMsg]);
+      }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   const handleSend = () => {
@@ -175,6 +255,16 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
 
     setMessages(updatedHistory);
     sendStreamMessage(userMessage, messages);
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    if (isStreaming) return;
+    const updatedHistory = [
+      ...messages,
+      { role: "user" as const, content: suggestion },
+    ];
+    setMessages(updatedHistory);
+    sendStreamMessage(suggestion, messages);
   };
 
   const handleFeedback = (messageIndex: number, feedback: "positive" | "negative") => {
@@ -207,6 +297,11 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
   };
 
   const currentPenguinImage = PENGUIN_EXPRESSIONS[penguinExpression];
+
+  // Show opening suggestions only when there's only the initial greeting
+  const showOpeningSuggestions = messages.length === 1 && !isStreaming;
+  // Show follow-up suggestions for the last assistant message when not streaming
+  const lastAssistantIndex = messages.reduce((last, msg, i) => msg.role === "assistant" ? i : last, -1);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -360,8 +455,50 @@ export default function AITravelAdvisorDialog({ open, onOpenChange }: AITravelAd
                   )}
                 </div>
               )}
+
+              {/* Context-aware follow-up suggestions (only for last assistant message, not streaming) */}
+              {message.role === "assistant" && index === lastAssistantIndex && !isStreaming && message.suggestedReplies && message.suggestedReplies.length > 0 && (
+                <div className="ml-12 mt-3">
+                  <div className="flex flex-wrap gap-2">
+                    {message.suggestedReplies.map((reply, i) => (
+                      <button
+                        key={i}
+                        onClick={() => handleSuggestionClick(reply)}
+                        className="text-xs px-3 py-1.5 border border-gray-300 rounded-full text-gray-600 hover:border-black hover:text-black hover:bg-gray-50 transition-all flex items-center gap-1 group"
+                      >
+                        {reply}
+                        <ChevronRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           ))}
+
+          {/* Opening Suggestions - shown only on initial greeting */}
+          {showOpeningSuggestions && (
+            <div className="mt-2">
+              <p className="text-xs text-gray-400 mb-3 text-center">— 選擇您想了解的主題 —</p>
+              <div className="grid grid-cols-2 gap-2">
+                {OPENING_SUGGESTIONS.map((suggestion, i) => {
+                  const Icon = suggestion.icon;
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => handleSuggestionClick(suggestion.label)}
+                      className="flex items-center gap-2.5 px-3 py-3 border border-gray-200 rounded-lg text-left text-sm text-gray-700 hover:border-black hover:bg-gray-50 hover:text-black transition-all group"
+                    >
+                      <div className="flex-shrink-0 w-7 h-7 bg-gray-100 rounded-md flex items-center justify-center group-hover:bg-black group-hover:text-white transition-all">
+                        <Icon className="h-3.5 w-3.5" />
+                      </div>
+                      <span className="leading-tight font-medium">{suggestion.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
           
           {/* Loading indicator - shown while waiting for first chunk */}
           {isStreaming && messages[messages.length - 1]?.content === "" && (

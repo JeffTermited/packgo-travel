@@ -1,12 +1,21 @@
+import { useState } from "react";
 import { useLocale } from "@/contexts/LocaleContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { Plane, Clock, Shield, Globe, CreditCard, Headphones, ArrowRight, Briefcase, Crown, Star } from "lucide-react";
+import AITravelAdvisorDialog from "@/components/AITravelAdvisorDialog";
 
 export default function FlightBooking() {
   const { t } = useLocale();
+  const [advisorOpen, setAdvisorOpen] = useState(false);
+  const [advisorInitialMsg, setAdvisorInitialMsg] = useState("");
+
+  const openAdvisor = (msg: string) => {
+    setAdvisorInitialMsg(msg);
+    setAdvisorOpen(true);
+  };
 
   const features = [
     { icon: Globe, title: "全球航線覆蓋", desc: "與全球 500+ 航空公司合作，涵蓋亞洲、歐洲、美洲等主要航線。" },
@@ -113,7 +122,7 @@ export default function FlightBooking() {
         </div>
       </section>
 
-      {/* Cabin Classes */}
+      {/* Cabin Classes — clickable to open AI advisor */}
       <section className="py-20 bg-gray-50">
         <div className="container">
           <div className="text-center mb-14">
@@ -122,20 +131,27 @@ export default function FlightBooking() {
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {cabinClasses.map((cabin, i) => (
-              <div key={i} className="bg-white rounded-xl p-6 border border-gray-100 hover:border-black hover:shadow-md transition-all">
+              <div key={i} className="bg-white rounded-xl p-6 border border-gray-100 hover:border-black hover:shadow-md transition-all flex flex-col">
                 <div className="w-12 h-12 mx-auto mb-4 bg-gray-100 rounded-lg flex items-center justify-center">
                   <cabin.Icon className="h-6 w-6 text-black" />
                 </div>
                 <h3 className="text-lg font-bold text-black mb-1">{cabin.name}</h3>
                 <p className="text-gray-500 text-xs mb-3">{cabin.nameEn}</p>
-                <p className="text-gray-600 text-sm leading-relaxed">{cabin.desc}</p>
+                <p className="text-gray-600 text-sm leading-relaxed mb-4">{cabin.desc}</p>
+                <button
+                  type="button"
+                  onClick={() => openAdvisor(`我想詢問${cabin.name}（${cabin.nameEn}）的機票，請問有哪些航線和票價可以選擇？`)}
+                  className="mt-auto w-full py-2 rounded-lg border border-black text-black text-sm font-medium hover:bg-black hover:text-white transition-all"
+                >
+                  諮詢此艙等
+                </button>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Popular Routes */}
+      {/* Popular Routes — clickable to open AI advisor */}
       <section className="py-20 bg-white">
         <div className="container">
           <div className="text-center mb-14">
@@ -144,7 +160,12 @@ export default function FlightBooking() {
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {popularRoutes.map((route, i) => (
-              <div key={i} className="flex items-center justify-between p-5 border border-gray-200 rounded-xl hover:border-black hover:shadow-sm transition-all group">
+              <button
+                key={i}
+                type="button"
+                onClick={() => openAdvisor(`我想查詢從 ${route.from} 到 ${route.to} 的機票，飛行時間約 ${route.duration}，請問有哪些航班和票價？`)}
+                className="flex items-center justify-between p-5 border border-gray-200 rounded-xl hover:border-black hover:shadow-sm transition-all group text-left w-full"
+              >
                 <div className="flex items-center gap-4">
                   <Plane className="h-5 w-5 text-gray-400 group-hover:text-black transition-colors" />
                   <div>
@@ -166,7 +187,7 @@ export default function FlightBooking() {
                 }`}>
                   {route.tag}
                 </span>
-              </div>
+              </button>
             ))}
           </div>
         </div>
@@ -219,6 +240,13 @@ export default function FlightBooking() {
           </div>
         </div>
       </section>
+
+      {/* AI Travel Advisor Dialog */}
+      <AITravelAdvisorDialog
+        open={advisorOpen}
+        onOpenChange={setAdvisorOpen}
+        initialMessage={advisorInitialMsg}
+      />
 
       <Footer />
     </div>
