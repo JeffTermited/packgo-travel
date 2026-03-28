@@ -1675,187 +1675,6 @@ export const appRouter = router({
         };
       }),
 
-    // ─── LLM 成本分析 ──────────────────────────────────────────────────
-    getLlmStats: adminProcedure
-      .input(z.object({
-        days: z.number().min(1).max(90).default(30),
-      }))
-      .query(async ({ input }) => {
-        const { llmUsageLogs } = await import('../drizzle/schema');
-        const { gte, sql, desc } = await import('drizzle-orm');
-        const drizzleDb = await db.getDb();
-        if (!drizzleDb) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'DB not available' });
-
-        const since = new Date();
-        since.setDate(since.getDate() - input.days);
-
-        const [totals] = await drizzleDb
-          .select({
-            totalCalls: sql<number>`COUNT(*)`,
-            totalTokens: sql<number>`SUM(${llmUsageLogs.totalTokens})`,
-            totalCostUsd: sql<string>`SUM(CAST(${llmUsageLogs.estimatedCostUsd} AS DECIMAL(20,6)))`,
-            cachedCalls: sql<number>`SUM(CASE WHEN ${llmUsageLogs.wasFromCache} = 1 THEN 1 ELSE 0 END)`,
-            avgProcessingMs: sql<number>`AVG(${llmUsageLogs.processingTimeMs})`,
-          })
-          .from(llmUsageLogs)
-          .where(gte(llmUsageLogs.createdAt, since));
-
-        const dailyCosts = await drizzleDb
-          .select({
-            date: sql<string>`DATE_FORMAT(${llmUsageLogs.createdAt}, '%Y-%m-%d')`,
-            calls: sql<number>`COUNT(*)`,
-            tokens: sql<number>`SUM(${llmUsageLogs.totalTokens})`,
-            costUsd: sql<string>`SUM(CAST(${llmUsageLogs.estimatedCostUsd} AS DECIMAL(20,6)))`,
-          })
-          .from(llmUsageLogs)
-          .where(gte(llmUsageLogs.createdAt, since))
-          .groupBy(sql`DATE_FORMAT(${llmUsageLogs.createdAt}, '%Y-%m-%d')`)
-          .orderBy(sql`DATE_FORMAT(${llmUsageLogs.createdAt}, '%Y-%m-%d')`);
-
-        const agentCosts = await drizzleDb
-          .select({
-            agentName: llmUsageLogs.agentName,
-            calls: sql<number>`COUNT(*)`,
-            tokens: sql<number>`SUM(${llmUsageLogs.totalTokens})`,
-            costUsd: sql<string>`SUM(CAST(${llmUsageLogs.estimatedCostUsd} AS DECIMAL(20,6)))`,
-          })
-          .from(llmUsageLogs)
-          .where(gte(llmUsageLogs.createdAt, since))
-          .groupBy(llmUsageLogs.agentName)
-          .orderBy(desc(sql`SUM(CAST(${llmUsageLogs.estimatedCostUsd} AS DECIMAL(20,6)))`));
-
-        const taskTypeCosts = await drizzleDb
-          .select({
-            taskType: llmUsageLogs.taskType,
-            calls: sql<number>`COUNT(*)`,
-            tokens: sql<number>`SUM(${llmUsageLogs.totalTokens})`,
-            costUsd: sql<string>`SUM(CAST(${llmUsageLogs.estimatedCostUsd} AS DECIMAL(20,6)))`,
-          })
-          .from(llmUsageLogs)
-          .where(gte(llmUsageLogs.createdAt, since))
-          .groupBy(llmUsageLogs.taskType)
-          .orderBy(desc(sql`SUM(CAST(${llmUsageLogs.estimatedCostUsd} AS DECIMAL(20,6)))`));
-
-        const recentLogs = await drizzleDb
-          .select()
-          .from(llmUsageLogs)
-          .orderBy(desc(llmUsageLogs.createdAt))
-          .limit(50);
-
-        return {
-          totals: {
-            totalCalls: Number(totals?.totalCalls ?? 0),
-            totalTokens: Number(totals?.totalTokens ?? 0),
-            totalCostUsd: parseFloat(totals?.totalCostUsd ?? '0').toFixed(4),
-            cachedCalls: Number(totals?.cachedCalls ?? 0),
-            cacheHitRate: totals?.totalCalls
-              ? ((Number(totals.cachedCalls) / Number(totals.totalCalls)) * 100).toFixed(1)
-              : '0.0',
-            avgProcessingMs: Math.round(Number(totals?.avgProcessingMs ?? 0)),
-          },
-          dailyCosts: dailyCosts.map((d: any) => ({
-            date: d.date,
-            calls: Number(d.calls),
-            tokens: Number(d.tokens),
-            costUsd: parseFloat(d.costUsd ?? '0').toFixed(4),
-          })),
-          agentCosts: agentCosts.map((a: any) => ({
-            agentName: a.agentName,
-            calls: Number(a.calls),
-            tokens: Number(a.tokens),
-            costUsd: parseFloat(a.costUsd ?? '0').toFixed(4),
-          })),
-          taskTypeCosts: taskTypeCosts.map((t: any) => ({
-            taskType: t.taskType ?? 'unknown',
-            calls: Number(t.calls),
-            tokens: Number(t.tokens),
-            costUsd: parseFloat(t.costUsd ?? '0').toFixed(4),
-          })),
-          recentLogs: recentLogs.map((l: any) => ({
-            id: l.id,
-            agentName: l.agentName,
-            taskType: l.taskType,
-            model: l.model,
-            inputTokens: l.inputTokens,
-            outputTokens: l.outputTokens,
-            totalTokens: l.totalTokens,
-            estimatedCostUsd: l.estimatedCostUsd,
-            wasFromCache: l.wasFromCache,
-            processingTimeMs: l.processingTimeMs,
-            createdAt: l.createdAt,
-          })),
-        };
-      }),
-  }),
-
-  // Image Library router
-  imageLibrary: router({
-    // List images from library
-    list: protectedProcedure
-      .input(z.object({
-        tourId: z.number().optional(),
-        search: z.string().optional(),
-        limit: z.number().optional().default(50),
-        offset: z.number().optional().default(0),
-      }).optional())
-      .query(async ({ ctx, input }) => {
-        return await db.getImageLibrary({
-          userId: ctx.user.id,
-          tourId: input?.tourId,
-          search: input?.search,
-          limit: input?.limit,
-          offset: input?.offset,
-        });
-      }),
-
-    // Add image to library
-    add: protectedProcedure
-      .input(z.object({
-        url: z.string(),
-        filename: z.string().optional(),
-        mimeType: z.string().optional(),
-        fileSize: z.number().optional(),
-        width: z.number().optional(),
-        height: z.number().optional(),
-        tags: z.array(z.string()).optional(),
-        tourId: z.number().optional(),
-      }))
-      .mutation(async ({ ctx, input }) => {
-        const image = await db.addImageToLibrary({
-          url: input.url,
-          filename: input.filename,
-          mimeType: input.mimeType,
-          fileSize: input.fileSize,
-          width: input.width,
-          height: input.height,
-          tags: input.tags ? JSON.stringify(input.tags) : null,
-          tourId: input.tourId,
-          uploadedBy: ctx.user.id,
-        });
-        if (!image) {
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Failed to add image to library",
-          });
-        }
-        return image;
-      }),
-
-    // Delete image from library (admin only)
-    delete: adminProcedure
-      .input(z.object({ id: z.number() }))
-      .mutation(async ({ ctx, input }) => {
-        const success = await db.deleteImageFromLibrary(input.id, ctx.user.id);
-        if (!success) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Image not found or you don't have permission to delete it",
-          });
-        }
-        return { success: true };
-      }),
-
-    // ─── LLM 成本分析 ──────────────────────────────────────────────────
     getLlmStats: adminProcedure
       .input(z.object({
         days: z.number().min(1).max(90).default(30),
@@ -1884,15 +1703,15 @@ export const appRouter = router({
         // 每日費用趨勢
         const dailyCosts = await drizzleDb
           .select({
-            date: sql<string>`DATE_FORMAT(${llmUsageLogs.createdAt}, '%Y-%m-%d')`,
+            date: sql<string>`DATE_FORMAT(createdAt, '%Y-%m-%d')`,
             calls: sql<number>`COUNT(*)`,
             tokens: sql<number>`SUM(${llmUsageLogs.totalTokens})`,
             costUsd: sql<string>`SUM(CAST(${llmUsageLogs.estimatedCostUsd} AS DECIMAL(20,6)))`,
           })
           .from(llmUsageLogs)
           .where(gte(llmUsageLogs.createdAt, since))
-          .groupBy(sql`DATE_FORMAT(${llmUsageLogs.createdAt}, '%Y-%m-%d')`)
-          .orderBy(sql`DATE_FORMAT(${llmUsageLogs.createdAt}, '%Y-%m-%d')`);
+          .groupBy(sql`DATE_FORMAT(createdAt, '%Y-%m-%d')`)
+          .orderBy(sql`DATE_FORMAT(createdAt, '%Y-%m-%d')`);
 
         // 各 Agent 費用佔比
         const agentCosts = await drizzleDb
@@ -2047,6 +1866,75 @@ export const appRouter = router({
           })),
         };
       }),
+  }),
+
+  // Image Library router
+  imageLibrary: router({
+    // List images from library
+    list: protectedProcedure
+      .input(z.object({
+        tourId: z.number().optional(),
+        search: z.string().optional(),
+        limit: z.number().optional().default(50),
+        offset: z.number().optional().default(0),
+      }).optional())
+      .query(async ({ ctx, input }) => {
+        return await db.getImageLibrary({
+          userId: ctx.user.id,
+          tourId: input?.tourId,
+          search: input?.search,
+          limit: input?.limit,
+          offset: input?.offset,
+        });
+      }),
+
+    // Add image to library
+    add: protectedProcedure
+      .input(z.object({
+        url: z.string(),
+        filename: z.string().optional(),
+        mimeType: z.string().optional(),
+        fileSize: z.number().optional(),
+        width: z.number().optional(),
+        height: z.number().optional(),
+        tags: z.array(z.string()).optional(),
+        tourId: z.number().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const image = await db.addImageToLibrary({
+          url: input.url,
+          filename: input.filename,
+          mimeType: input.mimeType,
+          fileSize: input.fileSize,
+          width: input.width,
+          height: input.height,
+          tags: input.tags ? JSON.stringify(input.tags) : null,
+          tourId: input.tourId,
+          uploadedBy: ctx.user.id,
+        });
+        if (!image) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to add image to library",
+          });
+        }
+        return image;
+      }),
+
+    // Delete image from library (admin only)
+    delete: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const success = await db.deleteImageFromLibrary(input.id, ctx.user.id);
+        if (!success) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Image not found or you don't have permission to delete it",
+          });
+        }
+        return { success: true };
+      }),
+
   }),
   // Homepage content managementt
   homepage: router({
