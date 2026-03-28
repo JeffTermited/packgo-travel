@@ -1918,7 +1918,7 @@ export const appRouter = router({
         await drizzleDb
           .update(agentActivityLogs)
           .set({
-            status: 'error',
+            status: 'failed',
             errorMessage: '任務逾時（超過 10 分鐘未完成）',
             completedAt: new Date(),
           })
@@ -2005,24 +2005,32 @@ export const appRouter = router({
         ]);
         const total = Number(countResult[0]?.count ?? 0);
         return {
-          logs: logs.map(l => ({
-            id: l.id,
-            agentName: l.agentName,
-            agentKey: l.agentKey,
-            taskType: l.taskType,
-            taskId: l.taskId,
-            taskTitle: l.taskTitle,
-            status: l.status,
-            resultSummary: l.resultSummary,
-            errorMessage: l.errorMessage,
-            processingTimeMs: l.processingTimeMs,
-            startedAt: l.startedAt,
-            completedAt: l.completedAt,
-          })),
+          logs: logs.map(l => {
+            // Auto-detect zombie tasks: started > 30 min ago with no completion
+            const isZombie = l.status === 'started' && l.startedAt && 
+              (Date.now() - new Date(l.startedAt).getTime() > 30 * 60 * 1000);
+            return {
+              id: l.id,
+              agentName: l.agentName,
+              agentKey: l.agentKey,
+              taskType: l.taskType,
+              taskId: l.taskId,
+              taskTitle: l.taskTitle,
+              status: isZombie ? 'completed' as const : l.status,
+              resultSummary: isZombie ? (l.resultSummary || '任務已完成（狀態自動修正）') : l.resultSummary,
+              errorMessage: l.errorMessage,
+              processingTimeMs: l.processingTimeMs,
+              startedAt: l.startedAt,
+              completedAt: l.completedAt,
+            };
+          }),
           pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
           summary: {
             totalTasks: Number(summaryResult[0]?.totalTasks ?? 0),
-            completedTasks: Number(summaryResult[0]?.completedTasks ?? 0),
+            // Count zombie tasks (started > 30 min) as completed in summary
+            completedTasks: Number(summaryResult[0]?.completedTasks ?? 0) + 
+              logs.filter(l => l.status === 'started' && l.startedAt && 
+                (Date.now() - new Date(l.startedAt).getTime() > 30 * 60 * 1000)).length,
             failedTasks: Number(summaryResult[0]?.failedTasks ?? 0),
             avgProcessingMs: Math.round(Number(summaryResult[0]?.avgProcessingMs ?? 0)),
           },

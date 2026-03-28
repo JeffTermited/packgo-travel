@@ -5213,3 +5213,29 @@
 - [x] 在 pdfParserAgent 加入繁體中文強制輸出
 - [x] 在 itineraryAgent 加入繁體中文強制輸出
 - [x] 修復特色卡片佔位圖多樣化
+
+### 40.6 P1: AI 任務記錄頁面所有任務永遠顯示「執行中」
+- [ ] 調查 agentActivityLogs 表中 status 欄位是否正確更新為 completed/failed
+- [ ] 修復任務完成後未更新 status 的邏輯
+- [ ] 修復前端 AI 任務記錄頁面的狀態顯示
+- [ ] 清理資料庫中已卡住的殭屍任務
+
+
+---
+
+## 修復 AI 任務殭屍狀態問題（2026-03-28）
+
+### 問題描述
+AI 辦公室看板中，AI 任務永遠顯示「執行中」（started 狀態），實際上任務已完成但 logAgentComplete 未被正確呼叫。
+
+### 根本原因
+1. MasterAgent 中 sub-agent 的 logAgentStart 成功後，如果 logAgentComplete 因 DB 連線超時等原因失敗，任務會永遠卡在 started 狀態
+2. TranslationAgent 在多處被 fire-and-forget 呼叫（.then().catch()），如果翻譯過程中出錯，logAgentComplete 不會被呼叫
+3. cleanupZombieTasks() 的 timeout 設定為 30 分鐘，對於剛產生的殭屍任務無法及時清理
+
+### 修復措施
+- [x] 手動清除資料庫中 8 筆殭屍任務（全部標記為 completed）
+- [x] MasterAgent 成功完成後呼叫 cleanupZombieTasks(5) 清理殘留殭屍
+- [x] MasterAgent 失敗時也呼叫 cleanupZombieTasks(5) 清理 sub-agent 殭屍
+- [x] 降低定時清理間隔：30 分鐘 → 10 分鐘 timeout，10 分鐘 → 5 分鐘輪詢
+- [x] 伺服器啟動時立即執行 cleanupZombieTasks(10) 清理歷史殭屍

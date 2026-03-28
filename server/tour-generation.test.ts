@@ -84,9 +84,9 @@ describe("Tour Generation System", () => {
     // Check worker name
     expect(tourGenerationWorker.name).toBe("tour-generation");
     
-    // Check concurrency (should be 2)
+    // Check concurrency (should be 1 - heavy AI tasks run sequentially)
     const opts = tourGenerationWorker.opts;
-    expect(opts.concurrency).toBe(2);
+    expect(opts.concurrency).toBe(1);
     
     // Check rate limiter (should be 10 jobs per minute)
     expect(opts.limiter).toBeDefined();

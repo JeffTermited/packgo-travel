@@ -41,7 +41,7 @@ import generationCache from "../cache/generation-cache";
 import { generateSmartTags, mergeWithExistingTags } from "../utils/tagGenerator";
 import { TourType } from "./itineraryUnifiedAgent";
 import { applyLearnedSkills } from "./learningAgent";
-import { logAgentStart, logAgentComplete } from "../agentActivityService";
+import { logAgentStart, logAgentComplete, cleanupZombieTasks } from "../agentActivityService";
 
 export interface MasterAgentResult {
   success: boolean;
@@ -372,17 +372,20 @@ export class MasterAgent {
       if (taskId) progressTracker.completePhase(taskId, 'content_analyzer');
       const analyzedContent = analysisResult.data;
       // 記錄 ContentAnalyzerAgent 詳細工作
-      logAgentStart({
-        agentName: 'ContentAnalyzerAgent',
-        agentKey: 'analyzer',
-        taskType: 'tour_generation',
-        taskId: taskId,
-        taskTitle: `分析行程內容：${rawData.basicInfo?.title || rawData.location?.destinationCity || '未知目的地'}`,
-        userId,
-      }).then(id => { if (id) logAgentComplete(id, {
-        status: 'completed',
-        resultSummary: `✅ 分析完成「${analyzedContent.poeticTitle || rawData.basicInfo?.title || ''}」→ 目的地：${rawData.location?.destinationCity || ''}${rawData.location?.destinationCountry ? ` · ${rawData.location.destinationCountry}` : ''}，亮點 ${analyzedContent.highlights?.length || 0} 項，原創性分數 ${analyzedContent.originalityScore || 'N/A'}`,
-      }); }).catch(() => {});
+      try {
+        const analyzerActivityId = await logAgentStart({
+          agentName: 'ContentAnalyzerAgent',
+          agentKey: 'analyzer',
+          taskType: 'tour_generation',
+          taskId: taskId,
+          taskTitle: `分析行程內容：${rawData.basicInfo?.title || rawData.location?.destinationCity || '未知目的地'}`,
+          userId,
+        });
+        if (analyzerActivityId) await logAgentComplete(analyzerActivityId, {
+          status: 'completed',
+          resultSummary: `✅ 分析完成「${analyzedContent.poeticTitle || rawData.basicInfo?.title || ''}」→ 目的地：${rawData.location?.destinationCity || ''}${rawData.location?.destinationCountry ? ` · ${rawData.location.destinationCountry}` : ''}，亮點 ${analyzedContent.highlights?.length || 0} 項，原創性分數 ${analyzedContent.originalityScore || 'N/A'}`,
+        });
+      } catch (logErr) { console.warn('[MasterAgent] Failed to log ContentAnalyzerAgent activity:', logErr); }
       
       // 漸進式結果：更新標題和目的地
       if (taskId) {
@@ -448,17 +451,20 @@ export class MasterAgent {
       if (taskId) progressTracker.completePhase(taskId, 'color_theme');
       colorTheme = colorThemeResult.data;
       // 記錄 ColorThemeAgent 詳細工作
-      logAgentStart({
-        agentName: 'ColorThemeAgent',
-        agentKey: 'colordesk',
-        taskType: 'tour_generation',
-        taskId: taskId,
-        taskTitle: `生成配色方案：${destination || '未知目的地'}`,
-        userId,
-      }).then(id => { if (id) logAgentComplete(id, {
-        status: 'completed',
-        resultSummary: `🎨 ${cachedPalette ? '（快取命中）' : ''}為「${destination}」生成配色方案，主色 ${colorTheme?.primary || 'N/A'}，輔色 ${colorTheme?.secondary || 'N/A'}`,
-      }); }).catch(() => {});
+      try {
+        const colorActivityId = await logAgentStart({
+          agentName: 'ColorThemeAgent',
+          agentKey: 'colordesk',
+          taskType: 'tour_generation',
+          taskId: taskId,
+          taskTitle: `生成配色方案：${destination || '未知目的地'}`,
+          userId,
+        });
+        if (colorActivityId) await logAgentComplete(colorActivityId, {
+          status: 'completed',
+          resultSummary: `🎨 ${cachedPalette ? '（快取命中）' : ''}為「${destination}」生成配色方案，主色 ${colorTheme?.primary || 'N/A'}，輔色 ${colorTheme?.secondary || 'N/A'}`,
+        });
+      } catch (logErr) { console.warn('[MasterAgent] Failed to log ColorThemeAgent activity:', logErr); }
       
       // 漸進式結果：更新配色方案
       if (taskId) {
@@ -533,17 +539,20 @@ export class MasterAgent {
           itineraryData = JSON.stringify(itinerariesWithImages);
           this.monitor.completeAgent('ItineraryUnifiedAgent', unifiedResult);
           // 記錄 ItineraryUnifiedAgent 詳細工作
-          logAgentStart({
-            agentName: 'ItineraryUnifiedAgent',
-            agentKey: 'planner',
-            taskType: 'tour_generation',
-            taskId: taskId,
-            taskTitle: `生成行程表：${rawData.basicInfo?.title || rawData.location?.destinationCity || '未知目的地'}`,
-            userId,
-          }).then(id => { if (id) logAgentComplete(id, {
-            status: 'completed',
-            resultSummary: `🗓️ 生成 ${polishedItineraries.length} 天行程（${tourType}），方法：${extractionMethod}，忠實度分數 ${fidelityCheck.overallScore}，耗時 ${(totalElapsedMs / 1000).toFixed(1)} 秒${fidelityCheck.issues.length > 0 ? `，警告：${fidelityCheck.issues.slice(0, 2).join('; ')}` : ''}`,
-          }); }).catch(() => {});
+          try {
+            const itineraryActivityId = await logAgentStart({
+              agentName: 'ItineraryUnifiedAgent',
+              agentKey: 'planner',
+              taskType: 'tour_generation',
+              taskId: taskId,
+              taskTitle: `生成行程表：${rawData.basicInfo?.title || rawData.location?.destinationCity || '未知目的地'}`,
+              userId,
+            });
+            if (itineraryActivityId) await logAgentComplete(itineraryActivityId, {
+              status: 'completed',
+              resultSummary: `🗓️ 生成 ${polishedItineraries.length} 天行程（${tourType}），方法：${extractionMethod}，忠實度分數 ${fidelityCheck.overallScore}，耗時 ${(totalElapsedMs / 1000).toFixed(1)} 秒${fidelityCheck.issues.length > 0 ? `，警告：${fidelityCheck.issues.slice(0, 2).join('; ')}` : ''}`,
+            });
+          } catch (logErr) { console.warn('[MasterAgent] Failed to log ItineraryUnifiedAgent activity:', logErr); }
         } else {
           console.warn("[MasterAgent] ⚠ ItineraryUnifiedAgent returned no data");
           itineraryData = JSON.stringify([]);
@@ -638,17 +647,20 @@ export class MasterAgent {
           console.log(`[MasterAgent] mealData type: ${typeof mealData}, isArray: ${Array.isArray(mealData)}, length: ${Array.isArray(mealData) ? mealData.length : 'N/A'}`);
           console.log(`[MasterAgent] Token usage - Input: ${result.usage?.inputTokens}, Output: ${result.usage?.outputTokens}`);
           // 記錄 DetailsSkill 詳細工作
-          logAgentStart({
-            agentName: 'DetailsSkill',
-            agentKey: 'writer',
-            taskType: 'tour_generation',
-            taskId: taskId,
-            taskTitle: `生成行程詳情：${rawData.basicInfo?.title || rawData.location?.destinationCity || '未知目的地'}`,
-            userId,
-          }).then(id => { if (id) logAgentComplete(id, {
-            status: 'completed',
-            resultSummary: `📝 ${cachedDetails ? '（快取命中）' : ''}生成費用說明、${Array.isArray(hotelData) ? hotelData.length : 0} 間飯店資訊、${Array.isArray(mealData) ? mealData.length : 0} 項餐飲資訊、注意事項，耗用 ${(result.usage?.inputTokens || 0) + (result.usage?.outputTokens || 0)} tokens`,
-          }); }).catch(() => {});
+          try {
+            const detailsActivityId = await logAgentStart({
+              agentName: 'DetailsSkill',
+              agentKey: 'writer',
+              taskType: 'tour_generation',
+              taskId: taskId,
+              taskTitle: `生成行程詳情：${rawData.basicInfo?.title || rawData.location?.destinationCity || '未知目的地'}`,
+              userId,
+            });
+            if (detailsActivityId) await logAgentComplete(detailsActivityId, {
+              status: 'completed',
+              resultSummary: `📝 ${cachedDetails ? '（快取命中）' : ''}生成費用說明、${Array.isArray(hotelData) ? hotelData.length : 0} 間飯店資訊、${Array.isArray(mealData) ? mealData.length : 0} 項餐飲資訊、注意事項，耗用 ${(result.usage?.inputTokens || 0) + (result.usage?.outputTokens || 0)} tokens`,
+            });
+          } catch (logErr) { console.warn('[MasterAgent] Failed to log DetailsSkill activity:', logErr); }
           
           // P3: Cache the DetailsSkill result for future use
           if (!cachedDetails) {
@@ -691,17 +703,20 @@ export class MasterAgent {
           if (taskId) progressTracker.completePhase(taskId, 'flight_agent');
           console.log(`[MasterAgent] ✓ TransportationAgent completed`);
           // 記錄 TransportationAgent 詳細工作
-          logAgentStart({
-            agentName: 'TransportationAgent',
-            agentKey: 'skydesk',
-            taskType: 'tour_generation',
-            taskId: taskId,
-            taskTitle: `分析交通方式：${rawData.basicInfo?.title || rawData.location?.destinationCity || '未知目的地'}`,
-            userId,
-          }).then(id => { if (id) logAgentComplete(id, {
-            status: 'completed',
-            resultSummary: `✈️ 交通類型：${transportationData?.typeName || transportationData?.type || 'N/A'}${transportationData?.airline ? `，航空公司：${transportationData.airline}` : ''}${transportationData?.flightNumber ? `，航班：${transportationData.flightNumber}` : ''}`,
-          }); }).catch(() => {});
+          try {
+            const transportActivityId = await logAgentStart({
+              agentName: 'TransportationAgent',
+              agentKey: 'skydesk',
+              taskType: 'tour_generation',
+              taskId: taskId,
+              taskTitle: `分析交通方式：${rawData.basicInfo?.title || rawData.location?.destinationCity || '未知目的地'}`,
+              userId,
+            });
+            if (transportActivityId) await logAgentComplete(transportActivityId, {
+              status: 'completed',
+              resultSummary: `✈️ 交通類型：${transportationData?.typeName || transportationData?.type || 'N/A'}${transportationData?.airline ? `，航空公司：${transportationData.airline}` : ''}${transportationData?.flightNumber ? `，航班：${transportationData.flightNumber}` : ''}`,
+            });
+          } catch (logErr) { console.warn('[MasterAgent] Failed to log TransportationAgent activity:', logErr); }
         } else {
           console.warn(`[MasterAgent] ⚠ TransportationAgent returned error, using fallback`);
           transportationData = this.fallbackManager.handleFailure('TransportationAgent', new Error(result?.error || 'TransportationAgent failed'));
@@ -900,6 +915,9 @@ export class MasterAgent {
         });
       }
 
+      // 清理可能殘留的殭屍任務（5 分鐘未完成的 started 任務）
+      cleanupZombieTasks(5).catch(() => {});
+
       return {
         success: true,
         data: finalData,
@@ -925,6 +943,9 @@ export class MasterAgent {
           errorMessage: error instanceof Error ? error.message.slice(0, 500) : String(error).slice(0, 500),
         });
       }
+
+      // 失敗時也清理殭屍任務（sub-agent 可能已 logAgentStart 但未 logAgentComplete）
+      cleanupZombieTasks(5).catch(() => {});
       
       return {
         success: false,
