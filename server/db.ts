@@ -1,5 +1,7 @@
 import { eq, and, gte, lte, desc, inArray, like, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const mysql2 = require("mysql2");
 import { 
   InsertUser, users, 
   tours, InsertTour, Tour,
@@ -24,7 +26,16 @@ let _db: ReturnType<typeof drizzle> | null = null;
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
-      _db = drizzle(process.env.DATABASE_URL);
+      // Use mysql2 pool with explicit timeouts to prevent hanging queries
+      const pool = mysql2.createPool({
+        uri: process.env.DATABASE_URL,
+        connectionLimit: 10,
+        connectTimeout: 10000,       // 10s to establish connection
+        waitForConnections: true,
+        queueLimit: 20,
+      });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      _db = drizzle(pool.promise() as any);
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;
