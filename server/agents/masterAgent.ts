@@ -371,6 +371,18 @@ export class MasterAgent {
       this.monitor.completeAgent('ContentAnalyzerAgent', analysisResult);
       if (taskId) progressTracker.completePhase(taskId, 'content_analyzer');
       const analyzedContent = analysisResult.data;
+      // 記錄 ContentAnalyzerAgent 詳細工作
+      logAgentStart({
+        agentName: 'ContentAnalyzerAgent',
+        agentKey: 'analyzer',
+        taskType: 'tour_generation',
+        taskId: taskId,
+        taskTitle: `分析行程內容：${rawData.basicInfo?.title || rawData.location?.destinationCity || '未知目的地'}`,
+        userId,
+      }).then(id => { if (id) logAgentComplete(id, {
+        status: 'completed',
+        resultSummary: `✅ 分析完成「${analyzedContent.poeticTitle || rawData.basicInfo?.title || ''}」→ 目的地：${rawData.location?.destinationCity || ''}${rawData.location?.destinationCountry ? ` · ${rawData.location.destinationCountry}` : ''}，亮點 ${analyzedContent.highlights?.length || 0} 項，原創性分數 ${analyzedContent.originalityScore || 'N/A'}`,
+      }); }).catch(() => {});
       
       // 漸進式結果：更新標題和目的地
       if (taskId) {
@@ -435,6 +447,18 @@ export class MasterAgent {
       this.monitor.completeAgent('ColorThemeAgent', colorThemeResult);
       if (taskId) progressTracker.completePhase(taskId, 'color_theme');
       colorTheme = colorThemeResult.data;
+      // 記錄 ColorThemeAgent 詳細工作
+      logAgentStart({
+        agentName: 'ColorThemeAgent',
+        agentKey: 'colordesk',
+        taskType: 'tour_generation',
+        taskId: taskId,
+        taskTitle: `生成配色方案：${destination || '未知目的地'}`,
+        userId,
+      }).then(id => { if (id) logAgentComplete(id, {
+        status: 'completed',
+        resultSummary: `🎨 ${cachedPalette ? '（快取命中）' : ''}為「${destination}」生成配色方案，主色 ${colorTheme?.primary || 'N/A'}，輔色 ${colorTheme?.secondary || 'N/A'}`,
+      }); }).catch(() => {});
       
       // 漸進式結果：更新配色方案
       if (taskId) {
@@ -508,6 +532,18 @@ export class MasterAgent {
           
           itineraryData = JSON.stringify(itinerariesWithImages);
           this.monitor.completeAgent('ItineraryUnifiedAgent', unifiedResult);
+          // 記錄 ItineraryUnifiedAgent 詳細工作
+          logAgentStart({
+            agentName: 'ItineraryUnifiedAgent',
+            agentKey: 'planner',
+            taskType: 'tour_generation',
+            taskId: taskId,
+            taskTitle: `生成行程表：${rawData.basicInfo?.title || rawData.location?.destinationCity || '未知目的地'}`,
+            userId,
+          }).then(id => { if (id) logAgentComplete(id, {
+            status: 'completed',
+            resultSummary: `🗓️ 生成 ${polishedItineraries.length} 天行程（${tourType}），方法：${extractionMethod}，忠實度分數 ${fidelityCheck.overallScore}，耗時 ${(totalElapsedMs / 1000).toFixed(1)} 秒${fidelityCheck.issues.length > 0 ? `，警告：${fidelityCheck.issues.slice(0, 2).join('; ')}` : ''}`,
+          }); }).catch(() => {});
         } else {
           console.warn("[MasterAgent] ⚠ ItineraryUnifiedAgent returned no data");
           itineraryData = JSON.stringify([]);
@@ -601,6 +637,18 @@ export class MasterAgent {
           console.log(`[MasterAgent] hotelData type: ${typeof hotelData}, isArray: ${Array.isArray(hotelData)}, length: ${Array.isArray(hotelData) ? hotelData.length : 'N/A'}`);
           console.log(`[MasterAgent] mealData type: ${typeof mealData}, isArray: ${Array.isArray(mealData)}, length: ${Array.isArray(mealData) ? mealData.length : 'N/A'}`);
           console.log(`[MasterAgent] Token usage - Input: ${result.usage?.inputTokens}, Output: ${result.usage?.outputTokens}`);
+          // 記錄 DetailsSkill 詳細工作
+          logAgentStart({
+            agentName: 'DetailsSkill',
+            agentKey: 'writer',
+            taskType: 'tour_generation',
+            taskId: taskId,
+            taskTitle: `生成行程詳情：${rawData.basicInfo?.title || rawData.location?.destinationCity || '未知目的地'}`,
+            userId,
+          }).then(id => { if (id) logAgentComplete(id, {
+            status: 'completed',
+            resultSummary: `📝 ${cachedDetails ? '（快取命中）' : ''}生成費用說明、${Array.isArray(hotelData) ? hotelData.length : 0} 間飯店資訊、${Array.isArray(mealData) ? mealData.length : 0} 項餐飲資訊、注意事項，耗用 ${(result.usage?.inputTokens || 0) + (result.usage?.outputTokens || 0)} tokens`,
+          }); }).catch(() => {});
           
           // P3: Cache the DetailsSkill result for future use
           if (!cachedDetails) {
@@ -642,6 +690,18 @@ export class MasterAgent {
           this.monitor.completeAgent('TransportationAgent', result);
           if (taskId) progressTracker.completePhase(taskId, 'flight_agent');
           console.log(`[MasterAgent] ✓ TransportationAgent completed`);
+          // 記錄 TransportationAgent 詳細工作
+          logAgentStart({
+            agentName: 'TransportationAgent',
+            agentKey: 'skydesk',
+            taskType: 'tour_generation',
+            taskId: taskId,
+            taskTitle: `分析交通方式：${rawData.basicInfo?.title || rawData.location?.destinationCity || '未知目的地'}`,
+            userId,
+          }).then(id => { if (id) logAgentComplete(id, {
+            status: 'completed',
+            resultSummary: `✈️ 交通類型：${transportationData?.typeName || transportationData?.type || 'N/A'}${transportationData?.airline ? `，航空公司：${transportationData.airline}` : ''}${transportationData?.flightNumber ? `，航班：${transportationData.flightNumber}` : ''}`,
+          }); }).catch(() => {});
         } else {
           console.warn(`[MasterAgent] ⚠ TransportationAgent returned error, using fallback`);
           transportationData = this.fallbackManager.handleFailure('TransportationAgent', new Error(result?.error || 'TransportationAgent failed'));

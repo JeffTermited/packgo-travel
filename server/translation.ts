@@ -1,5 +1,6 @@
 import { invokeLLM } from "./_core/llm";
 import { logLlmUsage } from "./llmUsageService";
+import { logAgentStart, logAgentComplete } from "./agentActivityService";
 import { getDb } from "./db";
 import { translations, translationJobs } from "../drizzle/schema";
 import { eq, and, desc } from "drizzle-orm";
@@ -210,6 +211,17 @@ export async function translateTour(
 
   const errors: string[] = [];
   const translatedLanguages: Language[] = [];
+  const startTime = Date.now();
+
+  // 記錄翻譯開始
+  const activityId = await logAgentStart({
+    agentName: 'TranslationAgent',
+    agentKey: 'translator',
+    taskType: 'translation',
+    taskId: String(tourId),
+    taskTitle: `翻譯行程 #${tourId} → ${targetLanguages.join(', ')}`,
+    userId,
+  });
 
   try {
     // 獲取行程資料
@@ -217,6 +229,7 @@ export async function translateTour(
     const [tour] = await db.select().from(tours).where(eq(tours.id, tourId));
     
     if (!tour) {
+      if (activityId) await logAgentComplete(activityId, { status: 'failed', errorMessage: 'Tour not found' });
       return { success: false, translatedLanguages: [], errors: ['Tour not found'] };
     }
 
@@ -306,6 +319,17 @@ export async function translateTour(
       }
     }
 
+    const processingTimeMs = Date.now() - startTime;
+    if (activityId) {
+      await logAgentComplete(activityId, {
+        status: errors.length === 0 ? 'completed' : 'failed',
+        processingTimeMs,
+        resultSummary: errors.length === 0
+          ? `🌐 行程「${tour.title || `#${tourId}`}」已翻譯成 ${translatedLanguages.join('、')}，共 ${fieldsToTranslate.filter(f => f.value).length} 個欄位，耗時 ${(processingTimeMs / 1000).toFixed(1)} 秒`
+          : `⚠️ 翻譯部分失敗：${errors.slice(0, 2).join('; ')}`,
+        errorMessage: errors.length > 0 ? errors.slice(0, 2).join('; ') : undefined,
+      });
+    }
     return {
       success: errors.length === 0,
       translatedLanguages,
@@ -315,6 +339,7 @@ export async function translateTour(
     const errorMsg = `Translation failed: ${error}`;
     errors.push(errorMsg);
     console.error(`[Translation Agent] ${errorMsg}`);
+    if (activityId) await logAgentComplete(activityId, { status: 'failed', errorMessage: errorMsg.slice(0, 500) });
     return { success: false, translatedLanguages, errors };
   }
 }
