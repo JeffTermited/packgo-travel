@@ -5,6 +5,21 @@
  */
 
 import * as db from './db';
+import { EventEmitter } from 'events';
+
+// Global event emitter for real-time office SSE updates
+export const agentOfficeEmitter = new EventEmitter();
+agentOfficeEmitter.setMaxListeners(200);
+
+export interface AgentOfficeEvent {
+  type: 'agent_started' | 'agent_completed' | 'agent_failed';
+  agentName: string;
+  agentKey?: string | null;
+  taskType?: string | null;
+  taskTitle?: string | null;
+  activityId?: number | null;
+  timestamp: number;
+}
 
 export interface ActivityLogInput {
   agentName: string;
@@ -44,6 +59,19 @@ export async function logAgentStart(input: ActivityLogInput): Promise<number | n
 
     // Return the inserted ID
     const insertId = (result as unknown as { insertId: number }).insertId;
+
+    // Broadcast to SSE clients
+    const event: AgentOfficeEvent = {
+      type: 'agent_started',
+      agentName: input.agentName,
+      agentKey: input.agentKey ?? null,
+      taskType: input.taskType ?? null,
+      taskTitle: input.taskTitle ?? null,
+      activityId: insertId ?? null,
+      timestamp: Date.now(),
+    };
+    agentOfficeEmitter.emit('office_event', event);
+
     return insertId ?? null;
   } catch (err) {
     console.error('[AgentActivity] Failed to log start:', err);
@@ -75,6 +103,15 @@ export async function logAgentComplete(
         completedAt: new Date(),
       })
       .where(eq(agentActivityLogs.id, activityId));
+
+    // Broadcast to SSE clients
+    const event: AgentOfficeEvent = {
+      type: update.status === 'completed' ? 'agent_completed' : 'agent_failed',
+      agentName: '',  // will be enriched by caller if needed
+      activityId,
+      timestamp: Date.now(),
+    };
+    agentOfficeEmitter.emit('office_event', event);
   } catch (err) {
     console.error('[AgentActivity] Failed to log complete:', err);
   }

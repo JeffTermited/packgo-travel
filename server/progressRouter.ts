@@ -5,11 +5,58 @@
 
 import { Router, Request, Response } from 'express';
 import { progressTracker, ProgressEvent } from './agents/progressTracker';
+import { agentOfficeEmitter, AgentOfficeEvent } from './agentActivityService';
 
 const router = Router();
 
 // 儲存活躍的 SSE 連線
 const activeConnections: Map<string, Response[]> = new Map();
+
+// 儲存 AI 辦公室 SSE 連線
+const officeConnections: Response[] = [];
+
+/**
+ * SSE 端點：訂閱 AI 辦公室即時事件（所有 Agent 的活動）
+ * GET /api/progress/office
+ */
+router.get('/progress/office', (req: Request, res: Response) => {
+  req.setTimeout(600000);
+  res.setTimeout(600000);
+
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no');
+
+  res.write(`data: ${JSON.stringify({ type: 'connected' })}\n\n`);
+
+  officeConnections.push(res);
+
+  const officeHandler = (event: AgentOfficeEvent) => {
+    try {
+      res.write(`data: ${JSON.stringify(event)}\n\n`);
+    } catch {
+      // connection closed
+    }
+  };
+
+  agentOfficeEmitter.on('office_event', officeHandler);
+
+  const heartbeat = setInterval(() => {
+    try {
+      res.write(`: heartbeat\n\n`);
+    } catch {
+      clearInterval(heartbeat);
+    }
+  }, 15000);
+
+  req.on('close', () => {
+    agentOfficeEmitter.off('office_event', officeHandler);
+    clearInterval(heartbeat);
+    const idx = officeConnections.indexOf(res);
+    if (idx > -1) officeConnections.splice(idx, 1);
+  });
+});
 
 /**
  * SSE 端點：訂閱特定任務的進度更新

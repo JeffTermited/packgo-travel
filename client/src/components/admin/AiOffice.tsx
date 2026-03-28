@@ -3,7 +3,7 @@
  * AI 員工辦公室 v2
  * 每個 Agent 像員工一樣彙報：做了什麼、輸入是什麼、輸出結果
  */
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,8 @@ import {
   Pen, Plane, Car, Hotel, UtensilsCrossed,
   DollarSign, AlertTriangle, Image, BookOpen, Palette,
   MessageCircle, ChevronDown, ChevronRight, Activity,
-  Coffee, Briefcase, Timer, TrendingUp, User
+  Coffee, Briefcase, Timer, TrendingUp, User,
+  Wifi, WifiOff
 } from "lucide-react";
 
 // ── Agent 定義 ────────────────────────────────────────────────────────────────
@@ -215,28 +216,36 @@ function ActivityTimelineItem({ log, isLast }: { log: any; isLast: boolean }) {
   );
 }
 
-// ── 員工辦公桌卡片 ────────────────────────────────────────────────────────────
+// ── 員工辦公桌卡片 ────────────────────────────────────────────────────────────────────
 function DeskCard({
   agentName,
   stats,
   activities,
+  liveStatus,
 }: {
   agentName: string;
   stats?: { calls: number; totalTokens: number; lastActive: string | null };
   activities: any[];
+  liveStatus?: 'idle' | 'working' | 'failed';
 }) {
   const [expanded, setExpanded] = useState(false);
   const def = getAgentDef(agentName);
   const Icon = def.icon;
 
-  // 判斷目前狀態
+  // 判斷目前狀態（SSE 即時狀態優先）
   const recentActivity = activities[0];
-  const isRunning = recentActivity?.status === "started" &&
-    (Date.now() - new Date(recentActivity.startedAt).getTime()) < 5 * 60 * 1000;
-  const justDone = recentActivity?.status === "completed" &&
+  const isRunning = liveStatus === 'working' || (
+    liveStatus !== 'failed' && liveStatus !== 'idle' &&
+    recentActivity?.status === "started" &&
+    (Date.now() - new Date(recentActivity.startedAt).getTime()) < 5 * 60 * 1000
+  );
+  const justDone = liveStatus !== 'working' && liveStatus !== 'failed' && recentActivity?.status === "completed" &&
     (Date.now() - new Date(recentActivity.completedAt ?? recentActivity.startedAt).getTime()) < 10 * 60 * 1000;
-  const hasFailed = recentActivity?.status === "failed" &&
-    (Date.now() - new Date(recentActivity.startedAt).getTime()) < 30 * 60 * 1000;
+  const hasFailed = liveStatus === 'failed' || (
+    liveStatus !== 'working' && liveStatus !== 'idle' &&
+    recentActivity?.status === "failed" &&
+    (Date.now() - new Date(recentActivity.startedAt).getTime()) < 30 * 60 * 1000
+  );
 
   const statusBadge = isRunning
     ? <span className="inline-flex items-center gap-1 text-xs font-semibold text-blue-700 bg-blue-100 px-2.5 py-1 rounded-full border border-blue-200">
@@ -432,10 +441,59 @@ function TodaySummaryBar({ stats }: { stats: any[] }) {
 // ── 主元件 ────────────────────────────────────────────────────────────────────
 export default function AiOffice() {
   const [autoRefresh, setAutoRefresh] = useState(true);
+  const [sseConnected, setSseConnected] = useState(false);
+  // Live status map: agentName -> 'working' | 'idle' | 'failed'
+  const [liveStatuses, setLiveStatuses] = useState<Record<string, 'idle' | 'working' | 'failed'>>({});
+  const sseRef = useRef<EventSource | null>(null);
 
   const { data, isLoading, refetch, dataUpdatedAt } = (trpc as any).admin.getAgentOfficeStatus.useQuery(undefined, {
     refetchInterval: autoRefresh ? 20_000 : false,
   });
+
+  // SSE connection for real-time updates
+  const connectSSE = useCallback(() => {
+    if (sseRef.current) sseRef.current.close();
+    const es = new EventSource('/api/progress/office');
+    sseRef.current = es;
+    es.onopen = () => setSseConnected(true);
+    es.onerror = () => {
+      setSseConnected(false);
+      setTimeout(connectSSE, 5000);
+    };
+    es.onmessage = (e) => {
+      try {
+        const event = JSON.parse(e.data);
+        if (event.type === 'agent_started' && event.agentName) {
+          setLiveStatuses(prev => ({ ...prev, [event.agentName]: 'working' }));
+          refetch();
+        } else if (event.type === 'agent_completed' && event.agentName) {
+          setLiveStatuses(prev => ({ ...prev, [event.agentName]: 'idle' }));
+          refetch();
+        } else if (event.type === 'agent_failed' && event.agentName) {
+          setLiveStatuses(prev => ({ ...prev, [event.agentName]: 'failed' }));
+          refetch();
+        }
+      } catch { /* ignore */ }
+    };
+  }, [refetch]);
+
+  useEffect(() => {
+    connectSSE();
+    return () => { sseRef.current?.close(); };
+  }, [connectSSE]);
+
+  // Sync active tasks from API data into live statuses
+  useEffect(() => {
+    if (!data) return;
+    const updates: Record<string, 'idle' | 'working' | 'failed'> = {};
+    (data.activeTasks ?? []).forEach((t: any) => {
+      if (t.status === 'started') updates[t.agentName] = 'working';
+      else if (t.status === 'failed') updates[t.agentName] = 'failed';
+    });
+    if (Object.keys(updates).length > 0) {
+      setLiveStatuses(prev => ({ ...prev, ...updates }));
+    }
+  }, [data]);
 
   // 把 todayActivities 按 agentName 分組（最新的在前）
   const activitiesByAgent: Record<string, any[]> = {};
@@ -450,10 +508,11 @@ export default function AiOffice() {
     statsMap[s.agentName] = s;
   });
 
-  // 所有出現過的 Agent
+  // 所有出現過的 Agent（包含正在執行的）
   const allAgentNames = Array.from(new Set([
     ...Object.keys(statsMap),
     ...Object.keys(activitiesByAgent),
+    ...Object.keys(liveStatuses).filter(k => liveStatuses[k] === 'working'),
   ]));
 
   // 按部門分組，管理層優先
@@ -482,6 +541,11 @@ export default function AiOffice() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          {/* SSE 連線狀態 */}
+          <div className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full ${sseConnected ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+            {sseConnected ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
+            {sseConnected ? '即時連線' : '重連中…'}
+          </div>
           <span className="text-xs text-gray-400">最後更新 {lastUpdated}</span>
           <Button
             variant="outline"
@@ -537,6 +601,7 @@ export default function AiOffice() {
                 agentName={name}
                 stats={statsMap[name]}
                 activities={activitiesByAgent[name] ?? []}
+                liveStatus={liveStatuses[name] ?? 'idle'}
               />
             ))}
           </div>
