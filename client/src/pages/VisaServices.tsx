@@ -8,7 +8,7 @@ import { FileText, Clock, CheckCircle, Shield, ArrowRight, Phone, Globe, AlertCi
 const visaTypes = [
   {
     country: "美國",
-    flag: "🇺🇸",
+    code: "US",
     visas: ["B1/B2 觀光商務簽證", "F1 學生簽證", "J1 交流訪問簽證"],
     processingTime: "約 3–8 週",
     fee: "NT$3,500 起",
@@ -17,7 +17,7 @@ const visaTypes = [
   },
   {
     country: "申根區（歐洲）",
-    flag: "🇪🇺",
+    code: "EU",
     visas: ["申根短期旅遊簽證（C 類）", "長期居留簽證（D 類）"],
     processingTime: "約 2–4 週",
     fee: "NT$2,800 起",
@@ -26,7 +26,7 @@ const visaTypes = [
   },
   {
     country: "日本",
-    flag: "🇯🇵",
+    code: "JP",
     visas: ["短期停留觀光簽證（免簽 / 需簽）", "多次入境簽證"],
     processingTime: "約 5–7 個工作天",
     fee: "NT$1,200 起",
@@ -35,7 +35,7 @@ const visaTypes = [
   },
   {
     country: "韓國",
-    flag: "🇰🇷",
+    code: "KR",
     visas: ["短期觀光簽證（C-3）", "電子旅行許可 K-ETA"],
     processingTime: "約 3–5 個工作天",
     fee: "NT$1,000 起",
@@ -44,7 +44,7 @@ const visaTypes = [
   },
   {
     country: "澳洲",
-    flag: "🇦🇺",
+    code: "AU",
     visas: ["電子旅遊簽（ETA）", "觀光簽證（Subclass 600）", "打工度假簽（WHV）"],
     processingTime: "約 1–4 週",
     fee: "NT$2,500 起",
@@ -53,7 +53,7 @@ const visaTypes = [
   },
   {
     country: "加拿大",
-    flag: "🇨🇦",
+    code: "CA",
     visas: ["訪客簽證（TRV）", "電子旅行授權（eTA）", "打工度假簽（IEC）"],
     processingTime: "約 2–8 週",
     fee: "NT$3,000 起",
@@ -62,7 +62,7 @@ const visaTypes = [
   },
   {
     country: "英國",
-    flag: "🇬🇧",
+    code: "UK",
     visas: ["標準訪客簽證", "學生簽證", "工作簽證"],
     processingTime: "約 3–6 週",
     fee: "NT$4,000 起",
@@ -71,7 +71,7 @@ const visaTypes = [
   },
   {
     country: "紐西蘭",
-    flag: "🇳🇿",
+    code: "NZ",
     visas: ["訪客簽證", "電子旅行許可（NZeTA）", "打工度假簽"],
     processingTime: "約 1–3 週",
     fee: "NT$1,800 起",
@@ -209,7 +209,7 @@ export default function VisaServices() {
             {visaTypes.map((v, i) => (
               <div key={i} className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
                 <div className="flex items-center gap-3 mb-4">
-                  <span className="text-3xl">{v.flag}</span>
+                  <span className="w-10 h-10 flex-shrink-0 bg-gray-100 rounded-lg flex items-center justify-center text-xs font-bold text-gray-700">{v.code}</span>
                   <div>
                     <h3 className="font-bold text-gray-900">{v.country}</h3>
                     <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${v.difficultyColor}`}>{v.difficulty}</span>

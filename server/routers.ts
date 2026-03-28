@@ -1940,6 +1940,72 @@ export const appRouter = router({
           })),
         };
       }),
+    // Task History: 取得所有 AI 任務執行記錄（分頁）
+    getTaskHistory: adminProcedure
+      .input(z.object({
+        page: z.number().optional().default(1),
+        limit: z.number().optional().default(50),
+        agentName: z.string().optional(),
+        status: z.enum(['started', 'completed', 'failed', 'idle']).optional(),
+      }).optional())
+      .query(async ({ input }) => {
+        const { agentActivityLogs, llmUsageLogs } = await import('../drizzle/schema');
+        const { desc, eq, and, sql, gte } = await import('drizzle-orm');
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'DB not available' });
+        const page = input?.page ?? 1;
+        const limit = input?.limit ?? 50;
+        const offset = (page - 1) * limit;
+        const conditions: any[] = [];
+        if (input?.agentName) conditions.push(eq(agentActivityLogs.agentName, input.agentName));
+        if (input?.status) conditions.push(eq(agentActivityLogs.status, input.status));
+        const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+        const [logs, countResult, summaryResult] = await Promise.all([
+          drizzleDb
+            .select()
+            .from(agentActivityLogs)
+            .where(whereClause)
+            .orderBy(desc(agentActivityLogs.startedAt))
+            .limit(limit)
+            .offset(offset),
+          drizzleDb
+            .select({ count: sql<number>`COUNT(*)` })
+            .from(agentActivityLogs)
+            .where(whereClause),
+          drizzleDb
+            .select({
+              totalTasks: sql<number>`COUNT(*)`,
+              completedTasks: sql<number>`SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END)`,
+              failedTasks: sql<number>`SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END)`,
+              avgProcessingMs: sql<number>`AVG(processingTimeMs)`,
+            })
+            .from(agentActivityLogs),
+        ]);
+        const total = Number(countResult[0]?.count ?? 0);
+        return {
+          logs: logs.map(l => ({
+            id: l.id,
+            agentName: l.agentName,
+            agentKey: l.agentKey,
+            taskType: l.taskType,
+            taskId: l.taskId,
+            taskTitle: l.taskTitle,
+            status: l.status,
+            resultSummary: l.resultSummary,
+            errorMessage: l.errorMessage,
+            processingTimeMs: l.processingTimeMs,
+            startedAt: l.startedAt,
+            completedAt: l.completedAt,
+          })),
+          pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+          summary: {
+            totalTasks: Number(summaryResult[0]?.totalTasks ?? 0),
+            completedTasks: Number(summaryResult[0]?.completedTasks ?? 0),
+            failedTasks: Number(summaryResult[0]?.failedTasks ?? 0),
+            avgProcessingMs: Math.round(Number(summaryResult[0]?.avgProcessingMs ?? 0)),
+          },
+        };
+      }),
   }),
 
   // Image Library router

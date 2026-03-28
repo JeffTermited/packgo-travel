@@ -166,7 +166,7 @@ export default function QuickInquiry() {
               </div>
 
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
-                <p className="text-amber-800 text-sm font-medium mb-1">📋 填寫提示</p>
+                <p className="text-amber-800 text-sm font-medium mb-1 flex items-center gap-1.5"><MessageSquare className="h-4 w-4" /> 填寫提示</p>
                 <p className="text-amber-700 text-sm leading-relaxed">
                   請盡量填寫完整的聯絡資訊，方便我們的顧問快速回覆您的需求。
                 </p>

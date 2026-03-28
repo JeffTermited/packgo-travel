@@ -3,7 +3,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { Hotel, Star, Wifi, Car, Utensils, Dumbbell, Shield, Headphones, ArrowRight, MapPin, CheckCircle } from "lucide-react";
+import { Hotel, Star, Wifi, Car, Utensils, Dumbbell, Shield, Headphones, ArrowRight, MapPin, CheckCircle, Building2, Palmtree, Waves, Sparkles, Flame } from "lucide-react";
 
 export default function HotelBooking() {
   const { t } = useLocale();
@@ -16,12 +16,12 @@ export default function HotelBooking() {
   ];
 
   const hotelTypes = [
-    { name: "精品設計旅館", desc: "獨特設計風格，體驗當地文化與藝術", icon: "🏨", tag: "個性首選" },
-    { name: "商務酒店", desc: "完善商務設施，高效舒適的工作環境", icon: "🏢", tag: "商旅必備" },
-    { name: "度假村", desc: "全包式服務，享受無憂無慮的假期", icon: "🌴", tag: "休閒放鬆" },
-    { name: "五星豪華酒店", desc: "頂級服務與設施，尊享奢華體驗", icon: "⭐", tag: "頂級享受" },
-    { name: "溫泉旅館", desc: "日式傳統風情，療癒身心的溫泉體驗", icon: "♨️", tag: "日本特色" },
-    { name: "海景民宿", desc: "絕美海景視野，感受大自然的壯闊", icon: "🌊", tag: "自然風情" },
+    { name: "精品設計旅館", desc: "獨特設計風格，體驗當地文化與藝術", Icon: Hotel, tag: "個性首選" },
+    { name: "商務酒店", desc: "完善商務設施，高效舒適的工作環境", Icon: Building2, tag: "商旅必備" },
+    { name: "度假村", desc: "全包式服務，享受無憂無慮的假期", Icon: Palmtree, tag: "休閒放鬆" },
+    { name: "五星豪華酒店", desc: "頂級服務與設施，尊享奢華體驗", Icon: Star, tag: "頂級享受" },
+    { name: "溫泉旅館", desc: "日式傳統風情，療愈身心的溫泉體驗", Icon: Flame, tag: "日本特色" },
+    { name: "海景民宿", desc: "絕美海景視野，感受大自然的壯闊", Icon: Waves, tag: "自然風情" },
   ];
 
   const amenities = [
@@ -34,12 +34,12 @@ export default function HotelBooking() {
   ];
 
   const destinations = [
-    { city: "東京", country: "日本", hotels: "500+", img: "🗼" },
-    { city: "大阪", country: "日本", hotels: "300+", img: "🏯" },
-    { city: "首爾", country: "韓國", hotels: "400+", img: "🌸" },
-    { city: "曼谷", country: "泰國", hotels: "600+", img: "🛕" },
-    { city: "新加坡", country: "新加坡", hotels: "250+", img: "🦁" },
-    { city: "峇里島", country: "印尼", hotels: "350+", img: "🌺" },
+    { city: "東京", country: "日本", hotels: "500+" },
+    { city: "大阪", country: "日本", hotels: "300+" },
+    { city: "首爾", country: "韓國", hotels: "400+" },
+    { city: "曼谷", country: "泰國", hotels: "600+" },
+    { city: "新加坡", country: "新加坡", hotels: "250+" },
+    { city: "峨里島", country: "印尼", hotels: "350+" },
   ];
 
   return (
@@ -135,7 +135,9 @@ export default function HotelBooking() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {hotelTypes.map((type, i) => (
               <div key={i} className="bg-white rounded-xl p-6 border border-gray-100 hover:border-black hover:shadow-md transition-all flex items-start gap-4">
-                <div className="text-3xl flex-shrink-0">{type.icon}</div>
+                <div className="w-10 h-10 flex-shrink-0 bg-gray-100 rounded-lg flex items-center justify-center">
+                  <type.Icon className="h-5 w-5 text-black" />
+                </div>
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <h3 className="text-base font-bold text-black">{type.name}</h3>
@@ -159,7 +161,9 @@ export default function HotelBooking() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {destinations.map((dest, i) => (
               <div key={i} className="flex items-center gap-4 p-5 border border-gray-200 rounded-xl hover:border-black hover:shadow-sm transition-all group cursor-pointer">
-                <div className="text-4xl">{dest.img}</div>
+                <div className="w-12 h-12 flex-shrink-0 bg-gray-100 rounded-lg flex items-center justify-center">
+                  <MapPin className="h-6 w-6 text-black" />
+                </div>
                 <div className="flex-1">
                   <div className="font-bold text-black">{dest.city}</div>
                   <div className="flex items-center gap-1 text-sm text-gray-500">

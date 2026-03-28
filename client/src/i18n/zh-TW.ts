@@ -2723,6 +2723,7 @@ export const zhTW = {
     categoryPackage: '套裝行程',
     categoryCruise: '郵輪旅遊',
     categoryTheme: '主題旅遊',
+    minimizeToBackground: '縮小到背景',
   },
 
   // 後台行程編輯對話框

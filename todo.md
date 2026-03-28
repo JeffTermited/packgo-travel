@@ -5149,3 +5149,26 @@
 - [x] 加入 SSE 即時推送（替代 polling），讓任務狀態即時更新
 - [x] 翻譯任務、圖片生成任務也納入監控
 - [x] 儲存 checkpoint 並同步 GitHub
+
+## 2026-03-28 新增修復項目
+
+- [ ] 修復行程詳情頁中英混雜：標題列 (Tour Features/Daily Itinerary/Accommodation/Pricing/Important Notices)、章節標題 (Tour Description/Features & Upgrade Options/What's Included/What's Not Included) 應根據語言顯示對應翻譯
+- [ ] 修復行程詳情頁英文版排版：英文標題過長導致文字擠在一起，需要適當換行與字體大小調整
+- [ ] 修復縮小頁面看不到問題：響應式設計問題，縮小後元素消失
+- [ ] 修復「展開詳情」按鈕預設展開：查看更多/展開詳情應預設打開
+- [ ] 修復 emoji 在白色背景不可見：行程圖示（住宿等）在白色背景上看不到
+- [ ] 修復 i18n key 缺失：toursTab.minimizeToBackground 未翻譯
+- [ ] 新增 Task History 頁面：顯示所有 AI 任務執行記錄（任務名稱、執行時間、Agent 名稱、耗時、結果摘要）
+
+## 2026-03-28 修復項目
+
+- [x] 強制預設語言為繁體中文（忽略 localStorage 舊設定）
+- [x] 全面替換 emoji 為 Lucide React 圖示（AirportTransfer, FlightBooking, HotelBooking, ContactUs, QuickInquiry, PaymentFailure, VisaServices, AIAdvisor）
+- [x] 修復 minimizeToBackground i18n 翻譯鍵值缺失（zh-TW 和 en.ts）
+- [x] 修復 TourDetailPeony 每日行程預設展開所有天數
+- [x] 修復 TourDetailPeony Hero 響應式高度和 meta info bar 排版
+- [x] 修復 NavTabs 在手機版可橫向捲動
+- [x] 修復 DayCard 標題在手機版的字體大小和排版
+- [x] AI 行程生成 skillLibrary 加入繁體中文輸出要求
+- [x] 新增 Task History 頁面（/admin/task-history）
+- [x] Admin 後台新增「AI 任務記錄」分頁入口

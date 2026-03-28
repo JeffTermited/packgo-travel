@@ -56,18 +56,8 @@ interface LocaleContextType {
 const LocaleContext = createContext<LocaleContextType | undefined>(undefined);
 
 export function LocaleProvider({ children }: { children: React.ReactNode }) {
-  // 從 localStorage 讀取初始值，預設繁體中文和台幣
+  // 永遠預設繁體中文（不從 localStorage 讀取語言，確保網站預設顯示中文）
   const [language, setLanguageState] = useState<Language>('zh-TW');
-  
-  // 在客戶端初始化時從 localStorage 讀取語言設定
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('packgo-language');
-      if (saved && ['zh-TW', 'en'].includes(saved)) {
-        setLanguageState(saved as Language);
-      }
-    }
-  }, []);
 
   const [currency, setCurrencyState] = useState<Currency>('TWD');
   

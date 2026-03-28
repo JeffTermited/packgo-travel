@@ -2715,6 +2715,7 @@ export const en = {
     categoryPackage: 'Package Tour',
     categoryCruise: 'Cruise Tour',
     categoryTheme: 'Theme Tour',
+    minimizeToBackground: 'Minimize to Background',
   },
 
   // Admin Tour Edit Dialog

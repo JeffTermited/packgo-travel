@@ -15,6 +15,7 @@ import {
   X,
   BarChart2,
   TrendingUp,
+  ListChecks,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
@@ -30,8 +31,9 @@ import ReviewsTab from "@/components/admin/ReviewsTab";
 import TranslationsTab from "@/components/admin/TranslationsTab";
 import AiHubTab from "@/components/admin/AiHubTab";
 import AnalyticsTab from "@/components/admin/AnalyticsTab";
+import TaskHistoryContent from "@/components/admin/TaskHistoryContent";
 
-type AdminTab = "dashboard" | "tours" | "bookings" | "inquiries" | "reviews" | "ai-hub" | "analytics";
+type AdminTab = "dashboard" | "tours" | "bookings" | "inquiries" | "reviews" | "ai-hub" | "analytics" | "task-history";
 
 export default function Admin() {
   const { user, loading, isAuthenticated, logout } = useAuth();
@@ -74,6 +76,7 @@ export default function Admin() {
       items: [
         { id: 'analytics', icon: TrendingUp, label: '流量分析' },
         { id: 'ai-hub', icon: Brain, label: 'AI 中心' },
+        { id: 'task-history', icon: ListChecks, label: 'AI 任務記錄' },
       ],
     },
   ];
@@ -251,6 +254,7 @@ export default function Admin() {
           {activeTab === "reviews" && <ReviewsTab />}
           {activeTab === "analytics" && <AnalyticsTab />}
           {activeTab === "ai-hub" && <AiHubTab />}
+          {activeTab === "task-history" && <TaskHistoryContent />}
         </main>
       </div>
     </div>

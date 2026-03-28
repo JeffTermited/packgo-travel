@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { XCircle, RefreshCw, Mail, Phone, Home } from "lucide-react";
+import { XCircle, RefreshCw, Mail, Phone, Home, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useLocale } from "@/contexts/LocaleContext";
@@ -141,7 +141,7 @@ export default function PaymentFailure() {
 
         {/* Tips Card */}
         <Card className="p-6 mt-6 bg-gray-50">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">💡 {t('payment.failure.tips.title')}</h3>
+          <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2"><Lightbulb className="h-5 w-5 text-gray-600" /> {t('payment.failure.tips.title')}</h3>
           <ul className="space-y-2 text-sm text-gray-700">
             <li className="flex items-start gap-2">
               <span className="text-gray-400">•</span>

@@ -127,7 +127,7 @@ export default function ContactUs() {
           </div>
 
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
-            <p className="text-amber-800 text-sm font-semibold mb-1">💬 快速回覆</p>
+            <p className="text-amber-800 text-sm font-semibold mb-1 flex items-center gap-1.5"><MessageSquare className="h-4 w-4" /> 快速回覆</p>
             <p className="text-amber-700 text-sm leading-relaxed">
               填寫右側表單後，我們的旅遊顧問將在 24 小時內以電子郵件回覆您。
             </p>

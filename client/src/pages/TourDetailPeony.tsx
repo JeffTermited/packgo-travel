@@ -464,12 +464,12 @@ const NavTabs = ({
   themeColor: ReturnType<typeof getThemeColorByDestination>;
 }) => {
   return (
-    <div className="flex items-center justify-center gap-0 border-b border-gray-200">
+    <div className="flex items-center gap-0 border-b border-gray-200 overflow-x-auto scrollbar-hide flex-nowrap min-w-0">
       {items.map((item) => (
         <button
           key={item.id}
           onClick={() => onTabClick(item.id)}
-          className={`px-4 md:px-6 py-4 text-base font-semibold transition-all border-b-2 -mb-[2px] ${
+          className={`px-3 md:px-5 py-3 md:py-4 text-sm md:text-base font-semibold transition-all border-b-2 -mb-[2px] whitespace-nowrap flex-shrink-0 ${
             activeTab === item.id
               ? "border-current text-black"
               : "border-transparent text-gray-500 hover:text-gray-700"
@@ -1016,9 +1016,9 @@ const DayCard = ({
         </div>
         
         {/* Content Side */}
-        <div className="md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
+        <div className="md:w-1/2 p-5 sm:p-8 md:p-12 flex flex-col justify-center">
           {/* Location */}
-          <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4" style={{ color: themeColor.primary }}>
+          <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-3 md:mb-4 leading-snug break-words" style={{ color: themeColor.primary }}>
             {day.title || day.location || `${t('tourDetail.day')} ${index + 1}`}
           </h3>
           
@@ -1677,7 +1677,11 @@ export default function TourDetailPeony() {
   const displayTour = isEditMode && editedTour ? editedTour : tour;
 
   const [activeTab, setActiveTab] = useState("overview");
-  const [expandedDays, setExpandedDays] = useState<Set<number>>(new Set());
+  // 預設展開所有天數
+  const [expandedDays, setExpandedDays] = useState<Set<number>>(() => {
+    // 預設展開前 10 天（足夠涵蓋大多數行程）
+    return new Set(Array.from({ length: 20 }, (_, i) => i));
+  });
   const [selectedMealDetail, setSelectedMealDetail] = useState<MealDetail | null>(null);
   const [isMealDetailOpen, setIsMealDetailOpen] = useState(false);
   const [selectedAttractionDetail, setSelectedAttractionDetail] = useState<AttractionDetail | null>(null);
@@ -1891,7 +1895,7 @@ export default function TourDetailPeony() {
       </div>
 
       {/* Hero Section */}
-      <section className="relative h-[60vh] min-h-[450px] max-h-[600px]">
+      <section className="relative h-[45vh] sm:h-[55vh] md:h-[60vh] min-h-[320px] max-h-[600px]">
         {isEditMode ? (
           <div className="absolute inset-0">
             <EditableImage
@@ -1951,7 +1955,7 @@ export default function TourDetailPeony() {
           )}
 
           {/* Meta info */}
-          <div className="flex flex-wrap items-center justify-center gap-6 text-white/90 text-base md:text-lg">
+          <div className="flex flex-wrap items-center justify-center gap-2 md:gap-4 text-white/90 text-xs sm:text-sm md:text-base px-4">
             {/* Destination Country Badge */}
             {tour.destinationCountry && (
               <div 
@@ -1986,8 +1990,8 @@ export default function TourDetailPeony() {
 
       {/* Sticky Navigation Tabs */}
       <nav className="sticky top-[80px] z-40 bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-2 md:px-6">
+          <div className="flex items-center justify-between overflow-x-auto scrollbar-hide">
             <NavTabs 
               items={navItems} 
               activeTab={activeTab} 

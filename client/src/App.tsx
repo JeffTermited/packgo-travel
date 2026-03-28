@@ -38,6 +38,7 @@ import CountryPage from "./pages/CountryPage";
 import CruisePage from "./pages/CruisePage";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentFailure from "./pages/PaymentFailure";
+import TaskHistory from "./pages/TaskHistory";
 
 function RouteTracker() {
   const [location] = useLocation();
@@ -63,6 +64,7 @@ function Router() {
       <Route path={"/forgot-password"} component={ForgotPassword} />
       <Route path={"/reset-password"} component={ResetPassword} />
       <Route path={"/admin/diagnostics"} component={DiagnosticsPage} />
+      <Route path={"/admin/task-history"} component={TaskHistory} />
       <Route path={"/admin"} component={Admin} />
       <Route path={"/profile"} component={Profile} />
       <Route path={"/tours/:id/print"} component={TourPrintView} />

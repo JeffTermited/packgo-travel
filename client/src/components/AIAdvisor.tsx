@@ -14,7 +14,7 @@ export default function AIAdvisor() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "您好！我是您的專屬 AI 旅遊顧問。請告訴我您想去的目的地、季節或人數，讓我為您規劃完美的旅程！🌸",
+      content: "您好！我是您的專屬 AI 旅遊顧問。請告訴我您想去的目的地、季節或人數，讓我為您規劃完美的旅程！",
     },
   ]);
   const [input, setInput] = useState("");

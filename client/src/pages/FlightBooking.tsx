@@ -3,7 +3,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { Plane, Clock, Shield, Globe, CreditCard, Headphones, ArrowRight } from "lucide-react";
+import { Plane, Clock, Shield, Globe, CreditCard, Headphones, ArrowRight, Briefcase, Crown, Star } from "lucide-react";
 
 export default function FlightBooking() {
   const { t } = useLocale();
@@ -16,10 +16,10 @@ export default function FlightBooking() {
   ];
 
   const cabinClasses = [
-    { name: "經濟艙", nameEn: "Economy", desc: "性價比最高的選擇，適合預算有限的旅客", icon: "✈️" },
-    { name: "豪華經濟艙", nameEn: "Premium Economy", desc: "更寬敞的座位與升級餐飲，享受更舒適的旅程", icon: "🌟" },
-    { name: "商務艙", nameEn: "Business", desc: "全平躺座椅、精緻餐飲與優先登機，商旅首選", icon: "💼" },
-    { name: "頭等艙", nameEn: "First Class", desc: "頂級奢華體驗，私人套房、米其林級餐飲服務", icon: "👑" },
+    { name: "經濟艙", nameEn: "Economy", desc: "性價比最高的選擇，適合預算有限的旅客", Icon: Plane },
+    { name: "豪華經濟艙", nameEn: "Premium Economy", desc: "更寬敞的座位與升級餐飲，享受更舒適的旅程", Icon: Star },
+    { name: "商務艙", nameEn: "Business", desc: "全平躺座椅、精綻餐飲與優先登機，商旅首選", Icon: Briefcase },
+    { name: "頭等艙", nameEn: "First Class", desc: "頂級奢華體驗，私人套房、米其林級餐飲服務", Icon: Crown },
   ];
 
   const popularRoutes = [
@@ -123,7 +123,9 @@ export default function FlightBooking() {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {cabinClasses.map((cabin, i) => (
               <div key={i} className="bg-white rounded-xl p-6 border border-gray-100 hover:border-black hover:shadow-md transition-all">
-                <div className="text-3xl mb-4">{cabin.icon}</div>
+                <div className="w-12 h-12 mx-auto mb-4 bg-gray-100 rounded-lg flex items-center justify-center">
+                  <cabin.Icon className="h-6 w-6 text-black" />
+                </div>
                 <h3 className="text-lg font-bold text-black mb-1">{cabin.name}</h3>
                 <p className="text-gray-500 text-xs mb-3">{cabin.nameEn}</p>
                 <p className="text-gray-600 text-sm leading-relaxed">{cabin.desc}</p>

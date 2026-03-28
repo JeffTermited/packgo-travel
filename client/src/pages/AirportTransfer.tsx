@@ -2,7 +2,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { Car, Clock, Shield, Star, ArrowRight, Phone } from "lucide-react";
+import { Car, Clock, Shield, Star, ArrowRight, Phone, Truck, Bus, Plane, MapPin } from "lucide-react";
 
 export default function AirportTransfer() {
   const features = [
@@ -13,19 +13,19 @@ export default function AirportTransfer() {
   ];
 
   const vehicleTypes = [
-    { name: "商務轎車", capacity: "1-3 人", desc: "舒適私密，適合商務旅客或小家庭", icon: "🚗", examples: "Toyota Camry / Honda Accord" },
-    { name: "豪華 SUV", capacity: "1-4 人", desc: "寬敞舒適，適合攜帶大型行李的旅客", icon: "🚙", examples: "Toyota Land Cruiser / BMW X5" },
-    { name: "商務 MPV", capacity: "5-7 人", desc: "大空間設計，適合家庭或小型團體", icon: "🚐", examples: "Toyota Alphard / Vellfire" },
-    { name: "豪華禮車", capacity: "1-3 人", desc: "頂級奢華體驗，適合重要商務場合", icon: "🚘", examples: "Mercedes-Benz S-Class / BMW 7" },
+    { name: "商務轎車", capacity: "1-3 人", desc: "舒適私密，適合商務旅客或小家庭", Icon: Car, examples: "Toyota Camry / Honda Accord" },
+    { name: "豪華 SUV", capacity: "1-4 人", desc: "寬敞舒適，適合攜帶大型行李的旅客", Icon: Truck, examples: "Toyota Land Cruiser / BMW X5" },
+    { name: "商務 MPV", capacity: "5-7 人", desc: "大空間設計，適合家庭或小型團體", Icon: Bus, examples: "Toyota Alphard / Vellfire" },
+    { name: "豪華禮車", capacity: "1-3 人", desc: "頂級奢華體驗，適合重要商務場合", Icon: Star, examples: "Mercedes-Benz S-Class / BMW 7" },
   ];
 
   const airports = [
-    { name: "桃園國際機場", code: "TPE", country: "台灣", icon: "🇹🇼" },
-    { name: "成田國際機場", code: "NRT", country: "日本東京", icon: "🇯🇵" },
-    { name: "關西國際機場", code: "KIX", country: "日本大阪", icon: "🇯🇵" },
-    { name: "仁川國際機場", code: "ICN", country: "韓國首爾", icon: "🇰🇷" },
-    { name: "素萬那普機場", code: "BKK", country: "泰國曼谷", icon: "🇹🇭" },
-    { name: "樟宜國際機場", code: "SIN", country: "新加坡", icon: "🇸🇬" },
+    { name: "桃園國際機場", code: "TPE", country: "台灣" },
+    { name: "成田國際機場", code: "NRT", country: "日本東京" },
+    { name: "關西國際機場", code: "KIX", country: "日本大阪" },
+    { name: "仁川國際機場", code: "ICN", country: "韓國首爾" },
+    { name: "素萬那普機場", code: "BKK", country: "泰國曼谷" },
+    { name: "樟宜國際機場", code: "SIN", country: "新加坡" },
   ];
 
   return (
@@ -117,7 +117,9 @@ export default function AirportTransfer() {
             {vehicleTypes.map((vehicle, i) => (
               <div key={i} className="bg-white rounded-xl p-6 border border-gray-100 hover:border-black hover:shadow-md transition-all">
                 <div className="flex items-start gap-4">
-                  <div className="text-4xl flex-shrink-0">{vehicle.icon}</div>
+                  <div className="w-12 h-12 flex-shrink-0 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <vehicle.Icon className="h-6 w-6 text-black" />
+                  </div>
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-1">
                       <h3 className="text-lg font-bold text-black">{vehicle.name}</h3>
@@ -142,7 +144,9 @@ export default function AirportTransfer() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {airports.map((airport, i) => (
               <div key={i} className="flex items-center gap-4 p-5 border border-gray-200 rounded-xl hover:border-black hover:shadow-sm transition-all">
-                <div className="text-3xl">{airport.icon}</div>
+                <div className="w-10 h-10 flex-shrink-0 bg-gray-100 rounded-lg flex items-center justify-center">
+                  <Plane className="h-5 w-5 text-black" />
+                </div>
                 <div>
                   <div className="font-bold text-black text-sm">{airport.name}</div>
                   <div className="flex items-center gap-2 text-xs text-gray-500">
