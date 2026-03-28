@@ -1,5 +1,5 @@
-import { useState, useMemo, useCallback } from "react";
-import { Link } from "wouter";
+import { useState, useMemo, useCallback, useEffect } from "react";
+import { Link, useSearch } from "wouter";
 import SEO from "@/components/SEO";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -255,12 +255,20 @@ function Pagination({
 }
 
 export default function Tours() {
+  const searchString = useSearch();
+  const urlCategory = useMemo(() => new URLSearchParams(searchString).get("category") || "all", [searchString]);
   const [searchInput, setSearchInput] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedCategory, setSelectedCategory] = useState<string>(urlCategory);
   const [selectedDurationIdx, setSelectedDurationIdx] = useState<number>(0);
   const [selectedSortBy, setSelectedSortBy] = useState<string>("popular");
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [page, setPage] = useState(1);
+
+  // Sync category when URL changes (e.g. navigating from header menu)
+  useEffect(() => {
+    setSelectedCategory(urlCategory);
+    setPage(1);
+  }, [urlCategory]);
   const { t, language, formatPrice } = useLocale();
 
   const debouncedSearch = useDebounce(searchInput, 400);
